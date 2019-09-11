@@ -1,0 +1,51 @@
+Task ID: <b>748</b>
+Collection: <b> alle</b>
+Task: <b>Topic_Model</b>
+Started at: <b>2019-07-10 12:34:33</b>
+
+
+2019-07-10 12:34:34: <b>Step 1/14: Loading collection</b>
+2019-07-10 12:34:34:   <b style='color:green'> ✔ </b> Finished loading collection
+2019-07-10 12:34:34: <b>Step 2/14: Loading data from database</b>
+2019-07-10 12:35:55:   <b style='color:green'> ✔ </b>  Finished loading data from database
+2019-07-10 12:35:55: <b>Step 3/14: Sanity check</b>
+2019-07-10 12:35:55: &emsp; token object not empty?
+2019-07-10 12:35:55: &emsp; ✔
+2019-07-10 12:35:55:   <b style='color:green'> ✔ </b>  Finished sanity checks
+2019-07-10 12:35:55: <b>Step 4/14: Preparing input parameters</b>
+2019-07-10 12:35:55:   <b style='color:green'> ✔ </b>  Finished preparing input parameters
+2019-07-10 12:35:55: <b>Step 5/14: Create original documents</b>
+2019-07-10 12:38:58:   <b style='color:green'> ✔ </b>  Finished 
+2019-07-10 12:38:58: <b>Step 6/14: Getting metadata for detailed metadata analysis from database</b>
+2019-07-10 12:39:00:   <b style='color:green'> ✔ </b>  Finished 
+2019-07-10 12:39:00: <b>Step 7/14: Preparing token object</b>
+2019-07-10 12:39:04: &emsp; Finished filtering for pos types
+2019-07-10 12:39:04:   <b style='color:green'> ✔ </b>  Finished preparing token object
+2019-07-10 12:39:04: <b>Step 8/14: Calculating DTM</b>
+2019-07-10 12:39:05: &emsp; split corpus in 101 chunks
+2019-07-10 12:39:13: &emsp; 10% of documents processed (132)
+2019-07-10 12:39:20: &emsp; 20% of documents processed (252)
+2019-07-10 12:39:27: &emsp; 30% of documents processed (372)
+2019-07-10 12:39:36: &emsp; 40% of documents processed (492)
+2019-07-10 12:39:44: &emsp; 50% of documents processed (612)
+2019-07-10 12:39:52: &emsp; 60% of documents processed (732)
+2019-07-10 12:40:00: &emsp; 70% of documents processed (852)
+2019-07-10 12:40:08: &emsp; 80% of documents processed (972)
+2019-07-10 12:40:16: &emsp; 90% of documents processed (1092)
+2019-07-10 12:40:24: &emsp; 100% of documents processed (1212)
+2019-07-10 12:40:24: &emsp; Pruning of documents
+2019-07-10 12:40:24: &emsp; Finished pruning of documents
+2019-07-10 12:40:26:   <b style='color:green'> ✔ </b>  Finished pre-processing with 1204 documents and  20456 features
+2019-07-10 12:40:26: <b>Step 9/14: Clean vocabulary from non asci2 characters</b>
+2019-07-10 12:40:26:   <b style='color:green'> ✔ </b>  Finished 
+2019-07-10 12:40:26: <b>Step 10/14: Removing empty documents</b>
+2019-07-10 12:40:26: <b style='color:green'> ✔ </b>  Deleted 2 documents from topic model, because they are empty with the current settings
+2019-07-10 12:40:26: <b>Step 11/14: Create Topic Model</b>
+2019-07-10 12:49:34:   <b style='color:green'> ✔ </b>  Finished calculating topic model
+2019-07-10 12:49:34: <b>Step 12/14: Create Variables for Visulisaton</b>
+2019-07-10 12:49:39:   <b style='color:green'> ✔ </b>  
+2019-07-10 12:49:39: <b>Step 13/14: Saving results</b>
+2019-07-10 12:49:53:    <b style='color:green'> ✔ </b> Finished saving results
+2019-07-10 12:49:53: <b>Step 14/14: Writing task parameter to database</b>
+2019-07-10 12:49:54:  <b style='color:green'> ✔ </b>  Finished writing task parameter
+2019-07-10 12:49:54:  <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Topic Model </b>

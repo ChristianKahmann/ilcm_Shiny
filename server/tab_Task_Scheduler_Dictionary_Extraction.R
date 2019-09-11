@@ -1,0 +1,604 @@
+
+##render the parameter set for dictionary extraction
+output$Analysis_Parameter_DE<-renderUI({
+  tagList(
+    tags$hr(),
+    #standard parameters
+    fluidRow(
+      column(1,
+             selectInput(inputId = "DE_baseform",label = "Baseform Reduction",choices = c("lemma","stemming","none"),selected = "none")#,
+             #shinyBS::bsPopover(id = "DE_baseform", title = "Specify whether and how to do baseform reduction. The options are stemming, lemmatization or no baseorm reduction.",
+             #                    content = '<a href="https://www.google.com/">Google Homepage</a>',placement = "right",trigger = "hover",list(container = "body"))
+             %>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Specify whether and how to do baseform reduction. The options are stemming, lemmatization or no baseorm reduction.", placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             sliderInput(inputId = "DE_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
+                     ,html=T)
+               )),
+      column(1,
+             selectInput(inputId = "DE_ngram",label = "N-grams",choices = c(1,2,3),selected = 1,multiple = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Should n-grams be included in the analysis? They will be connected with '_'.", placement = "right"
+                   )
+               )),
+      column(2,
+             textInput(inputId = "DE_remove_custom",label = HTML("Remove custom words"),placeholder ="Add words (Seperated by ,)")%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Delete specific words from the analysis. Seperate them with ','.", placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             textInput(inputId = "DE_keep_custom",label = HTML("Keep custom words"),placeholder ="Add words (Seperated by ,)")%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Keep specific words in the analysis. Seperate them with ','. If both custom words and whitelist are specified, they will be merged together.", placement = "right"
+                   )
+               )
+      )
+    ),
+    fluidRow(
+      column(1,
+             checkboxInput(inputId = "DE_remove_stopwords",label = "Remove Stopwords",value = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
+                   )
+               )),
+      column(1,
+             checkboxInput(inputId = "DE_lowercase",label = "Transform tokens to lowercase?",value = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Should lowercasing (set all characters to lower case) be applied?", placement = "left"
+                   )
+               )),
+      column(1,
+             checkboxInput(inputId = "DE_remove_numbers",label = "Remove Numbers?",value = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Remove types which consist of numbers only from the analysis.", placement = "bottom"
+                   )
+               )),
+      column(1,
+             checkboxInput(inputId = "DE_remove_numbers_all",label = "Remove everything containing a number number?",value = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Remove words which are composed of at least one number.", placement = "right"
+                   )
+               )),
+      column(1,
+             checkboxInput(inputId = "DE_remove_punctuation",label = "Remove Punctuation?",value = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Remove words, which reflect punctuation from the analysis.", placement = "right"
+                   )
+               )),
+      column(1,
+             checkboxInput(inputId = "DE_remove_hyphenation",label = "Remove Hyphenation?",value = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Remove words, which reflect hyphens from the analysis.", placement = "right"
+                   )
+               )),
+      column(1,
+             checkboxInput(inputId = "DE_consolidate_entities",label = "Consolidate Entities?",value = F)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Consolidate found entities by binding them together with '_' and treat them as a single word afterwards.", placement = "right"
+                   )
+               ))
+    ),
+    fluidRow(
+      column(1,
+             checkboxInput(inputId = "DE_use_custom_blacklist",label = "use custom blacklist?",value = F)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Use one of the specified blacklists to remove a set of words from the analysis.", placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             conditionalPanel(condition = "input.DE_use_custom_blacklist==true",
+                              shinyWidgets::prettyRadioButtons(inputId = "DE_blacklist",label = "Blacklists",
+                                                               choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                                                               fill=T,animation = "tada",selected = NULL)
+             )
+      ),
+      column(1,
+             checkboxInput(inputId = "DE_use_custom_whitelist",label = "use custom whitelist?",value = F)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Use of the specified whitelists to protect a set of words from the removal during the pre-processing or to calculate the analysis for these words exclusivly.", placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             conditionalPanel(condition = "input.DE_use_custom_whitelist==true",
+                              shinyWidgets::prettyRadioButtons(inputId = "DE_whitelist",label = "Whitelists",
+                                                               choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                                                               fill=T,animation = "tada",selected = NULL)
+             )
+      )
+    ),
+    fluidRow(
+      conditionalPanel(condition = "input.DE_use_custom_whitelist==true || input.DE_keep_custom.length>=1",
+                     
+                       # column(1,
+                       #        checkboxInput(inputId = "DE_whitelist_only",label = "Exclude all words apart from the whitelist entries",value = FALSE)%>%
+                       #          shinyInput_label_embed(
+                       #            shiny_iconlink() %>%
+                       #              bs_embed_popover(
+                       #                title = "Should all words apart from the entries in the whitelist be excluded from the analysis?", placement = "right"
+                       #              )
+                       #          )
+                       # ),
+                     
+                              conditionalPanel(condition = "(input.DE_use_custom_whitelist==true || input.DE_keep_custom.length>=1) && (input.DE_ngram.includes('2') || input.DE_ngram.includes('3'))",
+                                               tags$br(),
+                                               tags$h5("Whitelist Options:"),
+                                               column(1,
+                                               checkboxInput(inputId = "DE_whitelist_expand",label = "Expand whitelist?",value = FALSE)%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "Should the words whitelist be expaned using n-grams?", placement = "right"
+                                                     )
+                                                 )
+                              )  
+                              
+                       )
+      )
+    ),
+    tags$hr(),
+    tags$h4("Pruning"),
+    fluidRow(
+      column(1,
+             tags$div(
+               selectInput(inputId = "DE_termfreq_type",label = "term frequency type",choices = c("count","prop","rank","quantile"),multiple = F,selected = "count")%>%
+                 shinyInput_label_embed(
+                   shiny_iconlink() %>%
+                     bs_embed_popover(
+                       title = "Remove words from the analysis that exhibit a specified lower and/or upper bound of occurrences.
+                       These bounds can be specified by an explicit number of occurrences (count based), by setting a probability (prob),
+                       by using a rank to keep just words within a certain range of occurrence ranks or by specifying a quantile to cut of.",
+                       placement = "right",
+                       html="true"
+                     )
+                 )
+             )
+      ),
+      column(2,
+             tags$br(),
+             conditionalPanel(condition = 'input.DE_termfreq_type=="count"',
+                              numericInput(inputId = "DE_min_termfreq_c",label = "min. term frequency",min = 0,step = 1,value=NULL),
+                              numericInput(inputId = "DE_max_termfreq_c",label = "max. term frequency",min = 1,step = 1,value=NULL)
+             ),
+             conditionalPanel(condition = 'input.DE_termfreq_type=="prop"',
+                              numericInput(inputId = "DE_min_termfreq_p",label = "min. term probability",min = 0,step = 0.01,max = 1,value=NULL),
+                              numericInput(inputId = "DE_max_termfreq_p",label = "max. term probability",min = 0.001,step = 0.01,max = 1,value=NULL)
+             ),
+             conditionalPanel(condition = 'input.DE_termfreq_type=="rank"',
+                              numericInput(inputId = "DE_min_termfreq_r",label = "min. term rank",min = 1,step = 1,value=NULL),
+                              numericInput(inputId = "DE_max_termfreq_r",label = "max. term rank",min = 1,step = 1,value=NULL)
+             ),
+             conditionalPanel(condition = 'input.DE_termfreq_type=="quantile"',
+                              numericInput(inputId = "DE_min_termfreq_q",label = "min. term quantile",min = 0,max = 1,step = 0.25,value=NULL),
+                              numericInput(inputId = "DE_max_termfreq_q",label = "max. term quantile",min = 0,max = 1,step = 0.25,value=NULL)
+             )
+      ),
+      column(1,
+             tags$div(
+               selectInput(inputId = "DE_docfreq_type",label = "doc frequency type",choices = c("count","prop","rank","quantile"),multiple = F,selected = "prop")%>%
+                 shinyInput_label_embed(
+                   shiny_iconlink() %>%
+                     bs_embed_popover(
+                       title = "Remove words from the analysis that exhibit a specified lower and/or upper bound of document occurrences.
+                                      These bounds can be specified by an explicit number of document occurrences (count based), by setting a probability (prob),
+                                      by using a rank to keep just words within a certain range of document occurrence ranks or by specifying a quantile to cut of.",
+                       placement = "right",
+                       html="true"
+                     )
+                 )
+             )
+      ),
+      column(2,
+             tags$br(),
+             conditionalPanel(condition = 'input.DE_docfreq_type=="count"',
+                              numericInput(inputId = "DE_min_docfreq_c",label = "min. doc frequency",min = 0,step = 1,value=NULL),
+                              numericInput(inputId = "DE_max_docfreq_c",label = "max. doc frequency",min = 1,step = 1,value=NULL)
+             ),
+             conditionalPanel(condition = 'input.DE_docfreq_type=="prop"',
+                              numericInput(inputId = "DE_min_docfreq_p",label = "min. doc probability",min = 0,step = 0.01,max = 1,value=NULL),
+                              numericInput(inputId = "DE_max_docfreq_p",label = "max. doc probability",min = 0.001,step = 0.01,max = 1,value=NULL)
+             ),
+             conditionalPanel(condition = 'input.DE_docfreq_type=="rank"',
+                              numericInput(inputId = "DE_min_docfreq_r",label = "min. doc rank",min = 1,step = 1,value=NULL),
+                              numericInput(inputId = "DE_max_docfreq_r",label = "max. doc rank",min = 1,step = 1,value=NULL)
+             ),
+             conditionalPanel(condition = 'input.DE_docfreq_type=="quantile"',
+                              numericInput(inputId = "DE_min_docfreq_q",label = "min. doc quantile",min = 0,max = 1,step = 0.25,value=NULL),
+                              numericInput(inputId = "DE_max_docfreq_q",label = "max. doc quantile",min = 0,max = 1,step = 0.25,value=NULL)
+             )
+      )
+      
+    ),
+    #specific parameters
+    tags$hr(),
+    tags$h4("Dictionary Extraction parameters"),
+    fluidRow(
+      column(2,
+             selectInput(inputId = "DE_POS_TYPES",label = "POS-Types",
+                         choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X") ,selected = "all",multiple = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Should the analysis be limited to words from a certain range of POS-Types. If this is the case make sure to exclude 'all' from the selection.",
+                     placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             selectInput(inputId = "DE_ENTITY_TYPES",label = "NER-Tags",
+                         choices =c("all","PERSON","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+                                    "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = "all",multiple=T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-tag option causes the consolidation of entities.",
+                     placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             checkboxInput(inputId="DE_use_reg_exp",label = "use regexp instead of a dictionary?",value = FALSE)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Instead of a dictionary you can also specify a regular expression, whose matching words will then be aggregated like a dictionary record.
+                            For example the regular expression '.{0,10}sustain.' will match words like: unsustainable, sustainable, sustainability,...",
+                     placement = "right",
+                     html="true"
+                   )
+               )
+      )
+    ),
+    fluidRow(
+                 column(6,
+                    conditionalPanel(condition='input.DE_use_reg_exp==false',
+                                     uiOutput("DE_dict_ui")
+                    ),
+                    conditionalPanel(condition='input.DE_use_reg_exp==true',
+                                     textInput(inputId = "DE_regexp_input",label = "regular expression")%>%
+                                       shinyInput_label_embed(
+                                         shiny_iconlink() %>%
+                                           bs_embed_popover(
+                                             title = "Define a regular expression, which matches a set of words, you would like to have aggregated counts for.
+                            For example the regular expression '.{0,10}sustain.' will match words like: unsustainable, sustainable, sustainability,...",
+                                             placement = "right",
+                                             html="true"
+                                           )
+                                       )
+                    )
+                   )
+    ),
+    fluidRow(
+      column(1,
+             checkboxInput(inputId="DE_use_context_filter",label = "use a context filter?",value = FALSE)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Use a context filter to just count occurrences of dictionary terms occuring together with this specified context.",
+                     placement = "right",
+                     html="true"
+                   )
+               )
+      ),
+      column(5,
+             conditionalPanel(condition = 'input.DE_use_context_filter==true',
+                              textInput(inputId = "DE_Context_Filter",label = "Context filter list")%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Use a context filter to just count occurrences of dictionary terms occuring together with this specified context.
+                                                You can either specify the context by adding words seperated with ','(E.g. 'car, bank, sun'). If multiple words arre specified, they will be connected with an OR-operation.
+                                                In order to build a more complex context, you should active regular expression mode. Here you can combine multiple terms.
+                                                The regular expression: '((?=.*car)|(?=.*bike))(?=.*road)' would match any sentence/document containing the words car OR bike and road anywhere in the string.",
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                ),
+                              checkboxInput(inputId = "DE_reg_exp",label = "regular expression mode",value = FALSE)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Do you want to specify the context as a regular expression?",
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                ),
+                              
+                              selectInput(inputId = "DE_context_unit",label = "Context unit",choices = c("sentence","document"),selected = "document",multiple = F)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Specify the window within the specified context has to co-occurr with dictionary terms.",
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                )
+             )
+      )
+    ),
+    bsButton(inputId = "DE_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
+  )
+})
+
+output$DE_dict_ui<-renderUI({
+  values$update_dicts
+  shinyWidgets::prettyRadioButtons(inputId = "DE_dict",label = "Dictionaries",
+                                   choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
+                                   fill=T,animation = "tada",selected = NULL,inline = T)%>%
+    bs_embed_popover(
+      title = "Choose one of the existing dictionaries. You can add and modify dictionaries in Scripts - Dictionaries",
+      placement = "right",
+      html="true"
+    )
+})
+
+
+
+
+#start cooccurrence analysis script, if submit button is clicked
+observeEvent(input$DE_Submit_Script,{
+  valid<-check_pruning_parameters(min_t_c = input$DE_min_termfreq_c,max_t_c = input$DE_max_termfreq_c,min_t_p =input$DE_min_termfreq_p,max_t_p =  input$DE_max_termfreq_p
+                                  ,min_t_r =input$DE_min_termfreq_r,max_t_r = input$DE_max_termfreq_r,min_t_q = input$DE_min_termfreq_q, max_t_q = input$DE_max_termfreq_q
+                                  ,min_d_c = input$DE_min_docfreq_c,max_d_c = input$DE_max_docfreq_c,min_d_p = input$DE_min_docfreq_p,max_d_p = input$DE_max_docfreq_p
+                                  ,min_d_r = input$DE_min_docfreq_r,max_d_r = input$DE_max_docfreq_r,min_d_q = input$DE_min_docfreq_q,max_d_q = input$DE_max_docfreq_q)
+  if(isFALSE(valid)){
+    shinyalert::shinyalert(title = "Check pruning settings!",text = HTML("It seems your current pruning input parameters don't make sense. It's very likely, that the whole vocabulary will be removed.
+                                                                         Check <a href='https://quanteda.io/reference/dfm_trim.html' title='quanteda pruning'> Quanteda Pruning Settings </a>"),html=TRUE,
+                           showCancelButton = T,showConfirmButton = T,confirmButtonText = "Continue anyway!",confirmButtonCol ="#d65f4a",closeOnEsc = T,closeOnClickOutside = T,
+                           type = "warning",inputId = "DE_pruning_continue",cancelButtonText = "Change Settings")
+  }
+  else{
+    #get pruning parameters
+    if(input$DE_termfreq_type=="count"){
+      min_t<-input$DE_min_termfreq_c
+      max_t<-input$DE_max_termfreq_c
+    }
+    if(input$DE_docfreq_type=="count"){
+      min_d<-input$DE_min_docfreq_c
+      max_d<-input$DE_max_docfreq_c
+    }
+    if(input$DE_termfreq_type=="rank"){
+      min_t<-input$DE_min_termfreq_r
+      max_t<-input$DE_max_termfreq_r
+    }
+    if(input$DE_docfreq_type=="rank"){
+      min_d<-input$DE_min_docfreq_r
+      max_d<-input$DE_max_docfreq_r
+    }
+    if(input$DE_termfreq_type=="prop"){
+      min_t<-input$DE_min_termfreq_p
+      max_t<-input$DE_max_termfreq_p
+    }
+    if(input$DE_docfreq_type=="prop"){
+      min_d<-input$DE_min_docfreq_p
+      max_d<-input$DE_max_docfreq_p
+    }
+    if(input$DE_termfreq_type=="quantile"){
+      min_t<-input$DE_min_termfreq_q
+      max_t<-input$DE_max_termfreq_q
+    }
+    if(input$DE_docfreq_type=="quantile"){
+      min_d<-input$DE_min_docfreq_q
+      max_d<-input$DE_max_docfreq_q
+    }
+    if(is.null(min_t))min_t<-NA
+    if(is.null(max_t))max_t<-NA
+    if(is.null(min_d))min_d<-NA
+    if(is.null(max_d))max_d<-NA
+    #save needed parameters
+    parameters<-list(collection=input$collection_selected,
+                     baseform_reduction=input$DE_baseform,
+                     min_char=input$DE_min_char,
+                     ngrams=input$DE_ngram,
+                     remove_stopwords=input$DE_remove_stopwords,
+                     lowercase=input$DE_lowercase,
+                     remove_numbers=input$DE_remove_numbers,
+                     remove_numbers_all=input$DE_remove_numbers_all,
+                     remove_punctuation=input$DE_remove_punctuation,
+                     remove_hyphenation=input$DE_remove_hyphenation,
+                     min_term=min_t,
+                     max_term=max_t,
+                     min_document=min_d,
+                     max_document=max_d,
+                     remove_custom=input$DE_remove_custom,
+                     consolidate_entities=input$DE_consolidate_entities,
+                     blacklist=input$DE_blacklist,
+                     reduce_POS=input$DE_POS_TYPES,
+                     reduce_NER=input$DE_ENTITY_TYPES,
+                     termfreq_type=input$DE_termfreq_type,
+                     docfreq_type=input$DE_docfreq_type,
+                     keep_custom=input$DE_keep_custom,
+                     use_blacklist=input$DE_use_custom_blacklist,
+                     use_whitelist=input$DE_use_custom_whitelist,
+                     whitelist=input$DE_whitelist,
+                     whitelist_expand=input$DE_whitelist_expand,
+                     whitelist_only=FALSE,
+                     de_context_filter_mode=input$DE_reg_exp,
+                     de_Context_Unit=input$DE_context_unit,
+                     de_context_filter=input$DE_Context_Filter,
+                     de_use_context_filter=input$DE_use_context_filter,
+                     de_use_reg_exp=input$DE_use_reg_exp,
+                     de_reg_exp=input$DE_regexp_input,
+                     Dictionary=input$DE_dict
+    )
+    #create process ID
+    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+    RMariaDB::dbBegin(conn = mydb)
+    used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+    RMariaDB::dbCommit(mydb)
+    RMariaDB::dbDisconnect(mydb)
+    ID<-sample(x = setdiff(1:1000,used_IDs),size = 1)
+    #save metadata for process
+    process_info<-list(ID,isolate(input$collection_selected),isolate(input$analysis_selected),as.character(Sys.time()))
+    #save logfile path
+    logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
+    #create logfile
+    write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
+    #save data needed in script execution 
+    save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
+    #start script
+    if(input$use_custom_script==TRUE && !is.null(input$custom_script_options)){
+      shinyalert::shinyalert(title = "Starting a custom script",text = "You are about to start a custom script. Caution with the calculation and results!",type = "info")
+      system(paste0('Rscript collections/scripts/Dictionary_Extraction/',input$custom_script_options,' &'))
+    }
+    else{
+      system(paste('Rscript collections/scripts/Dictionary_Extraction_Script.R','&'))
+      #show modal when process is started
+      showModal(modalDialog(
+        title = "Process started",
+        "The process was succesfully started. Check details in 'My Tasks'."
+      ))
+    }
+  }
+})
+
+
+
+
+
+#start script after continue anyway is clicked even though pruning settings seem to be wrong
+observeEvent(input$DE_pruning_continue,ignoreInit = T,{
+  validate(
+    need(isTRUE(input$DE_pruning_continue),message=F)
+  )
+  #get pruning parameters
+  if(input$DE_termfreq_type=="count"){
+    min_t<-input$DE_min_termfreq_c
+    max_t<-input$DE_max_termfreq_c
+  }
+  if(input$DE_docfreq_type=="count"){
+    min_d<-input$DE_min_docfreq_c
+    max_d<-input$DE_max_docfreq_c
+  }
+  if(input$DE_termfreq_type=="rank"){
+    min_t<-input$DE_min_termfreq_r
+    max_t<-input$DE_max_termfreq_r
+  }
+  if(input$DE_docfreq_type=="rank"){
+    min_d<-input$DE_min_docfreq_r
+    max_d<-input$DE_max_docfreq_r
+  }
+  if(input$DE_termfreq_type=="prop"){
+    min_t<-input$DE_min_termfreq_p
+    max_t<-input$DE_max_termfreq_p
+  }
+  if(input$DE_docfreq_type=="prop"){
+    min_d<-input$DE_min_docfreq_p
+    max_d<-input$DE_max_docfreq_p
+  }
+  if(input$DE_termfreq_type=="quantile"){
+    min_t<-input$DE_min_termfreq_q
+    max_t<-input$DE_max_termfreq_q
+  }
+  if(input$DE_docfreq_type=="quantile"){
+    min_d<-input$DE_min_docfreq_q
+    max_d<-input$DE_max_docfreq_q
+  }
+  if(is.null(min_t))min_t<-NA
+  if(is.null(max_t))max_t<-NA
+  if(is.null(min_d))min_d<-NA
+  if(is.null(max_d))max_d<-NA
+  #save needed parameters
+  parameters<-list(collection=input$collection_selected,
+                   baseform_reduction=input$DE_baseform,
+                   min_char=input$DE_min_char,
+                   ngrams=input$DE_ngram,
+                   remove_stopwords=input$DE_remove_stopwords,
+                   lowercase=input$DE_lowercase,
+                   remove_numbers=input$DE_remove_numbers,
+                   remove_numbers_all=input$DE_remove_numbers_all,
+                   remove_punctuation=input$DE_remove_punctuation,
+                   remove_hyphenation=input$DE_remove_hyphenation,
+                   min_term=min_t,
+                   max_term=max_t,
+                   min_document=min_d,
+                   max_document=max_d,
+                   min_cooc_freq=input$DE_min_Cooc_Freq,
+                   cooc_window=input$DE_cooc_type,
+                   remove_custom=input$DE_remove_custom,
+                   consolidate_entities=input$DE_consolidate_entities,
+                   blacklist=input$DE_blacklist,
+                   reduce_POS=input$DE_POS_TYPES,
+                   reduce_NER=input$DE_ENTITY_TYPES,
+                   termfreq_type=input$DE_termfreq_type,
+                   docfreq_type=input$DE_docfreq_type,
+                   keep_custom=input$DE_keep_custom,
+                   use_blacklist=input$DE_use_custom_blacklist,
+                   use_whitelist=input$DE_use_custom_whitelist,
+                   whitelist=input$DE_whitelist,
+                   whitelist_expand=input$DE_whitelist_expand,
+                   whitelist_only=FALSE,
+                   de_context_filter_mode=input$DE_reg_exp,
+                   de_Context_Unit=input$DE_context_unit,
+                   de_context_filter=input$DE_Context_Filter,
+                   de_use_context_filter=input$DE_use_context_filter,
+                   de_use_reg_exp=input$DE_use_reg_exp,
+                   de_reg_exp=input$DE_regexp_input,
+                   Dictionary=input$DE_dict
+  )
+  #create process ID
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+  RMariaDB::dbBegin(conn = mydb)
+  used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+  RMariaDB::dbCommit(mydb)
+  RMariaDB::dbDisconnect(mydb)
+  ID<-sample(x = setdiff(1:1000,used_IDs),size = 1)
+  #save metadata for process
+  process_info<-list(ID,isolate(input$collection_selected),isolate(input$analysis_selected),as.character(Sys.time()))
+  #save logfile path
+  logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
+  #create logfile
+  write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
+  #save data needed in script execution 
+  save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
+  #start script
+  if(input$use_custom_script==TRUE && !is.null(input$custom_script_options)){
+    shinyalert::shinyalert(title = "Starting a custom script",text = "You are about to start a custom script. Caution with the calculation and results!",type = "info")
+    system(paste0('Rscript collections/scripts/Dictionary_Extraction/',input$custom_script_options,' &'))
+  }
+  else{
+    system(paste('Rscript collections/scripts/Dictionary_Extraction_Script.R','&'))
+    #show modal when process is started
+    showModal(modalDialog(
+      title = "Process started",
+      "The process was succesfully started. Check details in 'My Tasks'."
+    ))
+  }
+})

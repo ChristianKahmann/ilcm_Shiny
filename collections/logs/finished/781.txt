@@ -1,0 +1,53 @@
+Task ID: <b>781</b>
+Collection: <b> alle</b>
+Task: <b>Frequency_Extraction</b>
+Started at: <b>2019-07-19 13:36:45</b>
+
+
+2019-07-19 13:36:46: <b>Step 1/9: Loading collection</b>
+2019-07-19 13:36:46:   <b style='color:green'> ✔ </b> Finished loading collection
+2019-07-19 13:36:46: <b>Step 2/9: Loading data from database</b>
+2019-07-19 13:38:12:   <b style='color:green'> ✔ </b>  Finished loading data from database
+2019-07-19 13:38:12: <b>Step 3/9: Sanity check</b>
+2019-07-19 13:38:12: &emsp; token object not empty?
+2019-07-19 13:38:12: &emsp; ✔
+2019-07-19 13:38:12: &emsp; stopwords available for specified language?
+2019-07-19 13:38:12: &emsp; ✔
+2019-07-19 13:38:12:   <b style='color:green'> ✔ </b>  Finished sanity checks
+2019-07-19 13:38:12: <b>Step 4/9: Preparing input parameters</b>
+2019-07-19 13:38:12:   <b style='color:green'> ✔ </b>  Finished preparing input parameters
+2019-07-19 13:38:12: <b>Step 5/9: Preparing token object</b>
+2019-07-19 13:38:16: &emsp; Finished filtering for pos types
+2019-07-19 13:38:16:   <b style='color:green'> ✔ </b>  Finished preparing token object
+2019-07-19 13:38:16: <b>Step 6/9: Calculating DTM</b>
+2019-07-19 13:38:17: &emsp; split corpus in 71 chunks
+2019-07-19 13:38:22: &emsp; 10% of documents processed (136)
+2019-07-19 13:38:27: &emsp; 20% of documents processed (255)
+2019-07-19 13:38:31: &emsp; 30% of documents processed (374)
+2019-07-19 13:38:36: &emsp; 40% of documents processed (493)
+2019-07-19 13:38:41: &emsp; 50% of documents processed (612)
+2019-07-19 13:38:46: &emsp; 60% of documents processed (731)
+2019-07-19 13:38:51: &emsp; 70% of documents processed (850)
+2019-07-19 13:38:55: &emsp; 80% of documents processed (969)
+2019-07-19 13:39:00: &emsp; 90% of documents processed (1088)
+2019-07-19 13:39:05: &emsp; 100% of documents processed (1207)
+2019-07-19 13:39:05: &emsp; Pruning of documents
+2019-07-19 13:39:05: &emsp; Finished pruning of documents
+2019-07-19 13:39:05:   <b style='color:green'> ✔ </b>  Finished pre-processing with 1204 documents and  6123 features
+2019-07-19 13:39:05: <b>Step 7/9: Calculating frequencies</b>
+2019-07-19 13:39:05: &emsp; Calculating frequencies on daily basis
+2019-07-19 13:39:06: &emsp;  ✔ 
+2019-07-19 13:39:06: &emsp; Calculating frequencies on weekly basis
+2019-07-19 13:39:06: &emsp;  ✔ 
+2019-07-19 13:39:06: &emsp; Calculating frequencies on montly basis
+2019-07-19 13:39:06: &emsp;  ✔ 
+2019-07-19 13:39:06: &emsp; Calculating frequencies on annual basis
+2019-07-19 13:39:06: &emsp;  ✔ 
+2019-07-19 13:39:06: &emsp; Calculating relative frequencies
+2019-07-19 13:39:06: &emsp;  ✔ 
+2019-07-19 13:39:06:   <b style='color:green'> ✔ </b>  Finished calculating frequencies
+2019-07-19 13:39:06: <b>Step 8/9: Saving results</b>
+2019-07-19 13:39:07:    <b style='color:green'> ✔ </b> Finished saving results
+2019-07-19 13:39:07: <b>Step 9/9: Writing task parameter to database</b>
+2019-07-19 13:39:07:  <b style='color:green'> ✔ </b>  Finished writing task parameter
+2019-07-19 13:39:07:  <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Term Frequency Extraction </b>

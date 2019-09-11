@@ -1,0 +1,120 @@
+
+#select_sidebar {
+  font-weight: normal;
+  font-size: 75%;
+}
+
+#deval_link {
+  all: initial;
+  * {
+    all: unset;
+  }
+}
+
+#ul_link {
+  all: initial;
+  * {
+    all: unset;
+  }
+}
+
+#deval_link {
+  display:block;
+  cursor:pointer;
+  margin:auto;
+  background: url(DEval_EN_CMYK.svg);
+
+  background-position:center;
+  text-indent: -9999px;
+    width:100px;
+  height: 82px;
+  background-size: 100px 82px;
+  background-repeat: none;
+}
+
+#ul_link {
+ display:block;
+  cursor:pointer;
+  margin:auto;
+  
+  background: url(Universität_Leipzig_logo.svg);
+  width:140px;
+  background-position:center;
+  text-indent: -9999px;
+  height: 62px;
+  background-size: 140px 82px;
+  background-repeat: none;
+  
+}
+
+
+#DataTables_Table_0 tbody{
+ font-family:Tahoma, Geneva, sans-serif;
+  font-weight: normal;
+  font-size: 90%;
+}
+
+#TS_config button{
+   font-size: 80%;
+}
+
+#TS_config {
+   font-size: 80%;
+}
+
+#TS_config #TS_download_memory{
+   font-size: 80%;
+}
+
+
+[class*="col-lg-"],[class*="col-md-"],
+[class*="col-sm-"],[class*="col-xs-"]{
+    padding-right:5 !important;
+    padding-left:0 !important;
+}
+
+.times{
+  color:#D93049;
+}
+
+.check{
+  color:#3DE631;
+}
+
+
+#trash {
+	width:100%;
+	height:30px;
+	background: #ccc;
+	text-align:center;
+	font-weight:bold;
+	color:#fff;
+	margin-top:10px;
+	padding-top:10px;
+}
+
+#Anno-trash {
+	width:100%;
+	height:30px;
+	background: #ccc;
+	text-align:center;
+	font-weight:bold;
+	color:#fff;
+	margin-top:10px;
+	padding-top:10px;
+}
+
+#Doc-trash {
+	width:100%;
+	height:30px;
+	background: #ccc;
+	text-align:center;
+	font-weight:bold;
+	color:#fff;
+	margin-top:10px;
+	padding-top:10px;
+}
+
+
+
+

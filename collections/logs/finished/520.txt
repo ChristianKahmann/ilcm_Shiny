@@ -1,0 +1,51 @@
+Task ID: <b>520</b>
+Collection: <b> alle</b>
+Task: <b>Cooccurrence_Analysis</b>
+Started at: <b>2019-07-23 15:48:59</b>
+
+
+2019-07-23 15:49:00: <b>Step 1/9: Loading collection</b>
+2019-07-23 15:49:00:   <b style='color:green'> ✔ </b> Finished loading collection
+2019-07-23 15:49:00: <b>Step 2/9: Loading data from database</b>
+2019-07-23 15:50:53:   <b style='color:green'> ✔ </b>  Finished loading data from database
+2019-07-23 15:50:53: <b>Step 3/9: Sanity check</b>
+2019-07-23 15:50:53: &emsp; token object not empty?
+2019-07-23 15:50:53: &emsp; ✔
+2019-07-23 15:50:53:   <b style='color:green'> ✔ </b>  Finished sanity checks
+2019-07-23 15:50:53: <b>Step 4/9: Preparing input parameters</b>
+2019-07-23 15:50:53:   <b style='color:green'> ✔ </b>  Finished preparing input parameters
+2019-07-23 15:50:53: <b>Step 5/9: Preparing token object</b>
+2019-07-23 15:50:53: &emsp; Consolidating...
+2019-07-23 15:58:53: &emsp; Finished consolidating entities
+2019-07-23 15:59:18: &emsp; Finished filtering for pos types
+2019-07-23 15:59:18:   <b style='color:green'> ✔ </b>  Finished preparing token object
+2019-07-23 15:59:18: <b>Step 6/9: Calculating DTM</b>
+2019-07-23 15:59:21: &emsp; split corpus in 62 chunks
+2019-07-23 15:59:34: &emsp; 10% of documents processed (240555)
+2019-07-23 15:59:44: &emsp; 20% of documents processed (446745)
+2019-07-23 15:59:54: &emsp; 30% of documents processed (652935)
+2019-07-23 16:00:04: &emsp; 40% of documents processed (859125)
+2019-07-23 16:00:15: &emsp; 50% of documents processed (1065315)
+2019-07-23 16:00:23: &emsp; 60% of documents processed (1271505)
+2019-07-23 16:00:32: &emsp; 70% of documents processed (1477695)
+2019-07-23 16:00:40: &emsp; 80% of documents processed (1683885)
+2019-07-23 16:00:48: &emsp; 90% of documents processed (1890075)
+2019-07-23 16:00:57: &emsp; 100% of documents processed (2130630)
+2019-07-23 16:00:58: &emsp; Pruning of documents
+2019-07-23 16:00:58: &emsp; Finished pruning of documents
+2019-07-23 16:00:59:   <b style='color:green'> ✔ </b>  Finished pre-processing with 1099680 documents and  45314 features
+2019-07-23 16:00:59: <b>Step 7/9: Calculating Co-occurrences</b>
+2019-07-23 16:00:59: &emsp; Calculating coocs with Dice-Significance measure
+2019-07-23 16:01:01: &emsp;  ✔ 
+2019-07-23 16:01:01: &emsp; Calculating coocs with Count measure
+2019-07-23 16:01:03: &emsp;  ✔ 
+2019-07-23 16:01:04: &emsp; Calculating coocs with Mutual Information measure
+2019-07-23 16:01:06: &emsp;  ✔ 
+2019-07-23 16:01:07: &emsp; Calculating coocs with Log-likelihood measure
+2019-07-23 16:01:10: &emsp;  ✔ 
+2019-07-23 16:01:12:   <b style='color:green'> ✔ </b>  Finished calculating co-occurrences
+2019-07-23 16:01:12: <b>Step 8/9: Saving results</b>
+2019-07-23 16:01:46:    <b style='color:green'> ✔ </b> Finished saving results
+2019-07-23 16:01:46: <b>Step 9/9: Writing task parameter to database</b>
+2019-07-23 16:01:47:  <b style='color:green'> ✔ </b>  Finished writing task parameter
+2019-07-23 16:01:47:  <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Cooccurrences </b>
