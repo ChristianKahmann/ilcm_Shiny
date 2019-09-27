@@ -880,7 +880,7 @@ observeEvent(input$TM_dict_save,{
 
 output$TM_meta_ui<-renderUI({
   validate(
-    need(file.exists(paste0(values$Details_Data_TM,"/meta_TM.RData")),message="no detailed metadata analyis selected in task sheduler")
+    need(file.exists(paste0(values$Details_Data_TM,"/meta_TM.RData")),message="no detailed metadata analyis selected in task scheduler")
   )
   load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
   #browser()

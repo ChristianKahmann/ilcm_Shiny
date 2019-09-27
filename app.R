@@ -36,7 +36,6 @@ library(dplyr)
 library(shinyBS)
 library(d3heatmap)
 library(shinycssloaders)
-
 library(sparkline)
 library(shinyjs)
 library(promises)
