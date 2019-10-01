@@ -4,11 +4,17 @@
 .Ruserdata
 /data_import/processed_data/*
 
-/collections/collections
+/collections/collections/*
+/collections/annotation_schemes/*
+!/collections/annotation_schemes/.gitkeep
+!/collections/collections/.gitkeep
 /collections/results
 /collections/logs/running/*
+!/collections/logs/running/.gitkeep
 /collections/logs/finished/*
+!/collections/logs/finished/.gitkeep
 /collections/logs/failed/*
+!/collections/logs/failed/.gitkeep
 /collections/dictionaries
 /collections/annotation_schemes
 /Weiteres/*
@@ -16,5 +22,8 @@
 /collections/annotation_schemes/
 /collections/blacklists/*
 /collections/whitelists/*
-/data_import/
+/data_import/processed_data/*
+/data_import/unprocessed_data/*
+!/data_import/processed_data/.gitkeep
+!/data_import/unprocessed_data/.gitkeep
 packrat/lib*/
