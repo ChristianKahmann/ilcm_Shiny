@@ -1,5 +1,5 @@
 output$datasets_avaiable<-renderUI({
-  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
+    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
   RMariaDB::dbBegin(conn = mydb)
   RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
   RMariaDB::dbSendStatement(mydb, 'SET SQL_SAFE_UPDATES = 0;')
