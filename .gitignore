@@ -16,5 +16,4 @@
 /collections/annotation_schemes/
 /collections/blacklists/*
 /collections/whitelists/*
-/data_import/
 packrat/lib*/
