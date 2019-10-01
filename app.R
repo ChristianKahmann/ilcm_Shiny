@@ -39,8 +39,8 @@ library(sparkline)
 library(shinyjs)
 library(promises)
 library(future)
-library(Factoshiny)
-library(FactoMineR)
+#library(Factoshiny)
+#library(FactoMineR)
 plan(multiprocess)
 #killDbConnections <- function () {
 #  
