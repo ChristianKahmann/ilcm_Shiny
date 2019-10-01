@@ -1,7 +1,7 @@
 ##no docker##
-url<-'http://0.0.0.0:3842/solr/iLCM/select/'
+url<-'http://0.0.0.0:8983/solr/iLCM/select/'
 update_solr_url<-'0.0.0.0'
-update_solr_port<-'3842'
+update_solr_port<-'8983'
 host<-'0.0.0.0'
 version<-"0.9.8"
 db_port='3306'
