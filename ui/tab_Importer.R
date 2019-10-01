@@ -17,7 +17,7 @@ tabPanel("Importer",
                                                             textInput(inputId = "import_load_csv_encoding",label = "encoding:",value = "UTF-8")
                                                         ),
                                                         withBusyIndicatorUI(
-                                                          shinyBS::bsButton(inputId = "Import_load_csv",label = "import csv",icon = icon("upload"),style = "info")
+                                                          shinyBS::bsButton(inputId = "Import_load_csv",label = "use selected csv",icon = icon("upload"),style = "info")
                                                         ),
                                                         
                                                         conditionalPanel(condition='output.data_load_csv_success==true',
@@ -217,17 +217,21 @@ tabPanel("Importer",
                                                                          #tags$img(src="success.svg"),
                                                                          #tags$br(),
                                                                          fluidRow(style="margin-left:0px;margin-right:0px",
-                                                                                  fileInput(inputId = "Import_mtf_metadata_csv", label = "Choose CSV File containing metadata",
-                                                                                            accept = c(
-                                                                                              "text/csv",
-                                                                                              "text/comma-separated-values,text/plain",
-                                                                                              ".csv")
-                                                                                  )%>%
-                                                                                    shinyInput_label_embed(
-                                                                                      icon("info") %>%
-                                                                                        bs_embed_tooltip(title = "The files are imported in alphabetical order based on their filenames. Please make sure, that the order of the rows in the metadata csv corresponds to this chronology.")
-                                                                                    ),
-                                                                                  checkboxInput("Import_mtf_metadata_csv_header", "Header", TRUE),
+                                                                                  box(width=2,title = "CSV-Parameters",status = "primary",collapsible = T,
+                                                                                      fileInput(inputId = "Import_mtf_metadata_csv", label = "Choose CSV File containing metadata",
+                                                                                                accept = c(
+                                                                                                  "text/csv",
+                                                                                                  "text/comma-separated-values,text/plain",
+                                                                                                  ".csv")
+                                                                                      )%>%
+                                                                                        shinyInput_label_embed(
+                                                                                          icon("info") %>%
+                                                                                            bs_embed_tooltip(title = "The files are imported in alphabetical order based on their filenames. Please make sure, that the order of the rows in the metadata csv corresponds to this chronology.")
+                                                                                        ),
+                                                                                      prettyCheckbox(inputId = "Import_mtf_metadata_csv_header",label = "header?",value = TRUE,status = "primary",shape = "curve"),
+                                                                                      textInput(inputId = "import_load_mtf_seperator",label = "seperator:",value = ","),
+                                                                                      textInput(inputId = "import_load_mtf_encoding",label = "encoding:",value = "UTF-8")
+                                                                                  ),
                                                                                   shinyBS::bsButton(inputId = "Import_check_mtf",label = "check import",icon = icon("search"),style = "primary"),
                                                                                   shinyBS::bsButton(inputId = "Import_start_mapping_mtf",label = "start mapping",icon = icon("play"),style="info")
                                                                          ),
@@ -420,15 +424,9 @@ tabPanel("Importer",
            ),
            tabPanel(
              "Upload Data to DB and Solr",
-             conditionalPanel(
-               condition = "$('html').hasClass('shiny-busy')",
-               p("Uploading...(This might take several minutes)"),
-               
-               tags$img(src = "busy.gif")
-             ),
              shinyWidgets::prettyRadioButtons(
                inputId = "Import_Files",
-               label = "avaiable data for upload",
+               label = "available data for upload",
                choices = unique(
                  stringr::str_replace(
                    string = stringr::str_replace_all(
@@ -445,17 +443,21 @@ tabPanel("Importer",
                selected = character(0)
              ),
              tags$br(),
-             shinyBS::bsButton(
-               inputId = "Upload_Data",
-               label = "Upload selected data to DB",
-               icon = icon("database"),
-               style = "default"
+             withBusyIndicatorUI(
+               shinyBS::bsButton(
+                 inputId = "Upload_Data",
+                 label = "Upload selected data to DB",
+                 icon = icon("database"),
+                 style = "default"
+               )
              ),
-             shinyBS::bsButton(
-               inputId = "Import_to_solr",
-               label = "Import data to solr",
-               icon = icon("upload"),
-               style = "default"
+             withBusyIndicatorUI(
+               shinyBS::bsButton(
+                 inputId = "Import_to_solr",
+                 label = "Import data to solr",
+                 icon = icon("upload"),
+                 style = "default"
+               )
              )
            )
          ))

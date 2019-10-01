@@ -22,10 +22,38 @@ output$UI_Import_csv_file<-renderUI({
   validate(
     need(length(list.files("data_import/unprocessed_data/",pattern = ".csv"))>0,message=FALSE)
   )
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_files",label = "CSV Files",
-                                   choices = stringr::str_replace_all(string = list.files("data_import/unprocessed_data/",pattern = ".csv"),pattern = ".txt",replacement = ""),
-                                   fill=T,animation = "pulse",selected = character(0))
+  values$invalidate_csv_files
+  return(
+    tagList(
+      
+      shinyWidgets::prettyRadioButtons(inputId = "Import_csv_files",label = "CSV Files",
+                                       choices = stringr::str_replace_all(string = list.files("data_import/unprocessed_data/",pattern = ".csv"),pattern = ".txt",replacement = ""),
+                                       fill=T,animation = "pulse",selected = character(0)),
+      
+      fileInput(inputId = "Import_csv_new",label = "Upload new CSV",multiple = F,accept = ".csv",width = "50%")
+    )
+  )
 })
+
+observeEvent(input$Import_csv_new,ignoreInit = T,{
+  validate(
+    need(
+      !is.null(input$Import_csv_new),message=F
+    )
+  )
+  print(input$Import_csv_new)
+  if(file.exists(paste0("data_import/unprocessed_data/",input$Import_csv_new$name))){
+    shinyalert::shinyalert(title = "Filename already used",text = "Please rename your csv file and then try to upload it again.",type = "warning")
+  }
+  else{
+    file.copy(from = input$Import_csv_new$datapath,to = paste0("data_import/unprocessed_data/",input$Import_csv_new$name))
+    values$invalidate_csv_files<-runif(1,0,1)
+    shinyalert::shinyalert(title = "File added",text = "You can now select it in the list of files above",type = "success")
+  }
+})
+
+
+
 
 observeEvent(input$Import_load_csv,{
   withBusyIndicatorServer("Import_load_csv", {
@@ -1028,15 +1056,21 @@ observeEvent(input$Import_csv_start_preprocess,{
               meta_metadata[,"mde9"]<-NULL
             }
             #save needed parameters
-            parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
+            parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
+            #create process ID
+            mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+            RMariaDB::dbBegin(conn = mydb)
+            used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+            RMariaDB::dbDisconnect(mydb)
+            ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
             #save metadata for process
-            process_info<-list(round(runif(1)*1000),paste("New Data - ",input$Import_csv_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
+            process_info<-list(ID,paste("New Data - ",input$Import_csv_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
             #save logfile path
             logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
             #create logfile
-            write(unlist(process_info),file = paste("collections/logs/running/",process_info[[1]],".txt",sep=""))
+            write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
             #save data needed in script execution 
-            save(process_info,parameters,logfile,file="collections/tmp/tmp.RData")
+            save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
             #start script
             system(paste('Rscript collections/scripts/Import_Script.R','&'))
             #show modal when process is started
@@ -1107,15 +1141,21 @@ observeEvent(input$Import_csv_start_preprocess_and_write,{
               meta_metadata[,"mde9"]<-NULL
             }
             #save needed parameters
-            parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
+            parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
+            #create process ID
+            mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+            RMariaDB::dbBegin(conn = mydb)
+            used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+            RMariaDB::dbDisconnect(mydb)
+            ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
             #save metadata for process
-            process_info<-list(round(runif(1)*1000),paste("New Data - ",input$Import_csv_dataset,sep=""),"Import csv files",as.character(Sys.time()))
+            process_info<-list(ID,paste("New Data - ",input$Import_csv_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
             #save logfile path
             logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
             #create logfile
-            write(unlist(process_info),file = paste("collections/logs/running/",process_info[[1]],".txt",sep=""))
+            write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
             #save data needed in script execution 
-            save(process_info,parameters,logfile,file="collections/tmp/tmp.RData")
+            save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
             #start script
             system(paste('Rscript collections/scripts/Import_Script.R','&'))
             #show modal when process is started
@@ -1163,10 +1203,47 @@ output$UI_Import_mtf_file<-renderUI({
   validate(
     need(length(list.dirs("data_import/unprocessed_data/"))>1,message=FALSE)
   )
-  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_files",label = "Directory",
-                                   choices = stringr::str_replace(string=list.dirs("data_import/unprocessed_data/")[-1],pattern="data_import/unprocessed_data//",replacement=""),
-                                   fill=T,animation = "pulse",selected = character(0))
+  values$invalidate_mtf_files
+  return(
+    tagList(
+      
+      shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_files",label = "Directory",
+                                       choices = stringr::str_replace(string=list.dirs("data_import/unprocessed_data/")[-1],pattern="data_import/unprocessed_data//",replacement=""),
+                                       fill=T,animation = "pulse",selected = character(0)),
+      
+      fileInput(inputId = "Import_mtf_new",label = "Upload new text files",multiple = T,width = "50%")
+    ))
+  
 })
+
+observeEvent(input$Import_mtf_new,ignoreInit = T,{
+  validate(
+    need(
+      !is.null(input$Import_mtf_new),message=F
+    )
+  )
+  
+  print(input$Import_mtf_new)
+  dir_name<-uuid::UUIDgenerate(use.time = T)
+  dir.create(recursive = T,path = paste0("data_import/unprocessed_data/",dir_name))
+  values$Import_mtf_new_directory_name_uuid<- paste0("data_import/unprocessed_data/",dir_name)
+  for(i in 1:dim(input$Import_mtf_new)[1]){
+    file.copy(from = input$Import_mtf_new$datapath[i],to = paste0("data_import/unprocessed_data/",dir_name,"/",input$Import_mtf_new$name[i]))
+  }
+  showModal(modalDialog(size = "s",
+                        textInput(inputId = "Import_mtf_new_name",label = "Name new directory",placeholder = "new directory name"),
+                        bsButton(inputId = "Import_mtf_new_name_button",label = "Save",icon = icon("save"),style = "success")
+  ))
+})
+
+observeEvent(ignoreInit = T,input$Import_mtf_new_name_button,{
+  file.rename(from =values$Import_mtf_new_directory_name_uuid ,to =paste0("data_import/unprocessed_data/",input$Import_mtf_new_name))
+  removeModal()
+  shinyalert::shinyalert(title = "File added",text = "You can now select it in the list of files above",type = "success")
+  values$invalidate_mtf_files<-runif(1,0,1)
+})
+
+
 
 observeEvent(input$Import_load_mtf,{
   withBusyIndicatorServer("Import_load_mtf", {
@@ -2186,18 +2263,25 @@ observeEvent(input$Import_mtf_start_preprocess,{
             }
             #save needed parameters
             parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
+            #create process ID
+            mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+            RMariaDB::dbBegin(conn = mydb)
+            used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+            RMariaDB::dbDisconnect(mydb)
+            ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
             #save metadata for process
-            process_info<-list(round(runif(1)*1000),paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
+            process_info<-list(ID,paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
             #save logfile path
             logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
             #create logfile
-            write(unlist(process_info),file = paste("collections/logs/running/",process_info[[1]],".txt",sep=""))
+            write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
             #save data needed in script execution 
-            save(process_info,parameters,logfile,file="collections/tmp/tmp.RData")
+            save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
             #start script
             system(paste('Rscript collections/scripts/Import_Script.R','&'))
             #show modal when process is started
             shinyalert::shinyalert(title = "Started Import Script",type = "success")
+            
           }
         }
       }
@@ -2265,15 +2349,22 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
             }
             #save needed parameters
             parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
+            #create process ID
+            mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+            RMariaDB::dbBegin(conn = mydb)
+            used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+            RMariaDB::dbDisconnect(mydb)
+            ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
             #save metadata for process
-            process_info<-list(round(runif(1)*1000),paste("New Data - ",input$Import_mtf_dataset,sep=""),"Import new data",as.character(Sys.time()))
+            process_info<-list(ID,paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
             #save logfile path
             logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
             #create logfile
-            write(unlist(process_info),file = paste("collections/logs/running/",process_info[[1]],".txt",sep=""))
+            write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
             #save data needed in script execution 
-            save(process_info,parameters,logfile,file="collections/tmp/tmp.RData")
+            save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
             #start script
+            system(paste('Rscript collections/scripts/Import_Script.R','&'))
             #show modal when process is started
             shinyalert::shinyalert(title = "Started Import Script",type = "success")
           }
@@ -2305,128 +2396,131 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
 
 observeEvent(input$Upload_Data,{
   #check if already imported
-  if(is.null(input$Import_Files)){
-    shinyalert::shinyalert(title = "no import file specified",text = "please specify a file you want to import!",type = "warning")
-  }
-  else{
-    meta_metadata<-readr::read_csv(file=paste0("data_import/processed_data/metameta_",input$Import_Files,".csv"))
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
-    a<-readr::read_csv(file = paste0("data_import/processed_data/meta_",input$Import_Files,".csv"),col_names = FALSE)[1,c(1,2)]
-    b<-RMariaDB::dbGetQuery(mydb,paste0("Select title from documents where id_doc=",a[1,2]," and dataset='",a[1,1],"' limit 1;"))
-    if(dim(b)[1]!=0){
-      shinyWidgets::sendSweetAlert(type = "warning",session = session,title =  "Data seems to be uploaded already")
+  withBusyIndicatorServer("Upload_Data", {
+    if(is.null(input$Import_Files)){
+      shinyalert::shinyalert(title = "no import file specified",text = "please specify a file you want to import!",type = "warning")
     }
     else{
-      if(dim(meta_metadata)[2]==1){
-        query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/meta_",input$Import_Files,".csv","' INTO TABLE ilcm.documents  CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' 
-                    (dataset,id_doc,title,body,date,token,language",",entities) ;")
-        rs<- dbSendQuery(mydb, query)
+      meta_metadata<-readr::read_csv(file=paste0("data_import/processed_data/metameta_",input$Import_Files,".csv"))
+      mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
+      a<-readr::read_csv(file = paste0("data_import/processed_data/meta_",input$Import_Files,".csv"),col_names = FALSE)[1,c(1,2)]
+      b<-RMariaDB::dbGetQuery(mydb,paste0("Select title from documents where id_doc=",a[1,2]," and dataset='",a[1,1],"' limit 1;"))
+      if(dim(b)[1]!=0){
+        shinyWidgets::sendSweetAlert(type = "warning",session = session,title =  "Data seems to be uploaded already")
       }
       else{
-        query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/meta_",input$Import_Files,".csv","' INTO TABLE ilcm.documents CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' 
-                    (dataset,id_doc,title,body,date,token,language,",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],collapse=","),",entities) ;")
-        rs<- dbSendQuery(mydb, query)
-      }
-      query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/token_",input$Import_Files,".csv","' INTO TABLE ilcm.token CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","';")
-      rs<- RMariaDB::dbSendStatement(mydb, query)
-      
-      try({
         if(dim(meta_metadata)[2]==1){
-          query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/metameta_",input$Import_Files,".csv","' INTO TABLE ilcm.metadata_names CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' IGNORE 1 LINES (dataset",");")
+          query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/meta_",input$Import_Files,".csv","' INTO TABLE ilcm.documents  CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' 
+                    (dataset,id_doc,title,body,date,token,language",",entities) ;")
           rs<- dbSendQuery(mydb, query)
         }
         else{
-          query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/metameta_",input$Import_Files,".csv","' INTO TABLE ilcm.metadata_names CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' IGNORE 1 LINES (dataset,",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],collapse=","),");")
+          query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/meta_",input$Import_Files,".csv","' INTO TABLE ilcm.documents CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' 
+                    (dataset,id_doc,title,body,date,token,language,",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],collapse=","),",entities) ;")
           rs<- dbSendQuery(mydb, query)
         }
+        query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/token_",input$Import_Files,".csv","' INTO TABLE ilcm.token CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","';")
+        rs<- RMariaDB::dbSendStatement(mydb, query)
+        
+        try({
+          if(dim(meta_metadata)[2]==1){
+            query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/metameta_",input$Import_Files,".csv","' INTO TABLE ilcm.metadata_names CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' IGNORE 1 LINES (dataset",");")
+            rs<- dbSendQuery(mydb, query)
+          }
+          else{
+            query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/metameta_",input$Import_Files,".csv","' INTO TABLE ilcm.metadata_names CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' IGNORE 1 LINES (dataset,",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],collapse=","),");")
+            rs<- dbSendQuery(mydb, query)
+          }
+        }
+        )
+        #update meta tables in database
+        data<-data.frame(readtext::readtext(file =paste0("data_import/processed_data/meta_",input$Import_Files,".csv") ),stringsAsFactors = F)
+        #date
+        dates<-unique(data[,6])
+        dates<-cbind(rep(data[1,2],length(dates)),dates)
+        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_date (dataset, date) values ",paste(sprintf("('%s', %s)", dates[,1], dates[,2]), collapse=', ') ,";"))
+        #token
+        token<-unique(data[,7])
+        token<-cbind(rep(data[1,2],length(token)),token)
+        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, token) values ",paste(sprintf("('%s', %s)", token[,1], token[,2]), collapse=', ') ,";"))
+        #mde1
+        try({
+          mde1<-unique(data[,9])
+          mde1<-cbind(rep(data[1,2],length(mde1)),mde1)
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde1) values ",paste(sprintf("('%s', %s)", mde1[,1], mde1[,2]), collapse=', ') ,";"))
+        })
+        #mde2
+        try({
+          mde2<-unique(data[,10])
+          mde2<-cbind(rep(data[1,2],length(mde2)),mde2)
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde2) values ",paste(sprintf("('%s', %s)", mde2[,1], mde2[,2]), collapse=', ') ,";"))
+        })
+        #mde3
+        try({
+          mde3<-unique(data[,11])
+          mde3<-cbind(rep(data[1,2],length(mde3)),mde3)
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde3) values ",paste(sprintf("('%s', %s)", mde3[,1], mde3[,2]), collapse=', ') ,";"))
+        })
+        #mde4
+        try({
+          mde4<-unique(data[,12])
+          mde4<-cbind(rep(data[1,2],length(mde4)),mde4)
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde4) values ",paste(sprintf("('%s', %s)", mde4[,1], mde4[,2]), collapse=', ') ,";"))
+        })
+        #mde5
+        try({
+          mde5<-unique(data[,13])
+          mde5<-cbind(rep(data[1,2],length(mde5)),mde5)
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde5) values ",paste(sprintf("('%s', %s)", mde5[,1], mde5[,2]), collapse=', ') ,";"))
+        })
+        #mde6
+        try({
+          mde6<-unique(data[,14])
+          mde6<-cbind(rep(data[1,2],length(mde6)),mde6)
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde6) values ",paste(sprintf("('%s', %s)", mde6[,1], mde6[,2]), collapse=', ') ,";"))
+        })
+        #mde7
+        try({
+          mde7<-unique(data[,15])
+          mde7<-cbind(rep(data[1,2],length(mde7)),mde7)
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde7) values ",paste(sprintf("('%s', %s)", mde7[,1], mde7[,2]), collapse=', ') ,";"))
+        })
+        #mde8
+        try({
+          mde8<-unique(data[,16])
+          mde8<-cbind(rep(data[1,2],length(mde8)),mde8)
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde8) values ",paste(sprintf("('%s', %s)", mde8[,1], mde8[,2]), collapse=', ') ,";"))
+        })
+        #mde9
+        try({
+          mde9<-unique(data[,17])
+          mde9<-cbind(rep(data[1,2],length(mde9)),mde9)
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde9) values ",paste(sprintf("('%s', %s)", mde9[,1], mde9[,2]), collapse=', ') ,";"))
+        })
+        
+        
+        shinyWidgets::sendSweetAlert(type = "success",session = session,title =  "successfully imported data to database")
+        values$update_datasets_avaiable<-runif(1,0,1)
       }
-      )
-      #update meta tables in database
-      data<-data.frame(readtext::readtext(file =paste0("data_import/processed_data/meta_",input$Import_Files,".csv") ),stringsAsFactors = F)
-      #date
-      dates<-unique(data[,6])
-      dates<-cbind(rep(data[1,2],length(dates)),dates)
-      rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_date (dataset, date) values ",paste(sprintf("('%s', %s)", dates[,1], dates[,2]), collapse=', ') ,";"))
-      #token
-      token<-unique(data[,7])
-      token<-cbind(rep(data[1,2],length(token)),token)
-      rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, token) values ",paste(sprintf("('%s', '%s')", token[,1], token[,2]), collapse=', ') ,";"))
-      #mde1
-      try({
-        mde1<-unique(data[,9])
-        mde1<-cbind(rep(data[1,2],length(mde1)),mde1)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde1 (dataset, mde1) values ",paste(sprintf("('%s', '%s')", mde1[,1], mde1[,2]), collapse=', ') ,";"))
-      })
-      #mde2
-      try({
-        mde2<-unique(data[,10])
-        mde2<-cbind(rep(data[1,2],length(mde2)),mde2)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde2 (dataset, mde2) values ",paste(sprintf("('%s', '%s')", mde2[,1], mde2[,2]), collapse=', ') ,";"))
-      })
-      #mde3
-      try({
-        mde3<-unique(data[,11])
-        mde3<-cbind(rep(data[1,2],length(mde3)),mde3)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde3 (dataset, mde3) values ",paste(sprintf("('%s', '%s')", mde3[,1], mde3[,2]), collapse=', ') ,";"))
-      })
-      #mde4
-      try({
-        mde4<-unique(data[,12])
-        mde4<-cbind(rep(data[1,2],length(mde4)),mde4)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde4 (dataset, mde4) values ",paste(sprintf("('%s'%s')", mde4[,1], mde4[,2]), collapse=', ') ,";"))
-      })
-      #mde5
-      try({
-        mde5<-unique(data[,13])
-        mde5<-cbind(rep(data[1,2],length(mde5)),mde5)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde5 (dataset, mde5) values ",paste(sprintf("('%s', '%s')", mde5[,1], mde5[,2]), collapse=', ') ,";"))
-      })
-      #mde6
-      try({
-        mde6<-unique(data[,14])
-        mde6<-cbind(rep(data[1,2],length(mde6)),mde6)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde6 (dataset, mde6) values ",paste(sprintf("('%s', '%s')", mde6[,1], mde6[,2]), collapse=', ') ,";"))
-      })
-      #mde7
-      try({
-        mde7<-unique(data[,15])
-        mde7<-cbind(rep(data[1,2],length(mde7)),mde7)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde7 (dataset, mde7) values ",paste(sprintf("('%s', '%s')", mde7[,1], mde7[,2]), collapse=', ') ,";"))
-      })
-      #mde8
-      try({
-        mde8<-unique(data[,16])
-        mde8<-cbind(rep(data[1,2],length(mde8)),mde8)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde8 (dataset, mde8) values ",paste(sprintf("('%s', '%s')", mde8[,1], mde8[,2]), collapse=', ') ,";"))
-      })
-      #mde9
-      try({
-        mde9<-unique(data[,17])
-        mde9<-cbind(rep(data[1,2],length(mde9)),mde9)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde9 (dataset, mde9) values ",paste(sprintf("('%s', '%s')", mde9[,1], mde9[,2]), collapse=', ') ,";"))
-      })
-      
-
-      shinyWidgets::sendSweetAlert(type = "success",session = session,title =  "successfully imported data to database")
-      values$update_datasets_avaiable<-runif(1,0,1)
+      RMariaDB::dbDisconnect(mydb)
     }
-    RMariaDB::dbDisconnect(mydb)
-  }
+  })
 })
 
 observeEvent(input$Import_to_solr,{
-  #import data
-  url<-stringr::str_replace(string = values$solr_url,pattern = "select/",replacement = "")
-  z<-RCurl::getURL(
-    paste0(url,"dataimport?command=delta-import"),followlocation=TRUE
-  )
-  #initiate suggest
-  z<-RCurl::getURL(
-    paste0(url,"suggest?suggest.build=true"),followlocation=TRUE
-  )
-  shinyWidgets::sendSweetAlert(type = "success",session = session,title =  "successfully started solr import and solr suggest")
+  #import data to solr
+  withBusyIndicatorServer("Import_to_solr", {
+    url<-stringr::str_replace(string = values$solr_url,pattern = "select/",replacement = "")
+    z<-RCurl::getURL(
+      paste0(url,"dataimport?command=delta-import"),followlocation=TRUE
+    )
+    #initiate suggest
+    z<-RCurl::getURL(
+      paste0(url,"suggest?suggest.build=true"),followlocation=TRUE
+    )
+    shinyWidgets::sendSweetAlert(type = "success",session = session,title =  "successfully started solr import and solr suggest")
+  })
 })
-
 
 
 ####################################################################
