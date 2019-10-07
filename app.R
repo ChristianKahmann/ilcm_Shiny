@@ -119,6 +119,7 @@ ui <- dashboardPage(
                                menuItem(text = "Categories",tabName = "Categories",icon = icon("cloud")),
                                menuItem(text = "Scripts",tabName = "Scripts",icon = icon("terminal")),
                                menuItem(text=  "Import/Export",tabName= "Importer",icon=icon("upload")),
+                               tags$a("Instructions iLCM",id="manual_link",target="_blank", href="http://ilcm.informatik.uni-leipzig.de/download/starting_guide.pdf"),
                                tags$a("Universität Leipzig",id="ul_link",target="_blank", href="http://asv.informatik.uni-leipzig.de/")
                                #menuItem(text= "ORC",tabName="ORC",icon=icon("subscript"))
                                #themeSelector()

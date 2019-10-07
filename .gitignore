@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 /data_import/processed_data/*
+/config_file.R
 
 /collections/collections/*
 /collections/annotation_schemes/*
