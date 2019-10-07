@@ -113,12 +113,17 @@
   }
 }
 
+#manual_link {
+  all: initial;
+  * {
+    all: unset;
+  }
+}
 
 #ul_link {
  display:block;
   cursor:pointer;
   margin:auto;
-  
   background: url(Universität_Leipzig_logo.svg);
   width:160px;
   background-position:center;
@@ -128,4 +133,20 @@
   background-repeat: none;
   position:fixed;
   bottom:0;
+}
+
+#manual_link {
+ display:block;
+  cursor:pointer;
+  margin:auto;
+  background: url("manual.svg");
+  width:60px;
+  background-position:center;
+  text-indent: -9999px;
+  height: 45px;
+  background-size: 60px 45px;
+  background-repeat: none;
+  position:fixed;
+  bottom:75px;
+  left:10px;
 }
