@@ -160,7 +160,6 @@ prepare_token_object<-function(token){
       token<-token[unique(union(reduce,safe)),]
     }
   })
-
   return(token)
 }
 
