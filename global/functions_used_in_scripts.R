@@ -298,9 +298,9 @@ calculate_diachronic_cooccurrences<-function(){
   for(d in un_dates){
     count<-count+1
     idx<-which(ids%in%db_data$meta[which(db_data$meta[,2]==d),1])
-    coocsCalc$set_binDTM(dtm[idx,])
+    coocsCalc$set_binDTM(dtm[idx,,drop=F])
     diachron_Coocs[[count]]<-coocsCalc$ccoocs()
-    freq[,count]<-colSums(dtm[idx,])
+    freq[,count]<-colSums(dtm[idx,,drop=F])
     if(count %in% loghelper){
       if(length(un_dates)>10){
         log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",d,")"),logfile)

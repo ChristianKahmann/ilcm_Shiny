@@ -77,7 +77,6 @@ error<-try(expr = {
   dtm<-calculate_dtm()
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
-  
   #calculate co-occurrence statistics
   log_to_file(message = "<b>Step 7/11: Calculating diachronic co-occurrence statistics</b>",file = logfile)
   calculate_diachronic_cooccurrences()
