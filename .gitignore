@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+ilcm_Shiny.Rproj
 /data_import/processed_data/*
 
 /collections/collections/*
