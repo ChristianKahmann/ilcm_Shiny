@@ -19,18 +19,16 @@ values$Import_csv_token<-""
 values$Import_csv_dataset<-""
 
 output$UI_Import_csv_file<-renderUI({
-  validate(
-    need(length(list.files("data_import/unprocessed_data/",pattern = ".csv"))>0,message=FALSE)
-  )
   values$invalidate_csv_files
+  validate(
+    need(length(list.files("data_import/unprocessed_data/",pattern = ".csv"))>0,message="No CSV-Files found in directory: data_import/unprocessed_data")
+  )
   return(
     tagList(
       
       shinyWidgets::prettyRadioButtons(inputId = "Import_csv_files",label = "CSV Files",
                                        choices = stringr::str_replace_all(string = list.files("data_import/unprocessed_data/",pattern = ".csv"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "pulse",selected = character(0)),
-      
-      fileInput(inputId = "Import_csv_new",label = "Upload new CSV",multiple = F,accept = ".csv",width = "50%")
+                                       fill=T,animation = "pulse",selected = character(0))
     )
   )
 })
@@ -1179,7 +1177,7 @@ observeEvent(input$Import_csv_start_preprocess_and_write,{
 
 
 ##########################################################################################################
-#                                import multiple text files                                              #
+#                                import multiple text files   MTF                                        #
 ##########################################################################################################
 values$Import_mtf_id_doc<-""
 values$Import_mtf_title<-""
@@ -1200,18 +1198,16 @@ values$Import_mtf_dataset<-""
 
 
 output$UI_Import_mtf_file<-renderUI({
-  validate(
-    need(length(list.dirs("data_import/unprocessed_data/"))>1,message=FALSE)
-  )
   values$invalidate_mtf_files
+  validate(
+    need(length(list.dirs("data_import/unprocessed_data/"))>1,message="No directory with text files found in 'data_import/unprocessed_data'")
+  )
   return(
     tagList(
       
       shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_files",label = "Directory",
                                        choices = stringr::str_replace(string=list.dirs("data_import/unprocessed_data/")[-1],pattern="data_import/unprocessed_data//",replacement=""),
-                                       fill=T,animation = "pulse",selected = character(0)),
-      
-      fileInput(inputId = "Import_mtf_new",label = "Upload new text files",multiple = T,width = "50%")
+                                       fill=T,animation = "pulse",selected = character(0))
     ))
   
 })
