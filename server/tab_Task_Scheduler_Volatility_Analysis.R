@@ -122,9 +122,7 @@ output$Analysis_Parameter_VA<-renderUI({
       ),
       column(2,
              conditionalPanel(condition = "input.VA_use_custom_blacklist==true",
-                              shinyWidgets::prettyRadioButtons(inputId = "VA_blacklist",label = "Blacklists",
-                                                               choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
-                                                               fill=T,animation = "tada",selected = NULL)
+                              uiOutput(outputId = "VA_blacklist_UI")
              )
       ),
       column(1,
@@ -138,9 +136,7 @@ output$Analysis_Parameter_VA<-renderUI({
       ),
       column(2,
              conditionalPanel(condition = "input.VA_use_custom_whitelist==true",
-                              shinyWidgets::prettyRadioButtons(inputId = "VA_whitelist",label = "Whitelists",
-                                                               choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
-                                                               fill=T,animation = "tada",selected = NULL)
+                              uiOutput(outputId = "VA_whitelist_UI")
              )
       )
     ),
@@ -360,6 +356,35 @@ output$Analysis_Parameter_VA<-renderUI({
     tags$hr(),
     bsButton(inputId = "VA_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
+})
+
+
+output$VA_whitelist_UI<-renderUI({
+  values$invalidate_whitelists
+  if(length(list.files("collections/whitelists/"))==0){
+    return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
+  }
+  else{
+    return(
+      shinyWidgets::prettyRadioButtons(inputId = "VA_whitelist",label = "Whitelists",
+                                       choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                                       fill=T,animation = "tada",selected = NULL)
+    )
+  }
+})
+
+output$VA_blacklist_UI<-renderUI({
+  values$invalidate_blacklists
+  if(length(list.files("collections/blacklists/"))==0){
+    return(HTML("No blacklists available. You can create blacklists in the Scripts-Blacklist Tab"))
+  }
+  else{
+    return(
+      shinyWidgets::prettyRadioButtons(inputId = "VA_blacklist",label = "Blacklists",
+                                       choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                                       fill=T,animation = "tada",selected = NULL)
+    )
+  }
 })
 
 

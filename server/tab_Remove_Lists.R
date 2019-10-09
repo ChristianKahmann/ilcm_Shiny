@@ -1,5 +1,5 @@
 output$UI_files_remove<-renderUI({
-  values$update_remove_lists
+  values$invalidate_blacklists
   validate(
     need(length(list.files("collections/blacklists/"))>0,message="no lists found")
   )
@@ -50,5 +50,5 @@ observeEvent(input$Save_Blacklist_confirm,{
   shiny::removeModal()
   path<-paste0("collections/blacklists/",input$Save_Blacklist_name,".txt")
   writeLines(input$remove_textarea,con=path)
-  values$update_remove_lists<-runif(1,0,1)
+  values$invalidate_blacklists<-runif(1,0,1)
 })
