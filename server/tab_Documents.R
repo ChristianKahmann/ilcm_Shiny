@@ -66,7 +66,7 @@ output$collection_documents<-DT::renderDataTable({
       hl<-highlight(base = (values$solr_url),start = ((input$Doc_row_sel-1)*10),q = (values$Doc_q),fq=(values$Doc_fq),rows="10",hl.fl="body_txt",fl="id",raw=F,sort = isolate(input$sort))
       #make search term appear red in keyword and context
       hl<-lapply(X = hl,FUN = function(i){i<-stringr::str_replace_all(string = i,pattern = '<em>','<span style="color:red">');stringr::str_replace_all(string = i,pattern = '</em>',"</span>")})
-      if(!dim(ind)[1]>1){
+      if(!dim(ind)[1]>0){
         print("test")
         #shinyalert::shinyalert(title = "No documents found.",text = "For the selected colllection no documents were found. Maybe solr is not finished yet with marking the documents with their collection tag.",
         #                      type = "warning")
@@ -76,7 +76,7 @@ output$collection_documents<-DT::renderDataTable({
       }
       validate(
         need(dim(ind)[2]>1,message=F),
-        need(dim(ind)[1]>1,message=F))
+        need(dim(ind)[1]>0,message=F))
       colnames(ind)<-stringr::str_replace_all(string = colnames(ind),pattern = "_[a-z]+$",replacement = "")
     }
     #bind keyword and context to result set
