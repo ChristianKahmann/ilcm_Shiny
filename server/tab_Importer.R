@@ -2397,6 +2397,7 @@ observeEvent(input$Upload_Data,{
       shinyalert::shinyalert(title = "no import file specified",text = "please specify a file you want to import!",type = "warning")
     }
     else{
+      browser()
       meta_metadata<-readr::read_csv(file=paste0("data_import/processed_data/metameta_",input$Import_Files,".csv"))
       mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
       a<-readr::read_csv(file = paste0("data_import/processed_data/meta_",input$Import_Files,".csv"),col_names = FALSE)[1,c(1,2)]
@@ -2432,9 +2433,10 @@ observeEvent(input$Upload_Data,{
         #update meta tables in database
         data<-data.frame(readtext::readtext(file =paste0("data_import/processed_data/meta_",input$Import_Files,".csv") ),stringsAsFactors = F)
         #date
+       
         dates<-unique(data[,6])
         dates<-cbind(rep(data[1,2],length(dates)),dates)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_date (dataset, date) values ",paste(sprintf("('%s', %s)", dates[,1], dates[,2]), collapse=', ') ,";"))
+        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_date (dataset, date) values ",paste(sprintf("('%s', '%s')", dates[,1], dates[,2]), collapse=', ') ,";"))
         #token
         token<-unique(data[,7])
         token<-cbind(rep(data[1,2],length(token)),token)
