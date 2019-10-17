@@ -49,31 +49,30 @@ error<-try(expr = {
         rs<- dbSendQuery(mydb, query)
       }
       else{
-      query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.documents CHARACTER SET utf8mb4  FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' 
+        query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.documents CHARACTER SET utf8mb4  FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' 
                     (dataset,id_doc,title,body,date,token,language,",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],collapse=","),",entities) ;")
-      rs<- dbSendQuery(mydb, query)
+        rs<- dbSendQuery(mydb, query)
       }
       query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/token_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.token CHARACTER SET utf8mb4  FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","';")
-      rs<- dbSendQuery(mydb, query)
-      
+      rs<-RMariaDB::dbSendStatement(mydb, query)
       try({
         if(dim(meta_metadata)[2]==1){
           query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/metameta_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.metadata_names CHARACTER SET utf8mb4  FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' IGNORE 1 LINES (dataset",");")
           rs<- dbSendQuery(mydb, query)
         }
         else{
-        query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/metameta_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.metadata_names  CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' IGNORE 1 LINES (dataset,",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],collapse=","),");")
-        rs<- dbSendQuery(mydb, query)
+          query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/metameta_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.metadata_names  CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' IGNORE 1 LINES (dataset,",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],collapse=","),");")
+          rs<- dbSendQuery(mydb, query)
         }
       })
       
-     
+      
       #update meta tables in database
       data<-data.frame(readtext::readtext(file = paste0("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv") ),stringsAsFactors = F)
       #date
       dates<-unique(data[,6])
       dates<-cbind(rep(data[1,2],length(dates)),dates)
-      rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_date (dataset, date) values ",paste(sprintf("('%s', %s)", dates[,1], dates[,2]), collapse=', ') ,";"))
+      rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_date (dataset, date) values ",paste(sprintf("('%s', '%s')", dates[,1], dates[,2]), collapse=', ') ,";"))
       #token
       token<-unique(data[,7])
       token<-cbind(rep(data[1,2],length(token)),token)
@@ -132,12 +131,14 @@ error<-try(expr = {
         mde9<-cbind(rep(data[1,2],length(mde9)),mde9)
         rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde9) values ",paste(sprintf("('%s', %s)", mde9[,1], mde9[,2]), collapse=', ') ,";"))
       })
+      rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+      
       log_to_file(message = "Finished sending data to db",logfile)
       
       log_to_file(message = "Importing data from Database to solr",logfile)
       url<-stringr::str_replace(string = url,pattern = "select/",replacement = "")
       z<-RCurl::getURL(
-        paste0(url,"dataimport?command=full-import"),followlocation=TRUE
+        paste0(url,"dataimport?command=delta-import"),followlocation=TRUE
       )
       #initiate suggest
       z<-RCurl::getURL(
@@ -151,9 +152,15 @@ error<-try(expr = {
     }
     RMariaDB::dbDisconnect(mydb)
   }
-  log_to_file(message = "Finished preprocessing. Restart App to work with the new data",logfile)
+  if(write_to_db==T){
+    log_to_file(message = paste0("Finished preprocessing. You can now select ",metadata[1,"dataset"]," in the Explorer Corpus Selection"),logfile)
+  }
+  else{
+    log_to_file(message = paste0("Finished preprocessing. You can now import the created csv files in Import/Export Importer Upload Data to DB and
+                                 Solr with the name:",metadata[1,"dataset"],"_",process_info[[1]] ),logfile)
+  }
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))
- 
+  
 }) 
 
 if(class(error)=="try-error"){

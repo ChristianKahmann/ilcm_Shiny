@@ -191,11 +191,7 @@ tabPanel("Importer",
                                                                                           tags$br(),
                                                                                           box(title = tags$h3("Resulting Metadata Import File",style="color:white;"),solidHeader = T,width=12,status = "primary",collapsible = T,
                                                                                               DT::dataTableOutput(outputId = "Import_csv_metadata"),
-                                                                                              tags$hr(),
-                                                                                              checkboxInput(inputId = "Import_csv_dublicates",label = "Remove Dublicates",value = F),
-                                                                                              conditionalPanel(condition = "input.Import_csv_dublicates==true",
-                                                                                                               numericInput(inputId = "Import_csv_dublicates_threshold",label = "Threshold for document similarity",value = 1,min=0,max=10,step = 1)
-                                                                                              )
+                                                                                              tags$hr()
                                                                                           ),
                                                                                           
                                                                                           shinyBS::bsButton("Import_csv_start_preprocess",label = "Start Preprocessing and save csv-files",style="info",icon=icon("tags")),
@@ -400,20 +396,7 @@ tabPanel("Importer",
                                                                                           tags$br(),
                                                                                           box(title = tags$h3("Resulting Metadata Import File",style="color:white;"),solidHeader = T,width=12,status = "primary",collapsible = T,
                                                                                               DT::dataTableOutput(outputId = "Import_mtf_metadata")%>% withSpinner(color="#0dc5c1"),
-                                                                                              tags$hr(),
-                                                                                              checkboxInput(inputId = "Import_mtf_dublicates",label = "Remove Dublicates",value = F),
-                                                                                              conditionalPanel(condition = "input.Import_mtf_dublicates==true",
-                                                                                                               tags$h5("Document deplication will done using minhash and locality-sensitive hashing"),
-                                                                                                               column(2,
-                                                                                                                      numericInput(inputId = "Import_DeDubl_n",label = "number of shingles für minhash",value = 240,min = 100,max = 500,step = 1),
-                                                                                                                      numericInput(inputId = "Import_DeDubl_b",label = "number of buckets for lsh",value = 80,min = 40,max = 200,step = 1),
-                                                                                                                      numericInput(inputId = "Import_DeDubl_threshold",label = "Jaccard similarity threshold",value = 0.2,min = 0,max = 1),
-                                                                                                                      checkboxInput(inputId = "Import_DeDubl_byHand",label = "approve by hand?",value = TRUE),
-                                                                                                                      selectInput(inputId = "Import_DeDubl_keep_which",label = "if approved, use which stategy to deceide whichdocument to keep",
-                                                                                                                                  choices =c("longest","shortest","random") ),
-                                                                                                                      bsButton(inputId = "Import_DeDubl_start",label = "start deduplication",icon = icon("play"))
-                                                                                                               )
-                                                                                              )
+                                                                                              tags$hr()
                                                                                           ),
                                                                                           
                                                                                           shinyBS::bsButton("Import_mtf_start_preprocess",label = "Start Preprocessing and save csv-files",style="info",icon=icon("tags")),
@@ -426,24 +409,7 @@ tabPanel("Importer",
            ),
            tabPanel(
              "Upload Data to DB and Solr",
-             shinyWidgets::prettyRadioButtons(
-               inputId = "Import_Files",
-               label = "available data for upload",
-               choices = unique(
-                 stringr::str_replace(
-                   string = stringr::str_replace_all(
-                     string = list.files("data_import/processed_data/"),
-                     pattern = ".csv",
-                     replacement = ""
-                   ),
-                   pattern = "[a-zA-Z]+\\_",
-                   replacement = ""
-                 )
-               ),
-               fill = T,
-               animation = "tada",
-               selected = character(0)
-             ),
+             uiOutput("Import_Files_UI"),
              tags$br(),
              withBusyIndicatorUI(
                shinyBS::bsButton(
@@ -460,6 +426,12 @@ tabPanel("Importer",
                  icon = icon("upload"),
                  style = "default"
                )
+             ),
+             shinyBS::bsButton(
+               inputId = "Import_delete",
+               label = "Delete",
+               icon = icon("remove"),
+               style = "danger"
              )
            )
          ))
