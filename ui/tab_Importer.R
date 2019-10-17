@@ -106,71 +106,71 @@ tabPanel("Importer",
                                                                                               fluidRow(style="margin-left:0px",
                                                                                                        column(3,
                                                                                                               column(3,
-                                                                                                                     shinyBS::bsButton("Import_script_id_doc",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                     shinyBS::bsButton("Import_script_id_doc_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                      tags$br(),
-                                                                                                                     shinyBS::bsButton("Import_type_id_doc",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                     shinyBS::bsButton("Import_type_id_doc_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                               ),
                                                                                                               column(3,
-                                                                                                                     shinyBS::bsButton("Import_script_title",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                     shinyBS::bsButton("Import_script_title_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                      tags$br(),
-                                                                                                                     shinyBS::bsButton("Import_type_title",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                     shinyBS::bsButton("Import_type_title_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                               ),
                                                                                                               column(3,
-                                                                                                                     shinyBS::bsButton("Import_script_date",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                     shinyBS::bsButton("Import_script_date_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                      tags$br(),
-                                                                                                                     shinyBS::bsButton("Import_type_date",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                     shinyBS::bsButton("Import_type_date_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                      
                                                                                                               ),
                                                                                                               column(3,
-                                                                                                                     shinyBS::bsButton("Import_script_body",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                     shinyBS::bsButton("Import_script_body_csv",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
                                                                                                                      tags$br(),
-                                                                                                                     shinyBS::bsButton("Import_type_body",label = "Type",style="info",icon=icon("edit"),block=T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                     shinyBS::bsButton("Import_type_body_csv",label = "Type",style="info",icon=icon("edit"),block=T,title = "Type in the attrbute you want to use for all documents")
                                                                                                               )
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mde1",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde1_csv",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mde1",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde1_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mde2",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde2_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mde2",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde2_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mde3",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde3_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mde3",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde3_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mde4",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde4_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mde4",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde4_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mde5",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde5_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mde5",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde5_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mde6",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde6_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mde6",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde6_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mde7",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde7_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mde7",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde7_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mde8",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde8_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mde8",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde8_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mde9",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde9_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mde9",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde9_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        )
                                                                                               ),
                                                                                               tags$br(),
@@ -335,49 +335,49 @@ tabPanel("Importer",
                                                                                                               )
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde1",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde1_mtf",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde1",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde1_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde2",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde2_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde2",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde2_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde3",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde3_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde3",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde3_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde4",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde4_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde4",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde4_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde5",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde5_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde5",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde5_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde6",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde6_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde6",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde6_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde7",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde7_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde7",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde7_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde8",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde8_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde8",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde8_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        ),
                                                                                                        column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde9",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                              shinyBS::bsButton("Import_script_mde9_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                               tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde9",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                              shinyBS::bsButton("Import_type_mde9_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                        )
                                                                                               ),
                                                                                               tags$br(),
