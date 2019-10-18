@@ -1,5 +1,5 @@
 output$UI_files_keep<-renderUI({
-  values$update_keep_lists
+  values$invalidate_whitelists
   validate(
     need(length(list.files("collections/whitelists/"))>0,message="no lists found")
   )
@@ -50,5 +50,5 @@ observeEvent(input$Save_Whitelist_confirm,{
   shiny::removeModal()
   path<-paste0("collections/whitelists/",input$Save_Whitelist_name,".txt")
   writeLines(input$keep_textarea,con=path)
-  values$update_keep_lists<-runif(1,0,1)
+  values$invalidate_whitelists<-runif(1,0,1)
 })

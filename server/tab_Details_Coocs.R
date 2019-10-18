@@ -314,10 +314,9 @@ output$cooc_examples_table<-DT::renderDataTable({
   }
   text<-matrix(c(0),number_of_examples,1)
   for(i in 1:number_of_examples){
-    print(i)
     tokens<-values$coocs_token[which(values$coocs_token[,1]==avail[i]),]
-    id_targets<-which(tolower(tokens[,2])%in%input$coocs_examples_words)
-    example<-paste(tokens[max(1,(min(id_targets)-k)):min(dim(tokens)[1],(max(id_targets)+k)),2],collapse=" ")
+    id_targets<-union(which(tolower(tokens[,"token"])%in%input$coocs_examples_words),which(tolower(tokens[,"lemma"])%in%input$coocs_examples_words))[1]
+    example<-paste(tokens[max(1,(min(id_targets)-k)):min(dim(tokens)[1],(max(id_targets)+k)),"token"],collapse=" ")
     text[i,1]<-example
   }
   

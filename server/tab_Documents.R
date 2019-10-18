@@ -66,17 +66,17 @@ output$collection_documents<-DT::renderDataTable({
       hl<-highlight(base = (values$solr_url),start = ((input$Doc_row_sel-1)*10),q = (values$Doc_q),fq=(values$Doc_fq),rows="10",hl.fl="body_txt",fl="id",raw=F,sort = isolate(input$sort))
       #make search term appear red in keyword and context
       hl<-lapply(X = hl,FUN = function(i){i<-stringr::str_replace_all(string = i,pattern = '<em>','<span style="color:red">');stringr::str_replace_all(string = i,pattern = '</em>',"</span>")})
-      if(!dim(ind)[1]>1){
+      if(!dim(ind)[1]>0){
         print("test")
         #shinyalert::shinyalert(title = "No documents found.",text = "For the selected colllection no documents were found. Maybe solr is not finished yet with marking the documents with their collection tag.",
         #                      type = "warning")
         shinyWidgets::sendSweetAlert(session = session,title = "No documents found.",text =  "For the selected colllection no documents were found. Maybe solr is not finished yet with marking the documents with their collection tag.
                                      Try to reselect the collection.",
-                                                           type = "warning")
+                                     type = "warning")
       }
       validate(
         need(dim(ind)[2]>1,message=F),
-        need(dim(ind)[1]>1,message=F))
+        need(dim(ind)[1]>0,message=F))
       colnames(ind)<-stringr::str_replace_all(string = colnames(ind),pattern = "_[a-z]+$",replacement = "")
     }
     #bind keyword and context to result set
@@ -100,7 +100,7 @@ output$collection_documents<-DT::renderDataTable({
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
   ava<-dbGetQuery(mydb, paste0("SELECT * FROM ilcm.metadata_names where dataset in('",paste(unique(ind[,"dataset"]),collapse="','"),"');"))
   RMariaDB::dbDisconnect(mydb)
- 
+  
   empty_metadata<-names(which(apply(ava,MARGIN = 2,function(x){all(is.na(x))})))
   if(length(empty_metadata)>0){
     ind<-ind[,-which(colnames(ind)%in%empty_metadata)]
@@ -133,10 +133,10 @@ output$collection_documents<-DT::renderDataTable({
   data$title<-paste0("<b>",data$title,"</b>")
   remove_existing_checkboxes(1:10)
   tabledata<-data.frame(data,keep=shinyInput_checkbox_Doc(checkboxInput,dim(data)[1],"Doccbox_",values=!(data[,2]%in%isolate(values$Doc_delete_documents)),label=NULL))
-
+  
   #set options for datatable, check if output is already sorted by solr
   if(values$Doc_custom==TRUE){
-      data<-datatable(tabledata
+    data<-datatable(tabledata
                     ,selection = "single",rownames = FALSE,escape = F,class = "row-border compact",options = list(
                       preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
                       drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
@@ -155,7 +155,7 @@ output$collection_documents<-DT::renderDataTable({
   else{
     if(!is.null(isolate(input$sort))){
       if(nchar(isolate(input$sort))>0){
-          data<-datatable(tabledata
+        data<-datatable(tabledata
                         ,selection = "single",rownames = FALSE,escape = F,class = "row-border compact",options = list(
                           preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
                           drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
@@ -409,7 +409,7 @@ observe({
   isolate(values$Doc_delete_documents<-setdiff(values$Doc_delete_documents,values$Documents_Results[,2]))
   print(c(isolate(values$Doc_delete_documents),isolate(values$Documents_Results[which(a==F),2])))
   isolate(values$Doc_delete_documents<-c(isolate(values$Doc_delete_documents),isolate(values$Documents_Results[which(a==F),2])))
-
+  
 })
 
 #reset the list for documents marked for deletion when collction changed
@@ -458,9 +458,21 @@ observeEvent(input$confirm_delete_docs,{
     try({future::future(expr = {
       body<-create_body_solr_update_remove(ids = ids_old,field_name = "collections",values = rep(info[[5]],length(ids_old)))
       conn<-solrium::SolrClient$new(host = host,port = port,path="search")
-      conn$update_atomic_json(name = "iLCM",body = body)
+      try(silent = T,{
+        rm(solr_update_working)
+        conn$update_atomic_json(name = "iLCM",body = body)->solr_update_working
+      })
+      if(!exists("solr_update_working")){
+        conn$update_atomic_json(name = "iLCM",body = body)
+      }
       body<-create_body_solr_update_add(ids = info[[3]][,1],field_name = "collections",values = rep(info[[5]],length(info[[3]][,1])))
-      conn$update_atomic_json(name = "iLCM",body = body)
+      try(silent = T,{
+        rm(solr_update_working)
+        conn$update_atomic_json(name = "iLCM",body = body)->solr_update_working
+      })
+      if(!exists("solr_update_working")){
+        conn$update_atomic_json(name = "iLCM",body = body)
+      }
       solrium::commit(conn = conn,name="iLCM")
     }) %...>% future:::ClusterRegistry("stop")
     })
@@ -535,7 +547,13 @@ observeEvent(input$save_Sub_Collection,{
         try({future::future(expr = {
           body<-create_body_solr_update_add(ids = x[,"id"],field_name = "collections",values = rep(input$Sub_Collection_Name,length(x[,"id"])))
           conn<-solrium::SolrClient$new(host =host,port = port,path="search")
-          conn$update_atomic_json(name = "iLCM",body = body)
+          try(silent = T,{
+            rm(solr_update_working)
+            conn$update_atomic_json(name = "iLCM",body = body)->solr_update_working
+          })
+          if(!exists("solr_update_working")){
+            conn$update_atomic_json(name = "iLCM",body = body)
+          }
           solrium::commit(conn = conn,name="iLCM")
         }) %...>% future:::ClusterRegistry("stop")
         })

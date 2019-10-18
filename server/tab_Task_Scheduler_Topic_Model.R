@@ -122,9 +122,7 @@ output$Analysis_Parameter_TM<-renderUI({
       ),
       column(2,
              conditionalPanel(condition = "input.TM_use_custom_blacklist==true",
-                              shinyWidgets::prettyRadioButtons(inputId = "TM_blacklist",label = "Blacklists",
-                                                               choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
-                                                               fill=T,animation = "tada",selected = NULL)
+                              uiOutput(outputId = "TM_blacklist_UI")
              )
       ),
       column(1,
@@ -138,9 +136,7 @@ output$Analysis_Parameter_TM<-renderUI({
       ),
       column(2,
              conditionalPanel(condition = "input.TM_use_custom_whitelist==true",
-                              shinyWidgets::prettyRadioButtons(inputId = "TM_whitelist",label = "Whitelists",
-                                                               choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
-                                                               fill=T,animation = "tada",selected = NULL)
+                              uiOutput(outputId = "TM_whitelist_UI")
              )
       )
     ),
@@ -188,7 +184,7 @@ output$Analysis_Parameter_TM<-renderUI({
                      )
                  )
              )
-             ),
+      ),
       column(2,
              tags$br(),
              conditionalPanel(condition = 'input.TM_termfreq_type=="count"',
@@ -243,7 +239,7 @@ output$Analysis_Parameter_TM<-renderUI({
              )
       )
       
-             ),
+    ),
     #specific parameters
     tags$hr(),
     tags$h4("Topic Model parameters"),
@@ -287,7 +283,7 @@ output$Analysis_Parameter_TM<-renderUI({
                      placement = "right"
                    )
                )
-             ),
+      ),
       column(2,
              selectInput(inputId = "TM_POS_TYPES",label = "POS-Types",
                          choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X") ,selected = "all",multiple = T)%>%
@@ -316,9 +312,33 @@ output$Analysis_Parameter_TM<-renderUI({
   )
 })
 
+output$TM_whitelist_UI<-renderUI({
+  values$invalidate_whitelists
+  if(length(list.files("collections/whitelists/"))==0){
+    return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
+  }
+  else{
+    return(
+      shinyWidgets::prettyRadioButtons(inputId = "TM_whitelist",label = "Whitelists",
+                                       choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                                       fill=T,animation = "tada",selected = NULL)
+    )
+  }
+})
 
-
-
+output$TM_blacklist_UI<-renderUI({
+  values$invalidate_blacklists
+  if(length(list.files("collections/blacklists/"))==0){
+    return(HTML("No blacklists available. You can create blacklists in the Scripts-Blacklist Tab"))
+  }
+  else{
+    return(
+      shinyWidgets::prettyRadioButtons(inputId = "TM_blacklist",label = "Blacklists",
+                                       choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                                       fill=T,animation = "tada",selected = NULL)
+    )
+  }
+})
 
 
 #start cooccurrence analysis script, if submit button is clicked

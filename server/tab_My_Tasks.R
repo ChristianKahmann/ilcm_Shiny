@@ -1,5 +1,6 @@
 #update logiles every 5 seconds
-autoInvalidate <- reactiveTimer(5000)
+autoInvalidate_slow <- reactiveTimer(5000)
+autoInvalidate_normal <- reactiveTimer(500)
 autoInvalidate_fast<-reactiveTimer(50)
 
 #render logfiles for the chosen category (running, finished, failed)
@@ -51,8 +52,8 @@ output$Running_Tasks<-renderUI({
 
 #render info box for finished processes
 output$finished_box<-renderInfoBox({
-  #invalidate expression every 5 seconds
-  autoInvalidate()
+  #invalidate expression every .5 seconds
+  autoInvalidate_normal()
   #create info box
   box1<-infoBox(title = "finished processes:",
                 #number of logfiles
@@ -69,8 +70,8 @@ output$finished_box<-renderInfoBox({
 
 #render info box for running processes
 output$running_box<-renderInfoBox({
-  #invalidate expression every 5 seconds
-  autoInvalidate()
+  #invalidate expression every .5 seconds
+  autoInvalidate_normal()
   #create info box
   box2<-infoBox(title = "running processes:",
                 #number of logfiles
@@ -87,8 +88,8 @@ output$running_box<-renderInfoBox({
 
 #render info box for failed processes
 output$failed_box<-renderInfoBox({
-  #invalidate expression every 5 seconds
-  autoInvalidate()
+  #invalidate expression every .5 seconds
+  autoInvalidate_normal()
   #create info box
   box3<-infoBox(title = "failed processes:",
                 #number of logfiles

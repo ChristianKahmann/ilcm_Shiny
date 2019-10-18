@@ -5,7 +5,7 @@ observeEvent(input$save_Collection,{
       shinyWidgets::sendSweetAlert(type = "warning",session = session,title = "No documents to save",text = "The last search did not return any document!")
     }
     else{
-            if(stringr::str_detect(string = input$Collection_Name,pattern = "_")){
+      if(stringr::str_detect(string = input$Collection_Name,pattern = "_")){
         shinyWidgets::sendSweetAlert(type = "warning",session = session,title = "'_' used in collection name",text = "Please don't use '_' in the collection name.")
       }
       else{
@@ -27,30 +27,35 @@ observeEvent(input$save_Collection,{
               x<-data.frame(data.table::rbindlist(solr_custom(url = paste0(url,"&rows=",values$numFound),start=0)$response[[3]],use.names = T))
             }
             else{
-              x<-(solr::solr_search(base = values$solr_url,q = values$q,fl="id_doc_i , dataset_s ,date_dt,id,score",fq=values$fq,rows=isolate(values$numFound),start = 0))
+              if(input$Collection_limit_binary==T){
+                #just save number of relevant doucments limited to by user
+                if(input$Collection_limit_method=="most relevant documents"){
+                  x<-solr::solr_search(base = values$solr_url,q = values$q,fl="id_doc_i , dataset_s , date_dt , id,score",fq=values$fq,rows=input$Collection_limit,start = 0)
+                }
+                #generate random sample of found documents
+                if(input$Collection_limit_method=="random sample"){
+                  x<-(solr::solr_search(base = values$solr_url,q = values$q,fl="id_doc_i , dataset_s ,date_dt,id,score",fq=values$fq,rows=input$Collection_limit,start = 0,sort = "random_12345 DESC"))
+                }
+              }
+              else{
+                x<-(solr::solr_search(base = values$solr_url,q = values$q,fl="id_doc_i , dataset_s ,date_dt,id,score",fq=values$fq,rows=isolate(values$numFound),start = 0))
+              }
             }
             if(length(isolate(values$delete_documents))>0){
               x<-x[-which(x[,"id"]%in%isolate(values$delete_documents)),]
             }
-            if(input$Collection_limit_binary==T){
-              #just save number of relevant doucments limited to by user
-              if(input$Collection_limit_method=="most relevant documents"){
-                keep<-order(x[,5],decreasing = T)[1:input$Collection_limit]
-              }
-              #generate random sample of found documents
-              if(input$Collection_limit_method=="random sample"){
-                keep<-sample(x = 1:dim(x)[1],size = input$Collection_limit,replace = F)
-              }
-              x<-x[keep,]
-            }
-            
             
             host<-values$update_solr_url
             port<-values$update_solr_port
             try({future::future(expr = {
               body<-create_body_solr_update_add(ids = x[,"id"],field_name = "collections",values = rep(input$Collection_Name,length(x[,"id"])))
               conn<-solrium::SolrClient$new(host = host,port = port,path="search")
-              conn$update_atomic_json(name = "iLCM",body = body)
+              try({
+                conn$update_atomic_json(name = "iLCM",body = body)->solr_update_working
+              })
+              if(!exists("solr_update_working")){
+                conn$update_atomic_json(name = "iLCM",body = body)
+              }
               solrium::commit(conn = conn,name="iLCM")
             }) %...>% future:::ClusterRegistry("stop")
             })

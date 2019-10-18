@@ -51,7 +51,6 @@ error<-try(expr = {
   #preparing token object
   log_to_file(message = "<b>Step 5/9: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token)
-  token<-db_data$token
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
   
   
@@ -64,7 +63,7 @@ error<-try(expr = {
   
   #calculating co-occurrences
   log_to_file(message = "<b>Step 7/9: Calculating Co-occurrences</b>",file = logfile)
-  db_data$token<-db_data$token[,c("doc_id","token")]
+  db_data$token<-db_data$token[,c("doc_id","token","lemma")]
   calculate_cooccurrences_all_measures()
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating co-occurrences",file = logfile)
  
@@ -73,7 +72,7 @@ error<-try(expr = {
   path0<-paste0("collections/results/cooccurrence-analysis/",paste(process_info[[1]],process_info[[2]],process_info[[4]],sep="_"),"/")
   dir.create(path0)
 
-  browser()
+  token<-db_data$token
   save(terms,info,token,file=paste0(path0,"data_Coocs.RData"))
   save(coocs_matrix_dice,file=paste0(path0,"dice.RData"))
   save(coocs_matrix_count,file=paste0(path0,"count.RData"))

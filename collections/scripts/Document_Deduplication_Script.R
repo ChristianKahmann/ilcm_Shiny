@@ -12,7 +12,7 @@ error<-try(expr = {
   library(textreuse)
   library(magrittr)
   library(plyr)
-
+  
   #load parameters
   load("collections/tmp/tmp.RData")
   
@@ -70,7 +70,7 @@ error<-try(expr = {
   if(parameters$DD_similarity_measure=="ratio of matches"){
     results<-data.frame(lsh_compare(candidates, corpus, ratio_of_matches, progress = FALSE),stringsAsFactors = F)
   }
- 
+  
   results$a<-stringr::str_remove(string = results$a,pattern = "doc-")
   results$b<-stringr::str_remove(string = results$b,pattern = "doc-")
   log_to_file(message = paste0("  <b style='color:green'> ✔ </b>  ",dim(candidates)[1]," candidates were found"),file = logfile)
@@ -175,7 +175,7 @@ error<-try(expr = {
         }
         
         data<-data[order(sort,decreasing = T),]
-
+        
         d_tmp<-data
         documents<-unique(union(d_tmp[,"a"],d_tmp[,"b"]))
         #set by user
@@ -231,13 +231,13 @@ error<-try(expr = {
         })
         
         
-       final_remove<-as.numeric(blacklist)
+        final_remove<-as.numeric(blacklist)
         
-      
+        
         #####
         log_to_file(message = "  <b style='color:green'> ✔ </b>  ",file = logfile)
         
-
+        
         log_to_file(message = "<b>Step 8/9: Removing documents and saving new collection</b>",file = logfile)
         info[[1]]<-info[[1]][-as.numeric(final_remove),1,drop=F]
         info[[2]]<-info[[2]][-as.numeric(final_remove),1,drop=F]
@@ -249,19 +249,25 @@ error<-try(expr = {
         }
         info[[6]]<-info[[6]][-as.numeric(final_remove),1,drop=F]
         info[[7]]<-info[[7]][-as.numeric(final_remove),1,drop=F]
-
+        
         host=update_solr_url
         port=update_solr_port
-
-       
-        log_to_file(message = "&emsp; updating solr collection-affiliation",file = logfile)
-          body<-create_body_solr_update_add(ids = info[[3]][,1],field_name = "collections",values = rep(info[[5]],length(info[[3]][,1])))
-          conn<-solrium::SolrClient$new(host = host ,port = port ,path="search")
-          conn$update_atomic_json(name = "iLCM",body = body)
-          solrium::commit(conn = conn,name="iLCM")
-      
         
-      
+        
+        log_to_file(message = "&emsp; updating solr collection-affiliation",file = logfile)
+        body<-create_body_solr_update_add(ids = info[[3]][,1],field_name = "collections",values = rep(info[[5]],length(info[[3]][,1])))
+        conn<-solrium::SolrClient$new(host = host ,port = port ,path="search")
+        try(silent = T,{
+          rm(solr_update_working)
+          conn$update_atomic_json(name = "iLCM",body = body)->solr_update_working
+        })
+        if(!exists("solr_update_working")){
+          conn$update_atomic_json(name = "iLCM",body = body)
+        }
+        solrium::commit(conn = conn,name="iLCM")
+        
+        
+        
         
         save(info,file=paste("collections/collections/",info[[5]],".RData",sep = ""))
         save_collection_to_db(info)

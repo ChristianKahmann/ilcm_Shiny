@@ -122,9 +122,7 @@ output$Analysis_Parameter_DE<-renderUI({
       ),
       column(2,
              conditionalPanel(condition = "input.DE_use_custom_blacklist==true",
-                              shinyWidgets::prettyRadioButtons(inputId = "DE_blacklist",label = "Blacklists",
-                                                               choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
-                                                               fill=T,animation = "tada",selected = NULL)
+                              uiOutput(outputId = "DE_blacklist_UI")
              )
       ),
       column(1,
@@ -138,9 +136,7 @@ output$Analysis_Parameter_DE<-renderUI({
       ),
       column(2,
              conditionalPanel(condition = "input.DE_use_custom_whitelist==true",
-                              shinyWidgets::prettyRadioButtons(inputId = "DE_whitelist",label = "Whitelists",
-                                                               choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
-                                                               fill=T,animation = "tada",selected = NULL)
+                              uiOutput(outputId = "DE_whitelist_UI")
              )
       )
     ),
@@ -369,6 +365,34 @@ output$DE_dict_ui<-renderUI({
     )
 })
 
+
+output$DE_whitelist_UI<-renderUI({
+  values$invalidate_whitelists
+  if(length(list.files("collections/whitelists/"))==0){
+    return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
+  }
+  else{
+    return(
+      shinyWidgets::prettyRadioButtons(inputId = "DE_whitelist",label = "Whitelists",
+                                       choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                                       fill=T,animation = "tada",selected = NULL)
+    )
+  }
+})
+
+output$DE_blacklist_UI<-renderUI({
+  values$invalidate_blacklists
+  if(length(list.files("collections/blacklists/"))==0){
+    return(HTML("No blacklists available. You can create blacklists in the Scripts-Blacklist Tab"))
+  }
+  else{
+    return(
+      shinyWidgets::prettyRadioButtons(inputId = "DE_blacklist",label = "Blacklists",
+                                       choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                                       fill=T,animation = "tada",selected = NULL)
+    )
+  }
+})
 
 
 

@@ -205,9 +205,11 @@ observeEvent(eventExpr = input$Doc_anno_scheme_selected,handlerExpr = {
 #      Annotations        #
 ###########################
 
-
 output$Doc_DV_Annotation_Schemes<-renderUI({
   values$newscheme
+  validate(validate(need(
+    length(list.files("collections/annotation_schemes/"))>0,message="No annotation schemes found. You can create schemes in the 'Categories' tab."
+  )))
   selectizeInput(inputId = "Doc_anno_scheme_selected",label="Which Annotation Scheme?",choices=stringr::str_replace_all(list.files("collections/annotation_schemes/"),".RData","")) 
 })
 
