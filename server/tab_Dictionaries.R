@@ -99,7 +99,7 @@ observe({
     return(input[[paste("dict_header_",i)]])
   }
   )
-  values$dict_headers<-do.call(what = c,headers)
+  values$dict_headers<-do.call(what = base::c,headers)
 })
 
 observeEvent(input$dict_save_really,{
