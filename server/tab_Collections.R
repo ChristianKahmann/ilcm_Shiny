@@ -120,7 +120,13 @@ observeEvent(input$confirm_delete_coll,{
       load(list.files("collections/collections/", full.names = T)[ as.numeric(strsplit(input$delete_button, "_")[[1]][3])])
       body<-create_body_solr_update_remove(ids = info[[3]][,1],field_name = "collections",values = rep(name,length(info[[3]][,1])))
       conn<-solrium::SolrClient$new(host = host,port = port,path="search")
-      conn$update_atomic_json(name = "iLCM",body = body)
+      try(silent = T,{
+        rm(solr_update_working)
+        conn$update_atomic_json(name = "iLCM",body = body)->solr_update_working
+      })
+      if(!exists("solr_update_working")){
+        conn$update_atomic_json(name = "iLCM",body = body)
+      }
       solrium::commit(conn = conn,name="iLCM")
     }) %...>% future:::ClusterRegistry("stop")
     })

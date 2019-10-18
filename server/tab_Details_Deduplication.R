@@ -548,7 +548,13 @@ observeEvent(ignoreInit = T,input$Det_DD_save_collection,{
   try({future::future(expr = {
     body<-create_body_solr_update_add(ids = info[[3]][,1],field_name = "collections",values = rep(info[[5]],length(info[[3]][,1])))
     conn<-solrium::SolrClient$new(host = host,port = port,path="search")
-    conn$update_atomic_json(name = "iLCM",body = body)
+    try(silent = T,{
+      rm(solr_update_working)
+      conn$update_atomic_json(name = "iLCM",body = body)->solr_update_working
+    })
+    if(!exists("solr_update_working")){
+      conn$update_atomic_json(name = "iLCM",body = body)
+    }
     solrium::commit(conn = conn,name="iLCM")
   }) %...>% future:::ClusterRegistry(action = "stop")
   })
