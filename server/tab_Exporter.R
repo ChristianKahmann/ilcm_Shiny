@@ -226,7 +226,7 @@ observeEvent(input$Export_Prepare_Documents,{
   RMariaDB::dbDisconnect(mydb)
   values$token_tmp<-token
   values$meta_tmp<-meta[,2:13]
-  shinyalert::shinyalert(title = "Data ready for Download",text=paste0(dim(meta)[1]," Documents could be retrieved from database"),type = "success")
+  shinyWidgets::sendSweetAlert(session=session,title = "Data ready for Download",text=paste0(dim(meta)[1]," Documents could be retrieved from database"),type = "success")
   shinyjs::show(id = "export_csv")
 })
 
@@ -244,7 +244,7 @@ observe({
       },
       content = function(con) {
         if(dim(values$token_tmp)[1]==0){
-          shinyalert::shinyalert(title = "no documents found.",text = "Have you clicked 'Prepare Documents'?",type = "warning")
+          shinyWidgets::sendSweetAlert(session=session,title = "no documents found.",text = "Have you clicked 'Prepare Documents'?",type = "warning")
         }
         else{
           write.table(values$token_tmp[((floor((dim(values$token_tmp)[1]/values$export_number_of_buttons)*(i-1))+1):floor((dim(values$token_tmp)[1]/values$export_number_of_buttons)*(i))),], con,col.names = F,row.names = F,sep=",")
@@ -267,7 +267,7 @@ observe({
       },
       content = function(con) {
         if(dim(values$meta_tmp)[1]==0){
-          shinyalert::shinyalert(title = "no documents found.",text = "Have you clicked 'Prepare Documents'?",type = "warning")
+          shinyWidgets::sendSweetAlert(session=session,title = "no documents found.",text = "Have you clicked 'Prepare Documents'?",type = "warning")
         }
         else{
           write.table(values$meta_tmp[((floor((dim(values$meta_tmp)[1]/values$export_number_of_buttons)*(i-1))+1):floor((dim(values$meta_tmp)[1]/values$export_number_of_buttons)*(i))),], con,col.names = F,row.names = F,sep=",")

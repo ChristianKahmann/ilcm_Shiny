@@ -1,12 +1,12 @@
 output$script_custom_script_options_UI<-renderUI({
   if(input$analysis_selected_script==""){
-    shinyalert::shinyalert(title = "Please select an analysis",text = "Please choose a type of analysis first.",type = "warning")
+    shinyWidgets::sendSweetAlert(session=session,title = "Please select an analysis",text = "Please choose a type of analysis first.",type = "warning")
     return(NULL)
   }
   else{
     choices<-list.files(paste0("collections/scripts/",input$analysis_selected_script,"/"))
     if(length(choices)==0){
-      shinyalert::shinyalert(title = "no custom script found!",text = "Save an updated version of standard script.",type = "warning")
+      shinyWidgets::sendSweetAlert(session=session,title = "no custom script found!",text = "Save an updated version of standard script.",type = "warning")
       return(NULL)
     }
     else{
@@ -124,12 +124,12 @@ observeEvent(input$Script_Name_save_CA,{
   text=input$R_Script_CA
   name<-paste0(input$Script_Name_CA,"_Script.R")
   if(name%in%list.files(path = "collections/scripts/Cooccurrence_Analysis/",full.names = F)){
-    shinyalert::shinyalert(title = "File Name already used",text = "specify an other name.",type = "warning") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File Name already used",text = "specify an other name.",type = "warning") 
   }
   else{
     removeModal()
     write(text,file = paste0("collections/scripts/Cooccurrence_Analysis/",name))
-    shinyalert::shinyalert(title = "File saved",type = "success") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
   }
 })
 
@@ -152,12 +152,12 @@ observeEvent(input$Script_Name_save_DD,{
   text=input$R_Script_DD
   name<-paste0(input$Script_Name_DD,"_Script.R")
   if(name%in%list.files(path = "collections/scripts/Document_Deduplication/",full.names = F)){
-    shinyalert::shinyalert(title = "File Name already used",text = "specify an other name.",type = "warning") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File Name already used",text = "specify an other name.",type = "warning") 
   }
   else{
     removeModal()
     write(text,file = paste0("collections/scripts/Document_Deduplication/",name))
-    shinyalert::shinyalert(title = "File saved",type = "success") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
   }
 })
 
@@ -182,12 +182,12 @@ observeEvent(input$Script_Name_save_KE,{
   text=input$R_Script_KE
   name<-paste0(input$Script_Name_KE,"_Script.R")
   if(name%in%list.files(path = "collections/scripts/Keyword_Extraction/",full.names = F)){
-    shinyalert::shinyalert(title = "File Name already used",text = "specify an other name.",type = "warning") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File Name already used",text = "specify an other name.",type = "warning") 
   }
   else{
     removeModal()
     write(text,file = paste0("collections/scripts/Keyword_Extraction/",name))
-    shinyalert::shinyalert(title = "File saved",type = "success") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
   }
 })
 
@@ -212,12 +212,12 @@ observeEvent(input$Script_Name_save_FE,{
   text=input$R_Script_FE
   name<-paste0(input$Script_Name_FE,"_Script.R")
   if(name%in%list.files(path = "collections/scripts/Frequency_Extraction/",full.names = F)){
-    shinyalert::shinyalert(title = "File Name already used",text = "specify an other name.",type = "warning") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File Name already used",text = "specify an other name.",type = "warning") 
   }
   else{
     removeModal()
     write(text,file = paste0("collections/scripts/Frequency_Extraction/",name))
-    shinyalert::shinyalert(title = "File saved",type = "success") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
   }
 })
 
@@ -242,12 +242,12 @@ observeEvent(input$Script_Name_save_VA,{
   text=input$R_Script_VA
   name<-paste0(input$Script_Name_VA,"_Script.R")
   if(name%in%list.files(path = "collections/scripts/Volatility_Analysis/",full.names = F)){
-    shinyalert::shinyalert(title = "File Name already used",text = "specify an other name.",type = "warning") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File Name already used",text = "specify an other name.",type = "warning") 
   }
   else{
     removeModal()
     write(text,file = paste0("collections/scripts/Volatility_Analysis/",name))
-    shinyalert::shinyalert(title = "File saved",type = "success") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
   }
 })
 
@@ -272,12 +272,12 @@ observeEvent(input$Script_Name_save_TM,{
   text=input$R_Script_TM
   name<-paste0(input$Script_Name_TM,"_Script.R")
   if(name%in%list.files(path = "collections/scripts/Topic_Model/",full.names = F)){
-    shinyalert::shinyalert(title = "File Name already used",text = "specify an other name.",type = "warning") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File Name already used",text = "specify an other name.",type = "warning") 
   }
   else{
     removeModal()
     write(text,file = paste0("collections/scripts/Topic_Model/",name))
-    shinyalert::shinyalert(title = "File saved",type = "success") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
   }
 })
 
@@ -301,12 +301,12 @@ observeEvent(input$Script_Name_save_DE,{
   text=input$R_Script_DE
   name<-paste0(input$Script_Name_DE,"_Script.R")
   if(name%in%list.files(path = "collections/scripts/Dictionary_Extraction/",full.names = F)){
-    shinyalert::shinyalert(title = "File Name already used",text = "specify an other name.",type = "warning") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File Name already used",text = "specify an other name.",type = "warning") 
   }
   else{
     removeModal()
     write(text,file = paste0("collections/scripts/Dictionary_Extraction/",name))
-    shinyalert::shinyalert(title = "File saved",type = "success") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
   }
 })
 
@@ -330,12 +330,12 @@ observeEvent(input$Script_Name_save_CL,{
   text=input$R_Script_CL
   name<-paste0(input$Script_Name_CL,"_Script.R")
   if(name%in%list.files(path = "collections/scripts/Classification/",full.names = F)){
-    shinyalert::shinyalert(title = "File Name already used",text = "specify an other name.",type = "warning") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File Name already used",text = "specify an other name.",type = "warning") 
   }
   else{
     removeModal()
     write(text,file = paste0("collections/scripts/Classification/",name))
-    shinyalert::shinyalert(title = "File saved",type = "success") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
   }
 })
 
@@ -345,12 +345,12 @@ observeEvent(input$Script_Name_save_FA,{
   text=input$R_Script_FA
   name<-paste0(input$Script_Name_FA,"_Script.R")
   if(name%in%list.files(path = "collections/scripts/Factorial_Analysis/",full.names = F)){
-    shinyalert::shinyalert(title = "File Name already used",text = "specify an other name.",type = "warning") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File Name already used",text = "specify an other name.",type = "warning") 
   }
   else{
     removeModal()
     write(text,file = paste0("collections/scripts/Factorial_Analysis/",name))
-    shinyalert::shinyalert(title = "File saved",type = "success") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
   }
 })
 observeEvent(input$Save_Script_FA,{
@@ -373,12 +373,12 @@ observeEvent(input$Script_Name_save_SA,{
   text=input$R_Script_SA
   name<-paste0(input$Script_Name_SA,"_Script.R")
   if(name%in%list.files(path = "collections/scripts/Sentiment_Analysis/",full.names = F)){
-    shinyalert::shinyalert(title = "File Name already used",text = "specify an other name.",type = "warning") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File Name already used",text = "specify an other name.",type = "warning") 
   }
   else{
     removeModal()
     write(text,file = paste0("collections/scripts/Sentiment_Analysis/",name))
-    shinyalert::shinyalert(title = "File saved",type = "success") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
   }
 })
 observeEvent(input$Save_Script_SA,{
@@ -415,12 +415,12 @@ observeEvent(input$Script_Name_save_custom,{
   text=input$R_Script_custom
   name<-input$Script_Name_custom
   if(name%in%list.files(path = paste0("collections/scripts/",input$analysis_selected_script,"/",input$script_custom_script_options),full.names = F)){
-    shinyalert::shinyalert(title = "File Name already used",text = "specify an other name.",type = "warning") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File Name already used",text = "specify an other name.",type = "warning") 
   }
   else{
     removeModal()
     write(text,file = paste0("collections/scripts/",input$analysis_selected_script,"/",name))
-    shinyalert::shinyalert(title = "File saved",type = "success") 
+    shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
     values$new_script_saved<-runif(n = 1,0,1)
   }
 })

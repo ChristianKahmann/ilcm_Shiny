@@ -180,7 +180,7 @@ output$Class_all_categories_annotations<-DT::renderDataTable({
   
   highlight<-data.frame(span_id=NULL,name=NULL,color=NULL,stringsAsFactors = F)
   if(!all(labels_predictions%in%values$Class_all_documents_annos[,1])){
-    shinyalert::shinyalert(title = "Wrong annotation set",text = paste0("It seems the annotations set has changed between annotating and classification.
+    shinyWidgets::sendSweetAlert(session=session,title = "Wrong annotation set",text = paste0("It seems the annotations set has changed between annotating and classification.
                            Please make sure all annotated classes are still available in the annotation scheme.",
                                                                         " Here the class: ",paste(setdiff(unique(labels_predictions),values$Class_all_documents_annos[,1]),collapse=" ")," is missing."))
     return(NULL)
@@ -411,7 +411,7 @@ observeEvent(input$Class_all_categories_save,{
                                                      ' and project="',input$project_selected,'" and category="',as.character(labels$predictions[i]),'"and status LIKE "denied%";'))
     }
     RMariaDB::dbDisconnect(conn = mydb)
-    shinyalert::shinyalert(title = "Changes saved",type = "success")
+    shinyWidgets::sendSweetAlert(session=session,title = "Changes saved",type = "success")
     values$Class_all_categories_reload<-runif(1,0,1)
   })
 })
@@ -534,7 +534,7 @@ observeEvent(input$classification_buttons_rerun,{
   #start script
   system(paste0('Rscript collections/scripts/Classification_Script.R',' &'))
   
-  shinyalert::shinyalert(title = "Process started",text = "The classification process was started again with the same parameter settings,
+  shinyWidgets::sendSweetAlert(session=session,title = "Process started",text = "The classification process was started again with the same parameter settings,
                          but only with tagged active learning data added.",type="success")
 })
 
@@ -931,7 +931,7 @@ observeEvent(input$Class_eval_save,{
     
     
     RMariaDB::dbDisconnect(conn = mydb)
-    shinyalert::shinyalert(title = "Changes saved",type = "success")
+    shinyWidgets::sendSweetAlert(session=session,title = "Changes saved",type = "success")
     removeModal()
     values$Class_update_classifications<-runif(1,0,1)
   })
@@ -1424,7 +1424,7 @@ observeEvent(input$Class_eval2_save,{
       }
     }
     RMariaDB::dbDisconnect(conn = mydb)
-    shinyalert::shinyalert(title = "Changes saved",type = "success")
+    shinyWidgets::sendSweetAlert(session=session,title = "Changes saved",type = "success")
     removeModal()
     values$Class_update_classifications<-runif(1,0,1)
   })

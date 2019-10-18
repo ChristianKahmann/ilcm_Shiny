@@ -561,10 +561,10 @@ observeEvent(ignoreInit = T,input$Det_DD_save_collection,{
   
   save(info,file=paste("collections/collections/",info[[5]],".RData",sep = ""))
   save_collection_to_db(info)
-  shinyalert::shinyalert(title = "Collection created",text = paste0("new collection with name:",paste0(info[[5]])," has been created"),type = "success")
+  shinyWidgets::sendSweetAlert(session=session,title = "Collection created",text = paste0("new collection with name:",paste0(info[[5]])," has been created"),type = "success")
   }
   else{
-    shinyalert::shinyalert(title = "No new collection created",text = "There was no duplicate found.",type = "warning")
+    shinyWidgets::sendSweetAlert(session=session,title = "No new collection created",text = "There was no duplicate found.",type = "warning")
   }
 })
 

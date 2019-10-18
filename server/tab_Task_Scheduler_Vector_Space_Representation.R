@@ -181,7 +181,7 @@ observeEvent(input$VS_Submit_Script,{
   save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
   #start script
   if(input$use_custom_script==TRUE && !is.null(input$custom_script_options)){
-    shinyalert::shinyalert(title = "Starting a custom script",text = "You are about to start a custom script. Caution with the calculation and results!",type = "info")
+    shinyWidgets::sendSweetAlert(session=session,title = "Starting a custom script",text = "You are about to start a custom script. Caution with the calculation and results!",type = "info")
     system(paste0('Rscript collections/scripts/Vector_Space_Representation/',input$custom_script_options,' &'))
   }
   else{

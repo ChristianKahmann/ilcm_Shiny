@@ -503,7 +503,7 @@ observe({
   top_topic_names <- topic_names[top_topics[1:(input$TM_Coherence_setsize-1)]]
   
   if(K < isolate(input$TM_Coherence_setsize)){
-    shinyalert::shinyalert(title = "Number of Topics is smaller than the chosen setsize",text = "Increase the setsize",type = "warning")
+    shinyWidgets::sendSweetAlert(session=session,title = "Number of Topics is smaller than the chosen setsize",text = "Increase the setsize",type = "warning")
   }
   
   if (ceiling(K/2) <=  isolate(input$TM_Coherence_setsize)){
@@ -543,7 +543,7 @@ observeEvent(input$wrong_topic,{
     need(as.numeric(stringr::str_split(string=input$wrong_topic,pattern = "_",simplify = T)[1,4])!=0,message=FALSE)
   )
   if(values$TM_topic_intrusion_run>isolate(input$TM_Coherence_runs)){
-    shinyalert::shinyalert(title = "finished all runs already",text = "start a new iteration",type = "warning",animation = "slide-from-top")
+    shinyWidgets::sendSweetAlert(session=session,title = "finished all runs already",text = "start a new iteration",type = "warning",animation = "slide-from-top")
   }
   else{
     wrong_topic<-as.numeric(stringr::str_split(string=input$wrong_topic,pattern = "_",simplify = T)[1,4])
@@ -554,10 +554,10 @@ observeEvent(input$wrong_topic,{
     )
     values$topic_intrusion_results[dim(isolate(values$topic_intrusion_results))[1],3]<-wrong_topic
     if(values$topic_intrusion_results[dim(isolate(values$topic_intrusion_results))[1],2]==values$topic_intrusion_results[dim(isolate(values$topic_intrusion_results))[1],3]){
-      shinyalert::shinyalert(title = "Correct",text = "You found the intruder!",type = "success",animation = "slide-from-top")
+      shinyWidgets::sendSweetAlert(session=session,title = "Correct",text = "You found the intruder!",type = "success",animation = "slide-from-top")
     }
     else{
-      shinyalert::shinyalert(title = "False",text = "You did not found the intruder!",type = "error",animation = "slide-from-bottom")
+      shinyWidgets::sendSweetAlert(session=session,title = "False",text = "You did not found the intruder!",type = "error",animation = "slide-from-bottom")
     }
     values$right_prediction<-length(which((apply(values$topic_intrusion_results,1,FUN = function(x){x[2]==x[3]}))==TRUE))/dim(values$topic_intrusion_results)[1]
     
@@ -734,7 +734,7 @@ observeEvent(input$wrong_word,{
     need(as.numeric(stringr::str_split(string=input$wrong_word,pattern = "_",simplify = T)[1,4])!=0,message=FALSE)
   )
   if(values$TM_word_intrusion_run>isolate(input$TM_Coherence_runs)){
-    shinyalert::shinyalert(title = "finished all runs already",text = "start a new iteration",type = "warning",animation = "slide-from-top")
+    shinyWidgets::sendSweetAlert(session=session,title = "finished all runs already",text = "start a new iteration",type = "warning",animation = "slide-from-top")
   }
   else{
     wrong_word<-as.numeric(stringr::str_split(string=input$wrong_word,pattern = "_",simplify = T)[1,4])
@@ -745,10 +745,10 @@ observeEvent(input$wrong_word,{
     )
     values$word_intrusion_results[dim(isolate(values$word_intrusion_results))[1],3]<-wrong_word
     if(values$word_intrusion_results[dim(isolate(values$word_intrusion_results))[1],2]==values$word_intrusion_results[dim(isolate(values$word_intrusion_results))[1],3]){
-      shinyalert::shinyalert(title = "Correct",text = "You found the intruder!",type = "success",animation = "slide-from-top")
+      shinyWidgets::sendSweetAlert(session=session,title = "Correct",text = "You found the intruder!",type = "success",animation = "slide-from-top")
     }
     else{
-      shinyalert::shinyalert(title = "False",text = "You did not found the intruder!",type = "error",animation = "slide-from-bottom")
+      shinyWidgets::sendSweetAlert(session=session,title = "False",text = "You did not found the intruder!",type = "error",animation = "slide-from-bottom")
     }
     values$right_prediction_word<-length(which((apply(values$word_intrusion_results,1,FUN = function(x){x[2]==x[3]}))==TRUE))/dim(values$word_intrusion_results)[1]
     
@@ -853,19 +853,19 @@ output$TM_dict_save_ui<-renderUI({
 
 observeEvent(input$TM_dict_save,{
   if(any(nchar(values$TM_dict_headers)==0)){
-    shinyalert::shinyalert(title = "Not all categories have names!",text = "Please specify a name for every category!",type = "warning")
+    shinyWidgets::sendSweetAlert(session=session,title = "Not all categories have names!",text = "Please specify a name for every category!",type = "warning")
   }
   else{
     if(length(unique(values$TM_dict_headers))!=length(values$TM_dict_headers)){
-      shinyalert::shinyalert(title = "Not all categories have unique names!",text = "Please ensure every category has a unique name!",type = "warning")
+      shinyWidgets::sendSweetAlert(session=session,title = "Not all categories have unique names!",text = "Please ensure every category has a unique name!",type = "warning")
     }
     else{
       if(input$TM_dict_name==""){
-        shinyalert::shinyalert(title = "No dictionary name given!",text = "Please specify a name for the dictionary!",type = "warning")
+        shinyWidgets::sendSweetAlert(session=session,title = "No dictionary name given!",text = "Please specify a name for the dictionary!",type = "warning")
       }
       else{
         if(input$TM_dict_name %in% stringr::str_remove_all(string = list.files("collections/dictionaries/"),pattern = ".RData")){
-          shinyalert::shinyalert(title = "Dictionary Name already in Use",text = "Please specify a other name!",type = "warning")
+          shinyWidgets::sendSweetAlert(session=session,title = "Dictionary Name already in Use",text = "Please specify a other name!",type = "warning")
         }
         else{
           df<-NULL
@@ -875,7 +875,7 @@ observeEvent(input$TM_dict_save,{
           colnames(df)<-values$TM_dict_headers
           dict<-DF_to_Dict(df)
           save(dict,file=paste0("collections/dictionaries/",input$TM_dict_name,".RData"))
-          shinyalert::shinyalert(title = "Dictionary saved",type = "success")
+          shinyWidgets::sendSweetAlert(session=session,title = "Dictionary saved",type = "success")
         }
       }
     }

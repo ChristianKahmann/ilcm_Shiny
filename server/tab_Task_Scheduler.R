@@ -7,14 +7,14 @@ output$Task_Scheduler_Collection<-renderUI({
 output$custom_script_options_UI<-renderUI({
   values$new_script_saved
   if(input$analysis_selected==""){
-    shinyalert::shinyalert(title = "Please select an analysis",text = "Please choose a type of analysis",type = "warning")
+    shinyWidgets::sendSweetAlert(session=session,title = "Please select an analysis",text = "Please choose a type of analysis",type = "warning")
     return(NULL)
   }
   else{
     choices<-list.files(paste0("collections/scripts/",input$analysis_selected,"/"))
     
     if(length(choices)==0){
-      shinyalert::shinyalert(title = "no custom script found!",text = "You can edit and save scipts in the 'Scripts-Tab' in the sidebar. Otherwise the standard script will be used.",type = "warning")
+      shinyWidgets::sendSweetAlert(session=session,title = "no custom script found!",text = "You can edit and save scipts in the 'Scripts-Tab' in the sidebar. Otherwise the standard script will be used.",type = "warning")
       return(NULL)
     }
     else{
@@ -52,7 +52,7 @@ observeEvent(input$analysis_help,ignoreInit = T,{
     )
   }
   else{
-    shinyalert::shinyalert(title = "No Tutorial found",text = "For your chosen analysis, there is no tutorial .md file located in the tutorials directory Sorry!",type = "warning")
+    shinyWidgets::sendSweetAlert(session=session,title = "No Tutorial found",text = "For your chosen analysis, there is no tutorial .md file located in the tutorials directory Sorry!",type = "warning")
   }
   
 })

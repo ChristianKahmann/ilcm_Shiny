@@ -16,7 +16,7 @@ observeEvent(input$Dict_change,{
 observeEvent(input$dict_change_accept,{
   shiny::removeModal()
   if(is.null(input$dict_change_dict)){
-    shinyalert::shinyalert(title = "No dictionary selected",text = "Please select a dictionary.",type = "warning")
+    shinyWidgets::sendSweetAlert(session=session,title = "No dictionary selected",text = "Please select a dictionary.",type = "warning")
   }
   else{
     values$dict_name<-input$dict_change_dict
@@ -43,7 +43,7 @@ observeEvent(input$dict_delete,{
 observeEvent(input$dict_confirm_delete,{
   if(isTRUE(input$dict_confirm_delete)){
     if(is.null(input$dict_delete_dict)){
-      shinyalert::shinyalert(title = "No dictionary selected",text = "Please select a dictionary.",type = "warning")
+      shinyWidgets::sendSweetAlert(session=session,title = "No dictionary selected",text = "Please select a dictionary.",type = "warning")
     }
     else{
       shiny::removeModal()
@@ -104,19 +104,19 @@ observe({
 
 observeEvent(input$dict_save_really,{
   if(any(nchar(values$dict_headers)==0)){
-    shinyalert::shinyalert(title = "Not all categories have names!",text = "Please specify a name for every category!",type = "warning")
+    shinyWidgets::sendSweetAlert(session=session,title = "Not all categories have names!",text = "Please specify a name for every category!",type = "warning")
   }
   else{
     if(length(unique(values$dict_headers))!=length(values$dict_headers)){
-      shinyalert::shinyalert(title = "Not all categories have unique names!",text = "Please ensure every category has a unique name!",type = "warning")
+      shinyWidgets::sendSweetAlert(session=session,title = "Not all categories have unique names!",text = "Please ensure every category has a unique name!",type = "warning")
     }
     else{
       if(input$dict_name==""){
-        shinyalert::shinyalert(title = "No dictionary name given!",text = "Please specify a name for the dictionary!",type = "warning")
+        shinyWidgets::sendSweetAlert(session=session,title = "No dictionary name given!",text = "Please specify a name for the dictionary!",type = "warning")
       }
       else{
         if(input$dict_name %in% stringr::str_remove_all(string = list.files("collections/dictionaries/"),pattern = ".RData")){
-          shinyalert::shinyalert(title = "Dictionary Name already in Use",text = "Please specify a other name!",type = "warning")
+          shinyWidgets::sendSweetAlert(session=session,title = "Dictionary Name already in Use",text = "Please specify a other name!",type = "warning")
         }
         else{
           shiny::removeModal()
@@ -134,7 +134,7 @@ observeEvent(input$dict_save_really,{
           dict<-DF_to_Dict(df)
           save(dict,file=paste0("collections/dictionaries/",input$dict_name,".RData"))
           values$update_dicts<-runif(1,0,1)
-          shinyalert::shinyalert(title = "Dictionary saved",type = "success")
+          shinyWidgets::sendSweetAlert(session=session,title = "Dictionary saved",type = "success")
         }
       }
     }

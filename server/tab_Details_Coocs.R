@@ -27,7 +27,7 @@ observeEvent(input$Det_CO_Update,{
   #load result matrix and input parameters
   word<-isolate(input$Det_CO_Word)
   if(nchar(word)<1){
-    shinyalert::shinyalert(title = "no Input specified",type = "warning")
+    shinyWidgets::sendSweetAlert(session=session,title = "no Input specified",type = "warning")
   }
   else{
     depth<-isolate(input$Det_CO_Depth)
@@ -43,7 +43,7 @@ observeEvent(input$Det_CO_Update,{
     nodes<-rbind(nodes,c(word,1,2))
     if(length(coocs)==1){
       if(is.na(coocs)){
-        shinyalert::shinyalert(title = "No co-occurrence found",text = "For your specified word, no co-occurring word could be found",type = "warning")
+        shinyWidgets::sendSweetAlert(session=session,title = "No co-occurrence found",text = "For your specified word, no co-occurring word could be found",type = "warning")
         return(NULL)
       }
       cooc<-data[word,which(data[word,]>0),drop=F]

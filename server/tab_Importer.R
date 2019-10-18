@@ -41,12 +41,12 @@ observeEvent(input$Import_csv_new,ignoreInit = T,{
   )
   print(input$Import_csv_new)
   if(file.exists(paste0("data_import/unprocessed_data/",input$Import_csv_new$name))){
-    shinyalert::shinyalert(title = "Filename already used",text = "Please rename your csv file and then try to upload it again.",type = "warning")
+    shinyWidgets::sendSweetAlert(session=session,title = "Filename already used",text = "Please rename your csv file and then try to upload it again.",type = "warning")
   }
   else{
     file.copy(from = input$Import_csv_new$datapath,to = paste0("data_import/unprocessed_data/",input$Import_csv_new$name))
     values$invalidate_csv_files<-runif(1,0,1)
-    shinyalert::shinyalert(title = "File added",text = "You can now select it in the list of files above",type = "success")
+    shinyWidgets::sendSweetAlert(session=session,title = "File added",text = "You can now select it in the list of files above",type = "success")
   }
 })
 
@@ -59,7 +59,7 @@ observeEvent(input$Import_load_csv,{
                                      sep =input$import_load_csv_seperator ,fileEncoding = input$import_load_csv_encoding)
     if(dim(values$data_csv)[1]<2 | dim(values$data_csv)[2]<2){
       text<-paste0("The resulting input dimesions are: ",dim(values$data_csv)[1]," x ",dim(values$data_csv)[2],". Something went wrong during the input. Make sure to specify the csv input parameters correct.")
-      shinyalert::shinyalert(title = "Input failed!",text = text,type = "error")
+      shinyWidgets::sendSweetAlert(session=session,title = "Input failed!",text = text,type = "error")
     }
     else{
       values$header_csv<-c(colnames(values$data_csv))
@@ -205,7 +205,7 @@ observeEvent(input$save_Imp_title,{
     eval(parse(text=input$script_title))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -262,7 +262,7 @@ observeEvent(input$save_Imp_id_doc,{
     eval(parse(text=input$script_id_doc))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -328,7 +328,7 @@ observeEvent(input$save_Imp_body,{
     eval(parse(text=input$script_body))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -381,7 +381,7 @@ observeEvent(input$save_Imp_mde3,{
     eval(parse(text=input$script_mde3))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -438,7 +438,7 @@ observeEvent(input$save_Imp_mde1,{
     eval(parse(text=input$script_mde1))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -494,7 +494,7 @@ observeEvent(input$save_Imp_date,{
     eval(parse(text=input$script_date))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -550,7 +550,7 @@ observeEvent(input$save_Imp_mde4,{
     eval(parse(text=input$script_mde4))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -606,7 +606,7 @@ observeEvent(input$save_Imp_mde5,{
     eval(parse(text=input$script_mde5))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -662,7 +662,7 @@ observeEvent(input$save_Imp_mde6,{
     eval(parse(text=input$script_mde6))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -718,7 +718,7 @@ observeEvent(input$save_Imp_mde7,{
     eval(parse(text=input$script_mde7))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -774,7 +774,7 @@ observeEvent(input$save_Imp_mde8,{
     eval(parse(text=input$script_mde8))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -830,7 +830,7 @@ observeEvent(input$save_Imp_mde9,{
     eval(parse(text=input$script_mde9))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -889,7 +889,7 @@ observeEvent(input$save_Imp_mde2,{
     eval(parse(text=input$script_mde2))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -998,28 +998,28 @@ observeEvent(input$Import_csv_start_preprocess,{
   #test if metadata is valid 
   data<-values$Import_csv_meta_complete
   if(length(unique(data[,"id_doc"]))!=dim(data)[1]){
-    shinyalert::shinyalert(title = "Document id not unique",text = "Please specify id_doc to be unique for every document!",type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "Document id not unique",text = "Please specify id_doc to be unique for every document!",type = "error")
   }
   else{
     if(!(is.numeric(as.numeric(data[,"id_doc"])))){
-      shinyalert::shinyalert(title = "Document id not a number",text = "Please specify id_doc to be an integer",type = "error")
+      shinyWidgets::sendSweetAlert(session=session,title = "Document id not a number",text = "Please specify id_doc to be an integer",type = "error")
     }
     else{
       if(nchar(as.character(data[1,"dataset"]))==0){
-        shinyalert::shinyalert(title = "dataset abbreviation not specified",text = "Please specify a abbreviation for the data",type = "error")
+        shinyWidgets::sendSweetAlert(session=session,title = "dataset abbreviation not specified",text = "Please specify a abbreviation for the data",type = "error")
       }
       else{
         if(stringr::str_detect(as.character(data[1,"dataset"]),pattern = "_")){
-          shinyalert::shinyalert(title = "'_' not allowed",text = "Please specify a abbreviation without using '_'",type = "error")
+          shinyWidgets::sendSweetAlert(session=session,title = "'_' not allowed",text = "Please specify a abbreviation without using '_'",type = "error")
         }
         else{
           if(any(inherits(try({as.Date(data[,"date"],input$Import_mtf_date_format)}),"Date")==F)){
-            shinyalert::shinyalert(title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
+            shinyWidgets::sendSweetAlert(session=session,title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
           }
           else{
             try({
               if(any(nchar(data[,"body"])<1)){
-                shinyalert::shinyalert(title = "Body is empty for at least one document",type = "warning")
+                shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
               }
             })
             #create meta metadata vector
@@ -1072,7 +1072,7 @@ observeEvent(input$Import_csv_start_preprocess,{
             #start script
             system(paste('Rscript collections/scripts/Import_Script.R','&'))
             #show modal when process is started
-            shinyalert::shinyalert(title = "Started Import Script",type = "success")
+            shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
           }
         }
       }
@@ -1085,27 +1085,27 @@ observeEvent(input$Import_csv_start_preprocess_and_write,{
   #test if metadata is valid 
   data<-values$Import_csv_meta_complete
   if(length(unique(data[,"id_doc"]))!=dim(data)[1]){
-    shinyalert::shinyalert(title = "Document id not unique",text = "Please specify id_doc to be unique for every document!",type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "Document id not unique",text = "Please specify id_doc to be unique for every document!",type = "error")
   }
   else{
     if(!(is.numeric(as.numeric(data[,"id_doc"])))){
-      shinyalert::shinyalert(title = "Document id not a number",text = "Please specify id_doc to be an integer",type = "error")
+      shinyWidgets::sendSweetAlert(session=session,title = "Document id not a number",text = "Please specify id_doc to be an integer",type = "error")
     }
     else{
       if(nchar(as.character(data[1,"dataset"]))==0){
-        shinyalert::shinyalert(title = "dataset abbreviation not specified",text = "Please specify a abbreviation for the data",type = "error")
+        shinyWidgets::sendSweetAlert(session=session,title = "dataset abbreviation not specified",text = "Please specify a abbreviation for the data",type = "error")
       }
       else{
         if(stringr::str_detect(as.character(data[1,"dataset"]),pattern = "_")){
-          shinyalert::shinyalert(title = "'_' not allowed",text = "Please specify a abbreviation without using '_'",type = "error")
+          shinyWidgets::sendSweetAlert(session=session,title = "'_' not allowed",text = "Please specify a abbreviation without using '_'",type = "error")
         }
         else{
           if(any(inherits(try({as.Date(data[,"date"],input$Import_mtf_date_format)}),"Date")==F)){
-            shinyalert::shinyalert(title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
+            shinyWidgets::sendSweetAlert(session=session,title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
           }
           else{
             if(any(nchar(data[,"body"])<1)){
-              shinyalert::shinyalert(title = "Body is empty for at least one document",type = "warning")
+              shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
             }
             #create meta metadata vector
             meta_metadata<-data.frame(t(c(input$Import_csv_dataset,input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,
@@ -1157,7 +1157,7 @@ observeEvent(input$Import_csv_start_preprocess_and_write,{
             #start script
             system(paste('Rscript collections/scripts/Import_Script.R','&'))
             #show modal when process is started
-            shinyalert::shinyalert(title = "Started Import Script",type = "success")
+            shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
           }
         }
       }
@@ -1235,7 +1235,7 @@ observeEvent(input$Import_mtf_new,ignoreInit = T,{
 observeEvent(ignoreInit = T,input$Import_mtf_new_name_button,{
   file.rename(from =values$Import_mtf_new_directory_name_uuid ,to =paste0("data_import/unprocessed_data/",input$Import_mtf_new_name))
   removeModal()
-  shinyalert::shinyalert(title = "File added",text = "You can now select it in the list of files above",type = "success")
+  shinyWidgets::sendSweetAlert(session=session,title = "File added",text = "You can now select it in the list of files above",type = "success")
   values$invalidate_mtf_files<-runif(1,0,1)
 })
 
@@ -1264,7 +1264,7 @@ observeEvent(input$Import_load_mtf,{
 observeEvent(input$Import_mtf_metadata_csv,{
   values$mtf_metadata<-read.csv(input$Import_mtf_metadata_csv$datapath,header=input$Import_mtf_metadata_csv_header)
   if(dim(values$mtf_metadata)[1]!=dim(isolate(values$data_mtf))[1]){
-    shinyalert::shinyalert(title = "Wrong dimensions",text = paste0("Metadata CSV does not match the number of files in the chosen directory. ",
+    shinyWidgets::sendSweetAlert(session=session,title = "Wrong dimensions",text = paste0("Metadata CSV does not match the number of files in the chosen directory. ",
                                                                     isolate(dim(values$data_mtf)[1])," files were imported The metadata csv has ",isolate(dim(values$mtf_metadata)[1])," rows."),type = "warning")
   }
   else{
@@ -1414,7 +1414,7 @@ observeEvent(input$save_Imp_title_mtf,{
     eval(parse(text=input$script_title_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -1473,7 +1473,7 @@ observeEvent(input$save_Imp_id_doc_mtf,{
     eval(parse(text=input$script_id_doc_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -1539,7 +1539,7 @@ observeEvent(input$save_Imp_body_mtf,{
     eval(parse(text=input$script_body_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -1590,7 +1590,7 @@ observeEvent(input$save_Imp_date_mtf,{
     eval(parse(text=input$script_date_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -1646,7 +1646,7 @@ observeEvent(input$save_Imp_mde1_mtf,{
     eval(parse(text=input$script_mde1_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -1702,7 +1702,7 @@ observeEvent(input$save_Imp_mde2_mtf,{
     eval(parse(text=input$script_mde2_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -1758,7 +1758,7 @@ observeEvent(input$save_Imp_mde3_mtf,{
     eval(parse(text=input$script_mde3_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -1814,7 +1814,7 @@ observeEvent(input$save_Imp_mde4_mtf,{
     eval(parse(text=input$script_mde4_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -1870,7 +1870,7 @@ observeEvent(input$save_Imp_mde5_mtf,{
     eval(parse(text=input$script_mde5_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -1926,7 +1926,7 @@ observeEvent(input$save_Imp_mde6_mtf,{
     eval(parse(text=input$script_mde6_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -1982,7 +1982,7 @@ observeEvent(input$save_Imp_mde7_mtf,{
     eval(parse(text=input$script_mde7_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -2038,7 +2038,7 @@ observeEvent(input$save_Imp_mde8_mtf,{
     eval(parse(text=input$script_mde8_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -2094,7 +2094,7 @@ observeEvent(input$save_Imp_mde9_mtf,{
     eval(parse(text=input$script_mde9_mtf))
   },
   error=function(e){
-    shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
   }
   )
   removeModal()
@@ -2204,31 +2204,31 @@ observeEvent(input$Import_mtf_start_preprocess,{
   #test if metadata is valid 
   data<-values$Import_mtf_meta_complete
   if(length(unique(data[,"id_doc"]))!=dim(data)[1]){
-    shinyalert::shinyalert(title = "Document id not unique",text = "Please specify id_doc to be unique for every document!",type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "Document id not unique",text = "Please specify id_doc to be unique for every document!",type = "error")
   }
   else{
     if(!(is.numeric(as.numeric(data[,"id_doc"])))){
-      shinyalert::shinyalert(title = "Document id not a number",text = "Please specify id_doc to be an integer",type = "error")
+      shinyWidgets::sendSweetAlert(session=session,title = "Document id not a number",text = "Please specify id_doc to be an integer",type = "error")
     }
     else{
       if(nchar(as.character(data[1,"dataset"]))==0){
-        shinyalert::shinyalert(title = "dataset abbreviation not specified",text = "Please specify a abbreviation for the data",type = "error")
+        shinyWidgets::sendSweetAlert(session=session,title = "dataset abbreviation not specified",text = "Please specify a abbreviation for the data",type = "error")
       }
       else{
         if(stringr::str_detect(as.character(data[1,"dataset"]),pattern = "_")){
-          shinyalert::shinyalert(title = "'_' not allowed",text = "Please specify a abbreviation without using '_'",type = "error")
+          shinyWidgets::sendSweetAlert(session=session,title = "'_' not allowed",text = "Please specify a abbreviation without using '_'",type = "error")
         }
         else{
           if(nchar(data[1,"dataset"])>50){
-            shinyalert::shinyalert(title = "abbreviation too long",text = "Please specify a abbreviation with maximum 50 chars.",type = "error")
+            shinyWidgets::sendSweetAlert(session=session,title = "abbreviation too long",text = "Please specify a abbreviation with maximum 50 chars.",type = "error")
           }
           else{
             if(any(inherits(try({as.Date(data[,"date"],input$Import_mtf_date_format)}),"Date")==F)){
-              shinyalert::shinyalert(title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
+              shinyWidgets::sendSweetAlert(session=session,title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
             }
             else{
               if(any(nchar(data[,"body"])<1)){
-                shinyalert::shinyalert(title = "Body is empty for at least one document",type = "warning")
+                shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
               }
               #create meta metadata vector
               meta_metadata<-data.frame(t(c(input$Import_mtf_dataset,input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,
@@ -2280,7 +2280,7 @@ observeEvent(input$Import_mtf_start_preprocess,{
               #start script
               system(paste('Rscript collections/scripts/Import_Script.R','&'))
               #show modal when process is started
-              shinyalert::shinyalert(title = "Started Import Script",type = "success")
+              shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
             }
           }
         }
@@ -2294,31 +2294,31 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
   #test if metadata is valid 
   data<-values$Import_mtf_meta_complete
   if(length(unique(data[,"id_doc"]))!=dim(data)[1]){
-    shinyalert::shinyalert(title = "Document id not unique",text = "Please specify id_doc to be unique for every document!",type = "error")
+    shinyWidgets::sendSweetAlert(session=session,title = "Document id not unique",text = "Please specify id_doc to be unique for every document!",type = "error")
   }
   else{
     if(!(is.numeric(as.numeric(data[,"id_doc"])))){
-      shinyalert::shinyalert(title = "Document id not a number",text = "Please specify id_doc to be an integer",type = "error")
+      shinyWidgets::sendSweetAlert(session=session,title = "Document id not a number",text = "Please specify id_doc to be an integer",type = "error")
     }
     else{
       if(nchar(as.character(data[1,"dataset"]))==0){
-        shinyalert::shinyalert(title = "dataset abbreviation not specified",text = "Please specify a abbreviation for the data",type = "error")
+        shinyWidgets::sendSweetAlert(session=session,title = "dataset abbreviation not specified",text = "Please specify a abbreviation for the data",type = "error")
       }
       else{
         if(stringr::str_detect(as.character(data[1,"dataset"]),pattern = "_")){
-          shinyalert::shinyalert(title = "'_' not allowed",text = "Please specify a abbreviation without using '_'",type = "error")
+          shinyWidgets::sendSweetAlert(session=session,title = "'_' not allowed",text = "Please specify a abbreviation without using '_'",type = "error")
         }
         else{
           if(nchar(data[1,"dataset"])>50){
-            shinyalert::shinyalert(title = "abbreviation too long",text = "Please specify a abbreviation with maximum 50 chars.",type = "error")
+            shinyWidgets::sendSweetAlert(session=session,title = "abbreviation too long",text = "Please specify a abbreviation with maximum 50 chars.",type = "error")
           }
           else{
             if(any(inherits(try({as.Date(data[,"date"],input$Import_mtf_date_format)}),"Date")==F)){
-              shinyalert::shinyalert(title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
+              shinyWidgets::sendSweetAlert(session=session,title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
             }
             else{
               if(any(nchar(data[,"body"])<1)){
-                shinyalert::shinyalert(title = "Body is empty for at least one document",type = "warning")
+                shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
               }
               #create meta metadata vector
               meta_metadata<-data.frame(t(c(input$Import_mtf_dataset,input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,
@@ -2370,7 +2370,7 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
               #start script
               system(paste('Rscript collections/scripts/Import_Script.R','&'))
               #show modal when process is started
-              shinyalert::shinyalert(title = "Started Import Script",type = "success")
+              shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success",closeOnEsc = T)
             }
           }
         }
@@ -2435,7 +2435,7 @@ observeEvent(input$Upload_Data,{
   #check if already imported
   withBusyIndicatorServer("Upload_Data", {
     if(is.null(input$Import_Files)){
-      shinyalert::shinyalert(title = "no import file specified",text = "please specify a file you want to import!",type = "warning")
+      shinyWidgets::sendSweetAlert(session=session,title = "no import file specified",text = "please specify a file you want to import!",type = "warning")
     }
     else{
       meta_metadata<-readr::read_csv(file=paste0("data_import/processed_data/metameta_",input$Import_Files,".csv"))

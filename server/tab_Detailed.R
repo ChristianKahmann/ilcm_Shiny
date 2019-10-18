@@ -320,16 +320,25 @@ output$Det_von<-renderUI({
   )
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
   dates<-RMariaDB::dbGetQuery(mydb, paste("select date from meta_date where dataset IN (",paste("'",input$dataset,"'",collapse=" ,",sep=""),");",collapse = ""))
+  if(dim(dates)[1]==0){
+    return("no dates found")
+  }
   remove<-which(dates=="0000-00-00")
   if(length(remove)>0){
     dates<-dates[-remove,]
   }
   dates2<-dates
-  
   for(i in 1:length(dates)){
-    dates2[[i]]<-as.Date(dates[[i]])
+    if(nchar(dates2[1,1])==4){
+      dates2<-paste(dates2[,1],"-01-01",sep="")
+      dates2<-as.Date(dates2)
+      min=min(dates2)
+    }
+    else{
+      dates2[[i]]<-as.Date(dates[[i]])
+      min=min(dates2[[1]])
+    }
   }
-  min=min(dates2[[1]])
   RMariaDB::dbDisconnect(mydb)
   dateInput(inputId = "Det_vonin",label = "Date von:",language = "de",value = min)
 })
@@ -340,15 +349,26 @@ output$Det_zu<-renderUI({
   )
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
   dates<-RMariaDB::dbGetQuery(mydb, paste("select date from meta_date where dataset IN (",paste("'",input$dataset,"'",collapse=" ,",sep=""),");",collapse = ""))
+  if(dim(dates)[1]==0){
+    return("no dates found")
+  }
   remove<-which(dates=="0000-00-00")
   if(length(remove)>0){
     dates<-dates[-remove,]
   }
   dates2<-dates
   for(i in 1:length(dates)){
-    dates2[[i]]<-as.Date(dates[[i]])
+    if(nchar(dates2[1,1])==4){
+      dates2<-paste(dates2[,1],"-01-01",sep="")
+      dates2<-as.Date(dates2)
+      max=max(dates2)
+    }
+    else{
+      dates2[[i]]<-as.Date(dates[[i]])
+      max=max(dates2[[1]])
+    }
   }
-  max=max(dates2[[1]])
+  
   RMariaDB::dbDisconnect(mydb)
   dateInput(inputId = "Det_bisin",label = "Date bis:",language = "de",value = max)
 })

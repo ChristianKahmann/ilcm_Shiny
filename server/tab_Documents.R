@@ -68,7 +68,7 @@ output$collection_documents<-DT::renderDataTable({
       hl<-lapply(X = hl,FUN = function(i){i<-stringr::str_replace_all(string = i,pattern = '<em>','<span style="color:red">');stringr::str_replace_all(string = i,pattern = '</em>',"</span>")})
       if(!dim(ind)[1]>0){
         print("test")
-        #shinyalert::shinyalert(title = "No documents found.",text = "For the selected colllection no documents were found. Maybe solr is not finished yet with marking the documents with their collection tag.",
+        #shinyWidgets::sendSweetAlert(session=session,title = "No documents found.",text = "For the selected colllection no documents were found. Maybe solr is not finished yet with marking the documents with their collection tag.",
         #                      type = "warning")
         shinyWidgets::sendSweetAlert(session = session,title = "No documents found.",text =  "For the selected colllection no documents were found. Maybe solr is not finished yet with marking the documents with their collection tag.
                                      Try to reselect the collection.",

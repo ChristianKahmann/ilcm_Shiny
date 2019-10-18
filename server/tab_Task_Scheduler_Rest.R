@@ -47,7 +47,7 @@ observeEvent(input$Prepare_Documents,{
   RMariaDB::dbDisconnect(mydb)
   values$token_tmp<-token
   values$meta_tmp<-meta[,2:13]
-  shinyalert::shinyalert(title = "Data ready for Download",text=paste0(dim(meta)[1]," Documents could be retrieved from database"),type = "success")
+  shinyWidgets::sendSweetAlert(session=session,title = "Data ready for Download",text=paste0(dim(meta)[1]," Documents could be retrieved from database"),type = "success")
 })
 
 
@@ -66,7 +66,7 @@ observe({
       },
       content = function(con) {
         if(dim(values$token_tmp)[1]==0){
-          shinyalert::shinyalert(title = "no documents found.",text = "Have you clicked 'Prepare Documents'?",type = "warning")
+          shinyWidgets::sendSweetAlert(session=session,title = "no documents found.",text = "Have you clicked 'Prepare Documents'?",type = "warning")
         }
         else{
           write.table(values$token_tmp[((floor((dim(values$token_tmp)[1]/values$number_of_buttons)*(i-1))+1):floor((dim(values$token_tmp)[1]/values$number_of_buttons)*(i))),], con,col.names = F,row.names = F,sep=",")
@@ -89,7 +89,7 @@ observe({
       },
       content = function(con) {
         if(dim(values$meta_tmp)[1]==0){
-          shinyalert::shinyalert(title = "no documents found.",text = "Have you clicked 'Prepare Documents'?",type = "warning")
+          shinyWidgets::sendSweetAlert(session=session,title = "no documents found.",text = "Have you clicked 'Prepare Documents'?",type = "warning")
         }
         else{
           write.table(values$meta_tmp[((floor((dim(values$meta_tmp)[1]/values$number_of_buttons)*(i-1))+1):floor((dim(values$meta_tmp)[1]/values$number_of_buttons)*(i))),], con,col.names = F,row.names = F,sep=",")
@@ -114,7 +114,7 @@ observeEvent(input$start_token_saving,{
   }
   RMariaDB::dbDisconnect(mydb)
   save(token,file=paste0("collections/results/extracted_collections/token_",input$collection_selected,".RData"))
-  shinyalert::shinyalert(title = "Token object saved to results",text = "accessible in RStudio-Server",type = "success")
+  shinyWidgets::sendSweetAlert(session=session,title = "Token object saved to results",text = "accessible in RStudio-Server",type = "success")
 })
 
 
@@ -128,5 +128,5 @@ observeEvent(input$start_meta_saving,{
   meta<-RMariaDB::dbGetQuery(conn = mydb,statement = paste0("Select * from documents where id in (",ids,");"))
   RMariaDB::dbDisconnect(mydb)
   save(meta,file=paste0("collections/results/extracted_collections/meta_",input$collection_selected,".RData"))
-  shinyalert::shinyalert(title = "Meta object saved to results",text = "accessible in RStudio-Server",type = "success")
+  shinyWidgets::sendSweetAlert(session=session,title = "Meta object saved to results",text = "accessible in RStudio-Server",type = "success")
 })

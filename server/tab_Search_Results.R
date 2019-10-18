@@ -346,11 +346,11 @@ observe({
     
     proxy = dataTableProxy('search_results_datatable')
     if(!"dataset"%in%colnames(values$Search_Results)){
-      shinyalert::shinyalert(title = "No dataset",text = "Please specify custom query to return the dataset_s value")
+      shinyWidgets::sendSweetAlert(session=session,title = "No dataset",text = "Please specify custom query to return the dataset_s value")
     }
     else{
       if(!"id_doc"%in%colnames(values$Search_Results)){
-        shinyalert::shinyalert(title = "No document id",text = "Please specify custom query to return the id_doc_i value")
+        shinyWidgets::sendSweetAlert(session=session,title = "No document id",text = "Please specify custom query to return the id_doc_i value")
       }
       else{
         dataset<-values$Search_Results[s[length(s)],"dataset"]

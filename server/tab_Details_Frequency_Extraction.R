@@ -151,7 +151,7 @@ output$download_FE_frequencies<-downloadHandler(
   content = function(con) {
     if(input$Det_FE_use_regexp==FALSE){
       if(length(input$FE_CB_words_to_export)==0){
-        shinyalert::shinyalert(title = "No words for export chosen.",text = "Please select the words you want to extract the time series data for in the corresponding checkboxes.",
+        shinyWidgets::sendSweetAlert(session=session,title = "No words for export chosen.",text = "Please select the words you want to extract the time series data for in the corresponding checkboxes.",
                                type="warning"  )
         break;
       }

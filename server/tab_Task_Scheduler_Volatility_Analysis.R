@@ -396,7 +396,7 @@ observeEvent(input$VA_Submit_Script,{
                                   ,min_d_c = input$VA_min_docfreq_c,max_d_c = input$VA_max_docfreq_c,min_d_p = input$VA_min_docfreq_p,max_d_p = input$VA_max_docfreq_p
                                   ,min_d_r = input$VA_min_docfreq_r,max_d_r = input$VA_max_docfreq_r,min_d_q = input$VA_min_docfreq_q,max_d_q = input$VA_max_docfreq_q)
   if(isFALSE(valid)){
-    shinyalert::shinyalert(title = "Check pruning settings!",text = HTML("It seems your current pruning input parameters don't make sense. It's very likely, that the whole vocabulary will be removed.
+    shinyWidgets::sendSweetAlert(session=session,title = "Check pruning settings!",text = HTML("It seems your current pruning input parameters don't make sense. It's very likely, that the whole vocabulary will be removed.
                            Check <a href='https://quanteda.io/reference/dfm_trim.html' title='quanteda pruning'> Quanteda Pruning Settings </a>"),html=TRUE,
                            showCancelButton = T,showConfirmButton = T,confirmButtonText = "Continue anyway!",confirmButtonCol ="#d65f4a",closeOnEsc = T,closeOnClickOutside = T,
                            type = "warning",inputId = "VA_pruning_continue",cancelButtonText = "Change Settings")
@@ -493,7 +493,7 @@ observeEvent(input$VA_Submit_Script,{
     save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
     #start script
     if(input$use_custom_script==TRUE && !is.null(input$custom_script_options)){
-      shinyalert::shinyalert(title = "Starting a custom script",text = "You are about to start a custom script. Caution with the calculation and results!",type = "info")
+      shinyWidgets::sendSweetAlert(session=session,title = "Starting a custom script",text = "You are about to start a custom script. Caution with the calculation and results!",type = "info")
       system(paste0('Rscript collections/scripts/Volatility_Analysis/',input$custom_script_options,' &'))
     }
     else{
@@ -604,7 +604,7 @@ observeEvent(input$VA_pruning_continue,ignoreInit = T,{
   save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
   #start script
   if(input$use_custom_script==TRUE && !is.null(input$custom_script_options)){
-    shinyalert::shinyalert(title = "Starting a custom script",text = "You are about to start a custom script. Caution with the calculation and results!",type = "info")
+    shinyWidgets::sendSweetAlert(session=session,title = "Starting a custom script",text = "You are about to start a custom script. Caution with the calculation and results!",type = "info")
     system(paste0('Rscript collections/scripts/Volatility_Analysis/',input$custom_script_options,' &'))
   }
   else{

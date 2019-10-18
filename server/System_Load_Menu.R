@@ -1,3 +1,4 @@
+
 output$datasets_avaiable<-renderUI({
     mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
   RMariaDB::dbBegin(conn = mydb)
@@ -235,12 +236,12 @@ observeEvent(ignoreInit = T,input$options_add_model,{
     query<-paste0("python3 -m spacy download ",input$options_add_model_select)
     ret<-system(query,intern = T)
     if(any(grepl("You can now load the model",ret))){
-      shinyalert::shinyalert(title = "Successfully installed new spaCy model",
+      shinyWidgets::sendSweetAlert(session=session,title = "Successfully installed new spaCy model",
                              text = paste0("Model: ",input$options_add_model_select," was added and is used if specified language is '",input$options_add_model_select,"'"),
                              type="success")
     }
     else{
-      shinyalert::shinyalert(title = "there was an error",text = paste(ret,collapse = " "),type = "error")
+      shinyWidgets::sendSweetAlert(session=session,title = "there was an error",text = paste(ret,collapse = " "),type = "error")
     }
   })
 })

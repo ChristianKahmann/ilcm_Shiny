@@ -4,7 +4,7 @@ observeEvent(input$simple_action,{
     #for simple search fq is just defined by the chosen dataset
     if(length(isolate(input$dataset))==0){
      # fq<-"dataset_s:(*:*)"
-      shinyalert::shinyalert(title = "No corpus specified",text = "Please choose at least one corpus in the top left corner.",type = "warning")
+      shinyWidgets::sendSweetAlert(session=session,title = "No corpus specified",text = "Please choose at least one corpus in the top left corner.",type = "warning")
     }
     else{
       if(length(isolate(input$dataset))==1){
