@@ -63,3 +63,4 @@ packrat/lib*/
 !/collections/results/syntactic-parsing/.gitkeep
 /collections/tmp/*
 !/collections/tmp/.gitkeep
+/play/*
