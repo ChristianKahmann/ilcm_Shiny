@@ -63,4 +63,6 @@ packrat/lib*/
 !/collections/results/syntactic-parsing/.gitkeep
 /collections/tmp/*
 !/collections/tmp/.gitkeep
+/collections/ecpmf_resources/*
+!/collections/ecpmf_resources/.gitkeep
 /play/*
