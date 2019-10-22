@@ -22,6 +22,14 @@ observe({
   values$Doc_fq<-paste0('(collections:"',info[[5]],'")')
   values$Doc_del<-info[[10]]
   values$Doc_dataset<-stringr::str_remove_all(string = stringr::str_extract(string = info[[9]],pattern = "dataset_s:[a-z,]{1,20}"),pattern = "dataset_s:")
+  values$dataset_Sub<-stringr::str_remove(string = stringr::str_extract(string = info[[9]],pattern = "dataset_s:.*?($| AND)"),pattern = " AND")
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
+  rs<-dbGetQuery(mydb, paste0("SELECT * FROM ilcm.metadata_names where dataset in('",stringr::str_replace_all(string = values$dataset_Sub,pattern = "dataset_s:",replacement = ""),"');"))
+  RMariaDB::dbDisconnect(mydb)
+  if(dim(rs)[1]>0){
+    values$metadata_available_Sub<-rs
+  }
+  
   values$numFound_Sub<-dim(info[[1]])[1]
   values$current_collection<-info[[5]]
   values$Sub_search<-F
@@ -489,7 +497,7 @@ observeEvent(input$Doc_Search_Sub,{
   showModal(modalDialog(
     div(style = 'overflow-x:hidden;',
         box(width=NULL,collapsible = T,
-            navbarPage(title="",theme=shinytheme(navbarstyle),
+            navbarPage(title="",theme=shinytheme(navbarstyle),id = "navbar_search_Sub",
                        source(file.path("ui","tab_Simple_Sub.R"),local = T)$value,
                        source(file.path("ui","tab_Detailed_Sub.R"),local = T)$value,
                        source(file.path("ui","tab_Custom_Sub.R"),local = T)$value

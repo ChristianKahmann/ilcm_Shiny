@@ -28,24 +28,68 @@ observeEvent(input$Det_action_Sub,{
     
     
     
-    #add chosen section to fq
-    if(input$Det_Section_Sub!="all"){
-      fq=paste(fq,' AND section_ss:','"',input$Det_Section_Sub,'"',sep="")
+    #add chosen mde1 to fq
+    if(!("all"%in%input$Det_mde1_Sub)){
+      if(!is.null(input$Det_mde1_Sub)){
+        fq=paste(fq,' AND mde1_ss:(','"',paste(input$Det_mde1_Sub,collapse='" "'),'")',sep="")
+      }
     }
     
-    #add chosen publisher to fq
-    if(input$Det_Pub_Sub!="all"){
-      fq=paste(fq," AND publisher_s:",'"',input$Det_Pub_Sub,'"',sep="")
+    #add chosen mde2 to fq
+    if(!("all"%in%input$Det_mde2_Sub)){
+      if(!is.null(input$Det_mde2_Sub)){
+        fq=paste(fq,' AND mde2_ss:(','"',paste(input$Det_mde2_Sub,collapse='" "'),'")',sep="")
+      }
     }
     
-    #add chosen author to fq
-    #if(input$Det_Author!="all"){
-    #  fq=paste(fq,' AND author_txt:','"',input$Det_Author,'"',sep="")
-    #}
     
-    #add chosen type to fq
-    if(input$Det_Type_Sub!="all"){
-      fq=paste(fq," AND type_s:",'"',input$Det_Type_Sub,'"',sep="")
+    #add chosen mde3 to fq
+    if(!("all"%in%input$Det_mde3_Sub)){
+      if(!is.null(input$Det_mde3_Sub)){
+        fq=paste(fq,' AND mde3_ss:(','"',paste(input$Det_mde3_Sub,collapse='" "'),'")',sep="")
+      }
+    }
+    
+    #add chosen mde4 to fq
+    if(!("all"%in%input$Det_mde4_Sub)){
+      if(!is.null(input$Det_mde4_Sub)){
+        fq=paste(fq,' AND mde4_ss:(','"',paste(input$Det_mde4_Sub,collapse='" "'),'")',sep="")
+      }
+    }
+    
+    #add chosen mde5 to fq
+    if(!("all"%in%input$Det_mde5_Sub)){
+      if(!is.null(input$Det_mde5_Sub)){
+        fq=paste(fq,' AND mde5_ss:(','"',paste(input$Det_mde5_Sub,collapse='" "'),'")',sep="")
+      }
+    }
+    
+    #add chosen mde6 to fq
+    if(!("all"%in%input$Det_mde6_Sub)){
+      if(!is.null(input$Det_mde6_Sub)){
+        fq=paste(fq,' AND mde6_ss:(','"',paste(input$Det_mde6_Sub,collapse='" "'),'")',sep="")
+      }
+    }
+    
+    #add chosen mde7 to fq
+    if(!("all"%in%input$Det_mde7_Sub)){
+      if(!is.null(input$Det_mde7_Sub)){
+        fq=paste(fq,' AND mde7_ss:(','"',paste(input$Det_mde7_Sub,collapse='" "'),'")',sep="")
+      }
+    }
+    
+    #add chosen mde8 to fq
+    if(!("all"%in%input$Det_mde8_Sub)){
+      if(!is.null(input$Det_mde8_Sub)){
+        fq=paste(fq,' AND mde8_ss:(','"',paste(input$Det_mde8_Sub,collapse='" "'),'")',sep="")
+      }
+    }
+    
+    #add chosen mde9 to fq
+    if(!("all"%in%input$Det_mde9_Sub)){
+      if(!is.null(input$Det_mde9_Sub)){
+        fq=paste(fq,' AND mde9_ss:(','"',paste(input$Det_mde9_Sub,collapse='" "'),'")',sep="")
+      }
     }
     
     #add chosen tokenrange to 
@@ -85,47 +129,179 @@ observeEvent(input$Det_action_Sub,{
 
 
 #render input fields for detailed search depending on queries to maria db
-output$Det_publication_Sub<-renderUI({
-  validate(
-    need(length(values$Doc_dataset)>0,message=FALSE)
-  )
-  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
-  res<-selectInput(inputId = "Det_Pub_Sub",label = "Publisher:",choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select publisher from meta_publisher where dataset IN (",paste("'",values$Doc_dataset,"'",collapse=" ,",sep=""),");",collapse = "")),"all")),selected = "all")
-  RMariaDB::dbDisconnect(mydb)
-  return(res)
-})
 
-output$Det_type_Sub<-renderUI({
-  validate(
-    need(length(values$Doc_dataset)>0,message=FALSE)
-  )
-  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
-  res<-selectInput(inputId = "Det_Type_Sub",label = "Type:",choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select type from meta_type where dataset IN (",paste("'",values$Doc_dataset,"'",collapse=" ,",sep=""),");",collapse = "")),"all")),selected = "all")
-  RMariaDB::dbDisconnect(mydb)
-  return(res)
-})
 
-output$Det_section_Sub<-renderUI({
+#render input fields for detailed search depending on queries to maria db
+#set choices for mde1 if avaiable
+observe({
+  shinyjs::hideElement(id = "Det_mde1_Sub")
   validate(
-    need(length(values$Doc_dataset)>0,message=FALSE)
+    need(input$navbar_search_Sub=="Detailed",message=F),
+    need(!is.null(values$metadata_available_Sub),message=F),
+    need(all(!is.na(values$metadata_available_Sub[,"mde1"])),message=F)
   )
-  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
-  res<-selectInput(inputId = "Det_Section_Sub",label = "Section:",choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select section from meta_section where dataset IN (",paste("'",values$Doc_dataset,"'",collapse=" ,",sep=""),");",collapse = "")),"all")),selected = "all")
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select mde1 from meta_mde1 where dataset IN (",paste0("\'",stringr::str_replace_all(string = values$dataset_Sub,pattern = "dataset_s:",replacement = ""),"\'"),");",collapse = ""))))
   RMariaDB::dbDisconnect(mydb)
-  return(res)
-})
-
-output$Det_author_Sub<-renderUI({
-  validate(
-    need(length(values$Doc_dataset)>0,message=FALSE)
-  )
-  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
-  res<-selectInput(inputId = "Det_Author_Sub",label = "Author:",choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select author from meta_author where dataset IN (",paste("'",values$Doc_dataset,"'",collapse=" ,",sep=""),");",collapse = "")),"all")),selected = "all")
-  RMariaDB::dbDisconnect(mydb)
-  return(res)
+  if(dim(choices)[1]>0){
+    updateSelectizeInput(session=session,inputId = "Det_mde1_Sub",label = paste(values$metadata_available_Sub[,"mde1"],collapse="/"),choices = choices[,1],server=T)
+    shinyjs::showElement(id = "Det_mde1_Sub")
+  }
 })
 
 
+
+
+#set choices for mde2 if avaiable
+observe({
+  shinyjs::hideElement(id = "Det_mde2_Sub")
+  validate(
+    need(input$navbar_search_Sub=="Detailed",message=F),
+    need(!is.null(values$metadata_available_Sub),message=F),
+    need(all(!is.na(values$metadata_available_Sub[,"mde2"])),message=F)
+  )
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select mde2 from meta_mde2 where dataset IN (",paste0("\'",stringr::str_replace_all(string = values$dataset_Sub,pattern = "dataset_s:",replacement = ""),"\'"),");",collapse = ""))))
+  RMariaDB::dbDisconnect(mydb)
+  if(dim(choices)[1]>0){
+    updateSelectizeInput(session=session,inputId = "Det_mde2_Sub",label = paste(values$metadata_available_Sub[,"mde2"],collapse="/"),choices = choices[,1],server=T)
+    shinyjs::showElement(id = "Det_mde2_Sub")
+  }
+})
+
+#set choices for mde3 if avaiable
+observe({
+  shinyjs::hideElement(id = "Det_mde3_Sub")
+  validate(
+    need(input$navbar_search_Sub=="Detailed",message=F),
+    need(!is.null(values$metadata_available_Sub),message=F),
+    need(all(!is.na(values$metadata_available_Sub[,"mde3"])),message=F)
+  )
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select mde3 from meta_mde3 where dataset IN (",paste0("\'",stringr::str_replace_all(string = values$dataset_Sub,pattern = "dataset_s:",replacement = ""),"\'"),");",collapse = ""))))
+  RMariaDB::dbDisconnect(mydb)
+  if(dim(choices)[1]>0){
+    updateSelectizeInput(session=session,inputId = "Det_mde3_Sub",label = paste(values$metadata_available_Sub[,"mde3"],collapse="/"),choices = choices[,1],server=T)
+    shinyjs::showElement(id = "Det_mde3_Sub")
+  }
+})
+
+#set choices for mde4 if avaiable
+observe({
+  shinyjs::hideElement(id = "Det_mde4_Sub")
+  validate(
+    need(input$navbar_search_Sub=="Detailed",message=F),
+    need(!is.null(values$metadata_available_Sub),message=F),
+    need(all(!is.na(values$metadata_available_Sub[,"mde4"])),message=F)
+  )
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select mde4 from meta_mde4 where dataset IN (",paste0("\'",stringr::str_replace_all(string = values$dataset_Sub,pattern = "dataset_s:",replacement = ""),"\'"),");",collapse = ""))))
+  RMariaDB::dbDisconnect(mydb)
+  if(dim(choices)[1]>0){
+    updateSelectizeInput(session=session,inputId = "Det_mde4_Sub",label = paste(values$metadata_available_Sub[,"mde4"],collapse="/"),choices = choices[,1],server=T)
+    shinyjs::showElement(id = "Det_mde4_Sub")
+  }
+})
+
+#set choices for mde5 if avaiable
+observe({
+  shinyjs::hideElement(id = "Det_mde5_Sub")
+  validate(
+    need(input$navbar_search_Sub=="Detailed",message=F),
+    need(!is.null(values$metadata_available_Sub),message=F),
+    need(all(!is.na(values$metadata_available_Sub[,"mde5"])),message=F)
+  )
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select mde5 from meta_mde5 where dataset IN (",paste0("\'",stringr::str_replace_all(string = values$dataset_Sub,pattern = "dataset_s:",replacement = ""),"\'"),");",collapse = ""))))
+  RMariaDB::dbDisconnect(mydb)
+  if(dim(choices)[1]>0){
+    updateSelectizeInput(session=session,inputId = "Det_mde5_Sub",label = paste(values$metadata_available_Sub[,"mde5"],collapse="/"),choices = choices[,1],server=T)
+    shinyjs::showElement(id = "Det_mde5_Sub")
+  }
+})
+
+
+#set choices for mde6 if avaiable
+observe({
+  shinyjs::hideElement(id = "Det_mde6_Sub")
+  validate(
+    need(input$navbar_search_Sub=="Detailed",message=F),
+    need(!is.null(values$metadata_available_Sub),message=F),
+    need(all(!is.na(values$metadata_available_Sub[,"mde6"])),message=F)
+  )
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select mde6 from meta_mde6 where dataset IN (",paste0("\'",stringr::str_replace_all(string = values$dataset_Sub,pattern = "dataset_s:",replacement = ""),"\'"),");",collapse = ""))))
+  RMariaDB::dbDisconnect(mydb)
+  if(dim(choices)[1]>0){
+    updateSelectizeInput(session=session,inputId = "Det_mde6_Sub",label = paste(values$metadata_available_Sub[,"mde6"],collapse="/"),choices = choices[,1],server=T)
+    shinyjs::showElement(id = "Det_mde6_Sub")
+  }
+})
+
+
+#set choices for mde7 if avaiable
+observe({
+  shinyjs::hideElement(id = "Det_mde7_Sub")
+  validate(
+    need(input$navbar_search_Sub=="Detailed",message=F),
+    need(!is.null(values$metadata_available_Sub),message=F),
+    need(all(!is.na(values$metadata_available_Sub[,"mde7"])),message=F)
+  )
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select mde7 from meta_mde7 where dataset IN (",paste0("\'",stringr::str_replace_all(string = values$dataset_Sub,pattern = "dataset_s:",replacement = ""),"\'"),");",collapse = ""))))
+  RMariaDB::dbDisconnect(mydb)
+  if(dim(choices)[1]>0){
+    updateSelectizeInput(session=session,inputId = "Det_mde7_Sub",label = paste(values$metadata_available_Sub[,"mde7"],collapse="/"),choices = choices[,1],server=T)
+    shinyjs::showElement(id = "Det_mde7_Sub")
+  }
+})
+
+
+#set choices for mde8 if avaiable
+observe({
+  shinyjs::hideElement(id = "Det_mde8_Sub")
+  validate(
+    need(input$navbar_search_Sub=="Detailed",message=F),
+    need(!is.null(values$metadata_available_Sub),message=F),
+    need(all(!is.na(values$metadata_available_Sub[,"mde8"])),message=F)
+  )
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select mde8 from meta_mde8 where dataset IN (",paste0("\'",stringr::str_replace_all(string = values$dataset_Sub,pattern = "dataset_s:",replacement = ""),"\'"),");",collapse = ""))))
+  RMariaDB::dbDisconnect(mydb)
+  if(dim(choices)[1]>0){
+    updateSelectizeInput(session=session,inputId = "Det_mde8_Sub",label = paste(values$metadata_available_Sub[,"mde8"],collapse="/"),choices = choices[,1],server=T)
+    shinyjs::showElement(id = "Det_mde8_Sub")
+  }
+})
+
+
+#set choices for mde9 if avaiable
+observe({
+  shinyjs::hideElement(id = "Det_mde9_Sub")
+  validate(
+    need(input$navbar_search_Sub=="Detailed",message=F),
+    need(!is.null(values$metadata_available_Sub),message=F),
+    need(all(!is.na(values$metadata_available_Sub[,"mde9"])),message=F)
+  )
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  choices = unique(rbind(RMariaDB::dbGetQuery(mydb, paste("select mde9 from meta_mde9 where dataset IN (",paste0("\'",stringr::str_replace_all(string = values$dataset_Sub,pattern = "dataset_s:",replacement = ""),"\'"),");",collapse = ""))))
+  RMariaDB::dbDisconnect(mydb)
+  if(dim(choices)[1]>0){
+    updateSelectizeInput(session=session,inputId = "Det_mde9_Sub",label = paste(values$metadata_available_Sub[,"mde9"],collapse="/"),choices = choices[,1],server=T)
+    shinyjs::showElement(id = "Det_mde9_Sub")
+  }
+})
+
+
+
+
+
+
+
+
+
+
+#get token information from database and render slider input with received min and max value
 output$Det_token_Sub<-renderUI({
   validate(
     need(length(values$Doc_dataset)>0,message="Please choose at least one dataset")
@@ -137,41 +313,70 @@ output$Det_token_Sub<-renderUI({
   sliderInput(inputId = "Det_Token_Sub",label = "Number of Token:",min=min,max=max,value = c(min,max),step = 10)
 })
 
+
+#get earliest date from database meta_data table to render DateInput Starting Point
 output$Det_von_Sub<-renderUI({
   validate(
     need(length(values$Doc_dataset)>0,message=FALSE)
   )
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
   dates<-RMariaDB::dbGetQuery(mydb, paste("select date from meta_date where dataset IN (",paste("'",values$Doc_dataset,"'",collapse=" ,",sep=""),");",collapse = ""))
+  #check that the date object is not empty
+  if(dim(dates)[1]==0){
+    return("no dates found")
+  }
+  #remove wrong dates 
   remove<-which(dates=="0000-00-00")
   if(length(remove)>0){
     dates<-dates[-remove,]
   }
   dates2<-dates
-  
+  #if only years available add "-01-01" to make input work
   for(i in 1:length(dates)){
-    dates2[[i]]<-as.Date(dates[[i]])
+    if(nchar(dates2[1,1])==4){
+      dates2<-paste(dates2[,1],"-01-01",sep="")
+      dates2<-as.Date(dates2)
+      min=min(dates2)
+    }
+    else{
+      dates2[[i]]<-as.Date(dates[[i]])
+      min=min(dates2[[1]])
+    }
   }
-  min=min(dates2[[1]])
   RMariaDB::dbDisconnect(mydb)
   dateInput(inputId = "Det_vonin_Sub",label = "Date von:",language = "de",value = min)
 })
 
+
+#get latest date from database meta_data table to render DateInput End Point
 output$Det_zu_Sub<-renderUI({
   validate(
     need(length(values$Doc_dataset)>0,message=FALSE)
   )
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
   dates<-RMariaDB::dbGetQuery(mydb, paste("select date from meta_date where dataset IN (",paste("'",values$Doc_dataset,"'",collapse=" ,",sep=""),");",collapse = ""))
+  #check that the date object is not empty
+  if(dim(dates)[1]==0){
+    return("no dates found")
+  }
+  #remove wrong dates 
   remove<-which(dates=="0000-00-00")
   if(length(remove)>0){
     dates<-dates[-remove,]
   }
   dates2<-dates
+  #if only years available add "-01-01" to make input work
   for(i in 1:length(dates)){
-    dates2[[i]]<-as.Date(dates[[i]])
+    if(nchar(dates2[1,1])==4){
+      dates2<-paste(dates2[,1],"-01-01",sep="")
+      dates2<-as.Date(dates2)
+      max=max(dates2)
+    }
+    else{
+      dates2[[i]]<-as.Date(dates[[i]])
+      max=max(dates2[[1]])
+    }
   }
-  max=max(dates2[[1]])
   RMariaDB::dbDisconnect(mydb)
   dateInput(inputId = "Det_bisin_Sub",label = "Date bis:",language = "de",value = max)
 })
