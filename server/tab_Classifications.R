@@ -158,7 +158,6 @@ output$Class_all_categories_annotations<-DT::renderDataTable({
     need(!is.null(isolate(input$Class_all_categories_documents)),message=F),
     need(!is.null(input$Class_all_categories_threshold),message=F)
   )
-  #browser()
   threshold=input$Class_all_categories_threshold
   dataset<-stringr::str_split(input$Class_all_categories_documents,pattern = "_",simplify = T)[1,1]
   id_doc<-stringr::str_split(input$Class_all_categories_documents,pattern = "_",simplify = T)[1,2]
@@ -169,7 +168,7 @@ output$Class_all_categories_annotations<-DT::renderDataTable({
   ) 
   ids<-paste(dataset,id_doc,data[,3],sep="_")
   labels_predictions<-values$Class_all_documents_labels$predictions[ids]
-  labels_probabilities<-values$Class_all_documents_labels$probabilities[ids,]
+  labels_probabilities<-values$Class_all_documents_labels$probabilities[ids,,drop=F]
   keep<-which(apply(labels_probabilities,1,max)>threshold)
   
   validate(
@@ -182,7 +181,7 @@ output$Class_all_categories_annotations<-DT::renderDataTable({
   if(!all(labels_predictions%in%values$Class_all_documents_annos[,1])){
     shinyWidgets::sendSweetAlert(session=session,title = "Wrong annotation set",text = paste0("It seems the annotations set has changed between annotating and classification.
                            Please make sure all annotated classes are still available in the annotation scheme.",
-                                                                        " Here the class: ",paste(setdiff(unique(labels_predictions),values$Class_all_documents_annos[,1]),collapse=" ")," is missing."))
+                                                                                              " Here the class: ",paste(setdiff(unique(labels_predictions),values$Class_all_documents_annos[,1]),collapse=" ")," is missing."),type = "warning")
     return(NULL)
   }
   for(i in 1:length(labels_predictions)){
@@ -195,6 +194,11 @@ output$Class_all_categories_annotations<-DT::renderDataTable({
     radio_id<-paste0("Class_correct_annotation_",x)
     condition<-paste0('input.',radio_id,'=="deny"')
     selected<-character(0)
+    selected_deny<-data[highlight[x,1],10]
+    if(data[highlight[x,1],10]%in%c("","FALSE","unknown")){
+      selected_deny<-"NEG"
+    }
+    
     if(data[highlight[x,1],7]==TRUE){
       selected<-"approve"
     }
@@ -209,7 +213,7 @@ output$Class_all_categories_annotations<-DT::renderDataTable({
                                                    ,selected=selected),
                                 conditionalPanel(condition=condition,
                                                  shinyWidgets::prettyRadioButtons(inputId = paste0(radio_id,"_deny"),label = "other category?",choices = c("NEG",setdiff(values$Class_all_documents_annos[,1],highlight[x,2])),
-                                                                                  status = "primary",shape = "curve",animation = "jelly",bigger = T,inline = T,plain = T,selected=data[highlight[x,1],10]
+                                                                                  status = "primary",shape = "curve",animation = "jelly",bigger = T,inline = T,plain = T,selected=selected_deny
                                                  )))
     )
     )
@@ -220,9 +224,10 @@ output$Class_all_categories_annotations<-DT::renderDataTable({
   data_for_table<-data.frame(prediction=unlist(predictions),checkboxes=do.call(rbind,checkboxes),stringsAsFactors = F)
   rownames(data_for_table)<-keep
   values$Class_spans_to_highlight<-keep
-  colnames(data_for_table)<-c("","")
-  return(datatable(data = data_for_table,style="bootstrap",class="table-bordered",escape = F,rownames = F,selection="none",options=list(pageLength = dim(data_for_table)[1],ordering=F,dom = 't',
-                                                                                                                                        rowCallback=JS('function(row, data) { 
+  colnames(data_for_table)<-c("prediction","feedback")
+  remove_existing_radio_buttons_classification_whole_document(ids = rownames(highlight))
+  return(datatable(data = data.frame(data_for_table),style="bootstrap",class="table-bordered",escape = F,rownames = F,selection="none",options=list(pageLength = dim(data_for_table)[1],ordering=F,dom = 't',
+                                                                                                                                                    rowCallback=JS('function(row, data) { 
 $(row).mouseenter(function(){
  var hover_index = $(this)[0].rowIndex 
 Shiny.onInputChange("hoverIndexJS", hover_index); 
@@ -230,7 +235,8 @@ Shiny.onInputChange("hoverIndexJS", hover_index);
 $(row).mouseleave(function(){
  Shiny.onInputChange("hoverIndexJS", "none"); 
 }); 
-}')), callback = JS("table.rows().every(function(i, tab, row) {
+}'),preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
+                                                                                                                                                    drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } ')), callback = JS("table.rows().every(function(i, tab, row) {
                     var $this = $(this.node());
                     $this.attr('id', this.data()[0]);
                     $this.addClass('shiny-input-radiogroup');
@@ -256,14 +262,23 @@ observe({
 })
 
 
+#theshold input for sentence probabilities
 output$Class_all_categories_treshold_UI<-renderUI({
   validate(
     need(length(input$Class_all_categories_avail)>0,message=F),
     need(!is.null(input$Class_all_categories_documents),message=F),
     need(file.exists(paste0("collections/results/classification/activeLearning_documents/",input$project_selected,"/",input$Class_all_categories_avail,"/examples.RData")),message=F)
-      )
-  numericInput(inputId = "Class_all_categories_threshold",label = "Threshold:",value =round(1/(length(levels(isolate(values$Class_all_documents_labels$predictions)))-1),digits = 4),min = 0,max = 1)
+  )
+  number_of_classes<-length(isolate(levels(values$Class_all_documents_labels$predictions)))
+  if(number_of_classes<=2){
+    threshold<-0.51
+  }
+  else{
+    threshold<-round(1/(number_of_classes-1),digits = 4)
+  }
+  numericInput(inputId = "Class_all_categories_threshold",label = "Threshold:",value =threshold,min = 0,max = 1,step = 0.05)
 })
+
 
 
 
@@ -298,6 +313,7 @@ observe({
   ignored<-rn[which(x=="ignore")]
   other<-y[which(x=="deny")]
   #set to default
+  print("change of set values")
   isolate(values$Class_all_documents_texts[rn,7:9]<-FALSE)
   isolate(values$Class_all_documents_texts[rn,10]<-FALSE)
   #adjsut to input values
@@ -310,13 +326,14 @@ observe({
 
 observeEvent(input$Class_all_categories_save,{
   withBusyIndicatorServer("Class_all_categories_save", {
+    browser()
     texts<-isolate(values$Class_all_documents_texts)
     labels<-isolate(values$Class_all_documents_labels)
     project<-input$project_selected
     save(texts,labels,project,file=paste0("collections/results/classification/activeLearning_documents/",input$project_selected,"/",input$Class_all_categories_avail,"/examples.RData"))
     data<-texts
     #save approved classifications
-    approved<-data[which(data[,"approved"]==TRUE),1:3]
+    approved<-data[which(data[,"approved"]==TRUE),1:3,drop=F]
     mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
     if(dim(approved)[1]>0){
       categories<-as.character(labels$predictions[which(data[,"approved"]==TRUE)])
@@ -331,7 +348,7 @@ observeEvent(input$Class_all_categories_save,{
         colnames(approved)<-c("dataset","doc_id","sid","project","category","status","timestamp")
         vals<-""
         for(i in 1:dim(approved)[1]){
-          vals<-paste0(vals,'("',approved[i,1],'",','"',approved[i,2],'"',',','"',approved[i,3],'","',approved[i,4],'","',approved[i,5],'",','"',approved[i,6],'"',',','"',approved[i,7],'"),')
+          vals<-paste0(vals,'("',approved[i,1],'",','"',approved[i,2],'"',',','"',approved[i,3],'","',approved[i,4],'","',approved[i,5],'",','"',approved[i,6],'"',',','"',approved[i,7],'", ','"FALSE"','),')
         }
         vals<-substr(vals,1,nchar(vals)-1)
         query<-paste('Insert Ignore into annotations_classification Values',vals,' ON DUPLICATE KEY UPDATE status="approved" , timestamp="',Sys.time(),'";',sep="")
@@ -362,7 +379,7 @@ observeEvent(input$Class_all_categories_save,{
         colnames(ignored)<-c("dataset","doc_id","sid","project","category","status","timestamp")
         vals<-""
         for(i in 1:dim(ignored)[1]){
-          vals<-paste0(vals,'("',ignored[i,1],'",','"',ignored[i,2],'"',',','"',ignored[i,3],'","',ignored[i,4],'","',ignored[i,5],'",','"',ignored[i,6],'"',',','"',ignored[i,7],'"),')
+          vals<-paste0(vals,'("',ignored[i,1],'",','"',ignored[i,2],'"',',','"',ignored[i,3],'","',ignored[i,4],'","',ignored[i,5],'",','"',ignored[i,6],'"',',','"',ignored[i,7],'", ','"FALSE"','),')
         }
         vals<-substr(vals,1,nchar(vals)-1)
         query<-paste('Insert Ignore into annotations_classification Values',vals,' ON DUPLICATE KEY UPDATE status="ignored", timestamp="',Sys.time(),'";',sep="")
@@ -379,7 +396,6 @@ observeEvent(input$Class_all_categories_save,{
                                                      ' and project="',input$project_selected,'" and category="',as.character(labels$predictions[i]),'"and status="ignored";'))
     }
     #save denied
-    
     denied<-data[which(data[,"denied"]==TRUE),1:3]
     if(dim(denied)[1]>0){
       categories<-as.character(labels$predictions[which(data[,"denied"]==TRUE)])
@@ -394,7 +410,7 @@ observeEvent(input$Class_all_categories_save,{
         colnames(denied)<-c("dataset","doc_id","sid","project","category","status","timestamp")
         vals<-""
         for(i in 1:dim(denied)[1]){
-          vals<-paste0(vals,'("',denied[i,1],'",','"',denied[i,2],'"',',','"',denied[i,3],'","',denied[i,4],'","',denied[i,5],'",','"',denied[i,6],'"',',','"',denied[i,7],'"),')
+          vals<-paste0(vals,'("',denied[i,1],'",','"',denied[i,2],'"',',','"',denied[i,3],'","',denied[i,4],'","',denied[i,5],'",','"',denied[i,6],'"',',','"',denied[i,7],'", ','"FALSE"','),')
         }
         vals<-substr(vals,1,nchar(vals)-1)
         query<-paste('Replace into annotations_classification Values',vals,';',sep="")
@@ -943,7 +959,7 @@ observe({
   validate(
     need(!is.null(values$Class_eval_data),message=FALSE)
   )
- 
+  
   doc_id<-(stringr::str_split(string = input$Class_eval_doclink,pattern = "_",simplify = T)[5:7])
   
   validate(

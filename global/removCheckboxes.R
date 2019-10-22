@@ -34,3 +34,11 @@ remove_existing_active_learning_settings<-function(ids){
     shiny::removeUI(immediate = T,selector = paste0("#Class_eval_radio_buttons_",i,"_deny"))
   }
 }
+
+
+remove_existing_radio_buttons_classification_whole_document<-function(ids){
+  for(i in ids){
+    shiny::removeUI(immediate = T,selector = paste0("#Class_correct_annotation_",i))
+    shiny::removeUI(immediate = T,selector = paste0("#Class_correct_annotation_",i,"_deny"))
+  }
+}
