@@ -58,15 +58,39 @@ output$details_parameter<-renderUI({
     }
     if(values$Details_Analysis=="CL"){
       if(values$Details_CL_mode=="whole_collection"){
+        load(paste0(values$Details_Data_CL,"/feature_matrix.RData"))
+        values$Det_CL_feature_matrix<-feature_matrix
+        values$Det_CL_word_counts<-word_counts
+        load(paste0(values$Details_Data_CL,"/results_complete.RData"))
+        values$Det_CL_results_complete<-results_complete
         return(
           tagList(
             conditionalPanel(condition = 'input.tabBox_classification=="Date distribution"',
                              selectInput(inputId = "Det_CL_Time",label = "Timeintervall",choices = c("Day","Month","Year"),selected = "Month")         
             ),
+            conditionalPanel(condition = 'input.tabBox_classification=="Classifier performance"',
+                             selectInput(inputId = "Det_CL_c",label = "C Parameter",choices=setNames(1:10,c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)),multiple = F),
+                             selectInput(inputId = "Det_CL_fold",label = "Folx of Cross Validation",choices = 1:length(results_complete[[1]]),multiple = F)           
+            ),
+            conditionalPanel(condition = 'input.tabBox_classification=="Feature breakdown"',
+                             selectInput(inputId = "Det_CL_feature_class",label = "Category",choices = rownames(feature_matrix),multiple = F)
+            ),
             downloadButton(outputId = "Det_CL_download_texts",label = "Download examples",icon=icon("download"))
           )
         )
       }
+      if(values$Details_CL_mode=="evaluate"){
+        load(paste0(values$Details_Data_CL,"/results_complete.RData"))
+        values$Det_CL_results_complete<-results_complete
+        return(
+          tagList(
+            selectInput(inputId = "Det_CL_c",label = "C Parameter",choices=setNames(1:10,c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)),multiple = F),
+            selectInput(inputId = "Det_CL_fold",label = "Folx of Cross Validation",choices = 1:length(results_complete[[1]]),multiple = F)
+          )
+        )
+      }
+      
+      
       else{
         return(NULL)
       }
@@ -709,13 +733,21 @@ output$details_visu<-renderUI({
         return(
           tagList(
             tabBox(id="tabBox_classification",width=12,
+                   tabPanel("Date distribution",
+                            plotlyOutput(outputId = "Det_Class_date_distribution"),
+                            downloadButton(outputId = "Det_CL_download_timeseries",label = "Download timeseries data",icon=icon("download")),
+                            tags$br(),
+                            plotlyOutput(outputId = "Det_Class_pie")
+                   ),
                    tabPanel("Classifier performance",
                             uiOutput(outputId = "Det_Class_classifier_performance")
                             
                    ),
-                   tabPanel("Date distribution",
-                            plotlyOutput(outputId = "Det_Class_date_distribution"),
-                            downloadButton(outputId = "Det_CL_download_timeseries",label = "Download timeseries data",icon=icon("download"))
+                   tabPanel("Feature breakdown",
+                            uiOutput("Det_CL_feature_UI")   
+                   ),
+                   tabPanel("Validation",
+                            uiOutput("Det_CL_validation")
                    )
             )
           )

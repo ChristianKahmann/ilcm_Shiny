@@ -134,10 +134,12 @@ observeEvent(input$Classification_Results_rows_selected,ignoreInit = T,{
     }
     else{
       if(grepl(x = values$Classification_Results_Files[s],pattern = "evaluateTraining")){
+        values$Det_CL_results_complete<-NULL
         values$Details_CL_mode<-"evaluate"
       }
       else{
         values$Details_CL_mode<-"whole_collection"
+        values$Class_timeseries_data<-NULL
       }
       isolate(values$current_task_id<- values$results_classification[s,1])
       updateTabsetPanel(session = session,

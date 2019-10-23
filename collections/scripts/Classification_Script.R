@@ -434,13 +434,17 @@ error<-try(expr = {
     
     log_to_file(message = "&emsp; Cross Validation",file = logfile)
     cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
-    result <- NULL
+    result=NULL
+    results_complete<-list()
+    count=0
     for (cParameter in cParameterValues) {
+      count=count+1
       print(paste0("C = ", cParameter))
-      #if enough trainign data available use k=10, else min number of trainign samples
+      #if enough training data available use k=10, else min number of trainign samples
       evalMeasures <- k_fold_cross_validation(trainingDTM, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM)[1]))
-      print(evalMeasures)
-      result <- c(result, evalMeasures["F"])
+      print(evalMeasures$means)
+      result <- c(result, evalMeasures$means["F"])
+      results_complete[[count]]<-evalMeasures$complete
     }
     log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
     
@@ -478,6 +482,7 @@ error<-try(expr = {
     feature_matrix<-model$W
     colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
     
+    word_counts<-colSums(dtm) 
     log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
     
     
@@ -499,7 +504,8 @@ error<-try(expr = {
     log_to_file(message = "<b>Step 13/14: Saving results</b>",file = logfile)
     dir.create(path = path0,recursive = T)
     save(learning_meta,data,result,file=paste0(path0,"training_examples.RData"))
-    save(feature_matrix,file=paste0(path0,"feature_matrix.RData"))
+    save(results_complete,file = paste0(path0,"results_complete.RData"))
+    save(feature_matrix,word_counts,file=paste0(path0,"feature_matrix.RData"))
     save(parameters,file=paste0(path0,"parameters.RData"))
     save(info,file=paste0(path0,"info.RData"))
     log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
@@ -522,12 +528,16 @@ error<-try(expr = {
     
     cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
     result <- NULL
+    results_complete<-list()
+    count=0
     for (cParameter in cParameterValues) {
+      count=count+1
       print(paste0("C = ", cParameter))
-      #if enough trainign data available use k=10, else min number of trainign samples
+      #if enough training data available use k=10, else min number of trainign samples
       evalMeasures <- k_fold_cross_validation(trainingDTM, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM)[1]))
-      print(evalMeasures)
-      result <- c(result, evalMeasures["F"])
+      print(evalMeasures$means)
+      result <- c(result, evalMeasures$means["F"])
+      results_complete[[count]]<-evalMeasures$complete
     }
     
     log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
@@ -536,6 +546,7 @@ error<-try(expr = {
     log_to_file(message = "<b>Step 13/14: Saving results</b>",file = logfile)
     dir.create(path = path0,recursive = T)
     save(result,file=paste0(path0,"result.RData"))
+    save(results_complete,file = paste0(path0,"results_complete.RData"))
     save(parameters,file=paste0(path0,"parameters.RData"))
     save(info,file=paste0(path0,"info.RData"))
     log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
@@ -634,8 +645,8 @@ error<-try(expr = {
     ############################################
     log_to_file(message = "<b>Step 12/14: Classification on entire collection</b>",file = logfile)
     
-    
-    gold_table<-gold_table[which(gold_table[,2]!="NEG"),]
+    #use neg examples in training classifier and remove examples tagged as neg afterwards
+    #gold_table<-gold_table[which(gold_table[,2]!="NEG"),]
     idx<-which(gold_table[,1]%in%rownames(dtm))
     selector_idx<-gold_table[idx,1]
     gold_dtm<-dtm[selector_idx,]
@@ -647,11 +658,12 @@ error<-try(expr = {
     names(trainingLabels)<-gold_table[idx,1]
     c_weights <- table(trainingLabels) / length(trainingLabels)
     c_weights <- abs(c_weights - 1) 
-    
     model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = parameters$cl_c,epsilon = 0.01,bias = 1)
     
-    #feature_matrix<-model$W
-    #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
+    feature_matrix<-model$W
+    colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
+    browser()
+    word_counts<-colSums(dtm)  
     
     testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
     predicted <- predict(model, testDTM,proba = T) 
@@ -686,16 +698,19 @@ error<-try(expr = {
       orig<-documents_original[names(predictions),]
       original_text<-cbind(cbind(as.character(predictions),probabilities),orig)
     }
-    
     log_to_file(message = "&emsp; Cross Validation",file = logfile)
     cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
-    result <- NULL
+    result=NULL
+    results_complete<-list()
+    count=0
     for (cParameter in cParameterValues) {
+      count=count+1
       print(paste0("C = ", cParameter))
       #if enough trainign data available use k=10, else min number of trainign samples
       evalMeasures <- k_fold_cross_validation(trainingDTM, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM)[1]))
-      print(evalMeasures)
-      result <- c(result, evalMeasures["F"])
+      print(evalMeasures$means)
+      result <- c(result, evalMeasures$means["F"])
+      results_complete[[count]]<-evalMeasures$complete
     }
     log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
     
@@ -705,6 +720,8 @@ error<-try(expr = {
     log_to_file(message = "<b>Step 13/14: Saving results</b>",file = logfile)
     dir.create(path = path0,recursive = T)
     save(dates,predictions,labels,result,file=paste0(path0,"result.RData"))
+    save(feature_matrix,word_counts,file=paste0(path0,"feature_matrix.RData"))
+    save(results_complete,file = paste0(path0,"results_complete.RData"))
     save(original_text,file=paste0(path0,"texts.RData"))
     save(parameters,file=paste0(path0,"parameters.RData"))
     save(info,file=paste0(path0,"info.RData"))

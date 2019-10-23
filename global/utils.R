@@ -29,7 +29,8 @@ F.measure <- function(inPred,inLabels, positiveClassName = NULL) {
   alllabels <- as.vector(inLabels)
   classes <- sort(unique(c(allpred,alllabels)))
   
-  if (length(classes) == 2) {
+  #changed on 23.10.19 to ensure always return micro and macro values
+  if (length(classes) == 1) {
     # SINGLE CLASS EVALUATION
     
     if (is.null(positiveClassName)) {
@@ -170,9 +171,9 @@ get_k_fold_logical_indexes <- function(j, k, n) {
 
 k_fold_cross_validation <- function(labeledDTM, classesOfDocuments, k = 10, cost = 10, ...) {
   evaluationMeasures <- NULL
+  complete_results<-list()
   for (j in 1:k) {
     currentFold <- get_k_fold_logical_indexes(j, k, nrow(labeledDTM))
-    
     trainingSet <- labeledDTM[!currentFold, ]
     trainingLabels <- classesOfDocuments[!currentFold]
     
@@ -186,14 +187,18 @@ k_fold_cross_validation <- function(labeledDTM, classesOfDocuments, k = 10, cost
     kthEvaluation <- F.measure(predictedLabels, testLabels )
     #print(kthEvaluation)
     if(length(kthEvaluation)==2){
-      kthEvaluation<-kthEvaluation$micro
+      kthEvaluation_short<-kthEvaluation$micro
     }
     else{
-      kthEvaluation<-kthEvaluation[c("P","R","F")]
+      kthEvaluation_short<-kthEvaluation[c("P","R","F")]
     }
-    evaluationMeasures <- rbind(evaluationMeasures, kthEvaluation)
+    evaluationMeasures <- rbind(evaluationMeasures, kthEvaluation_short)
+    complete_results[[j]]<-kthEvaluation
   }
-  return(colMeans(evaluationMeasures,na.rm = T))
+  result<-list()
+  result[["means"]]<-colMeans(evaluationMeasures,na.rm = T)
+  result[["complete"]]<-complete_results
+  return(result)
 }
 
 
