@@ -281,6 +281,19 @@ output$Analysis_Parameter_CL<-renderUI({
                                       "Evaluate Training Set",
                                       "Classify on entire collection"))
             ),
+      column(1,
+             numericInput(inputId = "CL_c",label = "c Parameter",value = 1,step = 0.1)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "The C parameter tells the SVM optimization how much you want to avoid misclassifying each training example.
+                     For large values of C, the optimization will choose a smaller-margin hyperplane if that hyperplane does a better job of getting all the training points classified correctly.
+                     Conversely, a very small value of C will cause the optimizer to look for a larger-margin separating hyperplane, even if that hyperplane misclassifies more points",
+                     placement = "right",
+                     html="true"
+                   )
+               )
+             ),
       conditionalPanel(condition='input.CL_Mode=="Classify on entire collection"',
                        column(2,
                               numericInput(inputId = "CL_Threshold",label = "Positive score threshold",value = 0.8,min = 0,max=1)%>%
@@ -522,7 +535,8 @@ observeEvent(ignoreInit = T,input$CL_Submit_Script,{
                        cl_positive_Threshold=input$CL_Threshold,
                        use_dictionary=input$CL_use_dict,
                        Dictioanry=input$CL_dict,
-                       cl_active_learning_strategy=input$CL_active_learning_strategy
+                       cl_active_learning_strategy=input$CL_active_learning_strategy,
+                       cl_c=input$CL_c
       )
       #create process ID
       mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
@@ -652,7 +666,8 @@ observeEvent(ignoreInit=T,input$CL_pruning_continue,{
                      cl_positive_Threshold=input$CL_Threshold,
                      use_dictionary=input$CL_use_dict,
                      Dictioanry=input$CL_dict,
-                     cl_active_learning_strategy=input$CL_active_learning_strategy
+                     cl_active_learning_strategy=input$CL_active_learning_strategy,
+                     cl_c=input$CL_c
     )
     #create process ID
     mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)

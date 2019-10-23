@@ -190,9 +190,6 @@ write_metadata_to_database<-function(parameters){
   if(!is.null(parameters$Document_Score_Aggregation)){
     entry_for_db[1,42]<-as.character(parameters$Document_Score_Aggregation)
   }
-  if(!is.null(parameters$cl_SVM_C)){
-    entry_for_db[1,43]<-as.character(parameters$cl_SVM_C)
-  }
   if(!is.null(parameters$remove_numbers_all)){
     entry_for_db[1,44]<-as.character(parameters$remove_numbers_all)
   }
@@ -262,6 +259,9 @@ write_metadata_to_database<-function(parameters){
   if(!is.null(parameters$cl_active_learning_strategy)){
     entry_for_db[1,64]<-as.character(parameters$cl_active_learning_strategy)
   }
+  if(!is.null(parameters$cl_c)){
+    entry_for_db[1,43]<-as.character(parameters$cl_c)
+  }
   #KeywordExtraction
   if(!is.null(parameters$KE_Mode)){
     entry_for_db[1,65]<-as.character(parameters$KE_Mode)
@@ -291,7 +291,9 @@ write_metadata_to_database<-function(parameters){
   
   source("config_file.R")
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-  query<-paste0('Insert into Tasks Values("',paste0(entry_for_db,collapse='", "'),'");')
+  #check if databse uses same amount of parameters; if not just save those parameters in database format; update to later docker image will solve this issue 
+  columns_in_db<-RMariaDB::dbGetQuery(conn = mydb,statement = "Show Columns from ilcm.Tasks;")
+  query<-paste0('Insert into Tasks Values("',paste0(entry_for_db[1,1:dim(columns_in_db)[1]],collapse='", "'),'");')
   query<-stringr::str_replace_all(string = query,pattern = '\"NA\"',replacement = "NULL")
   RMariaDB::dbBegin(conn = mydb)
   rs <- RMariaDB::dbSendQuery(mydb, query)

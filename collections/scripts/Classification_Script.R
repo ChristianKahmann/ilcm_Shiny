@@ -21,21 +21,21 @@ error<-try(expr = {
   
   
   #load collection 
-  log_to_file(message = "<b>Step 1/16: Loading collection</b>",file = logfile)
+  log_to_file(message = "<b>Step 1/14: Loading collection</b>",file = logfile)
   load(paste("collections/collections/",unlist(parameters[1]),".RData",sep=""))
   log_to_file(message = "  <b style='color:green'> ✔ </b> Finished loading collection",file = logfile)
   
   
   
   #load data from database
-  log_to_file(message = "<b>Step 2/16: Loading data from database</b>",file = logfile)
+  log_to_file(message = "<b>Step 2/14: Loading data from database</b>",file = logfile)
   db_data<-get_token_meta_and_language_from_db(get_language=T,get_global_doc_ids=T)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished loading data from database",file = logfile)
   
   
   
   #getting annotations for chosen collection,project and category
-  log_to_file(message = "<b>Step 3/16: Loading annotations from database</b>",file = logfile)
+  log_to_file(message = "<b>Step 3/14: Loading annotations from database</b>",file = logfile)
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
   annotations<-RMariaDB::dbGetQuery(mydb, paste("select * from Annotations where Anno_set='",parameters$Project,"';",sep=""))
   classifications_approved<-RMariaDB::dbGetQuery(conn = mydb,statement = paste0("Select * from annotations_classification where project='",parameters$Project,"';"))
@@ -54,13 +54,13 @@ error<-try(expr = {
   
   
   #preparing parameters
-  log_to_file(message = "<b>Step 4/16: Preparing input parameters</b>",file = logfile)
+  log_to_file(message = "<b>Step 4/14: Preparing input parameters</b>",file = logfile)
   prepare_input_parameters()
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
   #sanity check
-  log_to_file(message = "<b>Step 5/16: Sanity check</b>",file = logfile)
+  log_to_file(message = "<b>Step 5/14: Sanity check</b>",file = logfile)
   #token object not empty
   log_to_file(message = "&emsp; token object not empty?",logfile)
   if(dim(db_data$token)[1]>1){
@@ -92,7 +92,7 @@ error<-try(expr = {
   
   
   #get original documents 
-  log_to_file(message = "<b>Step 5/16: Create original documents</b>",file = logfile)
+  log_to_file(message = "<b>Step 5/14: Create original documents</b>",file = logfile)
   if(parameters$cooc_window=="Document"){
     doc_ids<-db_data$token[,2]
   }
@@ -118,7 +118,7 @@ error<-try(expr = {
   
   
   #load dictionary
-  log_to_file(message = "<b>Step 6/16: Try loading dictionary</b>",file = logfile)
+  log_to_file(message = "<b>Step 6/14: Try loading dictionary</b>",file = logfile)
   try({
     if(parameters$use_dictionary==TRUE){
       load(paste0("collections/dictionaries/",parameters$Dictioanry,".RData"))
@@ -134,7 +134,7 @@ error<-try(expr = {
   
   
   #load annotation set according to chosen project
-  log_to_file(message = "<b>Step 7/16: Loading annotation set</b>",file = logfile)
+  log_to_file(message = "<b>Step 7/14: Loading annotation set</b>",file = logfile)
   load(paste0("collections/annotation_schemes/",parameters$Project,".RData"))
   names_overall<-names(unlist(anno))
   anno<-unlist(anno)
@@ -162,7 +162,7 @@ error<-try(expr = {
   
   
   #preparing token object
-  log_to_file(message = "<b>Step 8/16: Preparing token object</b>",file = logfile)
+  log_to_file(message = "<b>Step 8/14: Preparing token object</b>",file = logfile)
   datasets<-db_data$token[,1]
   db_data$token<-prepare_token_object(token = db_data$token)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
@@ -170,7 +170,7 @@ error<-try(expr = {
   
   
   #getting original documents
-  log_to_file(message = "<b>Step 9/16: Getting original documents/sentences</b>",file = logfile)
+  log_to_file(message = "<b>Step 9/14: Getting original documents/sentences</b>",file = logfile)
   original_text<-get_original_documents()
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished building original documents/sentences",file = logfile)
   
@@ -178,7 +178,7 @@ error<-try(expr = {
   
   
   #formatting classification input as a tibble
-  log_to_file(message = "<b>Step 10/16: Formatting classification input</b>",file = logfile)
+  log_to_file(message = "<b>Step 10/14: Formatting classification input</b>",file = logfile)
   #feature_list<-calculate_dtm(tibble=T)
   dtm<-calculate_dtm(tibble=F)
   #get_annotated_doc_ids
@@ -266,7 +266,7 @@ error<-try(expr = {
   
   
   #insert made annotations and approved classifications
-  log_to_file(message = "<b>Step 12/16: Inserting made annotations and approved classifications as training input</b>",file = logfile)
+  log_to_file(message = "<b>Step 11/14: Inserting made annotations and approved classifications as training input</b>",file = logfile)
   gold_table<-matrix(c(0),0,4)
   if(parameters$cooc_window=="Sentence"){
     mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
@@ -370,7 +370,6 @@ error<-try(expr = {
               Also you chose not to use a dictionary. The system can not calculate classifications without any training examples generated by annotations or using a dictionary.</b>",logfile)
     stop("No Training data")
   }
-  
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
   
@@ -380,7 +379,7 @@ error<-try(expr = {
     ############################################
     #           learning example               #
     ############################################
-    log_to_file(message = "<b>Step 14/16: Producing 50 new active learning examples</b>",file = logfile)
+    log_to_file(message = "<b>Step 12/14: Producing 50 new active learning examples</b>",file = logfile)
     log_to_file(message = paste("&emsp;",count, "Training sets (annotations and approved classifications) were found and used"),file = logfile)
     
     if(parameters$use_dictionary==TRUE){
@@ -428,7 +427,7 @@ error<-try(expr = {
     c_weights <- table(trainingLabels) / length(trainingLabels)
     c_weights <- abs(c_weights - 1) 
     
-    model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = 1,epsilon = 0.01,bias = 1)
+    model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = parameters$cl_c,epsilon = 0.01,bias = 1)
     testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
     predicted <- predict(model, testDTM,proba = T) 
     log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
@@ -497,7 +496,7 @@ error<-try(expr = {
     learning_meta[["context_unit"]]<-parameters$cooc_window
     log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished producing 50 new active learning examples ",file = logfile)
     
-    log_to_file(message = "<b>Step 15/16: Saving results</b>",file = logfile)
+    log_to_file(message = "<b>Step 13/14: Saving results</b>",file = logfile)
     dir.create(path = path0,recursive = T)
     save(learning_meta,data,result,file=paste0(path0,"training_examples.RData"))
     save(feature_matrix,file=paste0(path0,"feature_matrix.RData"))
@@ -509,7 +508,7 @@ error<-try(expr = {
     ############################################
     #           Training Set Evaluation        #
     ############################################
-    log_to_file(message = "<b>Step 14/16: Evaluating Training Set</b>",file = logfile)
+    log_to_file(message = "<b>Step 12/14: Evaluating Training Set</b>",file = logfile)
     idx<-which(gold_table[,1]%in%rownames(dtm))
     selector_idx<-gold_table[idx,1]
     #reduce feature space to features of gold documents
@@ -534,18 +533,20 @@ error<-try(expr = {
     log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
     
     
-    log_to_file(message = "<b>Step 15/16: Saving results</b>",file = logfile)
+    log_to_file(message = "<b>Step 13/14: Saving results</b>",file = logfile)
     dir.create(path = path0,recursive = T)
     save(result,file=paste0(path0,"result.RData"))
     save(parameters,file=paste0(path0,"parameters.RData"))
     save(info,file=paste0(path0,"info.RData"))
     log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   }
+  
+  
   if(parameters$cl_Mode=="Active learning on whole documents"){
     ############################################
     #   Active Learning on whole Documents     #
     ############################################
-    log_to_file(message = "<b>Step 14/16: Active learning on whole documents</b>",file = logfile)
+    log_to_file(message = "<b>Step 12/14: Active learning on whole documents</b>",file = logfile)
     #add negative examples if no other categories tagged or no NEG examples given
     if(length(unique(gold_table[,2]))==1){
       gold_table <- rbind(gold_table, cbind(sample(setdiff(rownames(dtm),gold_table[,1]),dim(gold_table)[1],replace = F),"NEG","sampled negative examples",as.character(Sys.time())))
@@ -562,7 +563,7 @@ error<-try(expr = {
     names(trainingLabels)<-gold_table[idx,1]
     c_weights <- table(trainingLabels) / length(trainingLabels)
     c_weights <- abs(c_weights - 1) 
-    model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = 1,epsilon = 0.01,bias = 1)
+    model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = parameters$cl_c,epsilon = 0.01,bias = 1)
     
     #sample documents
     sentence_ids<-setdiff(rownames(dtm),gold_table[,1])
@@ -618,7 +619,7 @@ error<-try(expr = {
     labels$probabilities<-labels$probabilities[ord,]
     log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
     
-    log_to_file(message = "<b>Step 15/16: Saving results</b>",file = logfile)
+    log_to_file(message = "<b>Step 13/14: Saving results</b>",file = logfile)
     dir.create(path = path0,recursive = T)
     project<-parameters$Project
     save(texts,labels,project,file=paste0(path0,"examples.RData"))
@@ -631,7 +632,7 @@ error<-try(expr = {
     ############################################
     #       Classify on entire collection      #
     ############################################
-    log_to_file(message = "<b>Step 14/16: Classification on entire collection</b>",file = logfile)
+    log_to_file(message = "<b>Step 12/14: Classification on entire collection</b>",file = logfile)
     
     
     gold_table<-gold_table[which(gold_table[,2]!="NEG"),]
@@ -647,7 +648,7 @@ error<-try(expr = {
     c_weights <- table(trainingLabels) / length(trainingLabels)
     c_weights <- abs(c_weights - 1) 
     
-    model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = 1,epsilon = 0.01,bias = 1)
+    model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = parameters$cl_c,epsilon = 0.01,bias = 1)
     
     #feature_matrix<-model$W
     #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
@@ -682,9 +683,6 @@ error<-try(expr = {
       }
       RMariaDB::dbDisconnect(mydb)
       
-      # original_text<-original_text[keep,]
-      # original_text<-cbind(cbind(as.character(predictions),probabilities),original_text)
-      
       orig<-documents_original[names(predictions),]
       original_text<-cbind(cbind(as.character(predictions),probabilities),orig)
     }
@@ -704,7 +702,7 @@ error<-try(expr = {
     log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
     
     
-    log_to_file(message = "<b>Step 15/16: Saving results</b>",file = logfile)
+    log_to_file(message = "<b>Step 13/14: Saving results</b>",file = logfile)
     dir.create(path = path0,recursive = T)
     save(dates,predictions,labels,result,file=paste0(path0,"result.RData"))
     save(original_text,file=paste0(path0,"texts.RData"))
@@ -715,7 +713,7 @@ error<-try(expr = {
   
   
   #Wrinting metadata to database Task column
-  log_to_file(message = "<b>Step 16/16: Writing task parameter to database</b>",file = logfile)
+  log_to_file(message = "<b>Step 14/14: Writing task parameter to database</b>",file = logfile)
   write_metadata_to_database(parameters)
   log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
   log_to_file(message = " <b style='color:green'>Process finished successfully.</b>",logfile)
