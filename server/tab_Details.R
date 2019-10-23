@@ -721,7 +721,7 @@ output$details_visu<-renderUI({
           )
         )
       }
-      else{
+      if(values$Details_CL_mode=="evaluate"){
         return(
           tagList(
             tabBox(id="tabBox_classification",width=12,

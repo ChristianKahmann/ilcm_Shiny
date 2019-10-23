@@ -8,12 +8,30 @@ output$Classification_Results <- renderDataTable({
   isolate(values$reload_classification_result<-FALSE)
   files <- list.files("collections/results/classification/classifyCollection")
   files <- c(files,list.files("collections/results/classification/evaluateTraining"))
+  dirs_activeLearning<-list.files("collections/results/classification/activeLearning")
+  for(dir in dirs_activeLearning){
+    files <- c(files,list.files(paste0("collections/results/classification/activeLearning/",dir)))
+  }
+  dirs_activeLearning_whole_Documents<-list.files("collections/results/classification/activeLearning_documents")
+  for(dir in dirs_activeLearning_whole_Documents){
+    files <- c(files,list.files(paste0("collections/results/classification/activeLearning_documents//",dir)))
+  }
+  
   validate(
     need(length(files)>0,"no results found")
   )
   files_for_date <-
     list.files("collections/results/classification/classifyCollection", full.names = T)
   files_for_date <- c(files_for_date,list.files("collections/results/classification/evaluateTraining",full.names = T))
+  dirs_activeLearning<-list.files("collections/results/classification/activeLearning")
+  for(dir in dirs_activeLearning){
+    files_for_date <- c(files_for_date,list.files(paste0("collections/results/classification/activeLearning/",dir),full.names = T))
+  }
+  dirs_activeLearning_whole_Documents<-list.files("collections/results/classification/activeLearning_documents")
+  for(dir in dirs_activeLearning_whole_Documents){
+    files_for_date <- c(files_for_date,list.files(paste0("collections/results/classification/activeLearning_documents//",dir),full.names = T))
+  }
+  
   
   data_finished <- matrix(c(0), 0, 3)
   if (length(files) > 0) {
@@ -103,17 +121,30 @@ observeEvent(input$Classification_Results_rows_selected,ignoreInit = T,{
     values$Details_Analysis <- "CL"
     isolate(values$Details_Data_CL <-
               values$Classification_Results_Files[s])
-    if(grepl(x = values$Classification_Results_Files[s],pattern = "evaluateTraining")){
-      values$Details_CL_mode<-"evaluate"
+    if(grepl(x = values$Classification_Results_Files[s],pattern = "activeLearning")||grepl(x = values$Classification_Results_Files[s],pattern = "activeLearning_documents")){
+      values$Details_CL_mode<-"activeLearning"
+      print("wechsel jetzt")
+      updateTabItems(session=session,
+                         inputId="tabs",
+                         selected="Categories")
+      updateTabsetPanel(session = session,
+                        inputId = "category",
+                        selected = "Classifications")
+      return(NULL)
     }
     else{
-      values$Details_CL_mode<-"whole_collection"
+      if(grepl(x = values$Classification_Results_Files[s],pattern = "evaluateTraining")){
+        values$Details_CL_mode<-"evaluate"
+      }
+      else{
+        values$Details_CL_mode<-"whole_collection"
+      }
+      isolate(values$current_task_id<- values$results_classification[s,1])
+      updateTabsetPanel(session = session,
+                        inputId = "coll",
+                        selected = "Details")
+      return(NULL)
     }
-    isolate(values$current_task_id<- values$results_classification[s,1])
-    updateTabsetPanel(session = session,
-                      inputId = "coll",
-                      selected = "Details")
-    return(NULL)
   }
 })
 

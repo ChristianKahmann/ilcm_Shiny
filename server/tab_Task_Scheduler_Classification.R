@@ -280,20 +280,22 @@ output$Analysis_Parameter_CL<-renderUI({
                                       "Active learning on whole documents",
                                       "Evaluate Training Set",
                                       "Classify on entire collection"))
-            ),
-      column(1,
-             numericInput(inputId = "CL_c",label = "c Parameter",value = 1,step = 0.1)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "The C parameter tells the SVM optimization how much you want to avoid misclassifying each training example.
+      ),
+      conditionalPanel(condition='input.CL_Mode!="Evaluate Training Set"',
+                       column(1,
+                              numericInput(inputId = "CL_c",label = "c Parameter",value = 1,step = 0.1)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "The C parameter tells the SVM optimization how much you want to avoid misclassifying each training example.
                      For large values of C, the optimization will choose a smaller-margin hyperplane if that hyperplane does a better job of getting all the training points classified correctly.
                      Conversely, a very small value of C will cause the optimizer to look for a larger-margin separating hyperplane, even if that hyperplane misclassifies more points",
-                     placement = "right",
-                     html="true"
-                   )
-               )
-             ),
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                )
+                       )
+      ),
       conditionalPanel(condition='input.CL_Mode=="Classify on entire collection"',
                        column(2,
                               numericInput(inputId = "CL_Threshold",label = "Positive score threshold",value = 0.8,min = 0,max=1)%>%
@@ -356,7 +358,7 @@ observeEvent(input$CL_Context_Unit,ignoreInit = T,{
       updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices,selected=selected)
     }
     else{
-    updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices)
+      updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices)
     }
   }
   else{
@@ -460,8 +462,8 @@ observeEvent(ignoreInit = T,input$CL_Submit_Script,{
     if(isFALSE(valid)){
       shinyWidgets::sendSweetAlert(session=session,title = "Check pruning settings!",text = HTML("It seems your current pruning input parameters don't make sense. It's very likely, that the whole vocabulary will be removed.
                            Check <a href='https://quanteda.io/reference/dfm_trim.html' title='quanteda pruning'> Quanteda Pruning Settings </a>"),html=TRUE,
-                             showCancelButton = T,showConfirmButton = T,confirmButtonText = "Continue anyway!",confirmButtonCol ="#d65f4a",closeOnEsc = T,closeOnClickOutside = T,
-                             type = "warning",inputId = "CL_pruning_continue",cancelButtonText = "Change Settings")
+                                   showCancelButton = T,showConfirmButton = T,confirmButtonText = "Continue anyway!",confirmButtonCol ="#d65f4a",closeOnEsc = T,closeOnClickOutside = T,
+                                   type = "warning",inputId = "CL_pruning_continue",cancelButtonText = "Change Settings")
     }
     else{
       #get pruning parameters
