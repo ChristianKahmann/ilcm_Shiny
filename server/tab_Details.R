@@ -70,12 +70,27 @@ output$details_parameter<-renderUI({
             ),
             conditionalPanel(condition = 'input.tabBox_classification=="Classifier performance"',
                              selectInput(inputId = "Det_CL_c",label = "C Parameter",choices=setNames(1:10,c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)),multiple = F),
-                             selectInput(inputId = "Det_CL_fold",label = "Folx of Cross Validation",choices = 1:length(results_complete[[1]]),multiple = F)           
+                             selectInput(inputId = "Det_CL_fold",label = "Fold of Cross Validation",choices = 1:length(results_complete[[1]]),multiple = F)           
             ),
             conditionalPanel(condition = 'input.tabBox_classification=="Feature breakdown"',
-                             selectInput(inputId = "Det_CL_feature_class",label = "Category",choices = rownames(feature_matrix),multiple = F)
+                             selectInput(inputId = "Det_CL_feature_class",label = "Category",choices = rownames(feature_matrix),multiple = F),
+                             sliderInput(inputId = "Det_CL_number_of_features",label = "number of features",min = 2,value = 20,step = 2,max = (dim(feature_matrix)[2]-1),width = "96%")%>%
+                               shinyInput_label_embed(
+                                 shiny_iconlink() %>%
+                                   bs_embed_popover(
+                                     title = "the most distinctive features pro and contra the selected category are shown", placement = "left"
+                                   )
+                               ),
+                             shinyWidgets::materialSwitch(inputId = "Det_CL_feature_show_labels",label = "show labels",value = TRUE,status = "default"),
+                             downloadButton(outputId = "Det_CL_download_feature_matrix",label = "Download feature matrix",icon=icon("download"), style="position:fixed;
+  bottom:120px;")
             ),
-            downloadButton(outputId = "Det_CL_download_texts",label = "Download examples",icon=icon("download"))
+            conditionalPanel(condition = 'input.tabBox_classification=="Validation"',
+                             selectInput(inputId = "Det_CL_feature_class2",label = "Category",choices = rownames(feature_matrix),multiple = F),
+                             uiOutput(outputId = "Det_CL_validation_document_UI")
+            ),
+            downloadButton(outputId = "Det_CL_download_texts",label = "Download examples",icon=icon("download"), style="position:fixed;
+  bottom:75px;")
           )
         )
       }
@@ -747,7 +762,7 @@ output$details_visu<-renderUI({
                             uiOutput("Det_CL_feature_UI")   
                    ),
                    tabPanel("Validation",
-                            uiOutput("Det_CL_validation")
+                            uiOutput("Det_CL_validation")%>%withSpinner()
                    )
             )
           )

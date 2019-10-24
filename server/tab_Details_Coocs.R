@@ -291,6 +291,16 @@ output$visNetwork_cooc_net<-visNetwork::renderVisNetwork({
 # })
 # 
 
+output$Det_CO_download_coocs<-downloadHandler(
+  filename = function() {
+    paste('co-occurence_matrix-', Sys.Date(), '.csv', sep='')
+  },
+  content = function(con) {
+    data<-as.matrix(values$Det_CO_dl_coocs)
+    write.csv(data, con)
+  }
+) 
+
 
 output$cooc_examples_table<-DT::renderDataTable({
   validate(

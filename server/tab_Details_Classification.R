@@ -125,15 +125,16 @@ output$Det_CL_download_timeseries<-downloadHandler(
   }
 )  
 
-output$Det_CO_download_coocs<-downloadHandler(
+
+output$Det_CL_download_feature_matrix<-downloadHandler(
   filename = function() {
-    paste('co-occurence_matrix-', Sys.Date(), '.csv', sep='')
+    paste('feature_matrix-', Sys.Date(), '.csv', sep='')
   },
   content = function(con) {
-    data<-as.matrix(values$Det_CO_dl_coocs)
+    data<-as.matrix(values$Det_CL_feature_matrix)
     write.csv(data, con)
   }
-) 
+)
 
 
 
@@ -147,20 +148,135 @@ output$Det_CL_feature_UI<-renderUI({
   )
   #browser()
   data<-values$Det_CL_feature_matrix[input$Det_CL_feature_class,]
-  data<-sort(data,decreasing = T)[1:50]
+  data_pos<-sort(data,decreasing = T)[1:(input$Det_CL_number_of_features/2)]
+  data_neg<-sort(data,decreasing = F)[1:(input$Det_CL_number_of_features/2)]
+  data<-c(data_pos,data_neg)
   data<-data.frame(weight=data,frequency=values$Det_CL_word_counts[names(data)])
   
   t <- list(
     family = "sans serif",
-    size = 14,
-    color = toRGB("grey50"))
-  
+    size = 12,
+    color = toRGB("black"))
+  if(input$Det_CL_feature_show_labels==T){
+    p<-plotly::plot_ly(x=data$frequency,y=data$weight,color=data$weight,colors=c("firebrick","limegreen"),text=rownames(data),marker=list(size=12))%>%
+      plotly::add_markers()%>%
+      plotly::add_text(textfont = t, textposition = "top right")%>%
+      plotly::layout(yaxis=list(zeroline=FALSE,title="SVM Weights"),xaxis=list(zeroline=FALSE,title="Frequency",type="log"),showlegend = FALSE,title="most discriminative features for and against chosen category")
+  }
+  else{
+    p<-plotly::plot_ly(x=data$frequency,y=data$weight,color=data$weight,colors=c("firebrick","limegreen"),text=rownames(data),marker=list(size=12))%>%
+      plotly::add_markers()%>%
+      plotly::layout(yaxis=list(zeroline=FALSE,title="SVM Weights"),xaxis=list(zeroline=FALSE,title="Frequency",type="log"),showlegend = FALSE,title="most discriminative features for and against chosen category")
+  }
   return(
     tagList(
-      plotly::plot_ly(x=data$frequency,y=data$weight,color=data$weight,colors=c("firebrick","limegreen"),text=rownames(data),marker=list(size=12))%>%
-        plotly::add_markers()%>%
-        plotly::add_text(textfont = t, textposition = "top right")%>%
-        plotly::layout(yaxis=list(zeroline=FALSE,title="SVM Weights"),xaxis=list(zeroline=FALSE,title="Frequency",type="log"),showlegend = FALSE)
+      p,
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(6,
+                      box(title = "Pro features",status = "info",solidHeader = T,width = 12,
+                          DT::dataTableOutput(outputId = "Det_CL_feature_table_pro")
+                      )
+               ),
+               column(6,
+                      box(title = "Contra features",status = "info",solidHeader = T,width = 12,
+                          DT::dataTableOutput(outputId = "Det_CL_feature_table_contra")
+                      )
+               )
       )
+      
     )
+  )
+})
+
+output$Det_CL_feature_table_pro<-DT::renderDataTable({
+  data<-values$Det_CL_feature_matrix[input$Det_CL_feature_class,]
+  data_pos<-sort(data,decreasing = T)[1:(input$Det_CL_number_of_features/2)]
+  DT::datatable(data = data.frame(weight=data_pos,frequency=values$Det_CL_word_counts[names(data_pos)]),options = list(dom="tp"))
+})
+
+output$Det_CL_feature_table_contra<-DT::renderDataTable({
+  data<-values$Det_CL_feature_matrix[input$Det_CL_feature_class,]
+  data_neg<-sort(data,decreasing = F)[1:(input$Det_CL_number_of_features/2)]
+  DT::datatable(data = data.frame(weight=data_neg,frequency=values$Det_CL_word_counts[names(data_neg)]),options = list(dom="tp"))
+})
+
+
+output$Det_CL_validation_document_UI<-renderUI({
+  validate(
+    need(
+      !is.null(input$Det_CL_feature_class2),message=FALSE
+    )
+  )
+  load(paste0(values$Details_Data_CL,"/result.RData"))
+  documents_relevant<-names(predictions[which(predictions==input$Det_CL_feature_class2)])
+  context_unit<-"Documents"
+  if(length(stringr::str_extract_all(string = documents_relevant[1],pattern = "_"))==2){
+    context_unit="Sentences"
+  }
+  return(selectInput(inputId = "Det_CL_validation_document",label =context_unit,choices = documents_relevant,multiple = F))
+})
+
+output$Det_CL_validation<-renderUI({
+  validate(
+    need(
+      !is.null(input$Det_CL_validation_document),message=FALSE
+    )
+  )
+  identifier<-stringr::str_split(string = input$Det_CL_validation_document,pattern = "_",simplify = T)
+  dataset<-identifier[1]
+  doc_id<-identifier[2]
+  sentence_id<-NULL
+  if(length(identifier)==3){
+    sentence_id<-identifier[3]
+  }
+  #browser()
+  token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = sentence_id,host=values$host,port=values$port)
+  load(paste0(values$Details_Data_CL,"/parameters.RData"))
+  token<-token[-which(token[,"pos"]=="SPACE"),]
+  if(parameters$baseform_reduction=="none"){
+    features<-tolower(token[,"word"])  
+  }
+  if(parameters$baseform_reduction=="lemma"){
+    features<-tolowertoken[,"lemma"]  
+  }
+  if(parameters$baseform_reduction=="stemming"){
+    features<-tolower(quanteda::tokens_wordstem(quanteda::tokens(paste(token[,"word"],collapse=" ")),lang)$text1)
+  }
+  token<-cbind(token,features)
+  token<-cbind(1:dim(token)[1],token)
+  data<-values$Det_CL_feature_matrix[input$Det_CL_feature_class2,]
+  data<-data.frame(features=names(data),weight=data)
+  m<-merge(x = token,y=data,by="features",all.x=TRUE)
+  m<-m[order(m[,2]),]
+  
+  rbPal_pos <- colorRampPalette(c('white','green'))
+  rbPal_neg <- colorRampPalette(c('red','white'))
+  m<-cbind(m,rep("",dim(m)[1]))
+  m[intersect(which(!is.na(m$weight)),which(m$weight>0)),12]<-  rbPal_pos(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))],breaks = 100))]       
+  m[intersect(which(!is.na(m$weight)),which(m$weight<0)),12]<-  rbPal_neg(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight<0))],breaks = 100))]       
+  
+  strings<-apply(m,MARGIN = 1,FUN = function(x){
+    if(is.na(x[12])){
+      return(x[7])
+    }
+    else{
+      return( paste0('<font style="background-color:',x[12],';"','title="feature: ',x[1],' with weight: ',x[11],'">',x[7],'</font>'))
+    }
+    
+  })
+  
+  a<-list()
+  for(i in 1:dim(m)[1]){
+    a[[i]]<-paste0("<span span_nr='",i,"'>",strings[i],"</span>")
+  }
+  a<-do.call(rbind,a)
+  a<-HTML(a)
+  return(
+    tagList(
+      tags$br(),
+      tags$p(a)
+    ) 
+  )
+  
+  
 })
