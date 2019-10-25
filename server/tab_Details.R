@@ -73,6 +73,7 @@ output$details_parameter<-renderUI({
                              selectInput(inputId = "Det_CL_fold",label = "Fold of Cross Validation",choices = 1:length(results_complete[[1]]),multiple = F)           
             ),
             conditionalPanel(condition = 'input.tabBox_classification=="Feature breakdown"',
+                             #NEG examles not included in predictions; therefore removed from selection even though feature matrix used row for class NEG
                              selectInput(inputId = "Det_CL_feature_class",label = "Category",choices = rownames(feature_matrix),multiple = F),
                              sliderInput(inputId = "Det_CL_number_of_features",label = "number of features",min = 2,value = 20,step = 2,max = (dim(feature_matrix)[2]-1),width = "96%")%>%
                                shinyInput_label_embed(
@@ -86,7 +87,7 @@ output$details_parameter<-renderUI({
   bottom:120px;")
             ),
             conditionalPanel(condition = 'input.tabBox_classification=="Validation"',
-                             selectInput(inputId = "Det_CL_feature_class2",label = "Category",choices = rownames(feature_matrix),multiple = F),
+                             selectInput(inputId = "Det_CL_feature_class2",label = "Category",choices = setdiff(rownames(feature_matrix),"NEG"),multiple = F),
                              uiOutput(outputId = "Det_CL_validation_document_UI")
             ),
             downloadButton(outputId = "Det_CL_download_texts",label = "Download examples",icon=icon("download"), style="position:fixed;
@@ -458,6 +459,12 @@ output$details_parameter<-renderUI({
           ),
           conditionalPanel(condition = 'input.tabBox_tm=="Detailed Metadata Distribution"',
                            uiOutput(outputId = "Det_meta_select_ui")
+          ),
+          conditionalPanel(condition = 'input.tabBox_tm=="Validation"',
+                           selectizeInput(inputId = "Det_TM_validation_document",label="Document:",choices=NULL,multiple=F),
+                           sliderInput(inputId = "Det_TM_validation_topic",label = "Topic:",min = 1,value = 1,max = dim(phi)[1],step = 1),
+                           tags$hr(),
+                           uiOutput("Det_TM_validation_metadata_UI")%>%withSpinner()
           )
         )
       )
@@ -474,6 +481,10 @@ output$details_parameter<-renderUI({
 output$details_visu<-renderUI({
   if(!is.null(values$Details_Analysis)){
     if(values$Details_Analysis=="TM"){
+      validate(
+        need(!is.null(values$tm_theta),message=F)
+      )
+      updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = rownames(values$tm_theta))
       #return ldavis visu for topic modeling
       return(
         tagList(
@@ -523,6 +534,9 @@ output$details_visu<-renderUI({
                  ),
                  tabPanel("Detailed Metadata Distribution",
                           uiOutput("TM_meta_ui")
+                 ),
+                 tabPanel("Validation",
+                          uiOutput("TM_validation_UI")%>%withSpinner()
                  )
           )
         )
@@ -759,6 +773,7 @@ output$details_visu<-renderUI({
                             
                    ),
                    tabPanel("Feature breakdown",
+                            tags$br(),
                             uiOutput("Det_CL_feature_UI")   
                    ),
                    tabPanel("Validation",

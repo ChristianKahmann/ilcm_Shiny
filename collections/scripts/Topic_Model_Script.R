@@ -175,9 +175,10 @@ error<-try(expr = {
   
   #Saving results
   log_to_file(message = "<b>Step 13/14: Saving results</b>",file = logfile)
+  lang<-db_data$language
   path0<-paste0("collections/results/topic-model/",paste(process_info[[1]],process_info[[2]],process_info[[4]],sep="_"),"/")
   dir.create(path0)
-  save(model,t,theta,phi,doc.length,vocab,term.frequency,json,info,file = paste0(path0,"data_TM.RData"))
+  save(model,t,theta,phi,doc.length,vocab,term.frequency,json,info,lang,file = paste0(path0,"data_TM.RData"))
   save(dtm,file=paste0(path0,"dtm_TM.RData"))
   save(documents_original,file=paste0(path0,"documents_TM.RData"))
   #save(rel_counts,freqs,file=paste0(path0,"est_counts_TM.RData"))
@@ -185,7 +186,7 @@ error<-try(expr = {
     save(meta,meta_names,file=paste0(path0,"meta_TM.RData"))
   }
   save(info,file=paste0(path0,"info.RData"))
-  save(parameters,file=paste0(path0,"parameters.RData"))
+  save(parameters,lang,file=paste0(path0,"parameters.RData"))
   log_to_file(message = "   <b style='color:green'> ✔ </b> Finished saving results",logfile)
   
   

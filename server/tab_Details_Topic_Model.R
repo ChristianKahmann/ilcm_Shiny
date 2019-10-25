@@ -1738,5 +1738,122 @@ output$download_rel_counts<-downloadHandler(
 )  
 
 
+output$Det_TM_validation_metadata_UI<-renderUI({
+  validate(
+    need(
+      !is.null(input$Det_TM_validation_document),message=F
+    )
+  )
+  identifier<-stringr::str_split(string = input$Det_TM_validation_document,pattern = "_",simplify = T)
+  dataset<-identifier[1]
+  doc_id<-identifier[2]
+  metadata<-get_metadata_from_db(dataset = dataset,doc_ids = doc_id,host = values$host,port=values$port)
+  return(tagList(
+    tags$h4("Metadata"),
+    tags$b("title:"),
+    tags$div(metadata["title"]),
+    tags$b("date:"),
+    tags$div(metadata["date"]),
+    tags$b("number of token:"),
+    tags$div(metadata["token"])
+  ))
+})
+
+output$TM_validation_UI<-renderUI({
+  validate(
+    need(
+      !is.null(input$Det_TM_validation_document),message=FALSE
+    )
+  )
+  identifier<-stringr::str_split(string = input$Det_TM_validation_document,pattern = "_",simplify = T)
+  dataset<-identifier[1]
+  doc_id<-identifier[2]
+  token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
+  load(paste0(values$Details_Data_TM,"/parameters.RData"))
+  space_ids<-which(token[,"pos"]=="SPACE")
+  if(length(space_ids)>0){
+    token<-token[-space_ids,]
+  }
+  
+  if(parameters$baseform_reduction=="none"){
+    features<-tolower(token[,"word"])  
+  }
+  if(parameters$baseform_reduction=="lemma"){
+    features<-tolowertoken[,"lemma"]  
+  }
+  if(parameters$baseform_reduction=="stemming"){
+    features<-tolower(quanteda::tokens_wordstem(quanteda::tokens(paste(token[,"word"],collapse=" ")),lang)$text1)
+  }
+  token<-cbind(token,features)
+  token<-cbind(1:dim(token)[1],token)
+  
+  data<-values$tm_phi[input$Det_TM_validation_topic,]
+  max<-max(values$tm_phi)
+  data<-data.frame(features=names(data),weight=data)
+  m<-merge(x = token,y=data,by="features",all.x=TRUE)
+  m<-m[order(m[,2]),]
+  getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+  colors<-getPalette(dim(values$tm_phi)[1])
+  #colors<-colors[order(values$tm_theta[input$Det_TM_validation_document,],decreasing = F)]
+  color<-colors[input$Det_TM_validation_topic]
+  rbPal_pos <- colorRampPalette(c('floralwhite',color))
+  m<-cbind(m,rep("",dim(m)[1]))
+  if(length(intersect(which(!is.na(m$weight)),which(m$weight>0)))>0){
+    m[intersect(which(!is.na(m$weight)),which(m$weight>0)),12]<-  rbPal_pos(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))],breaks = 100))] #Alternative#seq(0,to = max(data$weight),length.out = 100)
+  }
+  strings<-apply(m,MARGIN = 1,FUN = function(x){
+    if(is.na(x[11])){
+      return(x[7])
+    }
+    else{
+      return( paste0('<font style="background-color:',x[12],';"','title="feature: ',x[1],' with weight: ',x[11],'">',x[7],'</font>'))
+    }
+    
+  })
+  
+  a<-list()
+  for(i in 1:dim(m)[1]){
+    a[[i]]<-paste0("<span span_nr='",i,"'>",strings[i],"</span>")
+  }
+  a<-do.call(rbind,a)
+  a<-HTML(a)
+  return(
+    tagList(
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(4,
+                      tags$br(),
+                      plotly::plotlyOutput("Det_TM_validation_document_topic_pie")
+               ),
+               column(8,
+                      tags$br(),
+                      tags$p(a)
+               )
+      )
+      
+    ) 
+  )
+})
 
 
+output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
+  validate(
+    need(
+      !is.null(input$Det_TM_validation_document),message=FALSE
+    )
+  )
+  getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+  colors<-getPalette(dim(values$tm_phi)[1])
+  
+  data<-values$tm_theta[input$Det_TM_validation_document,]
+  data<-data.frame(class=paste("Topic: ",names(data)),likelihood=data)
+  
+  p <- plot_ly(data, labels = ~factor(class), values = ~likelihood, textposition = 'inside',marker = list(colors = colors),
+               textinfo = 'label+percent') %>%
+    plotly::add_pie(hole = 0.6) %>%
+    plotly::layout(title = paste('Distribution of topics for chosen document'),legend=T,
+                   xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                   yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                   legend = list(x = 0.1, y = 0.9)
+                  )
+  return(p)
+})

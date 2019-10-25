@@ -82,6 +82,8 @@ source("global/create_body_for_solr_atomic_update.R")
 source("global/busy_Indicator.R")
 source("global/topic_relevance.R")
 source("global/check_validity_of_input_parameters.R")
+source("global/get_token_from_db.R")
+source("global/get_metadata_from_db.R")
 source("www/ilcm_dashboard_theme.R")
 source("config_file.R")
 
@@ -246,6 +248,7 @@ server <- function(input, output, session) {
   values$db_port<-db_port
   values$user<-Sys.info()["login"]
   options(shiny.maxRequestSize=max_upload_file_size*1024^2) 
+  
   
   source(file.path("server","System_Load_Menu.R"),local = T)$value
   source(file.path("server","tab_Simple.R"),local = T)$value

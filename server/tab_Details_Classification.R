@@ -208,6 +208,7 @@ output$Det_CL_validation_document_UI<-renderUI({
     )
   )
   load(paste0(values$Details_Data_CL,"/result.RData"))
+  values$Det_CL_probabilities<-probabilities
   documents_relevant<-names(predictions[which(predictions==input$Det_CL_feature_class2)])
   context_unit<-"Documents"
   if(length(stringr::str_extract_all(string = documents_relevant[1],pattern = "_"))==2){
@@ -229,10 +230,13 @@ output$Det_CL_validation<-renderUI({
   if(length(identifier)==3){
     sentence_id<-identifier[3]
   }
-  #browser()
   token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = sentence_id,host=values$host,port=values$port)
   load(paste0(values$Details_Data_CL,"/parameters.RData"))
-  token<-token[-which(token[,"pos"]=="SPACE"),]
+  space_ids<-which(token[,"pos"]=="SPACE")
+  if(length(space_ids)>0){
+    token<-token[-space_ids,]
+  }
+  
   if(parameters$baseform_reduction=="none"){
     features<-tolower(token[,"word"])  
   }
@@ -252,9 +256,13 @@ output$Det_CL_validation<-renderUI({
   rbPal_pos <- colorRampPalette(c('white','green'))
   rbPal_neg <- colorRampPalette(c('red','white'))
   m<-cbind(m,rep("",dim(m)[1]))
-  m[intersect(which(!is.na(m$weight)),which(m$weight>0)),12]<-  rbPal_pos(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))],breaks = 100))]       
-  m[intersect(which(!is.na(m$weight)),which(m$weight<0)),12]<-  rbPal_neg(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight<0))],breaks = 100))]       
-  
+
+  if(length(intersect(which(!is.na(m$weight)),which(m$weight>0)))>0){
+    m[intersect(which(!is.na(m$weight)),which(m$weight>0)),12]<-  rbPal_pos(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))],breaks = 100))]
+  }
+  if(length(intersect(which(!is.na(m$weight)),which(m$weight<0)))>0){
+    m[intersect(which(!is.na(m$weight)),which(m$weight<0)),12]<-  rbPal_neg(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight<0))],breaks = 100))]       
+  }
   strings<-apply(m,MARGIN = 1,FUN = function(x){
     if(is.na(x[12])){
       return(x[7])
@@ -271,8 +279,11 @@ output$Det_CL_validation<-renderUI({
   }
   a<-do.call(rbind,a)
   a<-HTML(a)
+
   return(
     tagList(
+      tags$br(),
+      tags$h4(paste("Probability:", values$Det_CL_probabilities[input$Det_CL_validation_document],sep="")),
       tags$br(),
       tags$p(a)
     ) 
