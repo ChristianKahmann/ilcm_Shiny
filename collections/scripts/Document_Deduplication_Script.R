@@ -44,7 +44,7 @@ error<-try(expr = {
   log_to_file(message = "  <b style='color:green'> ✔ </b>  ",file = logfile)
   
   # create corpus object
-  log_to_file(message = "<b>Step 4/9: Creating corpus object and calculate hashes</b>",file = logfile)
+  log_to_file(message = "<b>Step 4/9: Creating corpus object and calculating hashes</b>",file = logfile)
   corpus <- TextReuseCorpus(text=meta$body, tokenizer = tokenize_ngrams, n = 5,
                             minhash_func = minhash, keep_tokens = TRUE,
                             progress = TRUE)

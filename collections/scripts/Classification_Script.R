@@ -644,7 +644,6 @@ error<-try(expr = {
     #       Classify on entire collection      #
     ############################################
     log_to_file(message = "<b>Step 12/14: Classification on entire collection</b>",file = logfile)
-    
     #use neg examples in training classifier and remove examples tagged as neg afterwards
     #gold_table<-gold_table[which(gold_table[,2]!="NEG"),]
     idx<-which(gold_table[,1]%in%rownames(dtm))
