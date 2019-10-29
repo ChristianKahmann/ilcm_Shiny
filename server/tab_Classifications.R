@@ -494,6 +494,15 @@ output$Class_classifications<-DT::renderDataTable({
       style="primary",
       icon=icon("signal"),
       onclick = 'Shiny.onInputChange(\"classification_buttons\",  this.id)'
+    ),  
+    Features = shinyInput(
+      shinyBS::bsButton,
+      length(files),
+      paste0('actions_features_',input$project_selected,"_"),
+      label = "Features",
+      style="warning",
+      icon=icon("line-chart"),
+      onclick = 'Shiny.onInputChange(\"classification_buttons\",  this.id)'
     ),
     Evaluate = shinyInput(
       shinyBS::bsButton,
@@ -583,6 +592,16 @@ observe({
                           shinyBS::bsButton(inputId = "class_delete","Delete")
     ))
   }
+  #if features button was clicked
+  if(button_input=="features"){
+    load(list.files(path = paste0("collections/results/classification/activeLearning/",input$project_selected),full.names = T,include.dirs = F,recursive = T,pattern = "feature_matrix.RData")[as.numeric(button_input[3])])
+    values$Class_eval_feature_matrix<-feature_matrix
+    showModal(modalDialog(easyClose = T,size = "l",
+                          title = "Feature Breakdown",footer=NULL,
+                          sliderInput(inputId = "Class_eval_feature_breakdown_n",label = "number of features",min = 2,max = floor(dim(feature_matrix)[2]/2),value =min((dim(feature_matrix)[2]/2),10) ,step = 2),
+                          plotly::plotlyOutput(outputId = "Class_eval_feature_breakdown_plot")
+    ))
+  }
   #evaluate button was clicked
   if(button_input=="eval"){
     if(values$Class_eval_meta$context_unit=="Document"){
@@ -641,6 +660,30 @@ observe({
   }
   shinyjs::runjs('Shiny.onInputChange(\"classification_buttons\",  "not_reactive")')
 })
+
+
+output$Class_eval_feature_breakdown_plot<-plotly::renderPlotly({
+  validate(
+    need(
+      !is.null( values$Class_eval_feature_matrix),message=F
+    )
+  )
+  browser()
+    pos<- values$Class_eval_feature_matrix[,order( values$Class_eval_feature_matrix,decreasing = T)][1:(input$Class_eval_feature_breakdown_n/2)]
+    neg<- values$Class_eval_feature_matrix[,order( values$Class_eval_feature_matrix,decreasing = F)][1:(input$Class_eval_feature_breakdown_n/2)]
+    neg<-sort(neg,decreasing = F)
+    pos<-sort(pos,decreasing = F)
+    yform <- list(categoryorder = "array",
+                  categoryarray = c(names(neg),names(pos)),
+                  title="features")
+    
+   p<-plotly::plot_ly()%>%
+      plotly::add_bars(x=pos,y=factor(names(pos)),orientation="h",name="positive weights",marker=list(color="#1FDE78",line=list(color="#136639",width=1)))%>%
+      plotly::add_bars(x = neg,y = factor(names(neg)),name="negative weights",marker=list(color="#D42750",line=list(color="#460F1C",width=1)))%>%
+      plotly::layout(yaxis=yform,xaxis=list(title="SVM weights"))
+   return(p)
+})
+
 
 output$Class_log_plot<-renderPlotly({
   result<-values$Class_eval_result
