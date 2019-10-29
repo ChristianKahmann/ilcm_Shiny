@@ -101,7 +101,7 @@ output$details_parameter<-renderUI({
         return(
           tagList(
             selectInput(inputId = "Det_CL_c",label = "C Parameter",choices=setNames(1:10,c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)),multiple = F),
-            selectInput(inputId = "Det_CL_fold",label = "Folx of Cross Validation",choices = 1:length(results_complete[[1]]),multiple = F)
+            selectInput(inputId = "Det_CL_fold",label = "Fold of Cross Validation",choices = 1:length(results_complete[[1]]),multiple = F)
           )
         )
       }

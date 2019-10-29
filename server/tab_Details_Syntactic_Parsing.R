@@ -106,7 +106,7 @@ output$Det_SP_sentences<-renderUI({
   count=0
   offset=10*(input$Det_SP_slider-1)
   sentences<-lapply(1:length(sentence_ids),FUN = function(x){
-    annos<-values$Det_SP_data[which(values$Det_SP_data$sentence_id==sentence_ids[x])]
+    annos<-values$Det_SP_data[which(values$Det_SP_data$sentence_id==sentence_ids[x]),]
     if(any(grepl(annos$token_id,pattern = "-"))){
       to_del<-stringr::str_split(string = annos$token_id[which(grepl(annos$token_id,pattern = "-"))],pattern = "-",simplify = T)
       annos<-annos[-which(annos$token_id%in%to_del),]
@@ -116,6 +116,7 @@ output$Det_SP_sentences<-renderUI({
       tags$b(paste0(" Sentence ",(offset+x)),":"),
       paste(annos$token,collapse=" "))
   })
+  
   return(tagList(sentences))
 })
 
@@ -134,7 +135,7 @@ observeEvent(ignoreInit = T,input$show_syntax_button,{
     else{
       values$Det_SP_data_without_addings<-tree_data
     }
-    original<-tree_data[grepl(tree_data$token_id,pattern = "-"),"token_id"]
+    original<-tree_data[grepl(tree_data$token_id,pattern = "-"),"token_id",drop=F]
     if(nchar(original)>1){
       to_del<-stringr::str_split(string = original,pattern = "-",simplify = T)
       tree_data_original<-tree_data[-which(tree_data$token_id%in%to_del),]

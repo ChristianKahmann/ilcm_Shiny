@@ -20,7 +20,7 @@ error<-try(expr = {
   
   #load data from database
   log_to_file(message = "<b>Step 2/11: Loading data from database</b>",file = logfile)
-  db_data<-get_token_meta_and_language_from_db()
+  db_data<-get_token_meta_and_language_from_db(host=host,port=db_port,id=info[[1]],dataset=info[[2]])
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished loading data from database",file = logfile)
   
   
@@ -62,24 +62,31 @@ error<-try(expr = {
   
   #preparing parameters
   log_to_file(message = "<b>Step 4/11: Preparing input parameters</b>",file = logfile)
-  prepare_input_parameters()
+  parameters<-prepare_input_parameters(parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
   #preparing token object
   log_to_file(message = "<b>Step 5/11: Preparing token object</b>",file = logfile)
-  db_data$token<-prepare_token_object(token = db_data$token)
+  db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
   
   
   #calculating dtm
   log_to_file(message = "<b>Step 6/11: Calculating DTM</b>",file = logfile)
-  dtm<-calculate_dtm()
+  dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
   #calculate co-occurrence statistics
   log_to_file(message = "<b>Step 7/11: Calculating diachronic co-occurrence statistics</b>",file = logfile)
-  calculate_diachronic_cooccurrences()
+  diachron_data<-calculate_diachronic_cooccurrences(dtm = dtm,parameters = parameters,meta = db_data$meta)
+  diachron_Coocs<-diachron_data$diachron_Coocs
+  word_Frequencies<-diachron_data$word_Frequencies
+  global_Coocs<-diachron_data$global_Coocs
+  terms<-diachron_data$terms
+  terms_to_use<-diachron_data$terms_to_use
+  empty_terms<-diachron_data$empty_terms
+  un_dates<-diachron_data$un_dates
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating co-occurrence slices",logfile)
   
   
@@ -87,14 +94,14 @@ error<-try(expr = {
   log_to_file(message = "<b>Step 8/11: Calculating volatility statistics</b>",file = logfile)
   if(parameters$whitelist_only_results==TRUE){
     log_to_file(message = paste0("&emsp; Creating results only for words in whitelist and keep_custom input"),logfile)
-    voldata<-tmca.contextvolatility::calculate_context_volatility(memory = parameters$va_history,Coocs_TimeSlices = diachron_Coocs,global = global_Coocs,un_dates=un_dates,
+    voldata<-tmca.contextvolatility::calculate_context_volatility(memory = parameters$va_history,Coocs_TimeSlices = diachron_Coocs,global =global_Coocs,un_dates=un_dates,
                                                                   terms = as.vector(stringr::str_split(string = parameters$keep_custom,pattern = ",",simplify = T)),
                                                                   measure =parameters$va_method,wf = parameters$va_weightfactor,logfile=logfile ) 
   }
   else{
     voldata<-tmca.contextvolatility::calculate_context_volatility(memory = parameters$va_history,Coocs_TimeSlices = diachron_Coocs,global = global_Coocs,un_dates=un_dates,
                                                                   terms = terms_to_use,
-                                                                  measure =parameters$va_method,wf = "linear",logfile=logfile )
+                                                                  measure =parameters$va_method,wf = parameters$va_weightfactor,logfile=logfile )
     if(length(empty_terms)>0){
       empty<-matrix(rep(0,(dim(voldata)[2]*length(empty_terms))),byrow = T,nrow = length(empty_terms))
       rownames(empty)<-colnames(diachron_Coocs[[1]])[empty_terms]
@@ -112,7 +119,9 @@ error<-try(expr = {
   
   #extract NER- and POS Tags
   log_to_file(message = "<b>Step 9/11: Extracting NER- and POS-tags</b>",file = logfile)
-  get_ner_and_pos_tags(token=db_data$token)
+  pos_ner_tags<-get_ner_and_pos_tags(token=db_data$token,parameters = parameters,terms=terms)
+  pos_tags<-pos_ner_tags$pos_tags
+  ner_tags<-pos_ner_tags$ner_tags
   log_to_file(message = " <b style='color:green'> ✔ </b>   Finished creating NER- and POS-tags",logfile)
   
   
@@ -133,7 +142,7 @@ error<-try(expr = {
   
   #Wrinting metadata to database Task column
   log_to_file(message = "<b>Step 11/11: Writing task parameter to database</b>",file = logfile)
-  write_metadata_to_database(parameters)
+  write_metadata_to_database(parameters,host=host,port=db_port)
   log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
   
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Context Volatility </b>",logfile)

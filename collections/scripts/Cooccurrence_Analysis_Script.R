@@ -21,7 +21,7 @@ error<-try(expr = {
   
   #load data from database
   log_to_file(message = "<b>Step 2/9: Loading data from database</b>",file = logfile)
-  db_data<-get_token_meta_and_language_from_db(get_meta = F,get_language = T,get_global_doc_ids = F)
+  db_data<-get_token_meta_and_language_from_db(get_meta = F,get_language = T,get_global_doc_ids = F,host=host,port=db_port,id=info[[1]],dataset=info[[2]])
   #token<-db_data$token[,c("id","word")]
   #colnames(token)<-c("doc_id","token")
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished loading data from database",file = logfile)
@@ -44,19 +44,19 @@ error<-try(expr = {
   
   #preparing parameters
   log_to_file(message = "<b>Step 4/9: Preparing input parameters</b>",file = logfile)
-  prepare_input_parameters()
+  parameters<-prepare_input_parameters(parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
   #preparing token object
   log_to_file(message = "<b>Step 5/9: Preparing token object</b>",file = logfile)
-  db_data$token<-prepare_token_object(token = db_data$token)
+  db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
   
   
   #calculating dtm
   log_to_file(message = "<b>Step 6/9: Calculating DTM</b>",file = logfile)
-  dtm<-calculate_dtm()
+  dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
   
@@ -64,7 +64,12 @@ error<-try(expr = {
   #calculating co-occurrences
   log_to_file(message = "<b>Step 7/9: Calculating Co-occurrences</b>",file = logfile)
   db_data$token<-db_data$token[,c("doc_id","token","lemma")]
-  calculate_cooccurrences_all_measures()
+  coocs<-calculate_cooccurrences_all_measures(dtm=dtm)
+  coocs_matrix_dice<-coocs$coocs_matrix_dice
+  coocs_matrix_count<-coocs$coocs_matrix_count
+  coocs_matrix_log<-coocs$coocs_matrix_log
+  coocs_matrix_mi<-coocs$coocs_matrix_mi
+  terms<-coocs$terms
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating co-occurrences",file = logfile)
  
   #Saving results
@@ -85,7 +90,7 @@ error<-try(expr = {
   
   #Wrinting metadata to database Task column
   log_to_file(message = "<b>Step 9/9: Writing task parameter to database</b>",file = logfile)
-  write_metadata_to_database(parameters)
+  write_metadata_to_database(parameters,host=host,port=db_port)
   log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
   
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Cooccurrences </b>",logfile)

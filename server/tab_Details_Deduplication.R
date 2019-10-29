@@ -195,9 +195,8 @@ output$Det_DD_Table_Black<-DT::renderDataTable({
     colnames(data_user)<-c("id","number of token","date","removal reason")
   }
   
-  
   data<-cbind(setdiff(values$blacklist,values$DD_blacklist),values$Det_DD_meta[as.numeric(setdiff(values$blacklist,values$DD_blacklist)),c("token","date")])
-  data<-cbind(data,rep("default strategy"))
+  data<-cbind(data,rep("default strategy",dim(data)[1]))
   colnames(data)<-c("id","number of token","date","removal reason")
   
   data<-rbind(data_user,data)
@@ -250,7 +249,7 @@ output$Det_DD_Table_White<-DT::renderDataTable({
   
   
   data<-cbind(setdiff(values$whitelist,values$DD_whitelist),values$Det_DD_meta[as.numeric(setdiff(values$whitelist,values$DD_whitelist)),c("token","date")])
-  data<-cbind(data,rep("default strategy"))
+  data<-cbind(data,rep("default strategy",dim(data)[1]))
   colnames(data)<-c("id","number of token","date","removal reason")
   
   data<-rbind(data_user,data)

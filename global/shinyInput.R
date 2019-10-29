@@ -10,8 +10,10 @@ shinyInput <- function(FUN, len, id, ...) {
 shinyInput_big <- function(FUN, len, id, ...) {
   inputs <- character(len)
   inputs[1]<-as.character(FUN(paste0(id, 1), ...))
-  for (i in 2:len) {
-    inputs[i] <- stringr::str_replace_all(string = inputs[1],pattern ="_1",replacement = paste0("_",i) )
+  if(len>1){
+    for (i in 2:len) {
+      inputs[i] <- stringr::str_replace_all(string = inputs[1],pattern ="_1",replacement = paste0("_",i) )
+    }
   }
   inputs
 }

@@ -295,7 +295,7 @@ error<-try(expr = {
       
       #Wrinting metadata to database Task column
       log_to_file(message = "<b>Step 8/8: Writing task parameter to database</b>",file = logfile)
-      write_metadata_to_database(parameters)
+      write_metadata_to_database(parameters,host = host,port = db_port)
       log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
       
       log_to_file(message = paste0(" <b style='color:green'>Process finished successfully. You can use now interactivly operate the document deduplication in the results tab. </b>"),logfile)

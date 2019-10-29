@@ -1,12 +1,12 @@
-get_token_meta_and_language_from_db<-function(get_meta=T,get_language=T,get_global_doc_ids=F){
+get_token_meta_and_language_from_db<-function(get_meta=T,get_language=T,get_global_doc_ids=F,host=NULL,port=NULL,id,dataset){
   token<-NULL
   meta=NULL
   language=NULL
   global_doc_ids<-NULL
   #getting data from db
-  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=port)
   rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
-  d<-data.frame(id=info[[1]],dataset=info[[2]])
+  d<-data.frame(id=id,dataset=dataset)
   for(i in 1:length(unique(d[,2]))){
     ids<-paste(d[which(d[,2]==unique(d[,2])[i]),1],collapse = " ")
     ids<-stringr::str_replace_all(string = as.character(ids),pattern = " ",",")
@@ -40,79 +40,80 @@ get_token_meta_and_language_from_db<-function(get_meta=T,get_language=T,get_glob
 
 
 
-prepare_input_parameters<-function(){
+prepare_input_parameters<-function(param){
   #stemming?
-  stemming=FALSE
+  param$stemming<-FALSE
   try({
-    if(parameters$baseform_reduction=="stemming"){
-      stemming=TRUE 
+    if(param$baseform_reduction=="stemming"){
+      param$stemming<-TRUE
     }
   })
-  assign("stemming",stemming,envir=.GlobalEnv)
+  #assign("stemming",stemming,envir=.GlobalEnv)
   #sentence as documents?
-  sentences_as_documents=FALSE
+  param$sentences_as_documents<-FALSE
   try({
-    if(parameters$cooc_window=="Sentence"){
-      sentences_as_documents=TRUE
+    if(param$cooc_window=="Sentence"){
+      param$sentences_as_documents<-TRUE
     }
   })
-  assign("sentences_as_documents",sentences_as_documents,envir=.GlobalEnv)
+  #assign("sentences_as_documents",sentences_as_documents,envir=.GlobalEnv)
   #append blacklist words to custom removal words
-  if(!is.null(parameters$blacklist)){
-    if(parameters$use_blacklist==TRUE){
-      blacklist_words<-readChar(con=paste0("collections/blacklists/",parameters$blacklist,".txt"),nchars = file.info(paste0("collections/blacklists/",parameters$blacklist,".txt"))$size)
-      remove_custom<-stringr::str_replace_all(string = paste(blacklist_words,",",parameters$remove_custom),pattern = ",,",replacement = ",")
+  if(!is.null(param$blacklist)){
+    if(param$use_blacklist==TRUE){
+      blacklist_words<-readChar(con=paste0("collections/blacklists/",param$blacklist,".txt"),nchars = file.info(paste0("collections/blacklists/",param$blacklist,".txt"))$size)
+      remove_custom<-stringr::str_replace_all(string = paste(blacklist_words,",",param$remove_custom),pattern = ",,",replacement = ",")
       remove_custom<-stringr::str_replace_all(string=remove_custom,pattern = "\n",replacement = "")
       remove_custom<-stringr::str_replace_all(string=remove_custom,pattern = ", ",replacement = ",")
       remove_custom<-stringr::str_replace_all(string=remove_custom,pattern = " ,",replacement = ",")
       if(substr(remove_custom,nchar(remove_custom),nchar(remove_custom))==","){
         remove_custom<-substr(remove_custom,1,(nchar(remove_custom)-1))
       }
-      parameters$remove_custom<<-remove_custom
+      param$remove_custom<-remove_custom
     }
   }
   
   #append whitelist words to custom keep words
-  if(!is.null(parameters$whitelist)){
-    if(parameters$use_whitelist==TRUE){
-      whitelist_words<-readChar(con=paste0("collections/whitelists/",parameters$whitelist,".txt"),nchars = file.info(paste0("collections/whitelists/",parameters$whitelist,".txt"))$size)
-      keep_custom<-stringr::str_replace_all(string = paste(whitelist_words,",",parameters$keep_custom),pattern = ",,",replacement = ",")
+  if(!is.null(param$whitelist)){
+    if(param$use_whitelist==TRUE){
+      whitelist_words<-readChar(con=paste0("collections/whitelists/",param$whitelist,".txt"),nchars = file.info(paste0("collections/whitelists/",param$whitelist,".txt"))$size)
+      keep_custom<-stringr::str_replace_all(string = paste(whitelist_words,",",param$keep_custom),pattern = ",,",replacement = ",")
       keep_custom<-stringr::str_replace_all(string=keep_custom,pattern = "\n",replacement = "")
       keep_custom<-stringr::str_replace_all(string=keep_custom,pattern = ", ",replacement = ",")
       keep_custom<-stringr::str_replace_all(string=keep_custom,pattern = " ,",replacement = ",")
       if(substr(keep_custom,nchar(keep_custom),nchar(keep_custom))==","){
         keep_custom<-substr(keep_custom,1,(nchar(keep_custom)-1))
       }
-      parameters$keep_custom<<-keep_custom
+      param$keep_custom<-keep_custom
     }
   }
   
-  try({class(parameters$ngrams)<<-"numeric"})
-  parameters$id<<-process_info[[1]]
-  parameters$task<<-process_info[[3]]
-  parameters$started<<-process_info[[4]]
+  try({class(param$ngrams)<-"numeric"})
+  param$id<-process_info[[1]]
+  param$task<-process_info[[3]]
+  param$started<-process_info[[4]]
   try({
-    if(is.na(parameters$min_term)){
-      parameters$min_term<<-NULL
+    if(is.na(param$min_term)){
+      param$min_term<-NULL
     }
-    if(is.na(parameters$max_term)){
-      parameters$max_term<<-NULL
+    if(is.na(param$max_term)){
+      param$max_term<-NULL
     }
-    if(is.na(parameters$min_document)){
-      parameters$min_document<<-NULL
+    if(is.na(param$min_document)){
+      param$min_document<-NULL
     }
-    if(is.na(parameters$max_document)){
-      parameters$max_document<<-NULL
+    if(is.na(param$max_document)){
+      param$max_document<-NULL
     }
   })
+  return(param)
 }
 
 
-prepare_token_object<-function(token){
+prepare_token_object<-function(token,parameters){
   #consolidate entities
   token<-token[,c(2,3,4,5,6,7,8)]
   class(token)<-c("spacyr_parsed","data.frame")
-  colnames(token)<-c("doc_id"  ,    "sentence_id", "token_id"  ,  "token"    ,   "lemma"     ,  "pos"    ,     "entity" )
+  colnames(token)<-c("doc_id"  ,   "sentence_id", "token_id"  ,  "token"    ,   "lemma"     ,  "pos"    ,     "entity" )
   try({
     if(parameters$consolidate_entities==T){
       log_to_file(message = "&emsp; Consolidating...",file = logfile)
@@ -129,7 +130,7 @@ prepare_token_object<-function(token){
   class(token)<-c("spacyr_parsed","data.frame")
   colnames(token)<-c("doc_id"  ,    "sentence_id", "token_id"  ,  "token"    ,   "lemma"     ,  "pos"    ,     "entity" )
   try({
-    if(sentences_as_documents==T){
+    if(parameters$sentences_as_documents==T){
       token[,"doc_id"]<-paste(token[,"doc_id"],token[,"sentence_id"],sep="_")
       if(parameters$task=="Cooccurrence_Analysis"){
         token_orig<-token[,c("doc_id","token")]
@@ -175,13 +176,13 @@ if_empty_return_NULL<-function(string){
 }
 
 
-calculate_dtm<-function(token=db_data$token,tibble=F){
+calculate_dtm<-function(token,parameters,tibble=F,lang){
   tow<-tmca.util::TextObjectWrapper$new()
   control=plyr::compact(
     list(
-      language=db_data$language,
+      language=lang,
       ngrams=parameters$ngrams,
-      stem=stemming,
+      stem=parameters$stemming,
       remove_stopwords=parameters$remove_stopwords,
       remove_numbers=parameters$remove_numbers,
       remove_all_numbers=parameters$remove_numbers_all,
@@ -195,7 +196,6 @@ calculate_dtm<-function(token=db_data$token,tibble=F){
       just_save_custom=parameters$whitelist_only
     )
   )
-  #browser()
   #split token
   splitsize<-ceiling(100000/(dim(token)[1]/length(unique(token[,1]))))
   split<-split(unique(token[,1]), ceiling(seq_along(unique(token[,1]))/splitsize))
@@ -266,7 +266,7 @@ calculate_dtm<-function(token=db_data$token,tibble=F){
 
 
 
-calculate_diachronic_cooccurrences<-function(){
+calculate_diachronic_cooccurrences<-function(dtm,parameters,meta){
   ids<-stringr::str_split(string = rownames(dtm),pattern = "_",simplify = T)[,1:2]
   ids<-paste(ids[,1],ids[,2],sep="_")
   coocsCalc <- tmca.cooccurrence::Coocc$new(dtm)
@@ -322,18 +322,12 @@ calculate_diachronic_cooccurrences<-function(){
   if(length(empty_terms)>0){
     terms_to_use<-terms[-empty_terms]
   }
-  assign("diachron_Coocs",diachron_Coocs,envir=.GlobalEnv)
-  assign("word_Frequencies",freq,envir=.GlobalEnv)
-  assign("global_Coocs",global,envir=.GlobalEnv)
-  assign("terms",terms,envir=.GlobalEnv)
-  assign("terms_to_use",terms_to_use,envir=.GlobalEnv)
-  assign("empty_terms",empty_terms,envir=.GlobalEnv)
-  assign("un_dates",un_dates,envir=.GlobalEnv)
+  return(list(diachron_Coocs=diachron_Coocs,word_Frequencies=freq,global_Coocs=global,terms=terms,terms_to_use=terms_to_use,empty_terms=empty_terms,un_dates=un_dates))
 }
 
 
 
-get_ner_and_pos_tags<-function(token){
+get_ner_and_pos_tags<-function(token,parameters,terms){
   if(parameters$baseform_reduction=="lemma"){
     ner_tags<-token[which(tolower(token[,"lemma"])%in%terms),c("lemma","entity")]
     ner_tags[,1]<-tolower(ner_tags[,1])
@@ -358,17 +352,16 @@ get_ner_and_pos_tags<-function(token){
     pos_tags<-unique(pos_tags)
     pos_tags<-aggregate(x = pos_tags[,2],by=list(pos_tags[,1]),FUN=Mode)
   }
-  assign("pos_tags",pos_tags,envir=.GlobalEnv)
-  assign("ner_tags",ner_tags,envir=.GlobalEnv)
+  return(list(pos_tags=pos_tags,ner_tags=ner_tags))
 }
 
 
 
-calculate_sentiments_analysis_tokens_object<-function(){
+calculate_sentiments_analysis_tokens_object<-function(parameters,meta){
   control=list(
     tokenize="word",
     ngrams=parameters$ngrams,
-    stem=stemming,
+    stem=parameters$stemming,
     remove_custom=unlist(stringr::str_split(string = parameters$remove_custom,pattern = ",")),
     tolower = parameters$lowercase,
     prune=list(
@@ -395,10 +388,10 @@ calculate_sentiments_analysis_tokens_object<-function(){
 }
 
 
-get_original_documents<-function(){
+get_original_documents<-function(token){
   TOW = tmca.util::TextObjectWrapper$new()
-  class(db_data$token) <- c("spacyr_parsed", "data.frame")
-  TOW$input(db_data$token)
+  class(token) <- c("spacyr_parsed", "data.frame")
+  TOW$input(token)
   #Get original Text from text object wrapper
   original_text <- TOW$get_original_documents()
   original_text<-original_text[gtools::mixedorder(original_text[,1]),]
@@ -408,7 +401,7 @@ get_original_documents<-function(){
 
 
 
-calculate_cooccurrences_all_measures<-function(){
+calculate_cooccurrences_all_measures<-function(dtm){
   #process data and get dtm
   dtm<-tmca.util::make_binary(dtm = dtm)
   coocsCalc <- tmca.cooccurrence::Coocc$new(dtm)
@@ -449,37 +442,34 @@ calculate_cooccurrences_all_measures<-function(){
   terms<-colnames(coocs_matrix_dice)
   
   gc() 
-  assign("coocs_matrix_dice",coocs_matrix_dice,envir=.GlobalEnv)
-  assign("coocs_matrix_count",coocs_matrix_count,envir=.GlobalEnv)
-  assign("coocs_matrix_log",coocs_matrix_log,envir=.GlobalEnv)
-  assign("coocs_matrix_mi",coocs_matrix_mi,envir=.GlobalEnv)
-  assign("terms",terms,envir=.GlobalEnv)
+  return(list(coocs_matrix_dice=coocs_matrix_dice,coocs_matrix_count=coocs_matrix_count,coocs_matrix_log=coocs_matrix_log,coocs_matrix_mi=coocs_matrix_mi,terms=terms))
 }
 
 
 
-get_meta_data_for_detailed_topic_analysis<-function(){
+get_meta_data_for_detailed_topic_analysis<-function(host,port,ids,datasets,token){
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-  ids<-info[[3]]
   ids<- paste(ids[,1],collapse=", ")
   #meta<-RMariaDB::dbGetQuery(conn = mydb,statement = paste0("Select * from documents where id in (",ids,");"))
   meta<-RMariaDB::dbGetQuery(mydb,statement = paste0("Select REPLACE(body, CHAR(0),'') body,id,dataset,id_doc,title,date,token,language,entities,collections,mde1,mde2,mde3,mde4,mde5,mde6,mde7,mde8,mde9,last_modified from documents where id in (",ids,");"))
   meta<-meta[,c("id","dataset","id_doc","title","body","date","token","language","entities","collections","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9","last_modified")]
   
-  meta_names<-RMariaDB::dbGetQuery(conn = mydb,statement = paste0("Select * from metadata_names where dataset in ('",unique(info[[2]]),"');"))
-  if(length(unique(info[[2]]))>1){
-    #meta[,"id_doc"]<-as.numeric(factor(paste(db_data$token[,1],db_data$token[,2],sep="_")))
-  }
-  meta[,"id_doc"]<-unique(db_data$token[,2])
+  meta_names<-RMariaDB::dbGetQuery(conn = mydb,statement = paste0("Select * from metadata_names where dataset in ('",datasets,"');"))
+  # if(length(unique(info[[2]]))>1){
+  #   #meta[,"id_doc"]<-as.numeric(factor(paste(db_data$token[,1],db_data$token[,2],sep="_")))
+  # }
+  meta[,"id_doc"]<-unique(token[,2])
   RMariaDB::dbDisconnect(mydb)
-  assign("meta",meta,envir=.GlobalEnv)
-  assign("meta_names",meta_names,envir=.GlobalEnv)
+  return(list(
+    meta=meta,
+    meta_names=meta_names
+  ))
 }
 
 
-calculate_diachron_frequencies<-function(){
+calculate_diachron_frequencies<-function(dtm,meta){
   
-  meta<-db_data$meta[which(db_data$meta[,1]%in%rownames(dtm)),]
+  meta<-meta[which(meta[,1]%in%rownames(dtm)),]
   
   bin_dtm<-tmca.util::make_binary(dtm = dtm)
   vocab<-colnames(dtm)
@@ -565,34 +555,36 @@ calculate_diachron_frequencies<-function(){
   rel_doc_freqs_year<-doc_freqs_year/unlist(lapply(un_dates_year,FUN = function(x){return(length(which(dates_year==x)))}))
   log_to_file(message = "&emsp;  ✔ ",logfile)
   
-  assign("doc_freqs_year",doc_freqs_year,envir=.GlobalEnv)
-  assign("doc_freqs_month",doc_freqs_month,envir=.GlobalEnv)
-  assign("doc_freqs_week",doc_freqs_week,envir=.GlobalEnv)
-  assign("doc_freqs_day",doc_freqs_day,envir=.GlobalEnv)
-  assign("freqs_year",freqs_year,envir=.GlobalEnv)
-  assign("freqs_month",freqs_month,envir=.GlobalEnv)
-  assign("freqs_week",freqs_week,envir=.GlobalEnv)
-  assign("freqs_day",freqs_day,envir=.GlobalEnv)
-  assign("rel_doc_freqs_year",rel_doc_freqs_year,envir=.GlobalEnv)
-  assign("rel_doc_freqs_month",rel_doc_freqs_month,envir=.GlobalEnv)
-  assign("rel_doc_freqs_week",rel_doc_freqs_week,envir=.GlobalEnv)
-  assign("rel_doc_freqs_day",rel_doc_freqs_day,envir=.GlobalEnv)
-  assign("rel_freqs_year",rel_freqs_year,envir=.GlobalEnv)
-  assign("rel_freqs_month",rel_freqs_month,envir=.GlobalEnv)
-  assign("rel_freqs_week",rel_freqs_week,envir=.GlobalEnv)
-  assign("rel_freqs_day",rel_freqs_day,envir=.GlobalEnv)
+  return(
+    list(doc_freqs_year=doc_freqs_year,
+         doc_freqs_month=doc_freqs_month,
+         doc_freqs_week=doc_freqs_week,
+         doc_freqs_day=doc_freqs_day,
+         freqs_year=freqs_year,
+         freqs_month=freqs_month,
+         freqs_week=freqs_week,
+         freqs_day=freqs_day,
+         rel_doc_freqs_year=rel_doc_freqs_year,
+         rel_doc_freqs_month=rel_doc_freqs_month,
+         rel_doc_freqs_week=rel_doc_freqs_week,
+         rel_doc_freqs_day=rel_doc_freqs_day,
+         rel_freqs_year=rel_freqs_year,
+         rel_freqs_month=rel_freqs_month,
+         rel_freqs_week=rel_freqs_week,
+         rel_freqs_day=rel_freqs_day)
+  )
 }
 
 
 
 
-calculate_dtm_for_dictionary_extraction<-function(){
+calculate_dtm_for_dictionary_extraction<-function(parameters,lang,token){
   tow<-tmca.util::TextObjectWrapper$new()
   control=plyr::compact(
     list(
-      language=db_data$language,
+      language=lang,
       ngrams=parameters$ngrams,
-      stem=stemming,
+      stem=parameters$stemming,
       remove_stopwords=parameters$remove_stopwords,
       remove_numbers=parameters$remove_numbers,
       remove_all_numbers=parameters$remove_numbers_all,
@@ -605,7 +597,6 @@ calculate_dtm_for_dictionary_extraction<-function(){
       expand_save_custom=parameters$whitelist_expand
     )
   )
-  token<-db_data$token
   if(parameters$de_use_context_filter==TRUE){
     if(nchar(parameters$de_context_filter)>0){
       if(parameters$de_Context_Unit=="sentence"){
@@ -829,12 +820,12 @@ calculate_dtm_for_dictionary_extraction<-function(){
 }
 
 
-calculate_dictioanry_frequencies<-function(){
+calculate_dictioanry_frequencies<-function(meta,dtm,dict_terms,conceptnames,dicts_available,bin_dtm){
   #transform dates
-  dates_day<-db_data$meta[,2]
-  dates_week<-strftime(as.character(db_data$meta[,"date"]),format = "%Y-%V")
-  dates_month<-substr(db_data$meta[,2],1,7)
-  dates_year<-substr(db_data$meta[,2],1,4)
+  dates_day<-meta[,2]
+  dates_week<-strftime(as.character(meta[,"date"]),format = "%Y-%V")
+  dates_month<-substr(meta[,2],1,7)
+  dates_year<-substr(meta[,2],1,4)
   #get unique dates
   un_dates_day<-unique(dates_day)
   un_dates_week<-unique(dates_week)
@@ -917,15 +908,15 @@ calculate_dictioanry_frequencies<-function(){
   rownames(doc_freqs_year_dict)<-un_dates_year
   
   for(l in 1:length(conceptnames)){
-    try({freqs_day_dict[,l]<-rowSums(freqs_day[,dicts_avaiable[[l]]])})
-    try({freqs_week_dict[,l]<-rowSums(freqs_week[,dicts_avaiable[[l]]])})
-    try({freqs_month_dict[,l]<-rowSums(freqs_month[,dicts_avaiable[[l]]])})
-    try({freqs_year_dict[,l]<-rowSums(freqs_year[,dicts_avaiable[[l]],drop=F])})
+    try({freqs_day_dict[,l]<-rowSums(freqs_day[,dicts_available[[l]]])})
+    try({freqs_week_dict[,l]<-rowSums(freqs_week[,dicts_available[[l]]])})
+    try({freqs_month_dict[,l]<-rowSums(freqs_month[,dicts_available[[l]]])})
+    try({freqs_year_dict[,l]<-rowSums(freqs_year[,dicts_available[[l]],drop=F])})
     
-    try({doc_freqs_day_dict[,l]<-unlist(lapply(un_dates_day,FUN = function(x){return(length(which(rowSums(bin_dtm[which(dates_day==x),dicts_avaiable[[l]],drop=F])>0)))}))})
-    try({doc_freqs_week_dict[,l]<-unlist(lapply(un_dates_week,FUN = function(x){return(length(which(rowSums(bin_dtm[which(dates_week==x),dicts_avaiable[[l]],drop=F])>0)))}))})
-    try({doc_freqs_month_dict[,l]<-unlist(lapply(un_dates_month,FUN = function(x){return(length(which(rowSums(bin_dtm[which(dates_month==x),dicts_avaiable[[l]],drop=F])>0)))}))})
-    try({doc_freqs_year_dict[,l]<-unlist(lapply(un_dates_year,FUN = function(x){return(length(which(rowSums(bin_dtm[which(dates_year==x),dicts_avaiable[[l]],drop=F])>0)))}))})
+    try({doc_freqs_day_dict[,l]<-unlist(lapply(un_dates_day,FUN = function(x){return(length(which(rowSums(bin_dtm[which(dates_day==x),dicts_available[[l]],drop=F])>0)))}))})
+    try({doc_freqs_week_dict[,l]<-unlist(lapply(un_dates_week,FUN = function(x){return(length(which(rowSums(bin_dtm[which(dates_week==x),dicts_available[[l]],drop=F])>0)))}))})
+    try({doc_freqs_month_dict[,l]<-unlist(lapply(un_dates_month,FUN = function(x){return(length(which(rowSums(bin_dtm[which(dates_month==x),dicts_available[[l]],drop=F])>0)))}))})
+    try({doc_freqs_year_dict[,l]<-unlist(lapply(un_dates_year,FUN = function(x){return(length(which(rowSums(bin_dtm[which(dates_year==x),dicts_available[[l]],drop=F])>0)))}))})
   }
   
   
@@ -939,22 +930,24 @@ calculate_dictioanry_frequencies<-function(){
   rel_doc_freqs_month_dict<-doc_freqs_month_dict/unlist(lapply(un_dates_month,FUN = function(x){return(length(which(dates_month==x)))}))
   rel_doc_freqs_year_dict<-doc_freqs_year_dict/unlist(lapply(un_dates_year,FUN = function(x){return(length(which(dates_year==x)))}))
   
-  assign("doc_freqs_year_dict",doc_freqs_year_dict,envir=.GlobalEnv)
-  assign("doc_freqs_month_dict",doc_freqs_month_dict,envir=.GlobalEnv)
-  assign("doc_freqs_week_dict",doc_freqs_week_dict,envir=.GlobalEnv)
-  assign("doc_freqs_day_dict",doc_freqs_day_dict,envir=.GlobalEnv)
-  assign("freqs_year_dict",freqs_year_dict,envir=.GlobalEnv)
-  assign("freqs_month_dict",freqs_month_dict,envir=.GlobalEnv)
-  assign("freqs_week_dict",freqs_week_dict,envir=.GlobalEnv)
-  assign("freqs_day_dict",freqs_day_dict,envir=.GlobalEnv)
-  assign("rel_doc_freqs_year_dict",rel_doc_freqs_year_dict,envir=.GlobalEnv)
-  assign("rel_doc_freqs_month_dict",rel_doc_freqs_month_dict,envir=.GlobalEnv)
-  assign("rel_doc_freqs_week_dict",rel_doc_freqs_week_dict,envir=.GlobalEnv)
-  assign("rel_doc_freqs_day_dict",rel_doc_freqs_day_dict,envir=.GlobalEnv)
-  assign("rel_freqs_year_dict",rel_freqs_year_dict,envir=.GlobalEnv)
-  assign("rel_freqs_month_dict",rel_freqs_month_dict,envir=.GlobalEnv)
-  assign("rel_freqs_week_dict",rel_freqs_week_dict,envir=.GlobalEnv)
-  assign("rel_freqs_day_dict",rel_freqs_day_dict,envir=.GlobalEnv)
   
+  return(
+    list(doc_freqs_year_dict=doc_freqs_year_dict,
+         doc_freqs_month_dict=doc_freqs_month_dict,
+         doc_freqs_week_dict=doc_freqs_week_dict,
+         doc_freqs_day_dict=doc_freqs_day_dict,
+         freqs_year_dict=freqs_year_dict,
+         freqs_month_dict=freqs_month_dict,
+         freqs_week_dict=freqs_week_dict,
+         freqs_day_dict=freqs_day_dict,
+         rel_doc_freqs_year_dict=rel_doc_freqs_year_dict,
+         rel_doc_freqs_month_dict=rel_doc_freqs_month_dict,
+         rel_doc_freqs_week_dict=rel_doc_freqs_week_dict,
+         rel_doc_freqs_day_dict=rel_doc_freqs_day_dict,
+         rel_freqs_year_dict=rel_freqs_year_dict,
+         rel_freqs_month_dict=rel_freqs_month_dict,
+         rel_freqs_week_dict=rel_freqs_week_dict,
+         rel_freqs_day_dict=rel_freqs_day_dict)
+  )
   
 }

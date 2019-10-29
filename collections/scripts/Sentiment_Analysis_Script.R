@@ -34,14 +34,14 @@ error<-try(expr = {
   
   #preparing parameters
   log_to_file(message = "<b>Step 3/8: Preparing input parameters</b>",file = logfile)
-  prepare_input_parameters()
+  parameters<-prepare_input_parameters(parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
   
   #calculate dfm object
   log_to_file(message = "<b>Step 4/8: Calculate tokens_object object</b>",file = logfile)
-  tokens_object<-calculate_sentiments_analysis_tokens_object()
+  tokens_object<-calculate_sentiments_analysis_tokens_object(parameters = parameters,meta = meta)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
@@ -93,7 +93,7 @@ error<-try(expr = {
   
   #Wrinting metadata to database Task column
   log_to_file(message = "<b>Step 8/8: Writing task parameter to database</b>",file = logfile)
-  write_metadata_to_database(parameters)
+  write_metadata_to_database(parameters,host=host,port=db_port)
   log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
   
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Sentiment Analysis </b>",logfile)

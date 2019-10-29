@@ -4,7 +4,7 @@ log_to_file<-function(message,file){
 }
 
 
-write_metadata_to_database<-function(parameters){
+write_metadata_to_database<-function(parameters,host,port){
   entry_for_db<-data.frame(matrix(c(NA),1,70))
   if(!is.null(parameters$id)){
     entry_for_db[1,1]<-parameters$id
@@ -288,9 +288,7 @@ write_metadata_to_database<-function(parameters){
     }
   }
   
-  
-  source("config_file.R")
-  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=port)
   #check if databse uses same amount of parameters; if not just save those parameters in database format; update to later docker image will solve this issue 
   columns_in_db<-RMariaDB::dbGetQuery(conn = mydb,statement = "Show Columns from ilcm.Tasks;")
   query<-paste0('Insert into Tasks Values("',paste0(entry_for_db[1,1:dim(columns_in_db)[1]],collapse='", "'),'");')

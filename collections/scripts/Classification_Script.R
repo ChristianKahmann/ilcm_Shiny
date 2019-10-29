@@ -3,7 +3,6 @@ source("global/log_to_file.R")
 source("config_file.R")
 source("global/TextProcessingBackend.R")
 source("global/TextObjectWrapper.R")
-source("global/classification_model.R")
 source("global/rbind_huge_sparse_Matrix.R")
 source("global/functions_used_in_scripts.R")
 source("global/utils.R")
@@ -29,7 +28,7 @@ error<-try(expr = {
   
   #load data from database
   log_to_file(message = "<b>Step 2/14: Loading data from database</b>",file = logfile)
-  db_data<-get_token_meta_and_language_from_db(get_language=T,get_global_doc_ids=T)
+  db_data<-get_token_meta_and_language_from_db(get_language=T,get_global_doc_ids=T,host=host,port=db_port,id=info[[1]],dataset=info[[2]])
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished loading data from database",file = logfile)
   
   
@@ -55,7 +54,7 @@ error<-try(expr = {
   
   #preparing parameters
   log_to_file(message = "<b>Step 4/14: Preparing input parameters</b>",file = logfile)
-  prepare_input_parameters()
+  parameters<-prepare_input_parameters(parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
@@ -105,12 +104,6 @@ error<-try(expr = {
   rownames(documents_original)<-documents_original[,1]
   documents_original<-documents_original[unique(doc_ids),]
   colnames(documents_original)<-c("doc_id","token")
-  
-  # documents_original<-unlist(lapply(X = unique(doc_ids),FUN = function(x){
-  #  paste(db_data$token[which(doc_ids==x),5],collapse=" ")
-  # }))
-  # documents_original<-cbind(unique(doc_ids),documents_original)
-  # 
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
   
@@ -164,14 +157,14 @@ error<-try(expr = {
   #preparing token object
   log_to_file(message = "<b>Step 8/14: Preparing token object</b>",file = logfile)
   datasets<-db_data$token[,1]
-  db_data$token<-prepare_token_object(token = db_data$token)
+  db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
   
   
   
   #getting original documents
   log_to_file(message = "<b>Step 9/14: Getting original documents/sentences</b>",file = logfile)
-  original_text<-get_original_documents()
+  original_text<-get_original_documents(token=db_data$token)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished building original documents/sentences",file = logfile)
   
   
@@ -180,7 +173,7 @@ error<-try(expr = {
   #formatting classification input as a tibble
   log_to_file(message = "<b>Step 10/14: Formatting classification input</b>",file = logfile)
   #feature_list<-calculate_dtm(tibble=T)
-  dtm<-calculate_dtm(tibble=F)
+  dtm<-calculate_dtm(tibble=F,token = db_data$token,parameters = parameters,lang = db_data$language)
   #get_annotated_doc_ids
   log_to_file(message = paste0("&emsp; Reduce feature space"),logfile)
   pos_ident<-NULL
@@ -720,7 +713,7 @@ error<-try(expr = {
     dir.create(path = path0,recursive = T)
     
     lang<-db_data$language
-    save(dates,predictions,labels,result,file=paste0(path0,"result.RData"))
+    save(dates,predictions,labels,probabilities,result,file=paste0(path0,"result.RData"))
     save(feature_matrix,word_counts,file=paste0(path0,"feature_matrix.RData"))
     save(results_complete,file = paste0(path0,"results_complete.RData"))
     save(original_text,file=paste0(path0,"texts.RData"))
@@ -732,7 +725,7 @@ error<-try(expr = {
   
   #Wrinting metadata to database Task column
   log_to_file(message = "<b>Step 14/14: Writing task parameter to database</b>",file = logfile)
-  write_metadata_to_database(parameters)
+  write_metadata_to_database(parameters,host=host,port=db_port)
   log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
   log_to_file(message = " <b style='color:green'>Process finished successfully.</b>",logfile)
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))

@@ -23,7 +23,7 @@ error<-try(expr = {
   
   #load data from database
   log_to_file(message = "<b>Step 2/8: Loading data from database</b>",file = logfile)
-  db_data<-get_token_meta_and_language_from_db(get_meta = F,get_language = T,get_global_doc_ids = F)
+  db_data<-get_token_meta_and_language_from_db(get_meta = F,get_language = T,get_global_doc_ids = F,host=host,port=db_port,id=info[[1]],dataset=info[[2]])
   #token<-db_data$token[,c("id","word")]
   #colnames(token)<-c("doc_id","token")
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
@@ -52,7 +52,7 @@ error<-try(expr = {
   
   #preparing parameters
   log_to_file(message = "<b>Step 4/8: Preparing input parameters</b>",file = logfile)
-  prepare_input_parameters()
+  parameters<-prepare_input_parameters(param = parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
@@ -116,7 +116,7 @@ error<-try(expr = {
   
   #Wrinting metadata to database Task column
   log_to_file(message = "<b>Step 8/8: Writing task parameter to database</b>",file = logfile)
-  write_metadata_to_database(parameters)
+  write_metadata_to_database(parameters,host=host,port=db_port)
   log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
   
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Syntactic Parsing </b>",logfile)
