@@ -126,58 +126,94 @@ output$UI_Import_csv_body<-renderUI({
                                    fill=T,animation = "pulse")
 })
 
-output$UI_Import_csv_mde2<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde2",label = paste0("Map ",input$UI_Import_name_mde2),
+output$UI_Import_csv_mde1<-renderUI({
+  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde1", label = "Map mde1",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
 })
 
-output$UI_Import_csv_mde1<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde1",label = paste0("Map ",input$UI_Import_name_mde1),
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde1",label = paste0("Map ",input$UI_Import_name_mde1))
+})
+
+output$UI_Import_csv_mde2<-renderUI({
+  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde2",label = "Map mde2",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde2",label = paste0("Map ",input$UI_Import_name_mde2))
 })
 
 output$UI_Import_csv_mde3<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde3",label = paste0("Map ",input$UI_Import_name_mde3),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde3", label = "Map mde3",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde3",label = paste0("Map ",input$UI_Import_name_mde3))
 })
 
 output$UI_Import_csv_mde4<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde4",label = paste0("Map ",input$UI_Import_name_mde4),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde4", label = "Map mde4",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde4",label = paste0("Map ",input$UI_Import_name_mde4))
 })
 
 output$UI_Import_csv_mde5<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde5",label = paste0("Map ",input$UI_Import_name_mde5),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde5",label = "Map mde5",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde5",label = paste0("Map ",input$UI_Import_name_mde5))
 })
 
 output$UI_Import_csv_mde6<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde6",label = paste0("Map ",input$UI_Import_name_mde6),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde6",label = "Map mde6",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde6",label = paste0("Map ",input$UI_Import_name_mde6))
 })
 
 output$UI_Import_csv_mde7<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde7",label = paste0("Map ",input$UI_Import_name_mde7),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde7", label = "Map mde7",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde7",label = paste0("Map ",input$UI_Import_name_mde7))
 })
 
 output$UI_Import_csv_mde8<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde8",label = paste0("Map ",input$UI_Import_name_mde8),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde8", label = "Map mde8",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
 })
 
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde8",label = paste0("Map ",input$UI_Import_name_mde8))
+})
+
 output$UI_Import_csv_mde9<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde9",label = paste0("Map ",input$UI_Import_name_mde9),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde9", label = "Map mde9",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde9",label = paste0("Map ",input$UI_Import_name_mde9))
 })
 
 
@@ -1337,58 +1373,95 @@ output$UI_Import_mtf_body<-renderUI({
 })
 
 
+
 output$UI_Import_mtf_mde1<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde1",label = paste0("Map ",input$UI_Import_name_mde1_mtf),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde1",label = "Map mde1",
                                    choices = c("not required",values$header_mtf),
                                    fill=T,animation = "pulse")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde1",label = paste0("Map ",input$UI_Import_name_mde1_mtf))
 })
 
 output$UI_Import_mtf_mde2<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde2",label = paste0("Map ",input$UI_Import_name_mde2_mtf),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde2",label = "Map mde2",
                                    choices = c("not required",values$header_mtf),
                                    fill=T,animation = "pulse")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde2",label = paste0("Map ",input$UI_Import_name_mde2_mtf))
 })
 
 output$UI_Import_mtf_mde3<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde3",label = paste0("Map ",input$UI_Import_name_mde3_mtf),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde3",label = "Map mde3",
                                    choices = c("not required",values$header_mtf),
                                    fill=T,animation = "pulse")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde3",label = paste0("Map ",input$UI_Import_name_mde3_mtf))
 })
 
 output$UI_Import_mtf_mde4<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde4",label = paste0("Map ",input$UI_Import_name_mde4_mtf),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde4",label = "Map mde4",
                                    choices = c("not required",values$header_mtf),
                                    fill=T,animation = "pulse")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde4",label = paste0("Map ",input$UI_Import_name_mde4_mtf))
 })
 
 output$UI_Import_mtf_mde5<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde5",label = paste0("Map ",input$UI_Import_name_mde5_mtf),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde5",label ="Map mde5",
                                    choices = c("not required",values$header_mtf),
                                    fill=T,animation = "pulse")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde5",label = paste0("Map ",input$UI_Import_name_mde5_mtf))
 })
 
 output$UI_Import_mtf_mde6<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde6",label = paste0("Map ",input$UI_Import_name_mde6_mtf),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde6",label = "Map mde6",
                                    choices = c("not required",values$header_mtf),
                                    fill=T,animation = "pulse")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde6",label = paste0("Map ",input$UI_Import_name_mde6_mtf))
 })
 
 output$UI_Import_mtf_mde7<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde7",label = paste0("Map ",input$UI_Import_name_mde7_mtf),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde7",label ="Map mde7",
                                    choices = c("not required",values$header_mtf),
                                    fill=T,animation = "pulse")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde7",label = paste0("Map ",input$UI_Import_name_mde7_mtf))
 })
 
 output$UI_Import_mtf_mde8<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde8",label = paste0("Map ",input$UI_Import_name_mde8_mtf),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde8",label = "Map mde8",
                                    choices = c("not required",values$header_mtf),
                                    fill=T,animation = "pulse")
 })
 
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde8",label = paste0("Map ",input$UI_Import_name_mde8_mtf))
+})
+
 output$UI_Import_mtf_mde9<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde9",label = paste0("Map ",input$UI_Import_name_mde9_mtf),
+  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde9",label = "Map mde9",
                                    choices = c("not required",values$header_mtf),
                                    fill=T,animation = "pulse")
+})
+
+observe({
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde9",label = paste0("Map ",input$UI_Import_name_mde9_mtf))
 })
 
 #title
