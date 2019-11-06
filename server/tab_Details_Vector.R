@@ -171,6 +171,7 @@ output$vs_linS_plotly_tsne<-renderPlotly({
   data<-values$vs_model[c(input$Det_VS_linS_words1,input$Det_VS_linS_words2,input$Det_VS_linS_words3,input$Det_VS_linS_words4,input$Det_VS_linS_words5),]
   if(is.null(values$vs_tsne)){
     m<-tsne::tsne(as.matrix(as.matrix(data)),max_iter = 250)
+    rownames(m)<-c(input$Det_VS_linS_words1,input$Det_VS_linS_words2,input$Det_VS_linS_words3,input$Det_VS_linS_words4,input$Det_VS_linS_words5)
     title="A two dimensional reduction of the vector space model using tsne"
   }
   else{

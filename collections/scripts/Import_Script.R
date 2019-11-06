@@ -81,55 +81,91 @@ error<-try(expr = {
       try({
         mde1<-unique(data[,9])
         mde1<-cbind(rep(data[1,2],length(mde1)),mde1)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde1) values ",paste(sprintf("('%s', %s)", mde1[,1], mde1[,2]), collapse=', ') ,";"))
+        #check if only NA
+        if(any(!is.na(mde1[,2]))){
+          mde1<-mde1[which(!is.na(mde1[,2])),]
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde1 (dataset, mde1) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde1[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde1[,2])), collapse=', ') ,";"))
+        }
       })
       #mde2
       try({
         mde2<-unique(data[,10])
         mde2<-cbind(rep(data[1,2],length(mde2)),mde2)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde2) values ",paste(sprintf("('%s', %s)", mde2[,1], mde2[,2]), collapse=', ') ,";"))
+        #check if only NA
+        if(any(!is.na(mde2[,2]))){
+          mde2<-mde2[which(!is.na(mde2[,2])),]
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde2 (dataset, mde2) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde2[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde2[,2])), collapse=', ') ,";"))
+        }
       })
       #mde3
       try({
         mde3<-unique(data[,11])
         mde3<-cbind(rep(data[1,2],length(mde3)),mde3)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde3) values ",paste(sprintf("('%s', %s)", mde3[,1], mde3[,2]), collapse=', ') ,";"))
+        #check if only NA
+        if(any(!is.na(mde3[,2]))){
+          mde3<-mde3[which(!is.na(mde3[,2])),]
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde3 (dataset, mde3) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde3[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde3[,2])), collapse=', ') ,";"))
+        }
       })
       #mde4
       try({
         mde4<-unique(data[,12])
         mde4<-cbind(rep(data[1,2],length(mde4)),mde4)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde4) values ",paste(sprintf("('%s', %s)", mde4[,1], mde4[,2]), collapse=', ') ,";"))
+        #check if only NA
+        if(any(!is.na(mde4[,2]))){
+          mde4<-mde4[which(!is.na(mde4[,2])),]
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde4 (dataset, mde4) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde4[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde4[,2])), collapse=', ') ,";"))
+        }
       })
       #mde5
       try({
         mde5<-unique(data[,13])
         mde5<-cbind(rep(data[1,2],length(mde5)),mde5)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde5) values ",paste(sprintf("('%s', %s)", mde5[,1], mde5[,2]), collapse=', ') ,";"))
+        #check if only NA
+        if(any(!is.na(mde5[,2]))){
+          mde5<-mde5[which(!is.na(mde5[,2])),]
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde5 (dataset, mde5) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde5[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde5[,2])), collapse=', ') ,";"))
+        }
       })
       #mde6
       try({
         mde6<-unique(data[,14])
         mde6<-cbind(rep(data[1,2],length(mde6)),mde6)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde6) values ",paste(sprintf("('%s', %s)", mde6[,1], mde6[,2]), collapse=', ') ,";"))
+        #check if only NA
+        if(any(!is.na(mde6[,2]))){
+          mde6<-mde6[which(!is.na(mde6[,2])),]
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde6 (dataset, mde6) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde6[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde6[,2])), collapse=', ') ,";"))
+        }
       })
       #mde7
       try({
         mde7<-unique(data[,15])
         mde7<-cbind(rep(data[1,2],length(mde7)),mde7)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde7) values ",paste(sprintf("('%s', %s)", mde7[,1], mde7[,2]), collapse=', ') ,";"))
+        #check if only NA
+        if(any(!is.na(mde7[,2]))){
+          mde7<-mde7[which(!is.na(mde7[,2])),]
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde7 (dataset, mde7) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde7[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde7[,2])), collapse=', ') ,";"))
+        }
       })
       #mde8
       try({
         mde8<-unique(data[,16])
         mde8<-cbind(rep(data[1,2],length(mde8)),mde8)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde8) values ",paste(sprintf("('%s', %s)", mde8[,1], mde8[,2]), collapse=', ') ,";"))
+        #check if only NA
+        if(any(!is.na(mde8[,2]))){
+          mde8<-mde8[which(!is.na(mde8[,2])),]
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde8 (dataset, mde8) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde8[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde8[,2])), collapse=', ') ,";"))
+        }
       })
       #mde9
       try({
         mde9<-unique(data[,17])
         mde9<-cbind(rep(data[1,2],length(mde9)),mde9)
-        rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde9) values ",paste(sprintf("('%s', %s)", mde9[,1], mde9[,2]), collapse=', ') ,";"))
+        #check if only NA
+        if(any(!is.na(mde9[,2]))){
+          mde9<-mde9[which(!is.na(mde9[,2])),]
+          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde9 (dataset, mde9) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde9[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde9[,2])), collapse=', ') ,";"))
+        }
       })
       rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
       

@@ -22,115 +22,123 @@ observeEvent(input$Det_action,{
     
     #add chosen dataset to fq
     if(length(isolate(input$dataset))==0){
-      fq_dataset<-"dataset_s:(*:*)"
+      # fq<-"dataset_s:(*:*)"
+      shinyWidgets::sendSweetAlert(session=session,title = "No corpus specified",text = "Please choose at least one corpus in the top left corner.",type = "warning")
     }
-    if(length(isolate(input$dataset))==1){
-      fq_dataset<-paste("dataset_s:",isolate(input$dataset),sep="")
-    }
-    if(length(isolate(input$dataset))>1){
-      fq_dataset<-paste0("dataset_s:(",isolate(input$dataset)[1])
-      for(i in 2:length(isolate(input$dataset))){
-        fq_dataset<-paste0(fq_dataset," OR ",isolate(input$dataset)[i])
+    else{
+      if(length(isolate(input$dataset))==1){
+        fq_dataset<-paste("dataset_s:\"",isolate(input$dataset),"\"",sep="")
       }
-      fq_dataset<-paste0(fq_dataset,")")
-    } 
-    
-    fq<-paste(fq," AND ",fq_dataset,sep="")
-    
-    #add chosen mde1 to fq
-    if(!("all"%in%input$Det_mde1)){
-      if(!is.null(input$Det_mde1)){
-        fq=paste(fq,' AND mde1_ss:(','"',paste(input$Det_mde1,collapse='" "'),'")',sep="")
+      if(length(isolate(input$dataset))>1){
+        fq_dataset<-paste0("dataset_s:(\"",isolate(input$dataset)[1],"\"")
+        for(i in 2:length(isolate(input$dataset))){
+          fq_dataset<-paste0(fq_dataset," OR \"",isolate(input$dataset)[i],"\"")
+        }
+        fq_dataset<-paste0(fq_dataset,")")
+      } 
+      
+      fq<-paste(fq," AND ",fq_dataset,sep="")
+      
+      #add chosen mde1 to fq
+      if(!("all"%in%input$Det_mde1)){
+        if(!is.null(input$Det_mde1)){
+          fq=paste(fq,' AND mde1_ss:(','"',paste(input$Det_mde1,collapse='" "'),'")',sep="")
+        }
       }
-    }
-    
-    #add chosen mde2 to fq
-    if(!("all"%in%input$Det_mde2)){
-      if(!is.null(input$Det_mde2)){
-        fq=paste(fq,' AND mde2_ss:(','"',paste(input$Det_mde2,collapse='" "'),'")',sep="")
+      
+      #add chosen mde2 to fq
+      if(!("all"%in%input$Det_mde2)){
+        if(!is.null(input$Det_mde2)){
+          fq=paste(fq,' AND mde2_ss:(','"',paste(input$Det_mde2,collapse='" "'),'")',sep="")
+        }
       }
-    }
-    
-    
-    #add chosen mde3 to fq
-    if(!("all"%in%input$Det_mde3)){
-      if(!is.null(input$Det_mde3)){
-        fq=paste(fq,' AND mde3_ss:(','"',paste(input$Det_mde3,collapse='" "'),'")',sep="")
+      
+      
+      #add chosen mde3 to fq
+      if(!("all"%in%input$Det_mde3)){
+        if(!is.null(input$Det_mde3)){
+          fq=paste(fq,' AND mde3_ss:(','"',paste(input$Det_mde3,collapse='" "'),'")',sep="")
+        }
       }
-    }
-    
-    #add chosen mde4 to fq
-    if(!("all"%in%input$Det_mde4)){
-      if(!is.null(input$Det_mde4)){
-        fq=paste(fq,' AND mde4_ss:(','"',paste(input$Det_mde4,collapse='" "'),'")',sep="")
+      
+      #add chosen mde4 to fq
+      if(!("all"%in%input$Det_mde4)){
+        if(!is.null(input$Det_mde4)){
+          fq=paste(fq,' AND mde4_ss:(','"',paste(input$Det_mde4,collapse='" "'),'")',sep="")
+        }
       }
-    }
-    
-    #add chosen mde5 to fq
-    if(!("all"%in%input$Det_mde5)){
-      if(!is.null(input$Det_mde5)){
-        fq=paste(fq,' AND mde5_ss:(','"',paste(input$Det_mde5,collapse='" "'),'")',sep="")
+      
+      #add chosen mde5 to fq
+      if(!("all"%in%input$Det_mde5)){
+        if(!is.null(input$Det_mde5)){
+          fq=paste(fq,' AND mde5_ss:(','"',paste(input$Det_mde5,collapse='" "'),'")',sep="")
+        }
       }
-    }
-    
-    #add chosen mde6 to fq
-    if(!("all"%in%input$Det_mde6)){
-      if(!is.null(input$Det_mde6)){
-        fq=paste(fq,' AND mde6_ss:(','"',paste(input$Det_mde6,collapse='" "'),'")',sep="")
+      
+      #add chosen mde6 to fq
+      if(!("all"%in%input$Det_mde6)){
+        if(!is.null(input$Det_mde6)){
+          fq=paste(fq,' AND mde6_ss:(','"',paste(input$Det_mde6,collapse='" "'),'")',sep="")
+        }
       }
-    }
-    
-    #add chosen mde7 to fq
-    if(!("all"%in%input$Det_mde7)){
-      if(!is.null(input$Det_mde7)){
-        fq=paste(fq,' AND mde7_ss:(','"',paste(input$Det_mde7,collapse='" "'),'")',sep="")
+      
+      #add chosen mde7 to fq
+      if(!("all"%in%input$Det_mde7)){
+        if(!is.null(input$Det_mde7)){
+          fq=paste(fq,' AND mde7_ss:(','"',paste(input$Det_mde7,collapse='" "'),'")',sep="")
+        }
       }
-    }
-    
-    #add chosen mde8 to fq
-    if(!("all"%in%input$Det_mde8)){
-      if(!is.null(input$Det_mde8)){
-        fq=paste(fq,' AND mde8_ss:(','"',paste(input$Det_mde8,collapse='" "'),'")',sep="")
+      
+      #add chosen mde8 to fq
+      if(!("all"%in%input$Det_mde8)){
+        if(!is.null(input$Det_mde8)){
+          fq=paste(fq,' AND mde8_ss:(','"',paste(input$Det_mde8,collapse='" "'),'")',sep="")
+        }
       }
-    }
-    
-    #add chosen mde9 to fq
-    if(!("all"%in%input$Det_mde9)){
-      if(!is.null(input$Det_mde9)){
-        fq=paste(fq,' AND mde9_ss:(','"',paste(input$Det_mde9,collapse='" "'),'")',sep="")
+      
+      #add chosen mde9 to fq
+      if(!("all"%in%input$Det_mde9)){
+        if(!is.null(input$Det_mde9)){
+          fq=paste(fq,' AND mde9_ss:(','"',paste(input$Det_mde9,collapse='" "'),'")',sep="")
+        }
       }
+      #add chosen tokenrange to 
+      fq=paste(fq," AND token_i:[",input$Det_Token[1],"TO",input$Det_Token[2],"]")
+      
+      #check wheater solr query is valid and get solq query back
+      response<-NULL
+      try({
+        response<-as.character(solr_search_advanced(base = url,q = q,fl="id",fq=fq,rows="1",raw=T))
+      },silent = T)
+      #alert user when solr query was wrong
+      if(is.null(response)){
+        if(nchar(fq>8000)){
+        shinyWidgets::sendSweetAlert(type = "error",session = session,title = "Wrong Syntax in Solr Query",text = "most likely your query is too long.")
+        }
+        else{
+          shinyWidgets::sendSweetAlert(type = "error",session = session,title = "Wrong Syntax in Solr Query")
+        }
+      }
+      #stop here response is NULL
+      validate(
+        need(!is.null(response),"wrong syntax")
+      )
+      
+      #set solr query parameters for calls in search results and timseries
+      values$start=0
+      values$custom<-FALSE
+      values$url<-url
+      values$q<-q
+      values$fq<-fq
+      values$fq_init<-fq
+      values$numFound<-as.integer(str_replace_all(string = str_extract(string =response[1],pattern = "numFound\\\":[0-9]+,"),pattern = "\\D",replacement = ""))
+      updateTextInput(session = session,inputId = "SR_row_sel",value = 1)
+      values$start=1
+      values$search<-values$search+1
+      values$solr_query<-stringr::str_replace(string=stringr::str_replace(string=response[2],pattern = "&wt=(.)+",replacement = ""),pattern = "start=[0-9]+&rows=[0-9]&",replacement="")
+      #switch to search results tab
+      updateTabsetPanel(session = session,inputId = "expl",selected = "Search Results")
     }
-    #add chosen tokenrange to 
-    fq=paste(fq," AND token_i:[",input$Det_Token[1],"TO",input$Det_Token[2],"]")
-    
-    #check wheater solr query is valid and get solq query back
-    response<-NULL
-    try({
-      response<-as.character(solr_search_advanced(base = url,q = q,fl="id",fq=fq,rows="1",raw=T))
-    },silent = T)
-    #alert user when solr query was wrong
-    if(is.null(response)){
-      shinyWidgets::sendSweetAlert(type = "error",session = session,title = "Wrong Syntax in Solr Query")
-    }
-    #stop here response is NULL
-    validate(
-      need(!is.null(response),"wrong syntax")
-    )
-    
-    #set solr query parameters for calls in search results and timseries
-    values$start=0
-    values$custom<-FALSE
-    values$url<-url
-    values$q<-q
-    values$fq<-fq
-    values$fq_init<-fq
-    values$numFound<-as.integer(str_replace_all(string = str_extract(string =response[1],pattern = "numFound\\\":[0-9]+,"),pattern = "\\D",replacement = ""))
-    updateTextInput(session = session,inputId = "SR_row_sel",value = 1)
-    values$start=1
-    values$search<-values$search+1
-    values$solr_query<-stringr::str_replace(string=stringr::str_replace(string=response[2],pattern = "&wt=(.)+",replacement = ""),pattern = "start=[0-9]+&rows=[0-9]&",replacement="")
-    #switch to search results tab
-    updateTabsetPanel(session = session,inputId = "expl",selected = "Search Results")
   })
 })
 

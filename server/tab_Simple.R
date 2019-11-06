@@ -8,12 +8,12 @@ observeEvent(input$simple_action,{
     }
     else{
       if(length(isolate(input$dataset))==1){
-        fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+        fq<-paste("dataset_s:\"",isolate(input$dataset),"\"",sep="")
       }
       if(length(isolate(input$dataset))>1){
-        fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
+        fq<-paste0("dataset_s:(\"",isolate(input$dataset)[1],"\"")
         for(i in 2:length(isolate(input$dataset))){
-          fq<-paste0(fq," OR ",isolate(input$dataset)[i])
+          fq<-paste0(fq," OR \"",isolate(input$dataset)[i],"\"")
         }
         fq<-paste0(fq,")")
       } 

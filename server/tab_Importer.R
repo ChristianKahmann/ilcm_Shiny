@@ -57,6 +57,7 @@ observeEvent(input$Import_load_csv,{
   withBusyIndicatorServer("Import_load_csv", {
     values$data_csv<-utils::read.csv(file = paste0("data_import/unprocessed_data/",input$Import_csv_files),header = input$Import_load_csv_header,
                                      sep =input$import_load_csv_seperator ,fileEncoding = input$import_load_csv_encoding)
+    colnames(values$data_csv)<-stringr::str_replace_all(string = colnames(values$data_csv),pattern = "\\.",replacement = " ")
     if(dim(values$data_csv)[1]<2 | dim(values$data_csv)[2]<2){
       text<-paste0("The resulting input dimesions are: ",dim(values$data_csv)[1]," x ",dim(values$data_csv)[2],". Something went wrong during the input. Make sure to specify the csv input parameters correct.")
       shinyWidgets::sendSweetAlert(session=session,title = "Input failed!",text = text,type = "error")
@@ -264,7 +265,8 @@ observeEvent(input$Import_csv_save_man_save_title,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_title),message=FALSE)
+    need(!is.null(input$Import_csv_title),message=FALSE),
+    need(input$Import_csv_title%in%c(colnames(values$data_csv),"automatic"),message=FALSE)
   )
   if(input$Import_csv_title=="automatic"){
     values$Import_csv_title<-paste("document ",1:dim(values$data_csv)[1],sep="")
@@ -321,7 +323,8 @@ observeEvent(input$Import_csv_save_man_save_id_doc,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_id_doc),message=FALSE)
+    need(!is.null(input$Import_csv_id_doc),message=FALSE),
+    need(input$Import_csv_id_doc%in%c(colnames(values$data_csv),"automatic"),message=FALSE)
   )
   if(input$Import_csv_id_doc=="automatic"){
     #check max id_doc in database for specified dataset
@@ -382,7 +385,8 @@ observeEvent(input$Import_type_body,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_body),message=FALSE)
+    need(!is.null(input$Import_csv_body),message=FALSE),
+    need(input$Import_csv_body%in%c(colnames(values$data_csv)),message=FALSE)
   )
   values$Import_csv_body<-as.vector(as.matrix(values$data_csv[,input$Import_csv_body]))
 })
@@ -440,7 +444,8 @@ observeEvent(input$Import_csv_save_man_save_mde3,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_mde3),message=FALSE)
+    need(!is.null(input$Import_csv_mde3),message=FALSE),
+    need(input$Import_csv_mde3%in%c(colnames(values$data_csv),"not required"),message=FALSE)
   )
   if(input$Import_csv_mde3=="not required"){
     values$Import_csv_mde3<-NULL
@@ -497,7 +502,8 @@ observeEvent(input$Import_csv_save_man_save_mde1,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_mde1),message=FALSE)
+    need(!is.null(input$Import_csv_mde1),message=FALSE),
+    need(input$Import_csv_mde1%in%c(colnames(values$data_csv),"not required"),message=FALSE)
   )
   if(input$Import_csv_mde1=="not required"){
     values$Import_csv_mde1<-NULL
@@ -553,7 +559,8 @@ observeEvent(input$Import_csv_save_man_save_date,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_date),message=FALSE)
+    need(!is.null(input$Import_csv_date),message=FALSE),
+    need(input$Import_csv_date%in%c(colnames(values$data_csv),"automatic"),message=FALSE)
   )
   if(input$Import_csv_date=="automatic"){
     values$Import_csv_date<-rep(as.character(Sys.Date()),dim(values$data_csv)[1])
@@ -609,7 +616,8 @@ observeEvent(input$Import_csv_save_man_save_mde4,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_mde4),message=FALSE)
+    need(!is.null(input$Import_csv_mde4),message=FALSE),
+    need(input$Import_csv_mde4%in%c(colnames(values$data_csv),"not required"),message=FALSE)
   )
   if(input$Import_csv_mde4=="not required"){
     values$Import_csv_mde4<-NULL
@@ -665,7 +673,8 @@ observeEvent(input$Import_csv_save_man_save_mde5,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_mde5),message=FALSE)
+    need(!is.null(input$Import_csv_mde5),message=FALSE),
+    need(input$Import_csv_mde5%in%c(colnames(values$data_csv),"not required"),message=FALSE)
   )
   if(input$Import_csv_mde5=="not required"){
     values$Import_csv_mde5<-NULL
@@ -721,7 +730,8 @@ observeEvent(input$Import_csv_save_man_save_mde6,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_mde6),message=FALSE)
+    need(!is.null(input$Import_csv_mde6),message=FALSE),
+    need(input$Import_csv_mde6%in%c(colnames(values$data_csv),"not required"),message=FALSE)
   )
   if(input$Import_csv_mde6=="not required"){
     values$Import_csv_mde6<-NULL
@@ -777,7 +787,8 @@ observeEvent(input$Import_csv_save_man_save_mde7,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_mde7),message=FALSE)
+    need(!is.null(input$Import_csv_mde7),message=FALSE),
+    need(input$Import_csv_mde7%in%c(colnames(values$data_csv),"not required"),message=FALSE)
   )
   if(input$Import_csv_mde7=="not required"){
     values$Import_csv_mde7<-NULL
@@ -833,7 +844,8 @@ observeEvent(input$Import_csv_save_man_save_mde8,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_mde8),message=FALSE)
+    need(!is.null(input$Import_csv_mde8),message=FALSE),
+    need(input$Import_csv_mde8%in%c(colnames(values$data_csv),"not required"),message=FALSE)
   )
   if(input$Import_csv_mde8=="not required"){
     values$Import_csv_mde8<-NULL
@@ -889,7 +901,8 @@ observeEvent(input$Import_csv_save_man_save_mde9,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_mde9),message=FALSE)
+    need(!is.null(input$Import_csv_mde9),message=FALSE),
+    need(input$Import_csv_mde9%in%c(colnames(values$data_csv),"not required"),message=FALSE)
   )
   if(input$Import_csv_mde9=="not required"){
     values$Import_csv_mde9<-NULL
@@ -948,7 +961,8 @@ observeEvent(input$Import_csv_save_man_save_mde2,{
 
 observe({
   validate(
-    need(!is.null(input$Import_csv_mde2),message=FALSE)
+    need(!is.null(input$Import_csv_mde2),message=FALSE),
+    need(input$Import_csv_mde2%in%c(colnames(values$data_csv),"not required"),message=FALSE)
   )
   if(input$Import_csv_mde2=="not required"){
     values$Import_csv_mde2<-NULL
@@ -1301,7 +1315,7 @@ observeEvent(input$Import_mtf_metadata_csv,{
   values$mtf_metadata<-read.csv(input$Import_mtf_metadata_csv$datapath,header=input$Import_mtf_metadata_csv_header)
   if(dim(values$mtf_metadata)[1]!=dim(isolate(values$data_mtf))[1]){
     shinyWidgets::sendSweetAlert(session=session,title = "Wrong dimensions",text = paste0("Metadata CSV does not match the number of files in the chosen directory. ",
-                                                                    isolate(dim(values$data_mtf)[1])," files were imported The metadata csv has ",isolate(dim(values$mtf_metadata)[1])," rows."),type = "warning")
+                                                                                          isolate(dim(values$data_mtf)[1])," files were imported The metadata csv has ",isolate(dim(values$mtf_metadata)[1])," rows."),type = "warning")
   }
   else{
     isolate(values$header_mtf<-c(values$header_mtf,colnames(values$mtf_metadata)))
@@ -1511,7 +1525,8 @@ observeEvent(input$Import_mtf_save_man_save_title,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_title),message=FALSE)
+    need(!is.null(input$Import_mtf_title),message=FALSE),
+    need(input$Import_mtf_title%in%c(colnames(values$data_mtf),"automatic"),message=FALSE)
   )
   if(input$Import_mtf_title=="automatic"){
     values$Import_mtf_title<-paste("document ",1:dim(values$data_mtf)[1],sep="")
@@ -1569,7 +1584,8 @@ observeEvent(input$Import_mtf_save_man_save_id_doc,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_id_doc),message=FALSE)
+    need(!is.null(input$Import_mtf_id_doc),message=FALSE),
+    need(input$Import_mtf_id_doc%in%c(colnames(values$data_mtf),"automatic"),message=FALSE)
   )
   if(input$Import_mtf_id_doc=="automatic"){
     #check max id_doc in database for specified dataset
@@ -1635,7 +1651,8 @@ observeEvent(input$Import_mtf_save_man_save_body,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_body),message=FALSE)
+    need(!is.null(input$Import_mtf_body),message=FALSE),
+    need(input$Import_mtf_body%in%colnames(values$data_mtf),message=FALSE)
   )
   values$Import_mtf_body<-as.vector(as.matrix(values$data_mtf[,input$Import_mtf_body]))
 })
@@ -1686,7 +1703,8 @@ observeEvent(input$Import_mtf_save_man_save_date,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_date),message=FALSE)
+    need(!is.null(input$Import_mtf_date),message=FALSE),
+    need(input$Import_mtf_date%in%c(colnames(values$data_mtf),"automatic"),message=FALSE)
   )
   if(input$Import_mtf_date=="automatic"){
     values$Import_mtf_date<-rep(as.character(Sys.Date()),dim(values$data_mtf)[1])
@@ -1742,7 +1760,8 @@ observeEvent(input$Import_mtf_save_man_save_mde1,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_mde1),message=FALSE)
+    need(!is.null(input$Import_mtf_mde1),message=FALSE),
+    need(input$Import_mtf_mde1%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
   )
   if(input$Import_mtf_mde1=="not required"){
     values$Import_mtf_mde1<-NULL
@@ -1798,7 +1817,8 @@ observeEvent(input$Import_mtf_save_man_save_mde2,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_mde2),message=FALSE)
+    need(!is.null(input$Import_mtf_mde2),message=FALSE),
+    need(input$Import_mtf_mde2%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
   )
   if(input$Import_mtf_mde2=="not required"){
     values$Import_mtf_mde2<-NULL
@@ -1854,7 +1874,8 @@ observeEvent(input$Import_mtf_save_man_save_mde3,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_mde3),message=FALSE)
+    need(!is.null(input$Import_mtf_mde3),message=FALSE),
+    need(input$Import_mtf_mde3%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
   )
   if(input$Import_mtf_mde3=="not required"){
     values$Import_mtf_mde3<-NULL
@@ -1910,7 +1931,8 @@ observeEvent(input$Import_mtf_save_man_save_mde4,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_mde4),message=FALSE)
+    need(!is.null(input$Import_mtf_mde4),message=FALSE),
+    need(input$Import_mtf_mde4%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
   )
   if(input$Import_mtf_mde4=="not required"){
     values$Import_mtf_mde4<-NULL
@@ -1966,7 +1988,8 @@ observeEvent(input$Import_mtf_save_man_save_mde5,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_mde5),message=FALSE)
+    need(!is.null(input$Import_mtf_mde5),message=FALSE),
+    need(input$Import_mtf_mde5%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
   )
   if(input$Import_mtf_mde5=="not required"){
     values$Import_mtf_mde5<-NULL
@@ -2022,7 +2045,8 @@ observeEvent(input$Import_mtf_save_man_save_mde6,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_mde6),message=FALSE)
+    need(!is.null(input$Import_mtf_mde6),message=FALSE),
+    need(input$Import_mtf_mde6%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
   )
   if(input$Import_mtf_mde6=="not required"){
     values$Import_mtf_mde6<-NULL
@@ -2078,7 +2102,8 @@ observeEvent(input$Import_mtf_save_man_save_mde7,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_mde7),message=FALSE)
+    need(!is.null(input$Import_mtf_mde7),message=FALSE),
+    need(input$Import_mtf_mde7%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
   )
   if(input$Import_mtf_mde7=="not required"){
     values$Import_mtf_mde7<-NULL
@@ -2134,7 +2159,8 @@ observeEvent(input$Import_mtf_save_man_save_mde8,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_mde8),message=FALSE)
+    need(!is.null(input$Import_mtf_mde8),message=FALSE),
+    need(input$Import_mtf_mde8%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
   )
   if(input$Import_mtf_mde8=="not required"){
     values$Import_mtf_mde8<-NULL
@@ -2190,7 +2216,8 @@ observeEvent(input$Import_mtf_save_man_save_mde9,{
 
 observe({
   validate(
-    need(!is.null(input$Import_mtf_mde9),message=FALSE)
+    need(!is.null(input$Import_mtf_mde9),message=FALSE),
+    need(input$Import_mtf_mde9%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
   )
   if(input$Import_mtf_mde9=="not required"){
     values$Import_mtf_mde9<-NULL
@@ -2545,6 +2572,8 @@ observeEvent(input$Upload_Data,{
         
         #update meta tables in database
         data<-data.frame(readtext::readtext(file =paste0("data_import/processed_data/meta_",input$Import_Files,".csv") ),stringsAsFactors = F)
+        #remove entities table from data
+        data<-data[,1:(ncol(data)-1)]
         #date
         dates<-unique(data[,6])
         dates<-cbind(rep(data[1,2],length(dates)),dates)
@@ -2553,59 +2582,96 @@ observeEvent(input$Upload_Data,{
         token<-unique(data[,7])
         token<-cbind(rep(data[1,2],length(token)),token)
         rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, token) values ",paste(sprintf("('%s', %s)", token[,1], token[,2]), collapse=', ') ,";"))
-        #mde1
+        #mde1 
+        
         try({
           mde1<-unique(data[,9])
           mde1<-cbind(rep(data[1,2],length(mde1)),mde1)
-          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde1) values ",paste(sprintf("('%s', %s)", mde1[,1], mde1[,2]), collapse=', ') ,";"))
+          #check if only NA
+          if(any(!is.na(mde1[,2]))){
+            mde1<-mde1[which(!is.na(mde1[,2])),]
+            rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde1 (dataset, mde1) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde1[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde1[,2])), collapse=', ') ,";"))
+          }
         })
         #mde2
         try({
           mde2<-unique(data[,10])
           mde2<-cbind(rep(data[1,2],length(mde2)),mde2)
-          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde2) values ",paste(sprintf("('%s', %s)", mde2[,1], mde2[,2]), collapse=', ') ,";"))
+          #check if only NA
+          if(any(!is.na(mde2[,2]))){
+            mde2<-mde2[which(!is.na(mde2[,2])),]
+            rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde2 (dataset, mde2) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde2[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde2[,2])), collapse=', ') ,";"))
+          }
         })
         #mde3
         try({
           mde3<-unique(data[,11])
           mde3<-cbind(rep(data[1,2],length(mde3)),mde3)
-          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde3) values ",paste(sprintf("('%s', %s)", mde3[,1], mde3[,2]), collapse=', ') ,";"))
+          #check if only NA
+          if(any(!is.na(mde3[,2]))){
+            mde3<-mde3[which(!is.na(mde3[,2])),]
+            rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde3 (dataset, mde3) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde3[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde3[,2])), collapse=', ') ,";"))
+          }
         })
         #mde4
         try({
           mde4<-unique(data[,12])
           mde4<-cbind(rep(data[1,2],length(mde4)),mde4)
-          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde4) values ",paste(sprintf("('%s', %s)", mde4[,1], mde4[,2]), collapse=', ') ,";"))
+          #check if only NA
+          if(any(!is.na(mde4[,2]))){
+            mde4<-mde4[which(!is.na(mde4[,2])),]
+            rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde4 (dataset, mde4) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde4[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde4[,2])), collapse=', ') ,";"))
+          }
         })
         #mde5
         try({
           mde5<-unique(data[,13])
           mde5<-cbind(rep(data[1,2],length(mde5)),mde5)
-          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde5) values ",paste(sprintf("('%s', %s)", mde5[,1], mde5[,2]), collapse=', ') ,";"))
+          #check if only NA
+          if(any(!is.na(mde5[,2]))){
+            mde5<-mde5[which(!is.na(mde5[,2])),]
+            rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde5 (dataset, mde5) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde5[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde5[,2])), collapse=', ') ,";"))
+          }
         })
         #mde6
         try({
           mde6<-unique(data[,14])
           mde6<-cbind(rep(data[1,2],length(mde6)),mde6)
-          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde6) values ",paste(sprintf("('%s', %s)", mde6[,1], mde6[,2]), collapse=', ') ,";"))
+          #check if only NA
+          if(any(!is.na(mde6[,2]))){
+            mde6<-mde6[which(!is.na(mde6[,2])),]
+            rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde6 (dataset, mde6) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde6[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde6[,2])), collapse=', ') ,";"))
+          }
         })
         #mde7
         try({
           mde7<-unique(data[,15])
           mde7<-cbind(rep(data[1,2],length(mde7)),mde7)
-          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde7) values ",paste(sprintf("('%s', %s)", mde7[,1], mde7[,2]), collapse=', ') ,";"))
+          #check if only NA
+          if(any(!is.na(mde7[,2]))){
+            mde7<-mde7[which(!is.na(mde7[,2])),]
+            rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde7 (dataset, mde7) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde7[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde7[,2])), collapse=', ') ,";"))
+          }
         })
         #mde8
         try({
           mde8<-unique(data[,16])
           mde8<-cbind(rep(data[1,2],length(mde8)),mde8)
-          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde8) values ",paste(sprintf("('%s', %s)", mde8[,1], mde8[,2]), collapse=', ') ,";"))
+          #check if only NA
+          if(any(!is.na(mde8[,2]))){
+            mde8<-mde8[which(!is.na(mde8[,2])),]
+            rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde8 (dataset, mde8) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde8[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde8[,2])), collapse=', ') ,";"))
+          }
         })
         #mde9
         try({
           mde9<-unique(data[,17])
           mde9<-cbind(rep(data[1,2],length(mde9)),mde9)
-          rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, mde9) values ",paste(sprintf("('%s', %s)", mde9[,1], mde9[,2]), collapse=', ') ,";"))
+          #check if only NA
+          if(any(!is.na(mde9[,2]))){
+            mde9<-mde9[which(!is.na(mde9[,2])),]
+            rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde9 (dataset, mde9) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde9[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde9[,2])), collapse=', ') ,";"))
+          }
         })
         rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
         
@@ -2639,7 +2705,7 @@ observeEvent(input$Import_delete,{
 
 observeEvent(input$confirm_delete_import,{
   if(isTRUE(input$confirm_delete_import)){
-      file.remove(list.files(path = "data_import/processed_data/",pattern = input$Import_Files, full.names = T))
+    file.remove(list.files(path = "data_import/processed_data/",pattern = input$Import_Files, full.names = T))
   }
 }
 )

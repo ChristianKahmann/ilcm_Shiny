@@ -77,9 +77,10 @@ output$search_results_datatable<-DT::renderDataTable({
   #split metadata for differing datasets/metadata names
   for(d in isolate(input$dataset)){
     ind_tmp<-ind[which(ind[,"dataset"]==d),] 
-    ind_tmp<-ind_tmp[,which(apply(ind_tmp,2,function(x){!all(is.na(x))}))]
+    keep_columns<-which(apply(ind_tmp,2,function(x){!all(is.na(x))}))
+    ind_tmp<-ind_tmp[,keep_columns]
     if(dim(ind_tmp)[1]>0){
-      colnames(ind_tmp)<-c("id_doc","dataset","title","date","language","token","id","score",(ava)[which(ava[,1]==d),2:length(colnames(ava))][!is.na(ava[which(ava[,1]==d),-1])],"keyword and context")
+      colnames(ind_tmp)<-c("id_doc","dataset","title","date","language","token","id","score",(ava)[which(ava[,1]==d),2:length(colnames(ava))][!is.na(ava[which(ava[,1]==d),-1])],"keyword and context")[keep_columns]
       ind_new<-plyr::rbind.fill(ind_new,ind_tmp)
     }
   }
@@ -95,7 +96,6 @@ output$search_results_datatable<-DT::renderDataTable({
   colnames(data)<-colnames(ind)
   #just use Date information, no daytime
   data$date<-substr(data$date,1,10)
-  
   values$Search_Results<-data
   #make titles appear bold
   data$title<-paste0("<b>",data$title,"</b>")

@@ -64,9 +64,10 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format){
     metadata[count,dim(metadata)[2]]<-entities
   }
   
+  # log_to_file(message = "Escaping single and double quotes",logfile)
+  # metadata<-escape_quotes(metadata)
   
   log_to_file(message = "Writing data",logfile)
-  
   write.table(x = metadata,file = paste("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_id,".csv",sep=""),row.names = F,col.names = F,sep = ",")
   write.table(x = token,file = paste("data_import/processed_data/token_",metadata[1,"dataset"],"_",process_id,".csv",sep=""),row.names = F,col.names = F,sep = ",")
   log_to_file(message = "Finished writing data",logfile)
