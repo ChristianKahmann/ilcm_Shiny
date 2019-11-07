@@ -1043,6 +1043,80 @@ observe({
 })
 
 
+observeEvent(ignoreNULL = T,input$Import_csv_dataset,{
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
+  RMariaDB::dbBegin(conn = mydb)
+  values$Import_csv_metadatafields<-RMariaDB::dbGetQuery(mydb,paste0("SELECT * from metadata_names where dataset='",input$Import_csv_dataset,"';"))
+  RMariaDB::dbCommit(mydb)
+  RMariaDB::dbDisconnect(mydb)
+})
+
+output$Import_csv_metadata_names_warning<-renderUI({
+  validate(
+    need(values$Import_csv_meta_complete[1,"dataset"]!="",message=F),
+    #need(any(c(input$Import_csv_mde1,input$Import_csv_mde2,input$Import_csv_mde3,input$Import_csv_mde4,input$Import_csv_mde5,input$Import_csv_mde6,input$Import_csv_mde7,input$Import_csv_mde8,input$Import_csv_mde9)!="not required"),message=F),
+    need(!is.null(values$Import_csv_metadatafields),message=F),
+    need(dim(values$Import_csv_metadatafields)[1]>0,message = "This dataset is not used yes. Feel free to specify your metadata")
+  )
+  
+  data_db<-values$Import_csv_metadatafields[1,which(!is.na(values$Import_csv_metadatafields))]
+  data_db<-data_db[,-1,drop=F]
+  data_import<-data.frame(t(c(input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
+  colnames(data_import)<-c("mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
+  data_import<-data_import[1,which(c(input$Import_csv_mde1,input$Import_csv_mde2,input$Import_csv_mde3,input$Import_csv_mde4,input$Import_csv_mde5,input$Import_csv_mde6,input$Import_csv_mde7,input$Import_csv_mde8,input$Import_csv_mde9)!="not required"),drop=F]
+  data<-rbind.fill(data_db,data_import)
+  colors<-matrix(c(0),dim(data)[1],dim(data)[2])
+  #get colors for matching mde's
+  if(dim(data)[2]>0){
+    for(i in 1:dim(data)[2]){
+      mde_names<-data[,i]
+      if(any(is.na(mde_names))){
+        colors[,i]<-c(1,1)
+        next
+      }
+      if(mde_names[1]== mde_names[2]){
+        colors[,i]<-c(0,0)
+        next
+      }
+      else{
+        colors[,i]<-c(2,2)
+      }
+    }
+  }
+  data<-cbind(data,colors)
+  rownames(data)<-c("known","new")
+  values$Import_csv_metadatanames_data<-data
+  Icon<-tags$p(icon(name = "exclamation","fa-2x"),tags$b("Your current settings do not match those already existing in the database. You can still import your data though."),style="color:#ff8080")
+  if(dim(data)[2]==0){
+    Icon<-tags$p(icon(name = "check","fa-2x"),tags$b("Your settings match those in the database!"),style="color:#80ff80")
+  }
+  if(all(data[,c(((ncol(data)/2)+1):ncol(data))]==0)){
+    Icon<-tags$p(icon(name = "check","fa-2x"),tags$b("Your settings match those in the database!"),style="color:#80ff80")
+  }
+  return(tagList(
+    tags$div(HTML(paste0("There is already a corpus existing with the abbreviation:",tags$b(isolate(input$Import_csv_dataset)),". If you like to add data to this corpus, be aware of the used mde's:"))
+             ),
+    DT::dataTableOutput(outputId = "Import_csv_metadatanames_table"),
+    tags$br(),
+    Icon
+  ))
+})
+
+
+output$Import_csv_metadatanames_table<-DT::renderDataTable({
+  data =values$Import_csv_metadatanames_data
+  validate(
+    need(dim(data)[2]>0,message="In the database aswell in the current setting no mde's are beeing used.")
+  )
+  table<-DT::datatable( data = data,class = 'cell-border stripe',
+                        options=list(dom="t",selection="none",columnDefs=list(list(targets=c(((ncol(data)/2)+1):ncol(data)),visible=F))))%>%
+    DT::formatStyle(
+      c(1:(ncol(data)/2)), c(((ncol(data)/2)+1):ncol(data)),
+      backgroundColor = styleEqual(c(0, 1,2), c('#80ff80', '#ffc04d','#ff8080'))
+    )
+  return(table)
+})
+
 
 observeEvent(input$Import_csv_start_preprocess,{
   #test if metadata is valid 
@@ -1067,66 +1141,135 @@ observeEvent(input$Import_csv_start_preprocess,{
             shinyWidgets::sendSweetAlert(session=session,title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
           }
           else{
-            try({
-              if(any(nchar(data[,"body"])<1)){
-                shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
+            if(any(nchar(data[,"body"])<1)){
+              #shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
+              confirmSweetAlert(
+                session = session,
+                inputId = "confirm_empty_body_csv_no_db",
+                title = NULL,
+                type="warning",
+                text = tags$b(
+                  "There is at least one document with empty body"
+                ),
+                btn_labels = c("Cancel and change settings", "Continue anyway"),
+                html = TRUE
+              )
+            }
+            else{
+              #create meta metadata vector
+              meta_metadata<-data.frame(t(c(input$Import_csv_dataset,input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,
+                                            input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
+              colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
+              if(input$Import_csv_mde1=="not required"){
+                meta_metadata[,"mde1"]<-NULL
               }
-            })
-            #create meta metadata vector
-            meta_metadata<-data.frame(t(c(input$Import_csv_dataset,input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,
-                                          input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
-            colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
-            if(input$Import_csv_mde1=="not required"){
-              meta_metadata[,"mde1"]<-NULL
+              if(input$Import_csv_mde2=="not required"){
+                meta_metadata[,"mde2"]<-NULL
+              }
+              if(input$Import_csv_mde3=="not required"){
+                meta_metadata[,"mde3"]<-NULL
+              }
+              if(input$Import_csv_mde4=="not required"){
+                meta_metadata[,"mde4"]<-NULL
+              }
+              if(input$Import_csv_mde5=="not required"){
+                meta_metadata[,"mde5"]<-NULL
+              }
+              if(input$Import_csv_mde6=="not required"){
+                meta_metadata[,"mde6"]<-NULL
+              }
+              if(input$Import_csv_mde7=="not required"){
+                meta_metadata[,"mde7"]<-NULL
+              }
+              if(input$Import_csv_mde8=="not required"){
+                meta_metadata[,"mde8"]<-NULL
+              }
+              if(input$Import_csv_mde9=="not required"){
+                meta_metadata[,"mde9"]<-NULL
+              }
+              #save needed parameters
+              parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
+              #create process ID
+              mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+              RMariaDB::dbBegin(conn = mydb)
+              used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+              RMariaDB::dbDisconnect(mydb)
+              ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+              #save metadata for process
+              process_info<-list(ID,paste("New Data - ",input$Import_csv_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
+              #save logfile path
+              logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
+              #create logfile
+              write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
+              #save data needed in script execution 
+              save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
+              #start script
+              system(paste('Rscript collections/scripts/Import_Script.R','&'))
+              #show modal when process is started
+              shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
             }
-            if(input$Import_csv_mde2=="not required"){
-              meta_metadata[,"mde2"]<-NULL
-            }
-            if(input$Import_csv_mde3=="not required"){
-              meta_metadata[,"mde3"]<-NULL
-            }
-            if(input$Import_csv_mde4=="not required"){
-              meta_metadata[,"mde4"]<-NULL
-            }
-            if(input$Import_csv_mde5=="not required"){
-              meta_metadata[,"mde5"]<-NULL
-            }
-            if(input$Import_csv_mde6=="not required"){
-              meta_metadata[,"mde6"]<-NULL
-            }
-            if(input$Import_csv_mde7=="not required"){
-              meta_metadata[,"mde7"]<-NULL
-            }
-            if(input$Import_csv_mde8=="not required"){
-              meta_metadata[,"mde8"]<-NULL
-            }
-            if(input$Import_csv_mde9=="not required"){
-              meta_metadata[,"mde9"]<-NULL
-            }
-            #save needed parameters
-            parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
-            #create process ID
-            mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-            RMariaDB::dbBegin(conn = mydb)
-            used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-            RMariaDB::dbDisconnect(mydb)
-            ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
-            #save metadata for process
-            process_info<-list(ID,paste("New Data - ",input$Import_csv_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
-            #save logfile path
-            logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
-            #create logfile
-            write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
-            #save data needed in script execution 
-            save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
-            #start script
-            system(paste('Rscript collections/scripts/Import_Script.R','&'))
-            #show modal when process is started
-            shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
           }
         }
       }
     }
+  }
+})
+
+# if confirm to continue with empty body is clicked run import script anyway
+observeEvent(ignoreNULL = T,input$confirm_empty_body_csv_no_db,{
+  if(input$confirm_empty_body_csv_no_db){
+    data<-values$Import_csv_meta_complete
+    #create meta metadata vector
+    meta_metadata<-data.frame(t(c(input$Import_csv_dataset,input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,
+                                  input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
+    colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
+    if(input$Import_csv_mde1=="not required"){
+      meta_metadata[,"mde1"]<-NULL
+    }
+    if(input$Import_csv_mde2=="not required"){
+      meta_metadata[,"mde2"]<-NULL
+    }
+    if(input$Import_csv_mde3=="not required"){
+      meta_metadata[,"mde3"]<-NULL
+    }
+    if(input$Import_csv_mde4=="not required"){
+      meta_metadata[,"mde4"]<-NULL
+    }
+    if(input$Import_csv_mde5=="not required"){
+      meta_metadata[,"mde5"]<-NULL
+    }
+    if(input$Import_csv_mde6=="not required"){
+      meta_metadata[,"mde6"]<-NULL
+    }
+    if(input$Import_csv_mde7=="not required"){
+      meta_metadata[,"mde7"]<-NULL
+    }
+    if(input$Import_csv_mde8=="not required"){
+      meta_metadata[,"mde8"]<-NULL
+    }
+    if(input$Import_csv_mde9=="not required"){
+      meta_metadata[,"mde9"]<-NULL
+    }
+    #save needed parameters
+    parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
+    #create process ID
+    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+    RMariaDB::dbBegin(conn = mydb)
+    used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+    RMariaDB::dbDisconnect(mydb)
+    ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+    #save metadata for process
+    process_info<-list(ID,paste("New Data - ",input$Import_csv_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
+    #save logfile path
+    logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
+    #create logfile
+    write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
+    #save data needed in script execution 
+    save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
+    #start script
+    system(paste('Rscript collections/scripts/Import_Script.R','&'))
+    #show modal when process is started
+    shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
   }
 })
 
@@ -1155,59 +1298,72 @@ observeEvent(input$Import_csv_start_preprocess_and_write,{
           }
           else{
             if(any(nchar(data[,"body"])<1)){
-              shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
+              #shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
+              confirmSweetAlert(
+                session = session,
+                inputId = "confirm_empty_body_csv_db",
+                title = NULL,
+                type="warning",
+                text = tags$b(
+                  "There is at least one document with empty body"
+                ),
+                btn_labels = c("Cancel and change settings", "Continue anyway"),
+                html = TRUE
+              )
             }
-            #create meta metadata vector
-            meta_metadata<-data.frame(t(c(input$Import_csv_dataset,input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,
-                                          input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
-            colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
-            if(input$Import_csv_mde1=="not required"){
-              meta_metadata[,"mde1"]<-NULL
+            else{
+              #create meta metadata vector
+              meta_metadata<-data.frame(t(c(input$Import_csv_dataset,input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,
+                                            input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
+              colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
+              if(input$Import_csv_mde1=="not required"){
+                meta_metadata[,"mde1"]<-NULL
+              }
+              if(input$Import_csv_mde2=="not required"){
+                meta_metadata[,"mde2"]<-NULL
+              }
+              if(input$Import_csv_mde3=="not required"){
+                meta_metadata[,"mde3"]<-NULL
+              }
+              if(input$Import_csv_mde4=="not required"){
+                meta_metadata[,"mde4"]<-NULL
+              }
+              if(input$Import_csv_mde5=="not required"){
+                meta_metadata[,"mde5"]<-NULL
+              }
+              if(input$Import_csv_mde6=="not required"){
+                meta_metadata[,"mde6"]<-NULL
+              }
+              if(input$Import_csv_mde7=="not required"){
+                meta_metadata[,"mde7"]<-NULL
+              }
+              if(input$Import_csv_mde8=="not required"){
+                meta_metadata[,"mde8"]<-NULL
+              }
+              if(input$Import_csv_mde9=="not required"){
+                meta_metadata[,"mde9"]<-NULL
+              }
+              #save needed parameters
+              parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
+              #create process ID
+              mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+              RMariaDB::dbBegin(conn = mydb)
+              used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+              RMariaDB::dbDisconnect(mydb)
+              ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+              #save metadata for process
+              process_info<-list(ID,paste("New Data - ",input$Import_csv_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
+              #save logfile path
+              logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
+              #create logfile
+              write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
+              #save data needed in script execution 
+              save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
+              #start script
+              system(paste('Rscript collections/scripts/Import_Script.R','&'))
+              #show modal when process is started
+              shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
             }
-            if(input$Import_csv_mde2=="not required"){
-              meta_metadata[,"mde2"]<-NULL
-            }
-            if(input$Import_csv_mde3=="not required"){
-              meta_metadata[,"mde3"]<-NULL
-            }
-            if(input$Import_csv_mde4=="not required"){
-              meta_metadata[,"mde4"]<-NULL
-            }
-            if(input$Import_csv_mde5=="not required"){
-              meta_metadata[,"mde5"]<-NULL
-            }
-            if(input$Import_csv_mde6=="not required"){
-              meta_metadata[,"mde6"]<-NULL
-            }
-            if(input$Import_csv_mde7=="not required"){
-              meta_metadata[,"mde7"]<-NULL
-            }
-            if(input$Import_csv_mde8=="not required"){
-              meta_metadata[,"mde8"]<-NULL
-            }
-            if(input$Import_csv_mde9=="not required"){
-              meta_metadata[,"mde9"]<-NULL
-            }
-            #save needed parameters
-            parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
-            #create process ID
-            mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-            RMariaDB::dbBegin(conn = mydb)
-            used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-            RMariaDB::dbDisconnect(mydb)
-            ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
-            #save metadata for process
-            process_info<-list(ID,paste("New Data - ",input$Import_csv_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
-            #save logfile path
-            logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
-            #create logfile
-            write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
-            #save data needed in script execution 
-            save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
-            #start script
-            system(paste('Rscript collections/scripts/Import_Script.R','&'))
-            #show modal when process is started
-            shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
           }
         }
       }
@@ -1215,7 +1371,63 @@ observeEvent(input$Import_csv_start_preprocess_and_write,{
   }
 })
 
-
+# if confirm to continue with empty body is clicked run import script anyway
+observeEvent(ignoreNULL = T,input$confirm_empty_body_csv_db,{
+  if(input$confirm_empty_body_csv_db){
+    data<-values$Import_csv_meta_complete
+    #create meta metadata vector
+    meta_metadata<-data.frame(t(c(input$Import_csv_dataset,input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,
+                                  input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
+    colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
+    if(input$Import_csv_mde1=="not required"){
+      meta_metadata[,"mde1"]<-NULL
+    }
+    if(input$Import_csv_mde2=="not required"){
+      meta_metadata[,"mde2"]<-NULL
+    }
+    if(input$Import_csv_mde3=="not required"){
+      meta_metadata[,"mde3"]<-NULL
+    }
+    if(input$Import_csv_mde4=="not required"){
+      meta_metadata[,"mde4"]<-NULL
+    }
+    if(input$Import_csv_mde5=="not required"){
+      meta_metadata[,"mde5"]<-NULL
+    }
+    if(input$Import_csv_mde6=="not required"){
+      meta_metadata[,"mde6"]<-NULL
+    }
+    if(input$Import_csv_mde7=="not required"){
+      meta_metadata[,"mde7"]<-NULL
+    }
+    if(input$Import_csv_mde8=="not required"){
+      meta_metadata[,"mde8"]<-NULL
+    }
+    if(input$Import_csv_mde9=="not required"){
+      meta_metadata[,"mde9"]<-NULL
+    }
+    #save needed parameters
+    parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
+    #create process ID
+    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+    RMariaDB::dbBegin(conn = mydb)
+    used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+    RMariaDB::dbDisconnect(mydb)
+    ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+    #save metadata for process
+    process_info<-list(ID,paste("New Data - ",input$Import_csv_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
+    #save logfile path
+    logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
+    #create logfile
+    write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
+    #save data needed in script execution 
+    save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
+    #start script
+    system(paste('Rscript collections/scripts/Import_Script.R','&'))
+    #show modal when process is started
+    shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
+  }
+})
 
 
 
@@ -2298,6 +2510,81 @@ observe({
   ))
 })
 
+observeEvent(ignoreNULL = T,input$Import_mtf_dataset,{
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
+  RMariaDB::dbBegin(conn = mydb)
+  values$Import_mtf_metadatafields<-RMariaDB::dbGetQuery(mydb,paste0("SELECT * from metadata_names where dataset='",input$Import_mtf_dataset,"';"))
+  RMariaDB::dbCommit(mydb)
+  RMariaDB::dbDisconnect(mydb)
+})
+
+output$Import_mtf_metadata_names_warning<-renderUI({
+  validate(
+    need(values$Import_mtf_meta_complete[1,"dataset"]!="",message=F),
+    #need(any(c(input$Import_csv_mde1,input$Import_csv_mde2,input$Import_csv_mde3,input$Import_csv_mde4,input$Import_csv_mde5,input$Import_csv_mde6,input$Import_csv_mde7,input$Import_csv_mde8,input$Import_csv_mde9)!="not required"),message=F),
+    need(!is.null(values$Import_mtf_metadatafields),message=F),
+    need(dim(values$Import_mtf_metadatafields)[1]>0,message = "This dataset is not used yes. Feel free to specify your metadata")
+  )
+  
+  data_db<-values$Import_mtf_metadatafields[1,which(!is.na(values$Import_mtf_metadatafields))]
+  data_db<-data_db[,-1,drop=F]
+  data_import<-data.frame(t(c(input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,input$UI_Import_name_mde6_mtf,input$UI_Import_name_mde7_mtf,input$UI_Import_name_mde8_mtf,input$UI_Import_name_mde9_mtf)))
+  colnames(data_import)<-c("mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
+  data_import<-data_import[1,which(c(input$Import_mtf_mde1,input$Import_mtf_mde2,input$Import_mtf_mde3,input$Import_mtf_mde4,input$Import_mtf_mde5,input$Import_mtf_mde6,input$Import_mtf_mde7,input$Import_mtf_mde8,input$Import_mtf_mde9)!="not required"),drop=F]
+  data<-rbind.fill(data_db,data_import)
+  colors<-matrix(c(0),dim(data)[1],dim(data)[2])
+  #get colors for matching mde's
+  if(dim(data)[2]>0){
+    for(i in 1:dim(data)[2]){
+      mde_names<-data[,i]
+      if(any(is.na(mde_names))){
+        colors[,i]<-c(1,1)
+        next
+      }
+      if(mde_names[1]== mde_names[2]){
+        colors[,i]<-c(0,0)
+        next
+      }
+      else{
+        colors[,i]<-c(2,2)
+      }
+    }
+  }
+  data<-cbind(data,colors)
+  rownames(data)<-c("known","new")
+  values$Import_mtf_metadatanames_data<-data
+  Icon<-tags$p(icon(name = "exclamation","fa-2x"),tags$b("Your current settings do not match those already existing in the database. You can still import your data though."),style="color:#ff8080")
+  if(dim(data)[2]==0){
+    Icon<-tags$p(icon(name = "check","fa-2x"),tags$b("Your settings match those in the database!"),style="color:#80ff80")
+  }
+  if(all(data[,c(((ncol(data)/2)+1):ncol(data))]==0)){
+    Icon<-tags$p(icon(name = "check","fa-2x"),tags$b("Your settings match those in the database!"),style="color:#80ff80")
+  }
+  return(tagList(
+    tags$div(HTML(paste0("There is already a corpus existing with the abbreviation:",tags$b(isolate(input$Import_mtf_dataset)),". If you like to add data to this corpus, be aware of the used mde's:"))
+    ),
+    DT::dataTableOutput(outputId = "Import_mtf_metadatanames_table"),
+    tags$br(),
+    Icon
+  ))
+})
+
+output$Import_mtf_metadatanames_table<-DT::renderDataTable({
+  data =values$Import_mtf_metadatanames_data
+  validate(
+    need(dim(data)[2]>0,message="In the database aswell in the current setting no mde's are beeing used.")
+  )
+  table<-DT::datatable( data = data,class = 'cell-border stripe',
+                        options=list(dom="t",selection="none",columnDefs=list(list(targets=c(((ncol(data)/2)+1):ncol(data)),visible=F))))%>%
+    DT::formatStyle(
+      c(1:(ncol(data)/2)), c(((ncol(data)/2)+1):ncol(data)),
+      backgroundColor = styleEqual(c(0, 1,2), c('#80ff80', '#ffc04d','#ff8080'))
+    )
+  return(table)
+})
+
+
+
 
 
 observeEvent(input$Import_mtf_start_preprocess,{
@@ -2328,64 +2615,135 @@ observeEvent(input$Import_mtf_start_preprocess,{
             }
             else{
               if(any(nchar(data[,"body"])<1)){
-                shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
+                #shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
+                confirmSweetAlert(
+                  session = session,
+                  inputId = "confirm_empty_body_mtf_no_db",
+                  title = NULL,
+                  type="warning",
+                  text = tags$b(
+                    "There is at least one document with empty body"
+                  ),
+                  btn_labels = c("Cancel and change settings", "Continue anyway"),
+                  html = TRUE
+                )
               }
-              #create meta metadata vector
-              meta_metadata<-data.frame(t(c(input$Import_mtf_dataset,input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,
-                                            input$UI_Import_name_mde6_mtf,input$UI_Import_name_mde7_mtf,input$UI_Import_name_mde8_mtf,input$UI_Import_name_mde9_mtf)))
-              colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
-              if(input$Import_mtf_mde1=="not required"){
-                meta_metadata[,"mde1"]<-NULL
+              else{
+                #create meta metadata vector
+                meta_metadata<-data.frame(t(c(input$Import_mtf_dataset,input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,
+                                              input$UI_Import_name_mde6_mtf,input$UI_Import_name_mde7_mtf,input$UI_Import_name_mde8_mtf,input$UI_Import_name_mde9_mtf)))
+                colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
+                if(input$Import_mtf_mde1=="not required"){
+                  meta_metadata[,"mde1"]<-NULL
+                }
+                if(input$Import_mtf_mde2=="not required"){
+                  meta_metadata[,"mde2"]<-NULL
+                }
+                if(input$Import_mtf_mde3=="not required"){
+                  meta_metadata[,"mde3"]<-NULL
+                }
+                if(input$Import_mtf_mde4=="not required"){
+                  meta_metadata[,"mde4"]<-NULL
+                }
+                if(input$Import_mtf_mde5=="not required"){
+                  meta_metadata[,"mde5"]<-NULL
+                }
+                if(input$Import_mtf_mde6=="not required"){
+                  meta_metadata[,"mde6"]<-NULL
+                }
+                if(input$Import_mtf_mde7=="not required"){
+                  meta_metadata[,"mde7"]<-NULL
+                }
+                if(input$Import_mtf_mde8=="not required"){
+                  meta_metadata[,"mde8"]<-NULL
+                }
+                if(input$Import_mtf_mde9=="not required"){
+                  meta_metadata[,"mde9"]<-NULL
+                }
+                #save needed parameters
+                parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
+                #create process ID
+                mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+                RMariaDB::dbBegin(conn = mydb)
+                used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+                RMariaDB::dbDisconnect(mydb)
+                ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+                #save metadata for process
+                process_info<-list(ID,paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
+                #save logfile path
+                logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
+                #create logfile
+                write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
+                #save data needed in script execution 
+                save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
+                #start script
+                system(paste('Rscript collections/scripts/Import_Script.R','&'))
+                #show modal when process is started
+                shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
               }
-              if(input$Import_mtf_mde2=="not required"){
-                meta_metadata[,"mde2"]<-NULL
-              }
-              if(input$Import_mtf_mde3=="not required"){
-                meta_metadata[,"mde3"]<-NULL
-              }
-              if(input$Import_mtf_mde4=="not required"){
-                meta_metadata[,"mde4"]<-NULL
-              }
-              if(input$Import_mtf_mde5=="not required"){
-                meta_metadata[,"mde5"]<-NULL
-              }
-              if(input$Import_mtf_mde6=="not required"){
-                meta_metadata[,"mde6"]<-NULL
-              }
-              if(input$Import_mtf_mde7=="not required"){
-                meta_metadata[,"mde7"]<-NULL
-              }
-              if(input$Import_mtf_mde8=="not required"){
-                meta_metadata[,"mde8"]<-NULL
-              }
-              if(input$Import_mtf_mde9=="not required"){
-                meta_metadata[,"mde9"]<-NULL
-              }
-              #save needed parameters
-              parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
-              #create process ID
-              mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-              RMariaDB::dbBegin(conn = mydb)
-              used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-              RMariaDB::dbDisconnect(mydb)
-              ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
-              #save metadata for process
-              process_info<-list(ID,paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
-              #save logfile path
-              logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
-              #create logfile
-              write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
-              #save data needed in script execution 
-              save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
-              #start script
-              system(paste('Rscript collections/scripts/Import_Script.R','&'))
-              #show modal when process is started
-              shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
             }
           }
         }
       }
     }
+  }
+})
+
+
+# if confirm to continue with empty body is clicked run import script anyway
+observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_no_db,{
+  if(input$confirm_empty_body_mtf_no_db){
+    data<-values$Import_mtf_meta_complete #create meta metadata vector
+    meta_metadata<-data.frame(t(c(input$Import_mtf_dataset,input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,
+                                  input$UI_Import_name_mde6_mtf,input$UI_Import_name_mde7_mtf,input$UI_Import_name_mde8_mtf,input$UI_Import_name_mde9_mtf)))
+    colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
+    if(input$Import_mtf_mde1=="not required"){
+      meta_metadata[,"mde1"]<-NULL
+    }
+    if(input$Import_mtf_mde2=="not required"){
+      meta_metadata[,"mde2"]<-NULL
+    }
+    if(input$Import_mtf_mde3=="not required"){
+      meta_metadata[,"mde3"]<-NULL
+    }
+    if(input$Import_mtf_mde4=="not required"){
+      meta_metadata[,"mde4"]<-NULL
+    }
+    if(input$Import_mtf_mde5=="not required"){
+      meta_metadata[,"mde5"]<-NULL
+    }
+    if(input$Import_mtf_mde6=="not required"){
+      meta_metadata[,"mde6"]<-NULL
+    }
+    if(input$Import_mtf_mde7=="not required"){
+      meta_metadata[,"mde7"]<-NULL
+    }
+    if(input$Import_mtf_mde8=="not required"){
+      meta_metadata[,"mde8"]<-NULL
+    }
+    if(input$Import_mtf_mde9=="not required"){
+      meta_metadata[,"mde9"]<-NULL
+    }
+    #save needed parameters
+    parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
+    #create process ID
+    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+    RMariaDB::dbBegin(conn = mydb)
+    used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+    RMariaDB::dbDisconnect(mydb)
+    ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+    #save metadata for process
+    process_info<-list(ID,paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
+    #save logfile path
+    logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
+    #create logfile
+    write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
+    #save data needed in script execution 
+    save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
+    #start script
+    system(paste('Rscript collections/scripts/Import_Script.R','&'))
+    #show modal when process is started
+    shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
   }
 })
 
@@ -2414,63 +2772,76 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
           }
           else{
             if(any(inherits(try({as.Date(data[,"date"],input$Import_mtf_date_format)}),"Date")==F)){
-              shinyWidgets::sendSweetAlert(session=session,title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
+              shinyWidgets::sendSweetAlert(session=session,title = "At least one given date can't be imported",text = "Please specify the date and the date format or if you are not intrested in using dates, just use the 'autoamtic'-option",type = "error")
             }
             else{
               if(any(nchar(data[,"body"])<1)){
-                shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
+                #shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
+                confirmSweetAlert(
+                  session = session,
+                  inputId = "confirm_empty_body_mtf_db",
+                  title = NULL,
+                  type="warning",
+                  text = tags$b(
+                    "There is at least one document with empty body"
+                  ),
+                  btn_labels = c("Cancel and change settings", "Continue anyway"),
+                  html = TRUE
+                )
               }
-              #create meta metadata vector
-              meta_metadata<-data.frame(t(c(input$Import_mtf_dataset,input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,
-                                            input$UI_Import_name_mde6_mtf,input$UI_Import_name_mde7_mtf,input$UI_Import_name_mde8_mtf,input$UI_Import_name_mde9_mtf)))
-              colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
-              if(input$Import_mtf_mde1=="not required"){
-                meta_metadata[,"mde1"]<-NULL
+              else{
+                #create meta metadata vector
+                meta_metadata<-data.frame(t(c(input$Import_mtf_dataset,input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,
+                                              input$UI_Import_name_mde6_mtf,input$UI_Import_name_mde7_mtf,input$UI_Import_name_mde8_mtf,input$UI_Import_name_mde9_mtf)))
+                colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
+                if(input$Import_mtf_mde1=="not required"){
+                  meta_metadata[,"mde1"]<-NULL
+                }
+                if(input$Import_mtf_mde2=="not required"){
+                  meta_metadata[,"mde2"]<-NULL
+                }
+                if(input$Import_mtf_mde3=="not required"){
+                  meta_metadata[,"mde3"]<-NULL
+                }
+                if(input$Import_mtf_mde4=="not required"){
+                  meta_metadata[,"mde4"]<-NULL
+                }
+                if(input$Import_mtf_mde5=="not required"){
+                  meta_metadata[,"mde5"]<-NULL
+                }
+                if(input$Import_mtf_mde6=="not required"){
+                  meta_metadata[,"mde6"]<-NULL
+                }
+                if(input$Import_mtf_mde7=="not required"){
+                  meta_metadata[,"mde7"]<-NULL
+                }
+                if(input$Import_mtf_mde8=="not required"){
+                  meta_metadata[,"mde8"]<-NULL
+                }
+                if(input$Import_mtf_mde9=="not required"){
+                  meta_metadata[,"mde9"]<-NULL
+                }
+                #save needed parameters
+                parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
+                #create process ID
+                mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+                RMariaDB::dbBegin(conn = mydb)
+                used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+                RMariaDB::dbDisconnect(mydb)
+                ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+                #save metadata for process
+                process_info<-list(ID,paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files and write to DB and solr",as.character(Sys.time()))
+                #save logfile path
+                logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
+                #create logfile
+                write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
+                #save data needed in script execution 
+                save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
+                #start script
+                system(paste('Rscript collections/scripts/Import_Script.R','&'))
+                #show modal when process is started
+                shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success",closeOnEsc = T)
               }
-              if(input$Import_mtf_mde2=="not required"){
-                meta_metadata[,"mde2"]<-NULL
-              }
-              if(input$Import_mtf_mde3=="not required"){
-                meta_metadata[,"mde3"]<-NULL
-              }
-              if(input$Import_mtf_mde4=="not required"){
-                meta_metadata[,"mde4"]<-NULL
-              }
-              if(input$Import_mtf_mde5=="not required"){
-                meta_metadata[,"mde5"]<-NULL
-              }
-              if(input$Import_mtf_mde6=="not required"){
-                meta_metadata[,"mde6"]<-NULL
-              }
-              if(input$Import_mtf_mde7=="not required"){
-                meta_metadata[,"mde7"]<-NULL
-              }
-              if(input$Import_mtf_mde8=="not required"){
-                meta_metadata[,"mde8"]<-NULL
-              }
-              if(input$Import_mtf_mde9=="not required"){
-                meta_metadata[,"mde9"]<-NULL
-              }
-              #save needed parameters
-              parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
-              #create process ID
-              mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-              RMariaDB::dbBegin(conn = mydb)
-              used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-              RMariaDB::dbDisconnect(mydb)
-              ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
-              #save metadata for process
-              process_info<-list(ID,paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files and write to DB and solr",as.character(Sys.time()))
-              #save logfile path
-              logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
-              #create logfile
-              write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
-              #save data needed in script execution 
-              save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
-              #start script
-              system(paste('Rscript collections/scripts/Import_Script.R','&'))
-              #show modal when process is started
-              shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success",closeOnEsc = T)
             }
           }
         }
@@ -2479,7 +2850,63 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
   }
 })
 
-
+# if confirm to continue with empty body is clicked run import script anyway
+observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_db,{
+  if(input$confirm_empty_body_mtf_db){
+    data<-values$Import_mtf_meta_complete
+    #create meta metadata vector
+    meta_metadata<-data.frame(t(c(input$Import_mtf_dataset,input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,
+                                  input$UI_Import_name_mde6_mtf,input$UI_Import_name_mde7_mtf,input$UI_Import_name_mde8_mtf,input$UI_Import_name_mde9_mtf)))
+    colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
+    if(input$Import_mtf_mde1=="not required"){
+      meta_metadata[,"mde1"]<-NULL
+    }
+    if(input$Import_mtf_mde2=="not required"){
+      meta_metadata[,"mde2"]<-NULL
+    }
+    if(input$Import_mtf_mde3=="not required"){
+      meta_metadata[,"mde3"]<-NULL
+    }
+    if(input$Import_mtf_mde4=="not required"){
+      meta_metadata[,"mde4"]<-NULL
+    }
+    if(input$Import_mtf_mde5=="not required"){
+      meta_metadata[,"mde5"]<-NULL
+    }
+    if(input$Import_mtf_mde6=="not required"){
+      meta_metadata[,"mde6"]<-NULL
+    }
+    if(input$Import_mtf_mde7=="not required"){
+      meta_metadata[,"mde7"]<-NULL
+    }
+    if(input$Import_mtf_mde8=="not required"){
+      meta_metadata[,"mde8"]<-NULL
+    }
+    if(input$Import_mtf_mde9=="not required"){
+      meta_metadata[,"mde9"]<-NULL
+    }
+    #save needed parameters
+    parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
+    #create process ID
+    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+    RMariaDB::dbBegin(conn = mydb)
+    used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
+    RMariaDB::dbDisconnect(mydb)
+    ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+    #save metadata for process
+    process_info<-list(ID,paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files and write to DB and solr",as.character(Sys.time()))
+    #save logfile path
+    logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
+    #create logfile
+    write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
+    #save data needed in script execution 
+    save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
+    #start script
+    system(paste('Rscript collections/scripts/Import_Script.R','&'))
+    #show modal when process is started
+    shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success",closeOnEsc = T)
+  }
+})
 
 
 

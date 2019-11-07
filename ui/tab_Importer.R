@@ -186,6 +186,9 @@ tabPanel("Importer",
                                                                                                                 ),
                                                                                                                 column(1,  
                                                                                                                        selectizeInput(inputId = "Import_csv_date_format",label = "date format",choices = c("%Y-%m-%d","%d-%m-%Y"),multiple=F,options=list(create=T))
+                                                                                                                ),
+                                                                                                                column(9,
+                                                                                                                       uiOutput("Import_csv_metadata_names_warning")
                                                                                                                 )
                                                                                                                 
                                                                                                        )
@@ -242,163 +245,166 @@ tabPanel("Importer",
                                                                                           tags$br(),
                                                                                           box(title = tags$h3("Mapping",style="color:white;"),solidHeader = T,width=12,status = "primary",collapsible = T,
                                                                                               tags$div(style = 'overflow-x: auto',
-                                                                                              fluidRow(style="margin-left:0px; margin-right:0px;",
-                                                                                                       column(1,offset=3,
-                                                                                                              textInput(inputId = "UI_Import_name_mde1_mtf",label = "Name of Metadata Field",value = "mde1")
+                                                                                                       fluidRow(style="margin-left:0px; margin-right:0px;",
+                                                                                                                column(1,offset=3,
+                                                                                                                       textInput(inputId = "UI_Import_name_mde1_mtf",label = "Name of Metadata Field",value = "mde1")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       textInput(inputId = "UI_Import_name_mde2_mtf",label = "Name of Metadata Field",value = "mde2")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       textInput(inputId = "UI_Import_name_mde3_mtf",label = "Name of Metadata Field",value = "mde3")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       textInput(inputId = "UI_Import_name_mde4_mtf",label = "Name of Metadata Field",value = "mde4")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       textInput(inputId = "UI_Import_name_mde5_mtf",label = "Name of Metadata Field",value = "mde5")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       textInput(inputId = "UI_Import_name_mde6_mtf",label = "Name of Metadata Field",value = "mde6")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       textInput(inputId = "UI_Import_name_mde7_mtf",label = "Name of Metadata Field",value = "mde7")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       textInput(inputId = "UI_Import_name_mde8_mtf",label = "Name of Metadata Field",value = "mde8")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       textInput(inputId = "UI_Import_name_mde9_mtf",label = "Name of Metadata Field",value = "mde9")
+                                                                                                                )
                                                                                                        ),
-                                                                                                       column(1,
-                                                                                                              textInput(inputId = "UI_Import_name_mde2_mtf",label = "Name of Metadata Field",value = "mde2")
+                                                                                                       # column(3,tags$br()),
+                                                                                                       fluidRow(style="margin-left:0px; margin-right:0px;",
+                                                                                                                column(3,
+                                                                                                                       column(3,
+                                                                                                                              uiOutput(outputId = "UI_Import_mtf_id_doc")
+                                                                                                                       ),
+                                                                                                                       column(3,
+                                                                                                                              uiOutput(outputId = "UI_Import_mtf_title")
+                                                                                                                       ),
+                                                                                                                       column(3,
+                                                                                                                              uiOutput(outputId = "UI_Import_mtf_date")
+                                                                                                                       ),
+                                                                                                                       column(3,
+                                                                                                                              uiOutput(outputId = "UI_Import_mtf_body")
+                                                                                                                       )
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       uiOutput(outputId = "UI_Import_mtf_mde1")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       uiOutput(outputId = "UI_Import_mtf_mde2")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       uiOutput(outputId = "UI_Import_mtf_mde3")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       uiOutput(outputId = "UI_Import_mtf_mde4")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       uiOutput(outputId = "UI_Import_mtf_mde5")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       uiOutput(outputId = "UI_Import_mtf_mde6")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       uiOutput(outputId = "UI_Import_mtf_mde7")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       uiOutput(outputId = "UI_Import_mtf_mde8")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       uiOutput(outputId = "UI_Import_mtf_mde9")
+                                                                                                                )
                                                                                                        ),
-                                                                                                       column(1,
-                                                                                                              textInput(inputId = "UI_Import_name_mde3_mtf",label = "Name of Metadata Field",value = "mde3")
+                                                                                                       fluidRow(style="margin-left:0px; margin-right:0px;", 
+                                                                                                                column(3,
+                                                                                                                       column(3,
+                                                                                                                              shinyBS::bsButton("Import_script_id_doc_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                              tags$br(),
+                                                                                                                              shinyBS::bsButton("Import_type_id_doc_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       ),
+                                                                                                                       column(3,
+                                                                                                                              shinyBS::bsButton("Import_script_title_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                              tags$br(),
+                                                                                                                              shinyBS::bsButton("Import_type_title_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       ),
+                                                                                                                       column(3,
+                                                                                                                              shinyBS::bsButton("Import_script_date_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                              tags$br(),
+                                                                                                                              shinyBS::bsButton("Import_type_date_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       ),
+                                                                                                                       column(3,
+                                                                                                                              shinyBS::bsButton("Import_script_body_mtf",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                              tags$br(),
+                                                                                                                              shinyBS::bsButton("Import_type_body_mtf",label = "Type",style="info",icon=icon("edit"),block=T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       )
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       shinyBS::bsButton("Import_script_mtf_mde1",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       tags$br(),
+                                                                                                                       shinyBS::bsButton("Import_type_mtf_mde1",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       shinyBS::bsButton("Import_script_mtf_mde2",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       tags$br(),
+                                                                                                                       shinyBS::bsButton("Import_type_mtf_mde2",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       shinyBS::bsButton("Import_script_mtf_mde3",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       tags$br(),
+                                                                                                                       shinyBS::bsButton("Import_type_mtf_mde3",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       shinyBS::bsButton("Import_script_mtf_mde4",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       tags$br(),
+                                                                                                                       shinyBS::bsButton("Import_type_mtf_mde4",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       shinyBS::bsButton("Import_script_mtf_mde5",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       tags$br(),
+                                                                                                                       shinyBS::bsButton("Import_type_mtf_mde5",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       shinyBS::bsButton("Import_script_mtf_mde6",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       tags$br(),
+                                                                                                                       shinyBS::bsButton("Import_type_mtf_mde6",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       shinyBS::bsButton("Import_script_mtf_mde7",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       tags$br(),
+                                                                                                                       shinyBS::bsButton("Import_type_mtf_mde7",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       shinyBS::bsButton("Import_script_mtf_mde8",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       tags$br(),
+                                                                                                                       shinyBS::bsButton("Import_type_mtf_mde8",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       shinyBS::bsButton("Import_script_mtf_mde9",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       tags$br(),
+                                                                                                                       shinyBS::bsButton("Import_type_mtf_mde9",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                )
                                                                                                        ),
-                                                                                                       column(1,
-                                                                                                              textInput(inputId = "UI_Import_name_mde4_mtf",label = "Name of Metadata Field",value = "mde4")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              textInput(inputId = "UI_Import_name_mde5_mtf",label = "Name of Metadata Field",value = "mde5")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              textInput(inputId = "UI_Import_name_mde6_mtf",label = "Name of Metadata Field",value = "mde6")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              textInput(inputId = "UI_Import_name_mde7_mtf",label = "Name of Metadata Field",value = "mde7")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              textInput(inputId = "UI_Import_name_mde8_mtf",label = "Name of Metadata Field",value = "mde8")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              textInput(inputId = "UI_Import_name_mde9_mtf",label = "Name of Metadata Field",value = "mde9")
+                                                                                                       tags$br(),
+                                                                                                       tags$br(),
+                                                                                                       fluidRow(style="margin-left:0px; margin-right:0px;",
+                                                                                                                column(1,
+                                                                                                                       selectInput(inputId = "Import_mtf_language",label = "Language",choices = c("en","de","es","pt","fr","it","nl"),multiple = F,selected = character(0))
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       textInput(inputId = "Import_mtf_dataset",label = "dataset abbreviation",placeholder = "e.g. GU for Guardian")
+                                                                                                                ),
+                                                                                                                column(1,
+                                                                                                                       selectizeInput(inputId = "Import_mtf_date_format",label = "date format",choices = c("%Y-%m-%d","%d-%m-%Y"),multiple=F,options=list(create=T))
+                                                                                                                ),
+                                                                                                                column(9,
+                                                                                                                       uiOutput("Import_mtf_metadata_names_warning")
+                                                                                                                )
+                                                                                                                
                                                                                                        )
-                                                                                              ),
-                                                                                              # column(3,tags$br()),
-                                                                                              fluidRow(style="margin-left:0px; margin-right:0px;",
-                                                                                                       column(3,
-                                                                                                              column(3,
-                                                                                                                     uiOutput(outputId = "UI_Import_mtf_id_doc")
-                                                                                                              ),
-                                                                                                              column(3,
-                                                                                                                     uiOutput(outputId = "UI_Import_mtf_title")
-                                                                                                              ),
-                                                                                                              column(3,
-                                                                                                                     uiOutput(outputId = "UI_Import_mtf_date")
-                                                                                                              ),
-                                                                                                              column(3,
-                                                                                                                     uiOutput(outputId = "UI_Import_mtf_body")
-                                                                                                              )
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              uiOutput(outputId = "UI_Import_mtf_mde1")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              uiOutput(outputId = "UI_Import_mtf_mde2")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              uiOutput(outputId = "UI_Import_mtf_mde3")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              uiOutput(outputId = "UI_Import_mtf_mde4")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              uiOutput(outputId = "UI_Import_mtf_mde5")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              uiOutput(outputId = "UI_Import_mtf_mde6")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              uiOutput(outputId = "UI_Import_mtf_mde7")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              uiOutput(outputId = "UI_Import_mtf_mde8")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              uiOutput(outputId = "UI_Import_mtf_mde9")
-                                                                                                       )
-                                                                                              ),
-                                                                                              fluidRow(style="margin-left:0px; margin-right:0px;", 
-                                                                                                       column(3,
-                                                                                                              column(3,
-                                                                                                                     shinyBS::bsButton("Import_script_id_doc_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                                     tags$br(),
-                                                                                                                     shinyBS::bsButton("Import_type_id_doc_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                              ),
-                                                                                                              column(3,
-                                                                                                                     shinyBS::bsButton("Import_script_title_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                                     tags$br(),
-                                                                                                                     shinyBS::bsButton("Import_type_title_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                              ),
-                                                                                                              column(3,
-                                                                                                                     shinyBS::bsButton("Import_script_date_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                                     tags$br(),
-                                                                                                                     shinyBS::bsButton("Import_type_date_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                              ),
-                                                                                                              column(3,
-                                                                                                                     shinyBS::bsButton("Import_script_body_mtf",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
-                                                                                                                     tags$br(),
-                                                                                                                     shinyBS::bsButton("Import_type_body_mtf",label = "Type",style="info",icon=icon("edit"),block=T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                              )
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde1",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
-                                                                                                              tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde1",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde2",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                              tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde2",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde3",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                              tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde3",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde4",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                              tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde4",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde5",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                              tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde5",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde6",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                              tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde6",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde7",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                              tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde7",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde8",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                              tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde8",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              shinyBS::bsButton("Import_script_mtf_mde9",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                              tags$br(),
-                                                                                                              shinyBS::bsButton("Import_type_mtf_mde9",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                       )
-                                                                                              ),
-                                                                                              tags$br(),
-                                                                                              tags$br(),
-                                                                                              fluidRow(style="margin-left:0px; margin-right:0px;",
-                                                                                                       column(1,
-                                                                                                              selectInput(inputId = "Import_mtf_language",label = "Language",choices = c("en","de","es","pt","fr","it","nl"),multiple = F,selected = character(0))
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              textInput(inputId = "Import_mtf_dataset",label = "dataset abbreviation",placeholder = "e.g. GU for Guardian")
-                                                                                                       ),
-                                                                                                       column(1,
-                                                                                                              selectizeInput(inputId = "Import_mtf_date_format",label = "date format",choices = c("%Y-%m-%d","%d-%m-%Y"),multiple=F,options=list(create=T))
-                                                                                                       )
-                                                                                                       
                                                                                               )
-                                                                                          )
                                                                                           ),
                                                                                           tags$br(),
                                                                                           box(title = tags$h3("Resulting Metadata Import File",style="color:white;"),solidHeader = T,width=12,status = "primary",collapsible = T,
