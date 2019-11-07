@@ -1,18 +1,18 @@
 
 output$datasets_avaiable<-renderUI({
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
   RMariaDB::dbBegin(conn = mydb)
   RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
   RMariaDB::dbSendStatement(mydb, 'SET SQL_SAFE_UPDATES = 0;')
   datasets=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT dataset FROM ilcm.metadata_names;")
   RMariaDB::dbCommit(mydb)
   RMariaDB::dbDisconnect(mydb)
-
+  
   values$update_datasets_avaiable
-
+  values$datasets_available<-datasets[,1]
   tags$div(
     selectizeInput(inputId = "dataset",label = tags$p("which corpus?",style="color:white;"),choices = datasets[,1],width = "100%",multiple=T,selected=datasets[1,1]),
-           id="select_sidebar")
+    id="select_sidebar")
 })
 
 
@@ -40,17 +40,17 @@ observeEvent(input$openOptionsModal, {
                 tags$h3("Languages"),
                 fluidRow(
                   column(3,
-                         tags$span(icon("language"),tags$b("Available languages:"))
+                         tags$span(icon("language"),tags$b("Available languages in spaCy:"))
                   ),
                   column(4,
-                         tags$em(paste(stringr::str_split(
+                         tags$em(paste(stringr::str_remove_all(string = stringr::str_split(
                            stringr::str_replace_all(string = system(command = "python3 -m spacy info",intern = T)[8],pattern = "Models           ",replacement = "")
-                           ,pattern = ", ",simplify = T)[1,],collapse = ", "))
+                           ,pattern = ", ",simplify = T),pattern = " "),collapse = ", "))
                   ),
                   column(4,offset=1,
-                         selectizeInput(inputId = "options_add_model_select",label = "Available models to be added",options=list(create=T),choices=setdiff(c("en","de","es","fr","it","nl","pt","el","xx"),stringr::str_split(
+                         selectizeInput(inputId = "options_add_model_select",label = "Available models to be added",options=list(create=T),choices=setdiff(c("en","de","es","fr","it","nl","pt","el","xx"),stringr::str_remove_all(string=stringr::str_split(
                            stringr::str_replace_all(string = system(command = "python3 -m spacy info",intern = T)[8],pattern = "Models           ",replacement = "")
-                           ,pattern = ", ",simplify = T)[1,])),
+                           ,pattern = ", ",simplify = T),pattern = " "))),
                          withBusyIndicatorUI(
                            bsButton(inputId = "options_add_model",label = "Add model",icon = icon("plus"),style = "success")
                          )
@@ -105,6 +105,31 @@ observeEvent(input$openOptionsModal, {
                          )
                   )
                 ),
+                #Delete existing copora
+                tags$hr(),
+                tags$br(),
+                tags$h3("Corpora"),
+                fluidRow(
+                  column(3,
+                         tags$span(icon("trash"),tags$b("Remove Corpora"))
+                  ),
+                  column(3,
+                         selectInput(inputId ="Options_delete_dataset_select",label = "Corpus:",choices = values$datasets_available,multiple = F)
+                  ),
+                  column(2,
+                         checkboxInput(inputId = "options_delete_dataset_annotations",label = "Include Annotations",value = FALSE)
+                  )
+                ),
+                fluidRow(
+                  column(3,     
+                         shinyBS::bsButton(inputId = "options_delete_dataset_action",label = "Delete chosen dataset",icon = icon("trash"),style = "danger")
+                  ),
+                  column(4,
+                         withBusyIndicatorUI(
+                           shinyBS::bsButton(inputId = "options_update_solr",label = "Re-index solr",icon = icon("refresh"),style = "default")
+                         )
+                  )
+                ),
                 tags$hr(),
                 tags$br(),
                 tags$h3("Other"),
@@ -113,12 +138,116 @@ observeEvent(input$openOptionsModal, {
                          tags$span(icon("upload"),tags$b("File Upload"))
                   ),
                   column(4,
-                        numericInput(inputId = "options_max_size_import",label = "max upload size for data import in Mb",value = max_upload_file_size,min = 5,max = 1000,step = 1)
-                         )
+                         numericInput(inputId = "options_max_size_import",label = "max upload size for data import in Mb",value = max_upload_file_size,min = 5,max = 1000,step = 1)
                   )
+                )
+                
     )
   )
 })
+
+
+#reindex solr/full import
+observeEvent(ignoreNULL = T,input$options_update_solr,{
+  #import data to solr
+  withBusyIndicatorServer("options_update_solr", {
+    url<-stringr::str_replace(string = values$solr_url,pattern = "select/",replacement = "")
+    z<-RCurl::getURL(
+      paste0(url,"dataimport?command=full-import"),followlocation=TRUE
+    )
+    #initiate suggest
+    z<-RCurl::getURL(
+      paste0(url,"suggest?suggest.build=true"),followlocation=TRUE
+    )
+    shinyWidgets::sendSweetAlert(type = "success",session = session,title =  "successfully started solr full import and solr suggest")
+  })
+})
+
+
+#ask for confirmation before deleting corpora
+observeEvent(ignoreNULL = T,input$options_delete_dataset_action,{
+  if(input$options_delete_dataset_annotations){
+    text=paste0("Are you sure you want to delete corpus:",input$Options_delete_dataset_select," including all annotations?")
+  }
+  else{
+    text=paste0("Are you sure you want to delete corpus:",input$Options_delete_dataset_select,"?")
+  }
+  shinyWidgets::confirmSweetAlert(session = session,inputId = "options_delete_dataset_action_confirm",title = "Caution!",
+                                  text = text,
+                                  type="warning",danger_mode = T,)
+})
+
+
+#if confirmed delete corpus
+observeEvent(ignoreNULL = T,input$options_delete_dataset_action_confirm,{
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
+  RMariaDB::dbBegin(conn = mydb)
+  RMariaDB::dbSendStatement(mydb, 'SET SQL_SAFE_UPDATES = 0;')
+  n=14
+  withProgress(message = paste0('Removing corpus:',input$Options_delete_dataset_select), value = 0, {
+    incProgress(1/n, detail = "Deleting token information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.token where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting documents information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.documents where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting metadata names information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.metadata_names where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting meta date information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.meta_date where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting meta token information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.meta_token where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting meta mde1 information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.meta_mde1 where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting meta mde2 information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.meta_mde2 where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting meta mde3 information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.meta_mde3 where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting meta mde4 information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.meta_mde4 where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting meta mde5 information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.meta_mde5 where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting meta mde6 information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.meta_mde6 where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting meta mde7 information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.meta_mde7 where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting meta mde8 information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.meta_mde8 where dataset='",input$Options_delete_dataset_select,"';"))
+    
+    incProgress(1/n, detail = "Deleting meta mde9 information")
+    RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.meta_mde9 where dataset='",input$Options_delete_dataset_select,"';"))
+  })
+  
+  if(input$options_delete_dataset_annotations){
+    n=2
+    withProgress(message = paste0('Removing Annotations with corpus:',input$Options_delete_dataset_select), value = 0, {
+      incProgress(1/n, detail = "Deleting user annotations")
+      RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.Annotations where dataset='",input$Options_delete_dataset_select,"';"))
+      
+      incProgress(1/n, detail = "Deleting active learning annotations")
+      RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.annotations_classification where dataset='",input$Options_delete_dataset_select,"';"))
+    })
+  }
+  RMariaDB::dbCommit(mydb)
+  RMariaDB::dbDisconnect(mydb)
+  values$update_datasets_avaiable<-runif(1,0,1)
+  updateSelectInput(session = session,inputId = "Options_delete_dataset_select",choices = setdiff(values$datasets_available,input$Options_delete_dataset_select))
+  shinyWidgets::sendSweetAlert(session = session,title = "Success",text = HTML(paste0("Corpus ",tags$b(input$Options_delete_dataset_select)," deleted.")),type = "success",html = T)
+}
+)
+
+
+
 
 
 #change max file upload size
@@ -233,15 +362,16 @@ output$options_solr_connected<-renderUI({
 #install new spacy model
 observeEvent(ignoreInit = T,input$options_add_model,{
   withBusyIndicatorServer("options_add_model", {
-    query<-paste0("python3 -m spacy download ",input$options_add_model_select)
+    browser()
+    query<-paste0("python3 -m spacy download ",input$options_add_model_select," --direct")
     ret<-system(query,intern = T)
     if(any(grepl("You can now load the model",ret))){
       shinyWidgets::sendSweetAlert(session=session,title = "Successfully installed new spaCy model",
-                             text = paste0("Model: ",input$options_add_model_select," was added and is used if specified language is '",input$options_add_model_select,"'"),
-                             type="success")
+                                   text = paste0("Model: ",input$options_add_model_select," was added and is used if specified language is '",input$options_add_model_select,"'"),
+                                   type="success")
     }
     else{
-      shinyWidgets::sendSweetAlert(session=session,title = "there was an error",text = paste(ret,collapse = " "),type = "error")
+      shinyWidgets::sendSweetAlert(session=session,title = "there was an error" ,text = paste(ret,collapse = " "),type = "error")
     }
   })
 })

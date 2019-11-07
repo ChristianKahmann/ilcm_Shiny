@@ -3121,7 +3121,7 @@ observeEvent(input$Import_to_solr,{
     z<-RCurl::getURL(
       paste0(url,"suggest?suggest.build=true"),followlocation=TRUE
     )
-    shinyWidgets::sendSweetAlert(type = "success",session = session,title =  "successfully started solr import and solr suggest")
+    shinyWidgets::sendSweetAlert(type = "success",session = session,title =  "successfully started solr delta import and solr suggest")
   })
 })
 
