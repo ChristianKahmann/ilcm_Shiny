@@ -488,11 +488,16 @@ observe({
   values$TM_topic_intrusion_run
   #################
   #get random document
+  
   K<-nrow(values$tm_phi)
   random_doc_number<-ceiling(runif(1,1,dim(values$TM_Coherence_documents)[1]))
   values$topic_intrusion_random_doc_number<-random_doc_number
-  document<-values$TM_Coherence_documents[random_doc_number,2]
+  document_identifier<-values$TM_Coherence_documents[random_doc_number,1]
+  dataset<-stringr::str_split(string = document_identifier,pattern = "_",simplify = T)[1]
+  doc_id<-stringr::str_split(string = document_identifier,pattern = "_",simplify = T)[2]
   
+  token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
+  document<-paste(token[,"word"],collapse=" ")
   
   topic_names <- apply(isolate(values$tm_relevance), 2, FUN = function(x) {
     paste(names(sort(x, decreasing = T)[1:10]), collapse = " ")
@@ -543,7 +548,7 @@ observeEvent(input$wrong_topic,{
     need(as.numeric(stringr::str_split(string=input$wrong_topic,pattern = "_",simplify = T)[1,4])!=0,message=FALSE)
   )
   if(values$TM_topic_intrusion_run>isolate(input$TM_Coherence_runs)){
-    shinyWidgets::sendSweetAlert(session=session,title = "finished all runs already",text = "start a new iteration",type = "warning",animation = "slide-from-top")
+    shinyWidgets::sendSweetAlert(session=session,title = "finished all runs already",text = "start a new iteration",type = "warning")
   }
   else{
     wrong_topic<-as.numeric(stringr::str_split(string=input$wrong_topic,pattern = "_",simplify = T)[1,4])
@@ -554,10 +559,10 @@ observeEvent(input$wrong_topic,{
     )
     values$topic_intrusion_results[dim(isolate(values$topic_intrusion_results))[1],3]<-wrong_topic
     if(values$topic_intrusion_results[dim(isolate(values$topic_intrusion_results))[1],2]==values$topic_intrusion_results[dim(isolate(values$topic_intrusion_results))[1],3]){
-      shinyWidgets::sendSweetAlert(session=session,title = "Correct",text = "You found the intruder!",type = "success",animation = "slide-from-top")
+      shinyWidgets::sendSweetAlert(session=session,title = "Correct",text = "You found the intruder!",type = "success")
     }
     else{
-      shinyWidgets::sendSweetAlert(session=session,title = "False",text = "You did not found the intruder!",type = "error",animation = "slide-from-bottom")
+      shinyWidgets::sendSweetAlert(session=session,title = "False",text = "You did not found the intruder!",type = "error")
     }
     values$right_prediction<-length(which((apply(values$topic_intrusion_results,1,FUN = function(x){x[2]==x[3]}))==TRUE))/dim(values$topic_intrusion_results)[1]
     
@@ -687,13 +692,25 @@ observe({
   random_topic_number<-ceiling(runif(1,1,dim(values$tm_phi)[1]))
   values$word_intrusion_random_topic_number<-random_topic_number
   
-  top_words <- sort(values$tm_phi[random_topic_number, ], decreasing = T)
-  top_words_setsize <- names(top_words[1:(input$TM_Coherence_setsize - 1)])
+  #use relevance score from ldavis paper
+  theta=0.25
+  pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
+  pwt<-isolate(values$tm_phi)[as.numeric(random_topic_number),]
+  
+  data<-theta*log(pwt)+(1-theta)*log(pwt/pw)
+  #sample most likely data, so its not always the same worsd occcuring
+  top_words<-sort(data, decreasing = T)
+  top_words_setsize<-names(sort(data,decreasing = T))[sample(x = max(25,(input$TM_Coherence_setsize - 1)),size = (input$TM_Coherence_setsize - 1),prob = max(25,(input$TM_Coherence_setsize - 1)):1 )]  
+  
+  #top_words <- sort(values$tm_phi[random_topic_number, ], decreasing = T)
+  #top_words_setsize <- names(top_words[1:(input$TM_Coherence_setsize - 1)])
   
   V <- ncol(values$tm_phi)
-  top50 <- min(c(V, 50))
+  topN <- min(c(V, 25))
   high_prob_terms <- apply(values$tm_phi[-random_topic_number, ], 1, FUN = function(x) {
-    names(sort(x, decreasing = T)[1:top50])
+    pwt<-x
+    data<-theta*log(pwt)+(1-theta)*log(pwt/pw)
+    names(sort(data, decreasing = T)[1:topN])
   })
   high_prob_terms <- unique(as.vector(high_prob_terms))
   low_prob_terms <- names(top_words[ceiling(V * 0.25):V])
@@ -706,7 +723,7 @@ observe({
   
   eval_list <- sample(c(top_words_setsize, intruder))
   intruder_true_position <- which(eval_list == intruder)
-  
+
   values$word_intrusion_results<-rbind(isolate(values$word_intrusion_results),c(random_topic_number,intruder_true_position,0))
   values$TM_Coherence_word_intrusion_words<-eval_list
 })
@@ -734,7 +751,7 @@ observeEvent(input$wrong_word,{
     need(as.numeric(stringr::str_split(string=input$wrong_word,pattern = "_",simplify = T)[1,4])!=0,message=FALSE)
   )
   if(values$TM_word_intrusion_run>isolate(input$TM_Coherence_runs)){
-    shinyWidgets::sendSweetAlert(session=session,title = "finished all runs already",text = "start a new iteration",type = "warning",animation = "slide-from-top")
+    shinyWidgets::sendSweetAlert(session=session,title = "finished all runs already",text = "start a new iteration",type = "warning")
   }
   else{
     wrong_word<-as.numeric(stringr::str_split(string=input$wrong_word,pattern = "_",simplify = T)[1,4])
@@ -745,10 +762,10 @@ observeEvent(input$wrong_word,{
     )
     values$word_intrusion_results[dim(isolate(values$word_intrusion_results))[1],3]<-wrong_word
     if(values$word_intrusion_results[dim(isolate(values$word_intrusion_results))[1],2]==values$word_intrusion_results[dim(isolate(values$word_intrusion_results))[1],3]){
-      shinyWidgets::sendSweetAlert(session=session,title = "Correct",text = "You found the intruder!",type = "success",animation = "slide-from-top")
+      shinyWidgets::sendSweetAlert(session=session,title = "Correct",text = "You found the intruder!",type = "success")
     }
     else{
-      shinyWidgets::sendSweetAlert(session=session,title = "False",text = "You did not found the intruder!",type = "error",animation = "slide-from-bottom")
+      shinyWidgets::sendSweetAlert(session=session,title = "False",text = (paste0("You did not found the intruder! It would have been: ",(values$TM_Coherence_word_intrusion_words[values$word_intrusion_results[dim(isolate(values$word_intrusion_results))[1],2]]))),type = "error")
     }
     values$right_prediction_word<-length(which((apply(values$word_intrusion_results,1,FUN = function(x){x[2]==x[3]}))==TRUE))/dim(values$word_intrusion_results)[1]
     
@@ -1786,9 +1803,9 @@ output$TM_validation_UI<-renderUI({
   }
   token<-cbind(token,features)
   token<-cbind(1:dim(token)[1],token)
-  
   data<-values$tm_phi[input$Det_TM_validation_topic,]
-  max<-max(values$tm_phi)
+  max<-log(max(values$tm_phi))
+  
   data<-data.frame(features=names(data),weight=data)
   m<-merge(x = token,y=data,by="features",all.x=TRUE)
   m<-m[order(m[,2]),]
@@ -1799,7 +1816,7 @@ output$TM_validation_UI<-renderUI({
   rbPal_pos <- colorRampPalette(c('floralwhite',color))
   m<-cbind(m,rep("",dim(m)[1]))
   if(length(intersect(which(!is.na(m$weight)),which(m$weight>0)))>0){
-    m[intersect(which(!is.na(m$weight)),which(m$weight>0)),12]<-  rbPal_pos(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))],breaks = 100))] #Alternative#seq(0,to = max(data$weight),length.out = 100)
+    m[intersect(which(!is.na(m$weight)),which(m$weight>0)),12]<-  rbPal_pos(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))],breaks = 100))] #Alternative#seq(0,to = max(data$weight),length.out = 100) #original m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))]
   }
   strings<-apply(m,MARGIN = 1,FUN = function(x){
     if(is.na(x[11])){
@@ -1854,6 +1871,6 @@ output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
                    xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                    yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                    legend = list(x = 0.1, y = 0.9)
-                  )
+    )
   return(p)
 })
