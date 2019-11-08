@@ -22,3 +22,7 @@ c25 <- rainbow(25)
 # host<-'0.0.0.0'
 # version<-"0.9.7"
 # db_port="3852"
+
+
+#set python path
+Sys.setenv(PATH="/home/rstudio/miniconda3/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games")

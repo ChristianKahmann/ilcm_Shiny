@@ -33,8 +33,11 @@ output$dropdown_info<-renderMenu({
   )
 })
 
+
+
 #options Modal
 observeEvent(input$openOptionsModal, {
+  
   showModal(
     modalDialog(title = tags$h2("Options"),footer = NULL,easyClose = T,size = "l",fade = T,
                 tags$h3("Languages"),
@@ -43,14 +46,10 @@ observeEvent(input$openOptionsModal, {
                          tags$span(icon("language"),tags$b("Available languages in spaCy:"))
                   ),
                   column(4,
-                         tags$em(paste(stringr::str_remove_all(string = stringr::str_split(
-                           stringr::str_replace_all(string = system(command = "python3 -m spacy info",intern = T)[8],pattern = "Models           ",replacement = "")
-                           ,pattern = ", ",simplify = T),pattern = " "),collapse = ", "))
+                         uiOutput("options_spacy_installed")
                   ),
                   column(4,offset=1,
-                         selectizeInput(inputId = "options_add_model_select",label = "Available models to be added",options=list(create=T),choices=setdiff(c("en","de","es","fr","it","nl","pt","el","xx"),stringr::str_remove_all(string=stringr::str_split(
-                           stringr::str_replace_all(string = system(command = "python3 -m spacy info",intern = T)[8],pattern = "Models           ",replacement = "")
-                           ,pattern = ", ",simplify = T),pattern = " "))),
+                         uiOutput("options_add_model_select_UI"),
                          withBusyIndicatorUI(
                            bsButton(inputId = "options_add_model",label = "Add model",icon = icon("plus"),style = "success")
                          )
@@ -145,6 +144,25 @@ observeEvent(input$openOptionsModal, {
     )
   )
 })
+
+#render installed spacy
+output$options_spacy_installed<-renderUI({
+  values$reload_options_modal
+  return(tags$em(paste(stringr::str_remove_all(string = stringr::str_split(
+    stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Models           ",replacement = "")
+    ,pattern = ", ",simplify = T),pattern = " "),collapse = ", "))
+  )
+})
+
+#render spacy languaes which can be installed
+output$options_add_model_select_UI<-renderUI({
+  values$reload_options_modal
+  return(selectizeInput(inputId = "options_add_model_select",label = "Available models to be added",options=list(create=T),choices=setdiff(c("en","de","es","fr","it","nl","pt","el","xx"),stringr::str_remove_all(string=stringr::str_split(
+    stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Models           ",replacement = "")
+    ,pattern = ", ",simplify = T),pattern = " ")))
+  )
+})
+
 
 
 #reindex solr/full import
@@ -362,10 +380,10 @@ output$options_solr_connected<-renderUI({
 #install new spacy model
 observeEvent(ignoreInit = T,input$options_add_model,{
   withBusyIndicatorServer("options_add_model", {
-    browser()
-    query<-paste0("python3 -m spacy download ",input$options_add_model_select," --direct")
+    query<-paste0("python -m spacy download ",input$options_add_model_select)
     ret<-system(query,intern = T)
     if(any(grepl("You can now load the model",ret))){
+      values$reload_options_modal<-runif(1,0,1)
       shinyWidgets::sendSweetAlert(session=session,title = "Successfully installed new spaCy model",
                                    text = paste0("Model: ",input$options_add_model_select," was added and is used if specified language is '",input$options_add_model_select,"'"),
                                    type="success")
