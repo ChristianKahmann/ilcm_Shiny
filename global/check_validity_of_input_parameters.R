@@ -48,5 +48,26 @@ check_pruning_parameters<-function(min_t_c,max_t_c,min_t_p,max_t_p,min_t_r,max_t
       return(valid)
     } 
   }
+  if(!is.na(min_t_p)){
+    if(min_t_p>1){
+      valid=F
+    }
+  }
+  if(!is.na(max_t_p)){
+    if(max_t_p>1){
+      valid=F
+    }
+  }
+  if(!is.na(min_d_p)){
+    if(min_d_p>1){
+      valid=F
+    }
+  }
+  if(!is.na(max_d_p)){
+    if(max_d_p>1){
+      valid=F
+    }
+  }
+     
   return(valid)
 }
