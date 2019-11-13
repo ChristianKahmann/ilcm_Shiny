@@ -662,13 +662,13 @@ observe({
 })
 
 
+#plot for feature breakdown for active learning examples
 output$Class_eval_feature_breakdown_plot<-plotly::renderPlotly({
   validate(
     need(
       !is.null( values$Class_eval_feature_matrix),message=F
     )
   )
-  browser()
     pos<- values$Class_eval_feature_matrix[,order( values$Class_eval_feature_matrix,decreasing = T)][1:(input$Class_eval_feature_breakdown_n/2)]
     neg<- values$Class_eval_feature_matrix[,order( values$Class_eval_feature_matrix,decreasing = F)][1:(input$Class_eval_feature_breakdown_n/2)]
     neg<-sort(neg,decreasing = F)

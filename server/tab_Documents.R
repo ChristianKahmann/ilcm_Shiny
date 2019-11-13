@@ -17,11 +17,13 @@ observe({
   )
   load(list.files("collections/collections/", full.names = T)[[input$collections_rows_selected]])
   values$Doc_url<-info[[4]]
+  values$Doc_collection_name<-info[[5]]
   values$Doc_ids<-info[[3]]
   values$Doc_q<-info[[8]]
   values$Doc_fq<-paste0('(collections:"',info[[5]],'")')
   values$Doc_del<-info[[10]]
-  values$Doc_dataset<-stringr::str_remove_all(string = stringr::str_extract(string = info[[9]],pattern = "dataset_s:[a-z,]{1,20}"),pattern = "dataset_s:")
+  #values$Doc_dataset<-stringr::str_remove_all(string = stringr::str_extract(string = info[[9]],pattern = "dataset_s:{1,20}"),pattern = "dataset_s:")
+  values$Doc_dataset<-stringr::str_remove_all(stringr::str_remove(string = stringr::str_extract(string = info[[9]],pattern = "dataset_s:.*?($| AND)"),pattern = " AND"),pattern = "dataset_s:")
   values$dataset_Sub<-stringr::str_remove(string = stringr::str_extract(string = info[[9]],pattern = "dataset_s:.*?($| AND)"),pattern = " AND")
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
   rs<-dbGetQuery(mydb, paste0("SELECT * FROM ilcm.metadata_names where dataset in('",stringr::str_replace_all(string = values$dataset_Sub,pattern = "dataset_s:",replacement = ""),"');"))
@@ -75,12 +77,9 @@ output$collection_documents<-DT::renderDataTable({
       #make search term appear red in keyword and context
       hl<-lapply(X = hl,FUN = function(i){i<-stringr::str_replace_all(string = i,pattern = '<em>','<span style="color:red">');stringr::str_replace_all(string = i,pattern = '</em>',"</span>")})
       if(!dim(ind)[1]>0){
-        print("test")
-        #shinyWidgets::sendSweetAlert(session=session,title = "No documents found.",text = "For the selected colllection no documents were found. Maybe solr is not finished yet with marking the documents with their collection tag.",
-        #                      type = "warning")
-        shinyWidgets::sendSweetAlert(session = session,title = "No documents found.",text =  "For the selected colllection no documents were found. Maybe solr is not finished yet with marking the documents with their collection tag.
-                                     Try to reselect the collection.",
-                                     type = "warning")
+        shinyWidgets::confirmSweetAlert(session = session,title = "No documents found.",text =  "For the selected colllection no documents were found. Maybe solr is not finished yet with marking the documents with their collection tag.
+                                     Try to reselect the collection a little later. If this does not help you can add the collection tag to solr once more.",inputId="Documents_reupload_SolrTag",
+                                        closeOnClickOutside=T,btn_labels=c("Wait","Re-upload collection tag to solr"), type = "warning")
       }
       validate(
         need(dim(ind)[2]>1,message=F),
@@ -104,7 +103,7 @@ output$collection_documents<-DT::renderDataTable({
   if(length(del)>0){
     ind<-ind[-del,,drop=F]
   }
-  #reduce to need metadata
+  #reduce to needed metadata
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
   ava<-dbGetQuery(mydb, paste0("SELECT * FROM ilcm.metadata_names where dataset in('",paste(unique(ind[,"dataset"]),collapse="','"),"');"))
   RMariaDB::dbDisconnect(mydb)
@@ -378,7 +377,45 @@ output$Documents_row<-renderUI({
 })
 
 
-#check wheather a document is selected in Search_results datatable // if yes get data from db and dwithc to document view
+#if user wants to re upload collection tag to solr do that, and show progress
+observeEvent(ignoreNULL = T,input$Documents_reupload_SolrTag,{
+  if(input$Documents_reupload_SolrTag){
+    n=4
+    withProgress(message = paste0('Re-uploading collection tag: ',values$Doc_collection_name," to solr"), value = 0, {
+      
+      incProgress(1/n, detail = "Connecting to solr")
+      host<-values$update_solr_url
+      port<-values$update_solr_port
+      conn<-solrium::SolrClient$new(host = host,port = port,path="search")
+      
+      incProgress(1/n, detail = "Creating update statement")
+      body<-create_body_solr_update_add(ids = values$Doc_ids[,1],field_name = "collections",values = rep(values$Doc_collection_name,length(values$Doc_ids[,1])))
+      
+      
+      incProgress(1/n, detail = "Uploading Collection Tags uploaded")
+      rm(solr_update_working)
+      try({
+        conn$update_atomic_json(name = "iLCM",body = body)->solr_update_working
+      })
+      if(!exists("solr_update_working")){
+        conn$update_atomic_json(name = "iLCM",body = body)
+      }
+      
+      incProgress(1/n, detail = "Comit changes")
+      solrium::commit(conn = conn,name="iLCM")
+      
+    }
+    )
+    #deselect and then reselect chosen colelction row to show updated results
+    selected_Row<-input$collections_rows_selected
+    proxy_collections %>% selectRows(NULL)
+    proxy_collections %>% selectRows(selected_Row)
+  }
+})
+
+
+
+#check wheather a document is selected in Search_results datatable // if yes get data from db and which to document view
 observe({
   s = input$collection_documents_rows_selected
   if (length(s)) {

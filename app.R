@@ -93,7 +93,7 @@ source("config_file.R")
 if(look=="fancy"){
   navbarstyle="spacelab"
   #navbarstyle="paper"
-  dashboardstyle=ilcm_dashboard_theme_098
+  dashboardstyle=ilcm_dashboard_theme_099
   #dashboardstyle=NULL
 }
 if(look=="scientific"){
@@ -213,7 +213,7 @@ ui <- dashboardPage(
       tabItem(tabName="Scripts",
               navbarPage(title = "Scripting",id = "scrpt",
                          source(file.path("ui","tab_Scripting.R"),local = T)$value,
-                         source(file.path("ui","tab_Script_inside_App.R"),local = T)$value,
+                         #source(file.path("ui","tab_Script_inside_App.R"),local = T)$value,
                          source(file.path("ui","tab_Remove_Lists.R"),local = T)$value,
                          source(file.path("ui","tab_Keep_Lists.R"),local = T)$value,
                          source(file.path("ui","tab_Dictionaries.R"),local = T)$value

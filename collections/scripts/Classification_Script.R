@@ -365,7 +365,10 @@ error<-try(expr = {
   }
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
-  
+  #ensure c parameter is set // for older versions
+  if(is.null(parameters$cl_c)){
+    parameters$cl_c=1
+  }
   
   #######learning examples#########################################################################
   if(parameters$cl_Mode=="Produce 50 new active learning examples"){
@@ -419,7 +422,6 @@ error<-try(expr = {
     names(trainingLabels)<-gold_table[idx,1]
     c_weights <- table(trainingLabels) / length(trainingLabels)
     c_weights <- abs(c_weights - 1) 
-    
     model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = parameters$cl_c,epsilon = 0.01,bias = 1)
     testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
     predicted <- predict(model, testDTM,proba = T) 

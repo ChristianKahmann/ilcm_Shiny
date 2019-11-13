@@ -47,10 +47,11 @@ observeEvent(input$save_Collection,{
             
             host<-values$update_solr_url
             port<-values$update_solr_port
+            rm(solr_update_working)
             try({future::future(expr = {
               body<-create_body_solr_update_add(ids = x[,"id"],field_name = "collections",values = rep(input$Collection_Name,length(x[,"id"])))
               conn<-solrium::SolrClient$new(host = host,port = port,path="search")
-              try({
+             try({
                 conn$update_atomic_json(name = "iLCM",body = body)->solr_update_working
               })
               if(!exists("solr_update_working")){

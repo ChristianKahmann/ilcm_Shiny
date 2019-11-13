@@ -84,6 +84,9 @@ output$collections <- DT::renderDataTable({
   )
 },server = F)
 
+proxy_collections = DT::dataTableProxy('collections')
+
+
 #add an reactive value saving the current collection selected
 observe({
   row<-input$collections_rows_selected
