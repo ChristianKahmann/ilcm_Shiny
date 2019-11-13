@@ -104,7 +104,7 @@ output$FE_plot<-renderPlotly({
   missing_dates<-setdiff(missing_dates,orig_dates)
   freq_matrix<-rbind(freq_matrix,Matrix(c(0),length(missing_dates),dim(freq_matrix)[2]))
   rownames(freq_matrix)<-c(orig_dates,missing_dates)
-  freq_matrix<-freq_matrix[order(rownames(freq_matrix)),]
+  freq_matrix<-freq_matrix[order(rownames(freq_matrix)),,drop=F]
   if(input$Det_FE_use_regexp==FALSE){
     words<-input$Det_FE_Word
     

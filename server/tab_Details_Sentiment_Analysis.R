@@ -39,7 +39,7 @@ output$Det_Senti_date<-renderPlotly({
   else{
     mode="markers"
   }
-
+  
   p<-plot_ly(x=unique_dates,y=results[,1],type="scatter",mode=mode,name="avg. sentiment scores",marker = list(
     color = 'aquamarine',
     size = 14,
@@ -276,12 +276,12 @@ output$tab_Panels_senti_mde<-renderUI({
       plot_id<-paste0("senti_plot_",x)
       return(tabPanel(title = title,
                       plotlyOutput(outputId = plot_id)
-                      ))
+      ))
     })
     
   }
   return(
-   do.call(tabsetPanel,metadata_list)
+    do.call(tabsetPanel,metadata_list)
   )
 })
 
@@ -294,7 +294,10 @@ output$senti_plot_1<-plotly::renderPlotly({
   meta<-values$senti_meta_reduced
   sections<-meta[,1]
   table_sections<-table(sections)
-  unique_sections<-names(table_sections[which(table_sections>input$Det_SA_min)])
+  unique_sections<-names(table_sections[which(table_sections>=input$Det_SA_min)])
+  validate(
+    need(length(unique_sections)>0,message="no entry had more occurrences than the set minimal number")
+  )
   results<-matrix(c(0),length(unique_sections),2)
   
   for(i in 1:length(unique_sections)){
@@ -352,7 +355,10 @@ output$senti_plot_2<-plotly::renderPlotly({
   sections<-meta[,2]
   table_sections<-table(sections)
   
-  unique_sections<-names(table_sections[which(table_sections>input$Det_SA_min)])
+  unique_sections<-names(table_sections[which(table_sections>=input$Det_SA_min)])
+  validate(
+    need(length(unique_sections)>0,message="no entry had more occurrences than the set minimal number")
+  )
   results<-matrix(c(0),length(unique_sections),2)
   
   for(i in 1:length(unique_sections)){
@@ -411,7 +417,10 @@ output$senti_plot_3<-plotly::renderPlotly({
   sections<-meta[,3]
   table_sections<-table(sections)
   
-  unique_sections<-names(table_sections[which(table_sections>input$Det_SA_min)])
+  unique_sections<-names(table_sections[which(table_sections>=input$Det_SA_min)])
+  validate(
+    need(length(unique_sections)>0,message="no entry had more occurrences than the set minimal number")
+  )
   results<-matrix(c(0),length(unique_sections),2)
   
   for(i in 1:length(unique_sections)){
@@ -470,7 +479,10 @@ output$senti_plot_4<-plotly::renderPlotly({
   sections<-meta[,4]
   table_sections<-table(sections)
   
-  unique_sections<-names(table_sections[which(table_sections>input$Det_SA_min)])
+  unique_sections<-names(table_sections[which(table_sections>=input$Det_SA_min)])
+  validate(
+    need(length(unique_sections)>0,message="no entry had more occurrences than the set minimal number")
+  )
   results<-matrix(c(0),length(unique_sections),2)
   
   for(i in 1:length(unique_sections)){
@@ -529,7 +541,10 @@ output$senti_plot_5<-plotly::renderPlotly({
   sections<-meta[,5]
   table_sections<-table(sections)
   
-  unique_sections<-names(table_sections[which(table_sections>input$Det_SA_min)])
+  unique_sections<-names(table_sections[which(table_sections>=input$Det_SA_min)])
+  validate(
+    need(length(unique_sections)>0,message="no entry had more occurrences than the set minimal number")
+  )
   results<-matrix(c(0),length(unique_sections),2)
   
   for(i in 1:length(unique_sections)){
@@ -587,7 +602,10 @@ output$senti_plot_6<-plotly::renderPlotly({
   sections<-meta[,6]
   table_sections<-table(sections)
   
-  unique_sections<-names(table_sections[which(table_sections>input$Det_SA_min)])
+  unique_sections<-names(table_sections[which(table_sections>=input$Det_SA_min)])
+  validate(
+    need(length(unique_sections)>0,message="no entry had more occurrences than the set minimal number")
+  )
   results<-matrix(c(0),length(unique_sections),2)
   
   for(i in 1:length(unique_sections)){
@@ -645,7 +663,10 @@ output$senti_plot_7<-plotly::renderPlotly({
   sections<-meta[,7]
   table_sections<-table(sections)
   
-  unique_sections<-names(table_sections[which(table_sections>input$Det_SA_min)])
+  unique_sections<-names(table_sections[which(table_sections>=input$Det_SA_min)])
+  validate(
+    need(length(unique_sections)>0,message="no entry had more occurrences than the set minimal number")
+  )
   results<-matrix(c(0),length(unique_sections),2)
   
   for(i in 1:length(unique_sections)){
@@ -703,7 +724,10 @@ output$senti_plot_8<-plotly::renderPlotly({
   sections<-meta[,8]
   table_sections<-table(sections)
   
-  unique_sections<-names(table_sections[which(table_sections>input$Det_SA_min)])
+  unique_sections<-names(table_sections[which(table_sections>=input$Det_SA_min)])  
+  validate(
+    need(length(unique_sections)>0,message="no entry had more occurrences than the set minimal number")
+  )
   results<-matrix(c(0),length(unique_sections),2)
   
   for(i in 1:length(unique_sections)){
@@ -761,7 +785,10 @@ output$senti_plot_9<-plotly::renderPlotly({
   sections<-meta[,9]
   table_sections<-table(sections)
   
-  unique_sections<-names(table_sections[which(table_sections>input$Det_SA_min)])
+  unique_sections<-names(table_sections[which(table_sections>=input$Det_SA_min)])
+  validate(
+    need(length(unique_sections)>0,message="no entry had more occurrences than the set minimal number")
+  )
   results<-matrix(c(0),length(unique_sections),2)
   
   for(i in 1:length(unique_sections)){

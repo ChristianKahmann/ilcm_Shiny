@@ -484,7 +484,7 @@ output$details_visu<-renderUI({
       validate(
         need(!is.null(values$tm_theta),message=F)
       )
-      updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = rownames(values$tm_theta))
+      updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = rownames(values$tm_theta),selected =rownames(values$tm_theta)[1] )
       #return ldavis visu for topic modeling
       return(
         tagList(
