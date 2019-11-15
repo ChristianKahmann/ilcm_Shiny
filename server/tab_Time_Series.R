@@ -286,7 +286,7 @@ output$TS_calender<-renderUI({
       data<-facet_date(base = isolate(values$url),q = isolate(values$q),facet.field="date_dt",fq=isolate(values$fq_init),fl="facet",facet.limit = -1,facet.range.gap = "%2B1MONTH")
       date<-unlist(data$facet_fields$date_dt$X1)
       counts<-unlist(data$facet_fields$date_dt$X2)
-      if(length(counts)>1){
+      if(length(counts)>0){
         tmp_dates<-list()
         for(i in 1:length(counts)){
           #dates<-c(dates,rep(date[i],counts[i]))

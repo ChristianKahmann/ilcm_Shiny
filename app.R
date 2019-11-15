@@ -195,7 +195,7 @@ ui <- dashboardPage(
                      navbarPage(title="",theme = shinytheme(navbarstyle),id="category",
                                 source(file.path("ui","tab_Create_Annotation_Set.R"),local = T)$value,
                                 source(file.path("ui","tab_Annotations.R"),local = T)$value,
-                                source(file.path("ui","tab_Document_View3.R"),local = T)$value,
+                                 source(file.path("ui","tab_Document_View3.R"),local = T)$value,
                                 source(file.path("ui","tab_Classifications.R"),local = T)$value
                      )
               ),

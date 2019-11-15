@@ -16,7 +16,8 @@ output$Analysis_Parameter_DD<-renderUI({
                ) 
       ),
       column(2,
-             selectInput(inputId = "DD_similarity_measure",label = "Similarity measure",choices = c("jaccard similarity","jaccard bag similarity","ratio of matches"),multiple = F)%>%
+             #"ratio of matches" entfernt, da kein symetrisches Maß, die graphbasierte Entfernung dies aber vorsieht  
+             selectInput(inputId = "DD_similarity_measure",label = "Similarity measure",choices = c("jaccard similarity","jaccard bag similarity"),multiple = F)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
