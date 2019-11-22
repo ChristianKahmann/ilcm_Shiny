@@ -80,30 +80,33 @@ observe({
     data[,5]<-values$Det_DD_meta[data[,4],"token"]
     data[,6]<-values$Det_DD_meta[data[,4],"date"]
     
-    
     ##sort data by according to chosen strategy
     rownames(data)<-1:dim(data)[1]
     if(input$Det_DD_strategy=="latest"){
       sort<-apply(X = data,MARGIN = 1,FUN = function(x){max(x[c(3,6)])})
+      data<-data[order(sort,decreasing = T),]
     }
     if(input$Det_DD_strategy=="earliest"){
       sort<-apply(X = data,MARGIN = 1,FUN = function(x){min(x[c(3,6)])})
+      data<-data[order(sort,decreasing = F),]
     }
     if(input$Det_DD_strategy=="longest"){
       sort<-as.numeric(apply(X = data,MARGIN = 1,FUN = function(x){max(x[c(2,5)])}))
+      data<-data[order(sort,decreasing = T),]
     }
     if(input$Det_DD_strategy=="shortest"){
       sort<-as.numeric(apply(X = data,MARGIN = 1,FUN = function(x){min(x[c(2,5)])}))
+      data<-data[order(sort,decreasing = F),]
     }
     if(input$Det_DD_strategy=="maximum node degree"){
       sort<-as.numeric(apply(X = data,MARGIN = 1,FUN = function(x){max(x[c(10,11)])}))
+      data<-data[order(sort,decreasing = T),]
     }
     if(input$Det_DD_strategy=="random"){
       sort<-sample(x = 1:dim(data)[1],size = dim(data)[1],replace = T)
+      data<-data[order(sort,decreasing = T),]
     }
-    
     #browser()
-    data<-data[order(sort,decreasing = T),]
     values$Det_DD_data_display<-data
   }
   else{
@@ -119,67 +122,92 @@ observe({
   validate(
     need(dim(values$Det_DD_data_display)[1]>0,message=F)
   )
-  values$DD_recalc
-  #browser()
+
   d_tmp<-values$Det_DD_data_display
   documents<-unique(union(d_tmp[,"a"],d_tmp[,"b"]))
-  #set by user
-  values$DD_whitelist<-unique(c(union(d_tmp[which(d_tmp[,"keep_a"]==9),"a"],d_tmp[which(d_tmp[,"keep_b"]==9),"b"]),isolate(values$DD_whitelist)))
-  values$DD_blacklist<-setdiff(unique(c(union(d_tmp[which(d_tmp[,"keep_a"]==8),"a"],d_tmp[which(d_tmp[,"keep_b"]==8),"b"]),isolate(values$DD_blacklist))),values$DD_whitelist)
   
-  blacklist<-setdiff(unique(c(values$DD_blacklist,union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(isolate(values$DD_whitelist))),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(isolate(values$DD_whitelist))),"a"]))),values$DD_whitelist)
-  whitelist<-unique(c(values$DD_whitelist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(blacklist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(blacklist)),"a"]),union(values$DD_whitelist,blacklist))[1]))
-  whitelist<-whitelist[!is.na(whitelist)]
+  #user decisions
+  user_whitelist<-(values$DD_whitelist)
+  user_blacklist<-(values$DD_blacklist)
+  whitelist<-user_whitelist
+  blacklist<-user_blacklist
+  if(length(user_whitelist)>0){
+    blacklist<-unique(c(blacklist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(whitelist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(whitelist)),"a"]),union(blacklist,whitelist))))
+  }
   
-  repeat({
-    repeat({
-      lenB<-length(blacklist)
-      blacklist<-unique(c(blacklist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(whitelist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(whitelist)),"a"]),union(blacklist,whitelist))))
-      blacklist<-blacklist[!is.na(blacklist)]
-      if(length(blacklist)==lenB ){break}
-    })
-    lenW<-length(whitelist)
-    whitelist<-unique(c(whitelist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(blacklist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(blacklist)),"a"]),union(whitelist,blacklist))[1]))
-    whitelist<-whitelist[!is.na(whitelist)]
-    if(length(whitelist)==lenW ){break}
-  })
-  
-  repeat({
-    seen<-unique(union(c(which(d_tmp[,"a"]%in%whitelist),which(d_tmp[,"b"]%in%whitelist)),c(which(d_tmp[,"a"]%in%blacklist),which(d_tmp[,"b"]%in%blacklist))))
-    if(length(seen)==0){
-      d_rest<-d_tmp
-    }
-    else{
-      d_rest<-d_tmp[-seen,]
-    }
-    if(dim(d_rest)[1]==0){break}
-    if(d_rest[1,"keep_a"]==1){
-      whitelist<-unique(c(whitelist,d_rest[1,"a"]))
-    }
-    else{
-      whitelist<-unique(c(whitelist,d_rest[1,"b"]))
-    }
-    
-    #browser()
-    repeat({
+  if(length(blacklist)>0){
+    d_tmp<-d_tmp[-union(which(d_tmp[,"a"]%in%blacklist),which(d_tmp[,"b"]%in%blacklist)),,drop=F]
+  }
+  if(dim(d_tmp)[1]>0){
       repeat({
-        lenB<-length(blacklist)
-        blacklist<-unique(c(blacklist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(whitelist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(whitelist)),"a"]),union(blacklist,whitelist))))
-        blacklist<-blacklist[!is.na(blacklist)]
-        if(length(blacklist)==lenB ){break}
-      })
-      lenW<-length(whitelist)
-      whitelist<-unique(c(whitelist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(blacklist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(blacklist)),"a"]),union(whitelist,blacklist))[1]))
-      whitelist<-whitelist[!is.na(whitelist)]
-      if(length(whitelist)==lenW ){break}
+      top_pair<-d_tmp[1,,drop=F]
+      id_del<-decide_which_document_to_delete(pair=top_pair,strategy = input$Det_DD_strategy)
+      blacklist<-c(blacklist,id_del)
+      d_tmp<-d_tmp[-union(which(d_tmp[,"a"]%in%blacklist),which(d_tmp[,"b"]%in%blacklist)),,drop=F]
+      if(dim(d_tmp)[1]==0){
+        break
+        }
     })
-  })
+  }
+  
+  whitelist<-setdiff(documents,blacklist)
+  
+  # #set by user
+  # values$DD_whitelist<-unique(c(union(d_tmp[which(d_tmp[,"keep_a"]==9),"a"],d_tmp[which(d_tmp[,"keep_b"]==9),"b"]),isolate(values$DD_whitelist)))
+  # values$DD_blacklist<-setdiff(unique(c(union(d_tmp[which(d_tmp[,"keep_a"]==8),"a"],d_tmp[which(d_tmp[,"keep_b"]==8),"b"]),isolate(values$DD_blacklist))),values$DD_whitelist)
+  # 
+  # blacklist<-setdiff(unique(c(values$DD_blacklist,union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(isolate(values$DD_whitelist))),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(isolate(values$DD_whitelist))),"a"]))),values$DD_whitelist)
+  # whitelist<-unique(c(values$DD_whitelist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(blacklist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(blacklist)),"a"]),union(values$DD_whitelist,blacklist))[1]))
+  # whitelist<-whitelist[!is.na(whitelist)]
+  # 
+  # repeat({
+  #   repeat({
+  #     lenB<-length(blacklist)
+  #     blacklist<-unique(c(blacklist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(whitelist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(whitelist)),"a"]),union(blacklist,whitelist))))
+  #     blacklist<-blacklist[!is.na(blacklist)]
+  #     if(length(blacklist)==lenB ){break}
+  #   })
+  #   lenW<-length(whitelist)
+  #   whitelist<-unique(c(whitelist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(blacklist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(blacklist)),"a"]),union(whitelist,blacklist))[1]))
+  #   whitelist<-whitelist[!is.na(whitelist)]
+  #   if(length(whitelist)==lenW ){break}
+  # })
+  # 
+  # repeat({
+  #   seen<-unique(union(c(which(d_tmp[,"a"]%in%whitelist),which(d_tmp[,"b"]%in%whitelist)),c(which(d_tmp[,"a"]%in%blacklist),which(d_tmp[,"b"]%in%blacklist))))
+  #   if(length(seen)==0){
+  #     d_rest<-d_tmp
+  #   }
+  #   else{
+  #     d_rest<-d_tmp[-seen,]
+  #   }
+  #   if(dim(d_rest)[1]==0){break}
+  #   if(d_rest[1,"keep_a"]==1){
+  #     whitelist<-unique(c(whitelist,d_rest[1,"a"]))
+  #   }
+  #   else{
+  #     whitelist<-unique(c(whitelist,d_rest[1,"b"]))
+  #   }
+  #   
+  #   #browser()
+  #   repeat({
+  #     repeat({
+  #       lenB<-length(blacklist)
+  #       blacklist<-unique(c(blacklist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(whitelist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(whitelist)),"a"]),union(blacklist,whitelist))))
+  #       blacklist<-blacklist[!is.na(blacklist)]
+  #       if(length(blacklist)==lenB ){break}
+  #     })
+  #     lenW<-length(whitelist)
+  #     whitelist<-unique(c(whitelist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(blacklist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(blacklist)),"a"]),union(whitelist,blacklist))[1]))
+  #     whitelist<-whitelist[!is.na(whitelist)]
+  #     if(length(whitelist)==lenW ){break}
+  #   })
+  # })
   
   
-  values$Det_DD_current_table<-d_tmp
+  values$Det_DD_current_table<-values$Det_DD_data_display
   values$blacklist<-blacklist
   values$whitelist<-whitelist
-  
 })
 
 
@@ -320,15 +348,25 @@ output$Det_DD_diffr<-diffr::renderDiffr({
 
 observeEvent(input$DD_Keep_Black,ignoreInit = T,{
   id<-as.numeric(values$blacklist[as.numeric(stringr::str_split(string = input$DD_Keep_Black,pattern = "_",simplify = T)[1,2])])
+  validate(
+    need(id!=0,message=F)
+  )
   values$DD_whitelist<-c(values$DD_whitelist,id)
+  values$DD_blacklist<-setdiff(values$DD_blacklist,id)
   values$DD_recalc<-runif(1,0,1)
+  isolate(shinyjs::runjs('Shiny.onInputChange(\"DD_Keep_Black\",  "DDkeep_0")'))
 })
 
 
 observeEvent(input$DD_Remove_Black,ignoreInit = T,{
   id<-as.numeric(values$blacklist[as.numeric(stringr::str_split(string = input$DD_Remove_Black,pattern = "_",simplify = T)[1,2])])
+  validate(
+    need(id!=0,message=F)
+  )
   values$DD_blacklist<-c(values$DD_blacklist,id)
+  values$DD_whitelist<-setdiff(values$DD_whitelist,id)
   values$DD_recalc<-runif(1,0,1)
+  isolate(shinyjs::runjs('Shiny.onInputChange(\"DD_Remove_Black\",  "DDremove_0")'))
 })
 
 
@@ -366,15 +404,25 @@ output$Det_DD_diffr_white<-diffr::renderDiffr({
 
 observeEvent(input$DD_Keep_White,ignoreInit = T,{
   id<-as.numeric(values$whitelist[as.numeric(stringr::str_split(string = input$DD_Keep_White,pattern = "_",simplify = T)[1,3])])
+  validate(
+    need(id!=0,message=F)
+  )
   values$DD_whitelist<-c(values$DD_whitelist,id)
+  values$DD_blacklist<-setdiff(values$DD_blacklist,id)
   values$DD_recalc<-runif(1,0,1)
+  isolate(shinyjs::runjs('Shiny.onInputChange(\"DD_Keep_White\",  "DDkeep_white_0")'))
 })
 
 
 observeEvent(input$DD_Remove_White,ignoreInit = T,{
   id<-as.numeric(values$whitelist[as.numeric(stringr::str_split(string = input$DD_Remove_White,pattern = "_",simplify = T)[1,3])])
+  validate(
+    need(id!=0,message=F)
+  )
   values$DD_blacklist<-c(values$DD_blacklist,id)
+  values$DD_whitelist<-setdiff(values$DD_whitelist,id)
   values$DD_recalc<-runif(1,0,1)
+  isolate(shinyjs::runjs('Shiny.onInputChange(\"DD_Remove_White\",  "DDremove_white_0")'))
 })
 
 
@@ -460,9 +508,12 @@ output$Det_DD_Network<-visNetwork::renderVisNetwork({
 })
 
 observeEvent(input$DD_graph_node_selected,ignoreNULL = T,{
+  validate(
+    need(input$DD_graph_node_selected!=0,message=F)
+  )
   choices<-unique(union(values$Det_DD_current_table[which(values$Det_DD_current_table[,"a"]==input$DD_graph_node_selected),"b"],values$Det_DD_current_table[which(values$Det_DD_current_table[,"b"]==input$DD_graph_node_selected),"a"]))
   showModal(
-    modalDialog(title = paste("Document: ",input$DD_graph_node_selected),size = "l",easyClose = T,
+    modalDialog(title = paste("Document: ",input$DD_graph_node_selected),size = "l",easyClose = F,
                 navbarPage(title = "",id = "DD_graph_modal",
                            tabPanel("Document Setting",
                                     tags$h3("Metadata"),
@@ -485,10 +536,17 @@ observeEvent(input$DD_graph_node_selected,ignoreNULL = T,{
                                     selectInput(inputId = "DD_graph_modal_diff_select",label = "Compare with:",choices = choices,multiple = F),
                                     tags$div(style = 'height: 58vh; overflow-y: auto;',diffr::diffrOutput(outputId = "Det_DD_diffr_graph"))
                            )
-                )
+                ),footer=actionButton("deduplication_dissmiss_modal",label="Dismiss")
     )
   )
+
 })
+
+observeEvent(ignoreNULL = T,input$deduplication_dissmiss_modal,{
+  removeModal()
+  isolate(shinyjs::runjs('Shiny.onInputChange(\"DD_graph_node_selected\",  0)'))
+})
+
 
 
 output$Det_DD_diffr_graph<-diffr::renderDiffr({
@@ -502,18 +560,30 @@ output$Det_DD_diffr_graph<-diffr::renderDiffr({
 
 observeEvent(input$Det_DD_graph_keep,ignoreInit = T,{
   id<-input$DD_graph_node_selected
+  validate(
+    need(id!=0,message=F)
+  )
   #values$Det_DD_data_display[which(values$Det_DD_data_display[,"a"]==id),"keep_a"]<-9
   #values$Det_DD_data_display[which(values$Det_DD_data_display[,"b"]==id),"keep_b"]<-9
   values$DD_whitelist<-c(values$DD_whitelist,input$DD_graph_node_selected)
+  values$DD_blacklist<-setdiff(values$DD_blacklist,id)
+  isolate(shinyjs::runjs('Shiny.onInputChange(\"DD_graph_node_selected\",  0)'))
+  print("whitelist hinzu")
   values$DD_recalc<-runif(1,0,1)
 })
 
 
 observeEvent(input$Det_DD_graph_remove,ignoreInit = T,{
   id<-input$DD_graph_node_selected
+  validate(
+    need(id!=0,message=F)
+  )
   #values$Det_DD_data_display[which(values$Det_DD_data_display[,"a"]==id),"keep_a"]<-9
   #values$Det_DD_data_display[which(values$Det_DD_data_display[,"b"]==id),"keep_b"]<-9
-  values$DD_blacklist<-c(values$DD_blacklist,input$DD_graph_node_selected)
+  values$DD_blacklist<-c(values$DD_blacklist,id)
+  values$DD_whitelist<-setdiff(values$DD_whitelist,id)
+  isolate(shinyjs::runjs('Shiny.onInputChange(\"DD_graph_node_selected\",  0)'))
+  print("blacklist hinzu")
   values$DD_recalc<-runif(1,0,1)
 })
 
@@ -529,38 +599,38 @@ observeEvent(input$DD_help,{
 
 observeEvent(ignoreInit = T,input$Det_DD_save_collection,{
   if(length(values$blacklist)>0){
-  final_remove<-as.numeric(values$blacklist)
-  info<-values$Det_DD_info
-  info[[1]]<-info[[1]][-as.numeric(final_remove),1,drop=F]
-  info[[2]]<-info[[2]][-as.numeric(final_remove),1,drop=F]
-  info[[3]]<-info[[3]][-as.numeric(final_remove),1,drop=F]
-  info[[4]]<-paste0(info[[4]]," | ",length(final_remove)," documents removed in document deduplication with interaction by User:",values$user, " | Documents removed:(",paste(final_remove,collapse=", ") ,")" )
-  info[[5]]<-paste0(info[[5]], " deduplicated")
-  if(file.exists(paste("collections/collections/",info[[5]],".RData",sep = ""))){
-    info[[5]]<-paste0(info[[5]], " ",Sys.time())
-  }
-  info[[6]]<-info[[6]][-as.numeric(final_remove),1,drop=F]
-  info[[7]]<-info[[7]][-as.numeric(final_remove),1,drop=F]
-  
-  host<-values$update_solr_url
-  port<-values$update_solr_port
-  try({future::future(expr = {
-    body<-create_body_solr_update_add(ids = info[[3]][,1],field_name = "collections",values = rep(info[[5]],length(info[[3]][,1])))
-    conn<-solrium::SolrClient$new(host = host,port = port,path="search")
-    try(silent = T,{
-      rm(solr_update_working)
-      conn$update_atomic_json(name = "iLCM",body = body)->solr_update_working
-    })
-    if(!exists("solr_update_working")){
-      conn$update_atomic_json(name = "iLCM",body = body)
+    final_remove<-as.numeric(values$blacklist)
+    info<-values$Det_DD_info
+    info[[1]]<-info[[1]][-as.numeric(final_remove),1,drop=F]
+    info[[2]]<-info[[2]][-as.numeric(final_remove),1,drop=F]
+    info[[3]]<-info[[3]][-as.numeric(final_remove),1,drop=F]
+    info[[4]]<-paste0(info[[4]]," | ",length(final_remove)," documents removed in document deduplication with interaction by User:",values$user, " | Documents removed:(",paste(final_remove,collapse=", ") ,")" )
+    info[[5]]<-paste0(info[[5]], " deduplicated")
+    if(file.exists(paste("collections/collections/",info[[5]],".RData",sep = ""))){
+      info[[5]]<-paste0(info[[5]], " ",Sys.time())
     }
-    solrium::commit(conn = conn,name="iLCM")
-  }) %...>% future:::ClusterRegistry(action = "stop")
-  })
-  
-  save(info,file=paste("collections/collections/",info[[5]],".RData",sep = ""))
-  save_collection_to_db(info)
-  shinyWidgets::sendSweetAlert(session=session,title = "Collection created",text = paste0("new collection with name:",paste0(info[[5]])," has been created"),type = "success")
+    info[[6]]<-info[[6]][-as.numeric(final_remove),1,drop=F]
+    info[[7]]<-info[[7]][-as.numeric(final_remove),1,drop=F]
+    
+    host<-values$update_solr_url
+    port<-values$update_solr_port
+    try({future::future(expr = {
+      body<-create_body_solr_update_add(ids = info[[3]][,1],field_name = "collections",values = rep(info[[5]],length(info[[3]][,1])))
+      conn<-solrium::SolrClient$new(host = host,port = port,path="search")
+      try(silent = T,{
+        rm(solr_update_working)
+        conn$update_atomic_json(name = "iLCM",body = body)->solr_update_working
+      })
+      if(!exists("solr_update_working")){
+        conn$update_atomic_json(name = "iLCM",body = body)
+      }
+      solrium::commit(conn = conn,name="iLCM")
+    }) %...>% future:::ClusterRegistry(action = "stop")
+    })
+    
+    save(info,file=paste("collections/collections/",info[[5]],".RData",sep = ""))
+    save_collection_to_db(info)
+    shinyWidgets::sendSweetAlert(session=session,title = "Collection created",text = paste0("new collection with name:",paste0(info[[5]])," has been created"),type = "success")
   }
   else{
     shinyWidgets::sendSweetAlert(session=session,title = "No new collection created",text = "There was no duplicate found.",type = "warning")

@@ -26,6 +26,7 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format){
   split<-split(1:length(text), ceiling(seq_along(1:length(text))/min(length(text),split_size)))
   token<-NULL
   count=0
+  log_to_file(paste0("Input splitted into ",length(split)," parts"),logfile)
   for(i in split){
     count=count+1
     print(count)

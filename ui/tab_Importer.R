@@ -179,7 +179,11 @@ tabPanel("Importer",
                                                                                                        tags$br(),
                                                                                                        fluidRow(style="margin-left:0px; margin-right:0px;",
                                                                                                                 column(1,
-                                                                                                                       selectInput(inputId = "Import_csv_language",label = "Language",choices = c("en","de","es","pt","fr","it","nl"),multiple = F,selected = character(0))
+                                                                                                                       selectInput(inputId = "Import_csv_language",label = "Language",choices = stringr::str_split(
+                                                                                                                         stringr::str_replace_all(
+                                                                                                                           stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Models           ",replacement = ""),
+                                                                                                                           pattern=" ",replacement=""),
+                                                                                                                         pattern=",",simplify = T)[1,],multiple = F,selected = character(0))
                                                                                                                 ),
                                                                                                                 column(1,
                                                                                                                        textInput(inputId = "Import_csv_dataset",label = "dataset abbreviation",placeholder = "e.g. GU for Guardian")
@@ -391,7 +395,11 @@ tabPanel("Importer",
                                                                                                        tags$br(),
                                                                                                        fluidRow(style="margin-left:0px; margin-right:0px;",
                                                                                                                 column(1,
-                                                                                                                       selectInput(inputId = "Import_mtf_language",label = "Language",choices = c("en","de","es","pt","fr","it","nl"),multiple = F,selected = character(0))
+                                                                                                                       selectInput(inputId = "Import_mtf_language",label = "Language",choices =stringr::str_split(
+                                                                                                                         stringr::str_replace_all(
+                                                                                                                           stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Models           ",replacement = ""),
+                                                                                                                           pattern=" ",replacement=""),
+                                                                                                                         pattern=",",simplify = T)[1,],multiple = F,selected = character(0))
                                                                                                                 ),
                                                                                                                 column(1,
                                                                                                                        textInput(inputId = "Import_mtf_dataset",label = "dataset abbreviation",placeholder = "e.g. GU for Guardian")

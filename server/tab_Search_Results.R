@@ -87,8 +87,8 @@ output$search_results_datatable<-DT::renderDataTable({
   
   meta<-colnames(ind_new)[which(!colnames(ind_new)%in%c("id_doc","dataset","title","date","language","token","id","score","keyword and context"))]
   if(length(meta)>0){
-    ind_new<-ind_new[,c("id_doc","id","dataset","score","title","date","token","language",meta,"keyword and context")]
-  }
+    ind_new<-ind_new[,intersect(colnames(ind_new),c("id_doc","id","dataset","score","title","date","token","language",meta,"keyword and context"))]
+    }
   
   ind<-ind_new
   

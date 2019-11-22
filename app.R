@@ -84,6 +84,7 @@ source("global/topic_relevance.R")
 source("global/check_validity_of_input_parameters.R")
 source("global/get_token_from_db.R")
 source("global/get_metadata_from_db.R")
+source("global/deduplication_decision.R")
 source("www/ilcm_dashboard_theme.R")
 source("config_file.R")
 
