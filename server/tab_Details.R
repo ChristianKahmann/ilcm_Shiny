@@ -371,6 +371,16 @@ output$details_parameter<-renderUI({
       values$tm_json<-json
       values$tm_term.frequency<-term.frequency
       
+      # #stm
+      load(paste0(values$Details_Data_TM,"/parameters.RData"))
+      values$tm_method <- parameters$tm_method
+      if(values$tm_method == "stm"){
+        values$tm_stm_model <- model$stm_model # loaded via data_TM.RData
+        load(paste0(values$Details_Data_TM,"/dtm_TM.RData"))
+        values$dtm <- dtm
+        values$TM_stm_topicCorr_show <- FALSE
+      }
+
       topic.frequency <- colSums(theta * doc.length)
       topic.proportion <- topic.frequency/sum(topic.frequency)
       o <- order(topic.proportion, decreasing = TRUE)
@@ -465,7 +475,46 @@ output$details_parameter<-renderUI({
                            sliderInput(inputId = "Det_TM_validation_topic",label = "Topic:",min = 1,value = 1,max = dim(phi)[1],step = 1),
                            tags$hr(),
                            uiOutput("Det_TM_validation_metadata_UI")%>%withSpinner()
-          )
+          ),
+          
+          #stm
+          conditionalPanel(condition = 'input.tabBox_tm=="Structural Topic Model"',
+  
+                  # stm number of words to label topic
+                  conditionalPanel(condition = 'input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"|| input.stm_visu=="Perspectives"',
+                                   numericInput(inputId = "stm_visu_numberOfWordsToLabelTopic",label="number of words to label topics", value = 10, min = 2, max = 50, step = 1)
+                  ),
+                  #stm labeltype
+                  conditionalPanel(condition = 'input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"',
+                                   selectInput(inputId = "stm_visu_labeltype",label="method to choose most important words",choices=c("prob", "frex", "lift", "score"),multiple=F, selected = "prob")%>%
+                                     shinyInput_label_embed(
+                                       shiny_iconlink() %>%
+                                         bs_embed_popover(
+                                           title = "PROB: words within each topic with the highest probability. FREX: words which are both frequent in and exclusive to a topic of interest identifying words that distinguish topics. SCORE: divides the log frequency of the word in the topic by the log frequency of the word in other topics. For more information on score, see the lda R package. LIFT: words according to the lift metric: Lift is calculated by dividing the topic-word distribution by the empirical word count probability distribution. For more information see R calclift",
+                                           placement = "right"
+                                         )
+                                     )
+                  ),
+                  # stm perspectives topic 1 and 2
+                  conditionalPanel(condition = 'input.stm_visu=="Perspectives"',
+                                   selectInput(inputId = "stm_visu_perspectives_topic1",label="select topic 1",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 1),
+                                   selectInput(inputId = "stm_visu_perspectives_topic2",label="select topic 2",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 2)
+                  ),
+                  
+                  # stm frexweight
+                  conditionalPanel(condition = 'input.stm_visu_labeltype=="frex"',
+                                   numericInput(inputId = "stm_visu_frexweight",label="frex weight",value = 0.5, min = 0, max = 1, step = 0.1)%>%
+                                     shinyInput_label_embed(
+                                       shiny_iconlink() %>%
+                                         bs_embed_popover(
+                                           title = "the proportion of the weight assigned to frequency",
+                                           placement = "right"
+                                         )
+                                     )
+                  )
+          )       
+          
+          
         )
       )
     }
@@ -485,63 +534,122 @@ output$details_visu<-renderUI({
         need(!is.null(values$tm_theta),message=F)
       )
       updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = rownames(values$tm_theta))
-      #return ldavis visu for topic modeling
-      return(
-        tagList(
-          tabBox(id="tabBox_tm",width = 12,
-                 tabPanel("LDA-Vis",
-                          #use the d3.js from ldavis library
-                          tags$script(src="d3.v3.js"),
-                          LDAvis::visOutput('TM_LDAvis')
-                 ),
-                 tabPanel("Estimated word frequencies",
-                          fluidRow(style="margin-left:0px;margin-right:0px",
-                                   plotlyOutput(outputId = "TM_ewf_bar")
-                          ),
-                          tags$br(),
-                          fluidRow(style="margin-left:0px;margin-right:0px",
-                                   DT::dataTableOutput(outputId = "TM_ewf_table")
-                          )
-                 ),
-                 tabPanel("Date distribution",
-                          plotlyOutput(outputId = "TM_Timeline"),
-                          DT::dataTableOutput(outputId = "TM_Subcollection_Table"),
-                          uiOutput("TM_subColl_UI")
-                 ),
-                 tabPanel("Coherence",
-                          busyIndicator(text = "loading data for calculating coherence",wait = 0), 
-                          bsButton(inputId = "TM_Coherence_start",label = "start Coherence Calculation",style = "primary",icon=icon("play")),
-                          conditionalPanel(condition = "output.TM_Coherence_show==true",
-                                           tabsetPanel(type="tabs",
-                                                       tabPanel(title = "Topic Coherence",
-                                                                plotlyOutput(outputId = "TM_Coherence_topic_coherence"),
-                                                                valueBoxOutput(outputId = "TM_Coherence_topic_coherence_mean_box")
-                                                       ),
-                                                       tabPanel(title="Topic Intrusion",
-                                                                uiOutput(outputId = "TM_Coherence_topic_intrusion")
-                                                       ),
-                                                       tabPanel(title="Word Intrusion",
-                                                                uiOutput(outputId = "TM_Coherence_word_intrusion")
-                                                       )
-                                           )
-                          )
-                          
-                 ),
-                 tabPanel("Extract Dictionaries",
-                          uiOutput("TM_dict_topics_ui"),
-                          uiOutput("TM_dict_categories_names"),
-                          uiOutput("TM_dict_save_ui")
-                 ),
-                 tabPanel("Detailed Metadata Distribution",
-                          uiOutput("TM_meta_ui")
-                 ),
-                 tabPanel("Validation",
-                          uiOutput("TM_validation_UI")%>%withSpinner()
-                 )
-          )
-        )
+      
+      #stm
+      #print(paste("tm_method", values$tm_method))
+      
+      #return visu for topic modeling
+      tabPanelLDAVis <- tabPanel("LDA-Vis",
+                                 #use the d3.js from ldavis library
+                                 tags$script(src="d3.v3.js"),
+                                 LDAvis::visOutput('TM_LDAvis')
       )
+      tabPanelEstWordFrequencies <-  tabPanel("Estimated word frequencies",
+                                              fluidRow(style="margin-left:0px;margin-right:0px",
+                                                       plotlyOutput(outputId = "TM_ewf_bar")
+                                              ),
+                                              tags$br(),
+                                              fluidRow(style="margin-left:0px;margin-right:0px",
+                                                       DT::dataTableOutput(outputId = "TM_ewf_table")
+                                              )
+      )
+      tabPanelDateDistribution <- tabPanel("Date distribution",
+                                           plotlyOutput(outputId = "TM_Timeline"),
+                                           DT::dataTableOutput(outputId = "TM_Subcollection_Table"),
+                                           uiOutput("TM_subColl_UI")
+      )
+      tabPanelCoherence <- tabPanel("Coherence",
+               busyIndicator(text = "loading data for calculating coherence",wait = 0),
+               bsButton(inputId = "TM_Coherence_start",label = "start Coherence Calculation",style = "primary",icon=icon("play")),
+               conditionalPanel(condition = "output.TM_Coherence_show==true",
+                                tabsetPanel(type="tabs",
+                                            tabPanel(title = "Topic Coherence",
+                                                     plotlyOutput(outputId = "TM_Coherence_topic_coherence"),
+                                                     valueBoxOutput(outputId = "TM_Coherence_topic_coherence_mean_box")
+                                            ),
+                                            tabPanel(title="Topic Intrusion",
+                                                     uiOutput(outputId = "TM_Coherence_topic_intrusion")
+                                            ),
+                                            tabPanel(title="Word Intrusion",
+                                                     uiOutput(outputId = "TM_Coherence_word_intrusion")
+                                            )
+                                )
+               )
+
+      )
+      tabPanelExtractDictionaries <- tabPanel("Extract Dictionaries",
+               uiOutput("TM_dict_topics_ui"),
+               uiOutput("TM_dict_categories_names"),
+               uiOutput("TM_dict_save_ui")
+      )
+      tabPanelDetailedMetaData <- tabPanel("Detailed Metadata Distribution",
+               uiOutput("TM_meta_ui")
+      )
+      tabPanelValidation <- tabPanel("Validation",
+               uiOutput("TM_validation_UI")%>%withSpinner()
+      )
+
+      # additional panels specific for stm
+      if(values$tm_method == "stm"){
+
+        tabPanelSTM <- tabPanel("Structural Topic Model",
+                                tabsetPanel(type="tabs", id = "stm_visu",
+                                            tabPanel(title = "Topics", plotOutput(outputId = "TM_stm_summary")),
+                                            tabPanel(title = "Labels", plotOutput(outputId = "TM_stm_labels")),
+                                            tabPanel(title = "Perspectives", plotOutput(outputId = "TM_stm_perspectives")),
+                                            tabPanel(title = "Histogramm", plotOutput(outputId = "TM_stm_hist")),
+                                            tabPanel(title = "Topic Correlation",
+                                                     bsButton(inputId = "TM_stm_topicCorr_start",label = "start calculation of Topic Correlation",style = "primary",icon=icon("play")),
+                                                     conditionalPanel(condition = "output.TM_stm_topicCorr_show==true",
+                                                                      plotOutput(outputId = "TM_stm_topicCorr_calc")       
+                                                     )
+                                            ),
+                                            tabPanel(title = "Estimate Effect",
+                                                     bsButton(inputId = "TM_stm_estimateEffect_start",label = "start calculation of estimate effect",style = "primary",icon=icon("play")),
+                                                     conditionalPanel(condition = "output.TM_stm_estimateEffect_show==true",
+                                                                      plotOutput(outputId = "TM_stm_estimateEffect_calc")       
+                                                     )
+                                            )
+                                            
+                                )
+        )
+
+
+
+        returnValue <-  tagList(
+                   tabBox(id="tabBox_tm",width = 12,
+                          tabPanelLDAVis,
+                          tabPanelEstWordFrequencies,
+                          tabPanelDateDistribution,
+                          tabPanelCoherence,
+                          tabPanelExtractDictionaries,
+                          tabPanelDetailedMetaData,
+                          tabPanelValidation,
+                          tabPanelSTM
+                   )
+
+        )
+
+      }else{
+
+        returnValue <-  tagList(
+          tabBox(id="tabBox_tm",width = 12,
+                 tabPanelLDAVis,
+                 tabPanelEstWordFrequencies,
+                 tabPanelDateDistribution,
+                 tabPanelCoherence,
+                 tabPanelExtractDictionaries,
+                 tabPanelDetailedMetaData,
+                 tabPanelValidation
+                 )
+        )
+      }
+
+      return (returnValue)
+      
     }
+    
+    
     if(values$Details_Analysis=="CO"){
       validate(
         need(!is.null(values$coocs_terms),message=F)

@@ -1,3 +1,4 @@
+source("global/functions_used_in_scripts.R")
 
 
 #link downloadbutton for theta in Topic Models Tab
@@ -259,6 +260,92 @@ output$TM_subColl_UI<-renderUI({
   }
 })
 
+##############
+# STM
+##############
+#stm
+output$tm_method<-reactive({
+  values$tm_method
+})
+
+#stm
+# plot.STM summary
+output$TM_stm_summary <- renderPlot({
+  plot.STM(x = values$tm_stm_model, type = "summary", n = input$stm_visu_numberOfWordsToLabelTopic, labeltype = input$stm_visu_labeltype, frexw = input$stm_visu_frexweight)
+})
+# plot.STM labels
+output$TM_stm_labels <- renderPlot({
+  plot.STM(x = values$tm_stm_model, type = "labels", n = input$stm_visu_numberOfWordsToLabelTopic, labeltype = input$stm_visu_labeltype, frexw = input$stm_visu_frexweight)
+})
+
+# plot.STM perspectives
+output$TM_stm_perspectives <- renderPlot({
+  validate(
+    need(!is.null(input$stm_visu_perspectives_topic1),message="please select topic 1")
+  )
+  validate(
+    need(!is.null(input$stm_visu_perspectives_topic2),message="please select topic 2")
+  )
+  selectedTopic1 <- as.integer(input$stm_visu_perspectives_topic1)
+  selectedTopic2 <- as.integer(input$stm_visu_perspectives_topic2)
+
+  plot.STM(x = values$tm_stm_model, type = "perspectives", topics = c(selectedTopic1, selectedTopic2), n = input$stm_visu_numberOfWordsToLabelTopic)
+})
+
+# plot.STM hist
+output$TM_stm_hist <- renderPlot({
+  plot.STM(x = values$tm_stm_model, type = "hist", n = input$stm_visu_numberOfWordsToLabelTopic, labeltype = input$stm_visu_labeltype, frexw = input$stm_visu_frexweight)
+})
+
+
+# topic correlation
+observeEvent(input$TM_stm_topicCorr_start,{
+  print(" obeserve event input$TM_stm_topicCorr_start => set values$TM_stm_topicCorr_show <- TRUE")
+  values$TM_stm_topicCorr_show <- TRUE
+  })
+
+output$TM_stm_topicCorr_show<-reactive({
+  print(paste("output$TM_stm_topicCorr_show<-reactive: values: ", values$TM_stm_topicCorr_show))
+  return(values$TM_stm_topicCorr_show)
+})
+
+output$TM_stm_topicCorr_calc <- renderPlot({
+  print("calculate topic correlation")
+  values$tm_stm_topicCorr_method <- "simple"
+  topicCorrResult <- topicCorr(model = values$tm_stm_model, method = values$tm_stm_topicCorr_method)
+  plot.topicCorr(x = topicCorrResult)
+})
+outputOptions(output, "TM_stm_topicCorr_show", suspendWhenHidden = FALSE)
+
+
+#estimateEffect
+observeEvent(input$TM_stm_estimateEffect_start,{
+  print(" observe event input$TM_stm_estimateEffect_start => set values$TM_stm_estimateEffect_show <- TRUE")
+  load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
+  values$tm_stm_metaData <- combineMetaDataWithMetaNamesForMDEs(meta, meta_names)
+  values$TM_stm_estimateEffect_show <- TRUE
+})
+
+output$TM_stm_estimateEffect_show<-reactive({
+  print(paste("output$TM_stm_estimateEffect_show<-reactive: values: ", values$TM_stm_topicCorr_show))
+  values$TM_stm_estimateEffect_show
+})
+
+output$TM_stm_estimateEffect_calc <- renderPlot({
+  print("calculate estimateEffect")
+  values$tm_stm_metaData$countryName <- as.factor(values$tm_stm_metaData$countryName)
+  values$tm_stm_estimateEffect_formula <- ~countryName
+  values$tm_stm_estimateEffect_covariate <- "countryName"
+  values$tm_stm_estimateEffect_topicsToPlot <- c(1,2)
+  estimateEffectResult <- estimateEffect(formula = values$tm_stm_estimateEffect_formula, stmobj = values$tm_stm_model, metadata = values$tm_stm_metaData)
+  plot.estimateEffect(x = estimateEffectResult, covariate = values$tm_stm_estimateEffect_covariate, topics = values$tm_stm_estimateEffect_topicsToPlot)
+})
+outputOptions(output, "TM_stm_estimateEffect_show", suspendWhenHidden = FALSE)
+
+
+#############
+# end of STM
+##############
 
 observe({
   values$tm_random2
@@ -382,6 +469,7 @@ output$TM_Coherence_show<-reactive({
   values$TM_Coherence_show
 })
 outputOptions(output, "TM_Coherence_show", suspendWhenHidden = FALSE)
+
 
 output$TM_Coherence_topic_coherence<-renderPlotly({
   topic_coherence<-tmca.util::tmca_topic_coherence(DTM = values$TM_Coherence_dtm,phi = values$tm_phi)
