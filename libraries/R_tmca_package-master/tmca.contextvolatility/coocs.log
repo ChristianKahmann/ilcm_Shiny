@@ -1,0 +1,54 @@
+starting worker pid=13296 on localhost:11989 at 12:15:05.604
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=15652 on localhost:11989 at 12:27:21.284
+Current date:  2005-01-04
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=13512 on localhost:11989 at 12:33:04.444
+Current date:  2005-01-04
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=2376 on localhost:11989 at 12:38:34.999
+Current date:  2005-01-04
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=10784 on localhost:11989 at 12:45:07.472
+Current date: 
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=14200 on localhost:11989 at 13:41:27.015
+Current date: 
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=5384 on localhost:11989 at 13:44:01.300
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=12828 on localhost:11989 at 13:50:35.907
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=9936 on localhost:11989 at 13:54:36.232
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten

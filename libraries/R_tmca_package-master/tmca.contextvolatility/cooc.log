@@ -1,0 +1,1805 @@
+starting worker pid=11092 on localhost:11007 at 10:16:47.863
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Current date:  2005-01-04
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=15012 on localhost:11007 at 10:27:55.369
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=14704 on localhost:11007 at 13:30:49.158
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=10148 on localhost:11007 at 13:34:44.924
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=4288 on localhost:11007 at 13:44:08.623
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=6792 on localhost:11007 at 14:10:47.949
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Loading required package: Matrix
+
+97
+Current date:  2005-01-04  Number of Docs:  97  Starting...
+Current date:  2005-01-04  Significance calculation complete.
+87386 16496
+28
+Current date:  2005-01-05  Number of Docs:  28  Starting...
+Current date:  2005-01-05  Significance calculation complete.
+87386 16496
+24
+Current date:  2005-01-12  Number of Docs:  24  Starting...
+Current date:  2005-01-12  Significance calculation complete.
+87386 16496
+225
+Current date:  2005-01-13  Number of Docs:  225  Starting...
+Current date:  2005-01-13  Significance calculation complete.
+87386 16496
+108
+Current date:  2005-01-15  Number of Docs:  108  Starting...
+Current date:  2005-01-15  Significance calculation complete.
+87386 16496
+34
+Current date:  2005-01-19  Number of Docs:  34  Starting...
+Current date:  2005-01-19  Significance calculation complete.
+87386 16496
+248
+Current date:  2005-01-20  Number of Docs:  248  Starting...
+Current date:  2005-01-20  Significance calculation complete.
+87386 16496
+163
+Current date:  2005-01-27  Number of Docs:  163  Starting...
+Current date:  2005-01-27  Significance calculation complete.
+87386 16496
+405
+Current date:  2005-02-03  Number of Docs:  405  Starting...
+Current date:  2005-02-03  Significance calculation complete.
+87386 16496
+59
+Current date:  2005-02-09  Number of Docs:  59  Starting...
+Current date:  2005-02-09  Significance calculation complete.
+87386 16496
+266
+Current date:  2005-02-10  Number of Docs:  266  Starting...
+Current date:  2005-02-10  Significance calculation complete.
+87386 16496
+346
+Current date:  2005-02-17  Number of Docs:  346  Starting...
+Current date:  2005-02-17  Significance calculation complete.
+87386 16496
+15
+Current date:  2005-02-23  Number of Docs:  15  Starting...
+Current date:  2005-02-23  Significance calculation complete.
+87386 16496
+390
+Current date:  2005-02-24  Number of Docs:  390  Starting...
+Current date:  2005-02-24  Significance calculation complete.
+87386 16496
+24
+Current date:  2005-03-02  Number of Docs:  24  Starting...
+Current date:  2005-03-02  Significance calculation complete.
+87386 16496
+354
+Current date:  2005-03-03  Number of Docs:  354  Starting...
+Current date:  2005-03-03  Significance calculation complete.
+87386 16496
+70
+Current date:  2005-03-09  Number of Docs:  70  Starting...
+Current date:  2005-03-09  Significance calculation complete.
+87386 16496
+139
+Current date:  2005-03-10  Number of Docs:  139  Starting...
+Current date:  2005-03-10  Significance calculation complete.
+87386 16496
+145
+Current date:  2005-03-16  Number of Docs:  145  Starting...
+Current date:  2005-03-16  Significance calculation complete.
+87386 16496
+90
+Current date:  2005-03-17  Number of Docs:  90  Starting...
+Current date:  2005-03-17  Significance calculation complete.
+87386 16496
+356
+Current date:  2005-03-23  Number of Docs:  356  Starting...
+Current date:  2005-03-23  Significance calculation complete.
+87386 16496
+78
+Current date:  2005-03-30  Number of Docs:  78  Starting...
+Current date:  2005-03-30  Significance calculation complete.
+87386 16496
+325
+Current date:  2005-03-31  Number of Docs:  325  Starting...
+Current date:  2005-03-31  Significance calculation complete.
+87386 16496
+307
+Current date:  2005-04-06  Number of Docs:  307  Starting...
+Current date:  2005-04-06  Significance calculation complete.
+87386 16496
+40
+Current date:  2005-04-13  Number of Docs:  40  Starting...
+Current date:  2005-04-13  Significance calculation complete.
+87386 16496
+316
+Current date:  2005-04-14  Number of Docs:  316  Starting...
+Current date:  2005-04-14  Significance calculation complete.
+87386 16496
+22
+Current date:  2005-04-20  Number of Docs:  22  Starting...
+Current date:  2005-04-20  Significance calculation complete.
+87386 16496
+154
+Current date:  2005-04-21  Number of Docs:  154  Starting...
+Current date:  2005-04-21  Significance calculation complete.
+87386 16496
+23
+Current date:  2005-04-27  Number of Docs:  23  Starting...
+Current date:  2005-04-27  Significance calculation complete.
+87386 16496
+141
+Current date:  2005-04-28  Number of Docs:  141  Starting...
+Current date:  2005-04-28  Significance calculation complete.
+87386 16496
+85
+Current date:  2005-05-04  Number of Docs:  85  Starting...
+Current date:  2005-05-04  Significance calculation complete.
+87386 16496
+299
+Current date:  2005-05-11  Number of Docs:  299  Starting...
+Current date:  2005-05-11  Significance calculation complete.
+87386 16496
+14
+Current date:  2005-05-12  Number of Docs:  14  Starting...
+Current date:  2005-05-12  Significance calculation complete.
+87386 16496
+21
+Current date:  2005-05-18  Number of Docs:  21  Starting...
+Current date:  2005-05-18  Significance calculation complete.
+87386 16496
+109
+Current date:  2005-05-19  Number of Docs:  109  Starting...
+Current date:  2005-05-19  Significance calculation complete.
+87386 16496
+582
+Current date:  2005-05-25  Number of Docs:  582  Starting...
+Current date:  2005-05-25  Significance calculation complete.
+87386 16496
+48
+Current date:  2005-06-01  Number of Docs:  48  Starting...
+Current date:  2005-06-01  Significance calculation complete.
+87386 16496
+267
+Current date:  2005-06-02  Number of Docs:  267  Starting...
+Current date:  2005-06-02  Significance calculation complete.
+87386 16496
+123
+Current date:  2005-06-08  Number of Docs:  123  Starting...
+Current date:  2005-06-08  Significance calculation complete.
+87386 16496
+347
+Current date:  2005-06-09  Number of Docs:  347  Starting...
+Current date:  2005-06-09  Significance calculation complete.
+87386 16496
+138
+Current date:  2005-06-16  Number of Docs:  138  Starting...
+Current date:  2005-06-16  Significance calculation complete.
+87386 16496
+255
+Current date:  2005-06-23  Number of Docs:  255  Starting...
+Current date:  2005-06-23  Significance calculation complete.
+87386 16496
+22
+Current date:  2005-06-29  Number of Docs:  22  Starting...
+Current date:  2005-06-29  Significance calculation complete.
+87386 16496
+106
+Current date:  2005-06-30  Number of Docs:  106  Starting...
+Current date:  2005-06-30  Significance calculation complete.
+87386 16496
+33
+Current date:  2005-07-05  Number of Docs:  33  Starting...
+Current date:  2005-07-05  Significance calculation complete.
+87386 16496
+120
+Current date:  2005-07-06  Number of Docs:  120  Starting...
+Current date:  2005-07-06  Significance calculation complete.
+87386 16496
+291
+Current date:  2005-07-07  Number of Docs:  291  Starting...
+Current date:  2005-07-07  Significance calculation complete.
+87386 16496
+44
+Current date:  2005-07-13  Number of Docs:  44  Starting...
+Current date:  2005-07-13  Significance calculation complete.
+87386 16496
+17
+Current date:  2005-07-20  Number of Docs:  17  Starting...
+Current date:  2005-07-20  Significance calculation complete.
+87386 16496
+168
+Current date:  2005-07-21  Number of Docs:  168  Starting...
+Current date:  2005-07-21  Significance calculation complete.
+87386 16496
+32
+Current date:  2005-07-27  Number of Docs:  32  Starting...
+Current date:  2005-07-27  Significance calculation complete.
+87386 16496
+187
+Current date:  2005-07-28  Number of Docs:  187  Starting...
+Current date:  2005-07-28  Significance calculation complete.
+87386 16496
+40
+Current date:  2005-08-03  Number of Docs:  40  Starting...
+Current date:  2005-08-03  Significance calculation complete.
+87386 16496
+40
+Current date:  2005-08-04  Number of Docs:  40  Starting...
+Current date:  2005-08-04  Significance calculation complete.
+87386 16496
+58
+Current date:  2005-08-10  Number of Docs:  58  Starting...
+Current date:  2005-08-10  Significance calculation complete.
+87386 16496
+69
+Current date:  2005-08-11  Number of Docs:  69  Starting...
+Current date:  2005-08-11  Significance calculation complete.
+87386 16496
+144
+Current date:  2005-08-18  Number of Docs:  144  Starting...
+Current date:  2005-08-18  Significance calculation complete.
+87386 16496
+38
+Current date:  2005-08-25  Number of Docs:  38  Starting...
+Current date:  2005-08-25  Significance calculation complete.
+87386 16496
+159
+Current date:  2005-09-01  Number of Docs:  159  Starting...
+Current date:  2005-09-01  Significance calculation complete.
+87386 16496
+187
+Current date:  2005-09-08  Number of Docs:  187  Starting...
+Current date:  2005-09-08  Significance calculation complete.
+87386 16496
+178
+Current date:  2005-09-15  Number of Docs:  178  Starting...
+Current date:  2005-09-15  Significance calculation complete.
+87386 16496
+150
+Current date:  2005-09-22  Number of Docs:  150  Starting...
+Current date:  2005-09-22  Significance calculation complete.
+87386 16496
+197
+Current date:  2005-09-29  Number of Docs:  197  Starting...
+Current date:  2005-09-29  Significance calculation complete.
+87386 16496
+175
+Current date:  2005-10-06  Number of Docs:  175  Starting...
+Current date:  2005-10-06  Significance calculation complete.
+87386 16496
+192
+Current date:  2005-10-13  Number of Docs:  192  Starting...
+Current date:  2005-10-13  Significance calculation complete.
+87386 16496
+187
+Current date:  2005-10-20  Number of Docs:  187  Starting...
+Current date:  2005-10-20  Significance calculation complete.
+87386 16496
+417
+Current date:  2005-10-27  Number of Docs:  417  Starting...
+Current date:  2005-10-27  Significance calculation complete.
+87386 16496
+105
+Current date:  2005-11-02  Number of Docs:  105  Starting...
+Current date:  2005-11-02  Significance calculation complete.
+87386 16496
+118
+Current date:  2005-11-03  Number of Docs:  118  Starting...
+Current date:  2005-11-03  Significance calculation complete.
+87386 16496
+166
+Current date:  2005-11-10  Number of Docs:  166  Starting...
+Current date:  2005-11-10  Significance calculation complete.
+87386 16496
+173
+Current date:  2005-11-17  Number of Docs:  173  Starting...
+Current date:  2005-11-17  Significance calculation complete.
+87386 16496
+158
+Current date:  2005-11-24  Number of Docs:  158  Starting...
+Current date:  2005-11-24  Significance calculation complete.
+87386 16496
+217
+Current date:  2005-12-01  Number of Docs:  217  Starting...
+Current date:  2005-12-01  Significance calculation complete.
+87386 16496
+144
+Current date:  2005-12-08  Number of Docs:  144  Starting...
+Current date:  2005-12-08  Significance calculation complete.
+87386 16496
+98
+Current date:  2005-12-15  Number of Docs:  98  Starting...
+Current date:  2005-12-15  Significance calculation complete.
+87386 16496
+152
+Current date:  2005-12-21  Number of Docs:  152  Starting...
+Current date:  2005-12-21  Significance calculation complete.
+87386 16496
+72
+Current date:  2005-12-29  Number of Docs:  72  Starting...
+Current date:  2005-12-29  Significance calculation complete.
+87386 16496
+284
+Current date:  2006-01-05  Number of Docs:  284  Starting...
+Current date:  2006-01-05  Significance calculation complete.
+87386 16496
+201
+Current date:  2006-01-12  Number of Docs:  201  Starting...
+Current date:  2006-01-12  Significance calculation complete.
+87386 16496
+235
+Current date:  2006-01-19  Number of Docs:  235  Starting...
+Current date:  2006-01-19  Significance calculation complete.
+87386 16496
+206
+Current date:  2006-01-26  Number of Docs:  206  Starting...
+Current date:  2006-01-26  Significance calculation complete.
+87386 16496
+123
+Current date:  2006-02-01  Number of Docs:  123  Starting...
+Current date:  2006-02-01  Significance calculation complete.
+87386 16496
+170
+Current date:  2006-02-02  Number of Docs:  170  Starting...
+Current date:  2006-02-02  Significance calculation complete.
+87386 16496
+169
+Current date:  2006-02-09  Number of Docs:  169  Starting...
+Current date:  2006-02-09  Significance calculation complete.
+87386 16496
+100
+Current date:  2006-02-16  Number of Docs:  100  Starting...
+Current date:  2006-02-16  Significance calculation complete.
+87386 16496
+144
+Current date:  2006-02-23  Number of Docs:  144  Starting...
+Current date:  2006-02-23  Significance calculation complete.
+87386 16496
+224
+Current date:  2006-03-02  Number of Docs:  224  Starting...
+Current date:  2006-03-02  Significance calculation complete.
+87386 16496
+322
+Current date:  2006-03-09  Number of Docs:  322  Starting...
+Current date:  2006-03-09  Significance calculation complete.
+87386 16496
+329
+Current date:  2006-03-16  Number of Docs:  329  Starting...
+Current date:  2006-03-16  Significance calculation complete.
+87386 16496
+47
+Current date:  2006-03-23  Number of Docs:  47  Starting...
+Current date:  2006-03-23  Significance calculation complete.
+87386 16496
+176
+Current date:  2006-03-30  Number of Docs:  176  Starting...
+Current date:  2006-03-30  Significance calculation complete.
+87386 16496
+80
+Current date:  2006-04-06  Number of Docs:  80  Starting...
+Current date:  2006-04-06  Significance calculation complete.
+87386 16496
+108
+Current date:  2006-04-12  Number of Docs:  108  Starting...
+Current date:  2006-04-12  Significance calculation complete.
+87386 16496
+114
+Current date:  2006-04-20  Number of Docs:  114  Starting...
+Current date:  2006-04-20  Significance calculation complete.
+87386 16496
+130
+Current date:  2006-04-27  Number of Docs:  130  Starting...
+Current date:  2006-04-27  Significance calculation complete.
+87386 16496
+213
+Current date:  2006-05-04  Number of Docs:  213  Starting...
+Current date:  2006-05-04  Significance calculation complete.
+87386 16496
+174
+Current date:  2006-05-11  Number of Docs:  174  Starting...
+Current date:  2006-05-11  Significance calculation complete.
+87386 16496
+10
+Current date:  2006-05-17  Number of Docs:  10  Starting...
+Current date:  2006-05-17  Significance calculation complete.
+87386 16496
+158
+Current date:  2006-05-18  Number of Docs:  158  Starting...
+Current date:  2006-05-18  Significance calculation complete.
+87386 16496
+897
+Current date:  2006-05-24  Number of Docs:  897  Starting...
+Current date:  2006-05-24  Significance calculation complete.
+87386 16496
+106
+Current date:  2006-05-25  Number of Docs:  106  Starting...
+Current date:  2006-05-25  Significance calculation complete.
+87386 16496
+33
+Current date:  2006-06-01  Number of Docs:  33  Starting...
+Current date:  2006-06-01  Significance calculation complete.
+87386 16496
+239
+Current date:  2006-06-08  Number of Docs:  239  Starting...
+Current date:  2006-06-08  Significance calculation complete.
+87386 16496
+275
+Current date:  2006-06-14  Number of Docs:  275  Starting...
+Current date:  2006-06-14  Significance calculation complete.
+87386 16496
+16
+Current date:  2006-06-15  Number of Docs:  16  Starting...
+Current date:  2006-06-15  Significance calculation complete.
+87386 16496
+184
+Current date:  2006-06-22  Number of Docs:  184  Starting...
+Current date:  2006-06-22  Significance calculation complete.
+87386 16496
+97
+Current date:  2006-06-29  Number of Docs:  97  Starting...
+Current date:  2006-06-29  Significance calculation complete.
+87386 16496
+472
+Current date:  2006-07-06  Number of Docs:  472  Starting...
+Current date:  2006-07-06  Significance calculation complete.
+87386 16496
+205
+Current date:  2006-07-13  Number of Docs:  205  Starting...
+Current date:  2006-07-13  Significance calculation complete.
+87386 16496
+42
+Current date:  2006-07-20  Number of Docs:  42  Starting...
+Current date:  2006-07-20  Significance calculation complete.
+87386 16496
+226
+Current date:  2006-07-27  Number of Docs:  226  Starting...
+Current date:  2006-07-27  Significance calculation complete.
+87386 16496
+265
+Current date:  2006-08-03  Number of Docs:  265  Starting...
+Current date:  2006-08-03  Significance calculation complete.
+87386 16496
+202
+Current date:  2006-08-10  Number of Docs:  202  Starting...
+Current date:  2006-08-10  Significance calculation complete.
+87386 16496
+222
+Current date:  2006-08-17  Number of Docs:  222  Starting...
+Current date:  2006-08-17  Significance calculation complete.
+87386 16496
+89
+Current date:  2006-08-24  Number of Docs:  89  Starting...
+Current date:  2006-08-24  Significance calculation complete.
+87386 16496
+371
+Current date:  2006-08-31  Number of Docs:  371  Starting...
+Current date:  2006-08-31  Significance calculation complete.
+87386 16496
+179
+Current date:  2006-09-07  Number of Docs:  179  Starting...
+Current date:  2006-09-07  Significance calculation complete.
+87386 16496
+168
+Current date:  2006-09-14  Number of Docs:  168  Starting...
+Current date:  2006-09-14  Significance calculation complete.
+87386 16496
+234
+Current date:  2006-09-21  Number of Docs:  234  Starting...
+Current date:  2006-09-21  Significance calculation complete.
+87386 16496
+23
+Current date:  2006-09-28  Number of Docs:  23  Starting...
+Current date:  2006-09-28  Significance calculation complete.
+87386 16496
+249
+Current date:  2006-10-05  Number of Docs:  249  Starting...
+Current date:  2006-10-05  Significance calculation complete.
+87386 16496
+221
+Current date:  2006-10-12  Number of Docs:  221  Starting...
+Current date:  2006-10-12  Significance calculation complete.
+87386 16496
+321
+Current date:  2006-10-19  Number of Docs:  321  Starting...
+Current date:  2006-10-19  Significance calculation complete.
+87386 16496
+322
+Current date:  2006-10-26  Number of Docs:  322  Starting...
+Current date:  2006-10-26  Significance calculation complete.
+87386 16496
+269
+Current date:  2006-11-02  Number of Docs:  269  Starting...
+Current date:  2006-11-02  Significance calculation complete.
+87386 16496
+111
+Current date:  2006-11-09  Number of Docs:  111  Starting...
+Current date:  2006-11-09  Significance calculation complete.
+87386 16496
+256
+Current date:  2006-11-16  Number of Docs:  256  Starting...
+Current date:  2006-11-16  Significance calculation complete.
+87386 16496
+317
+Current date:  2006-11-23  Number of Docs:  317  Starting...
+Current date:  2006-11-23  Significance calculation complete.
+87386 16496
+599
+Current date:  2006-11-30  Number of Docs:  599  Starting...
+Current date:  2006-11-30  Significance calculation complete.
+87386 16496
+147
+Current date:  2006-12-07  Number of Docs:  147  Starting...
+Current date:  2006-12-07  Significance calculation complete.
+87386 16496
+360
+Current date:  2006-12-14  Number of Docs:  360  Starting...
+Current date:  2006-12-14  Significance calculation complete.
+87386 16496
+144
+Current date:  2006-12-20  Number of Docs:  144  Starting...
+Current date:  2006-12-20  Significance calculation complete.
+87386 16496
+12
+Current date:  2006-12-28  Number of Docs:  12  Starting...
+Current date:  2006-12-28  Significance calculation complete.
+87386 16496
+208
+Current date:  2007-01-04  Number of Docs:  208  Starting...
+Current date:  2007-01-04  Significance calculation complete.
+87386 16496
+165
+Current date:  2007-01-11  Number of Docs:  165  Starting...
+Current date:  2007-01-11  Significance calculation complete.
+87386 16496
+187
+Current date:  2007-01-18  Number of Docs:  187  Starting...
+Current date:  2007-01-18  Significance calculation complete.
+87386 16496
+260
+Current date:  2007-01-25  Number of Docs:  260  Starting...
+Current date:  2007-01-25  Significance calculation complete.
+87386 16496
+454
+Current date:  2007-02-01  Number of Docs:  454  Starting...
+Current date:  2007-02-01  Significance calculation complete.
+87386 16496
+364
+Current date:  2007-02-08  Number of Docs:  364  Starting...
+Current date:  2007-02-08  Significance calculation complete.
+87386 16496
+119
+Current date:  2007-02-15  Number of Docs:  119  Starting...
+Current date:  2007-02-15  Significance calculation complete.
+87386 16496
+186
+Current date:  2007-02-22  Number of Docs:  186  Starting...
+Current date:  2007-02-22  Significance calculation complete.
+87386 16496
+219
+Current date:  2007-03-01  Number of Docs:  219  Starting...
+Current date:  2007-03-01  Significance calculation complete.
+87386 16496
+180
+Current date:  2007-03-08  Number of Docs:  180  Starting...
+Current date:  2007-03-08  Significance calculation complete.
+87386 16496
+250
+Current date:  2007-03-15  Number of Docs:  250  Starting...
+Current date:  2007-03-15  Significance calculation complete.
+87386 16496
+216
+Current date:  2007-03-22  Number of Docs:  216  Starting...
+Current date:  2007-03-22  Significance calculation complete.
+87386 16496
+60
+Current date:  2007-03-29  Number of Docs:  60  Starting...
+Current date:  2007-03-29  Significance calculation complete.
+87386 16496
+127
+Current date:  2007-04-04  Number of Docs:  127  Starting...
+Current date:  2007-04-04  Significance calculation complete.
+87386 16496
+369
+Current date:  2007-04-12  Number of Docs:  369  Starting...
+Current date:  2007-04-12  Significance calculation complete.
+87386 16496
+231
+Current date:  2007-04-19  Number of Docs:  231  Starting...
+Current date:  2007-04-19  Significance calculation complete.
+87386 16496
+257
+Current date:  2007-04-26  Number of Docs:  257  Starting...
+Current date:  2007-04-26  Significance calculation complete.
+87386 16496
+80
+Current date:  2007-05-03  Number of Docs:  80  Starting...
+Current date:  2007-05-03  Significance calculation complete.
+87386 16496
+294
+Current date:  2007-05-10  Number of Docs:  294  Starting...
+Current date:  2007-05-10  Significance calculation complete.
+87386 16496
+448
+Current date:  2007-05-16  Number of Docs:  448  Starting...
+Current date:  2007-05-16  Significance calculation complete.
+87386 16496
+58
+Current date:  2007-05-17  Number of Docs:  58  Starting...
+Current date:  2007-05-17  Significance calculation complete.
+87386 16496
+173
+Current date:  2007-05-24  Number of Docs:  173  Starting...
+Current date:  2007-05-24  Significance calculation complete.
+87386 16496
+309
+Current date:  2007-05-31  Number of Docs:  309  Starting...
+Current date:  2007-05-31  Significance calculation complete.
+87386 16496
+22
+Current date:  2007-06-06  Number of Docs:  22  Starting...
+Current date:  2007-06-06  Significance calculation complete.
+87386 16496
+167
+Current date:  2007-06-07  Number of Docs:  167  Starting...
+Current date:  2007-06-07  Significance calculation complete.
+87386 16496
+165
+Current date:  2007-06-14  Number of Docs:  165  Starting...
+Current date:  2007-06-14  Significance calculation complete.
+87386 16496
+371
+Current date:  2007-06-21  Number of Docs:  371  Starting...
+Current date:  2007-06-21  Significance calculation complete.
+87386 16496
+307
+Current date:  2007-06-28  Number of Docs:  307  Starting...
+Current date:  2007-06-28  Significance calculation complete.
+87386 16496
+51
+Current date:  2007-07-05  Number of Docs:  51  Starting...
+Current date:  2007-07-05  Significance calculation complete.
+87386 16496
+309
+Current date:  2007-07-12  Number of Docs:  309  Starting...
+Current date:  2007-07-12  Significance calculation complete.
+87386 16496
+128
+Current date:  2007-07-19  Number of Docs:  128  Starting...
+Current date:  2007-07-19  Significance calculation complete.
+87386 16496
+266
+Current date:  2007-07-26  Number of Docs:  266  Starting...
+Current date:  2007-07-26  Significance calculation complete.
+87386 16496
+250
+Current date:  2007-08-02  Number of Docs:  250  Starting...
+Current date:  2007-08-02  Significance calculation complete.
+87386 16496
+237
+Current date:  2007-08-09  Number of Docs:  237  Starting...
+Current date:  2007-08-09  Significance calculation complete.
+87386 16496
+546
+Current date:  2007-08-16  Number of Docs:  546  Starting...
+Current date:  2007-08-16  Significance calculation complete.
+87386 16496
+261
+Current date:  2007-08-23  Number of Docs:  261  Starting...
+Current date:  2007-08-23  Significance calculation complete.
+87386 16496
+404
+Current date:  2007-08-30  Number of Docs:  404  Starting...
+Current date:  2007-08-30  Significance calculation complete.
+87386 16496
+114
+Current date:  2007-09-06  Number of Docs:  114  Starting...
+Current date:  2007-09-06  Significance calculation complete.
+87386 16496
+90
+Current date:  2007-09-13  Number of Docs:  90  Starting...
+Current date:  2007-09-13  Significance calculation complete.
+87386 16496
+59
+Current date:  2007-09-18  Number of Docs:  59  Starting...
+Current date:  2007-09-18  Significance calculation complete.
+87386 16496
+61
+Current date:  2007-09-19  Number of Docs:  61  Starting...
+Current date:  2007-09-19  Significance calculation complete.
+87386 16496
+92
+Current date:  2007-09-20  Number of Docs:  92  Starting...
+Current date:  2007-09-20  Significance calculation complete.
+87386 16496
+56
+Current date:  2007-09-21  Number of Docs:  56  Starting...
+Current date:  2007-09-21  Significance calculation complete.
+87386 16496
+55
+Current date:  2007-09-24  Number of Docs:  55  Starting...
+Current date:  2007-09-24  Significance calculation complete.
+87386 16496
+65
+Current date:  2007-09-25  Number of Docs:  65  Starting...
+Current date:  2007-09-25  Significance calculation complete.
+87386 16496
+499
+Current date:  2007-09-27  Number of Docs:  499  Starting...
+Current date:  2007-09-27  Significance calculation complete.
+87386 16496
+8
+Current date:  2007-09-28  Number of Docs:  8  Starting...
+Current date:  2007-09-28  Significance calculation complete.
+87386 16496
+166
+Current date:  2007-10-01  Number of Docs:  166  Starting...
+Current date:  2007-10-01  Significance calculation complete.
+87386 16496
+71
+Current date:  2007-10-04  Number of Docs:  71  Starting...
+Current date:  2007-10-04  Significance calculation complete.
+87386 16496
+75
+Current date:  2007-10-08  Number of Docs:  75  Starting...
+Current date:  2007-10-08  Significance calculation complete.
+87386 16496
+77
+Current date:  2007-10-09  Number of Docs:  77  Starting...
+Current date:  2007-10-09  Significance calculation complete.
+87386 16496
+146
+Current date:  2007-10-11  Number of Docs:  146  Starting...
+Current date:  2007-10-11  Significance calculation complete.
+87386 16496
+122
+Current date:  2007-10-12  Number of Docs:  122  Starting...
+Current date:  2007-10-12  Significance calculation complete.
+87386 16496
+76
+Current date:  2007-10-16  Number of Docs:  76  Starting...
+Current date:  2007-10-16  Significance calculation complete.
+87386 16496
+39
+Current date:  2007-10-18  Number of Docs:  39  Starting...
+Current date:  2007-10-18  Significance calculation complete.
+87386 16496
+80
+Current date:  2007-10-22  Number of Docs:  80  Starting...
+Current date:  2007-10-22  Significance calculation complete.
+87386 16496
+74
+Current date:  2007-10-24  Number of Docs:  74  Starting...
+Current date:  2007-10-24  Significance calculation complete.
+87386 16496
+43
+Current date:  2007-10-25  Number of Docs:  43  Starting...
+Current date:  2007-10-25  Significance calculation complete.
+87386 16496
+67
+Current date:  2007-10-29  Number of Docs:  67  Starting...
+Current date:  2007-10-29  Significance calculation complete.
+87386 16496
+93
+Current date:  2007-10-30  Number of Docs:  93  Starting...
+Current date:  2007-10-30  Significance calculation complete.
+87386 16496
+153
+Current date:  2007-10-31  Number of Docs:  153  Starting...
+Current date:  2007-10-31  Significance calculation complete.
+87386 16496
+33
+Current date:  2007-11-07  Number of Docs:  33  Starting...
+Current date:  2007-11-07  Significance calculation complete.
+87386 16496
+231
+Current date:  2007-11-08  Number of Docs:  231  Starting...
+Current date:  2007-11-08  Significance calculation complete.
+87386 16496
+120
+Current date:  2007-11-15  Number of Docs:  120  Starting...
+Current date:  2007-11-15  Significance calculation complete.
+87386 16496
+93
+Current date:  2007-11-16  Number of Docs:  93  Starting...
+Current date:  2007-11-16  Significance calculation complete.
+87386 16496
+97
+Current date:  2007-11-20  Number of Docs:  97  Starting...
+Current date:  2007-11-20  Significance calculation complete.
+87386 16496
+18
+Current date:  2007-11-21  Number of Docs:  18  Starting...
+Current date:  2007-11-21  Significance calculation complete.
+87386 16496
+34
+Current date:  2007-11-22  Number of Docs:  34  Starting...
+Current date:  2007-11-22  Significance calculation complete.
+87386 16496
+35
+Current date:  2007-11-23  Number of Docs:  35  Starting...
+Current date:  2007-11-23  Significance calculation complete.
+87386 16496
+73
+Current date:  2007-11-27  Number of Docs:  73  Starting...
+Current date:  2007-11-27  Significance calculation complete.
+87386 16496
+62
+Current date:  2007-11-28  Number of Docs:  62  Starting...
+Current date:  2007-11-28  Significance calculation complete.
+87386 16496
+117
+Current date:  2007-12-06  Number of Docs:  117  Starting...
+Current date:  2007-12-06  Significance calculation complete.
+87386 16496
+80
+Current date:  2007-12-10  Number of Docs:  80  Starting...
+Current date:  2007-12-10  Significance calculation complete.
+87386 16496
+66
+Current date:  2007-12-11  Number of Docs:  66  Starting...
+Current date:  2007-12-11  Significance calculation complete.
+87386 16496
+189
+Current date:  2007-12-13  Number of Docs:  189  Starting...
+Current date:  2007-12-13  Significance calculation complete.
+87386 16496
+27
+Current date:  2007-12-14  Number of Docs:  27  Starting...
+Current date:  2007-12-14  Significance calculation complete.
+87386 16496
+19
+Current date:  2007-12-18  Number of Docs:  19  Starting...
+Current date:  2007-12-18  Significance calculation complete.
+87386 16496
+20
+Current date:  2007-12-19  Number of Docs:  20  Starting...
+Current date:  2007-12-19  Significance calculation complete.
+87386 16496
+92
+Current date:  2007-12-21  Number of Docs:  92  Starting...
+Current date:  2007-12-21  Significance calculation complete.
+87386 16496
+48
+Current date:  2007-12-27  Number of Docs:  48  Starting...
+Current date:  2007-12-27  Significance calculation complete.
+87386 16496
+72
+Current date:  2007-12-28  Number of Docs:  72  Starting...
+Current date:  2007-12-28  Significance calculation complete.
+87386 16496
+272
+Current date:  2008-01-03  Number of Docs:  272  Starting...
+Current date:  2008-01-03  Significance calculation complete.
+87386 16496
+82
+Current date:  2008-01-08  Number of Docs:  82  Starting...
+Current date:  2008-01-08  Significance calculation complete.
+87386 16496
+78
+Current date:  2008-01-10  Number of Docs:  78  Starting...
+Current date:  2008-01-10  Significance calculation complete.
+87386 16496
+26
+Current date:  2008-01-11  Number of Docs:  26  Starting...
+Current date:  2008-01-11  Significance calculation complete.
+87386 16496
+100
+Current date:  2008-01-13  Number of Docs:  100  Starting...
+Current date:  2008-01-13  Significance calculation complete.
+87386 16496
+209
+Current date:  2008-01-17  Number of Docs:  209  Starting...
+Current date:  2008-01-17  Significance calculation complete.
+87386 16496
+235
+Current date:  2008-01-24  Number of Docs:  235  Starting...
+Current date:  2008-01-24  Significance calculation complete.
+87386 16496
+106
+Current date:  2008-01-30  Number of Docs:  106  Starting...
+Current date:  2008-01-30  Significance calculation complete.
+87386 16496
+197
+Current date:  2008-01-31  Number of Docs:  197  Starting...
+Current date:  2008-01-31  Significance calculation complete.
+87386 16496
+19
+Current date:  2008-02-01  Number of Docs:  19  Starting...
+Current date:  2008-02-01  Significance calculation complete.
+87386 16496
+70
+Current date:  2008-02-04  Number of Docs:  70  Starting...
+Current date:  2008-02-04  Significance calculation complete.
+87386 16496
+111
+Current date:  2008-02-05  Number of Docs:  111  Starting...
+Current date:  2008-02-05  Significance calculation complete.
+87386 16496
+292
+Current date:  2008-02-07  Number of Docs:  292  Starting...
+Current date:  2008-02-07  Significance calculation complete.
+87386 16496
+64
+Current date:  2008-02-08  Number of Docs:  64  Starting...
+Current date:  2008-02-08  Significance calculation complete.
+87386 16496
+50
+Current date:  2008-02-12  Number of Docs:  50  Starting...
+Current date:  2008-02-12  Significance calculation complete.
+87386 16496
+238
+Current date:  2008-02-14  Number of Docs:  238  Starting...
+Current date:  2008-02-14  Significance calculation complete.
+87386 16496
+161
+Current date:  2008-02-17  Number of Docs:  161  Starting...
+Current date:  2008-02-17  Significance calculation complete.
+87386 16496
+467
+Current date:  2008-02-21  Number of Docs:  467  Starting...
+Current date:  2008-02-21  Significance calculation complete.
+87386 16496
+282
+Current date:  2008-02-28  Number of Docs:  282  Starting...
+Current date:  2008-02-28  Significance calculation complete.
+87386 16496
+61
+Current date:  2008-03-04  Number of Docs:  61  Starting...
+Current date:  2008-03-04  Significance calculation complete.
+87386 16496
+133
+Current date:  2008-03-06  Number of Docs:  133  Starting...
+Current date:  2008-03-06  Significance calculation complete.
+87386 16496
+41
+Current date:  2008-03-10  Number of Docs:  41  Starting...
+Current date:  2008-03-10  Significance calculation complete.
+87386 16496
+87
+Current date:  2008-03-12  Number of Docs:  87  Starting...
+Current date:  2008-03-12  Significance calculation complete.
+87386 16496
+534
+Current date:  2008-03-13  Number of Docs:  534  Starting...
+Current date:  2008-03-13  Significance calculation complete.
+87386 16496
+172
+Current date:  2008-03-17  Number of Docs:  172  Starting...
+Current date:  2008-03-17  Significance calculation complete.
+87386 16496
+64
+Current date:  2008-03-18  Number of Docs:  64  Starting...
+Current date:  2008-03-18  Significance calculation complete.
+87386 16496
+153
+Current date:  2008-03-19  Number of Docs:  153  Starting...
+Current date:  2008-03-19  Significance calculation complete.
+87386 16496
+211
+Current date:  2008-03-20  Number of Docs:  211  Starting...
+Current date:  2008-03-20  Significance calculation complete.
+87386 16496
+106
+Current date:  2008-03-25  Number of Docs:  106  Starting...
+Current date:  2008-03-25  Significance calculation complete.
+87386 16496
+569
+Current date:  2008-03-27  Number of Docs:  569  Starting...
+Current date:  2008-03-27  Significance calculation complete.
+87386 16496
+52
+Current date:  2008-03-31  Number of Docs:  52  Starting...
+Current date:  2008-03-31  Significance calculation complete.
+87386 16496
+46
+Current date:  2008-04-01  Number of Docs:  46  Starting...
+Current date:  2008-04-01  Significance calculation complete.
+87386 16496
+218
+Current date:  2008-04-03  Number of Docs:  218  Starting...
+Current date:  2008-04-03  Significance calculation complete.
+87386 16496
+78
+Current date:  2008-04-10  Number of Docs:  78  Starting...
+Current date:  2008-04-10  Significance calculation complete.
+87386 16496
+301
+Current date:  2008-04-17  Number of Docs:  301  Starting...
+Current date:  2008-04-17  Significance calculation complete.
+87386 16496
+545
+Current date:  2008-04-24  Number of Docs:  545  Starting...
+Current date:  2008-04-24  Significance calculation complete.
+87386 16496
+20
+Current date:  2008-04-30  Number of Docs:  20  Starting...
+Current date:  2008-04-30  Significance calculation complete.
+87386 16496
+273
+Current date:  2008-05-01  Number of Docs:  273  Starting...
+Current date:  2008-05-01  Significance calculation complete.
+87386 16496
+121
+Current date:  2008-05-05  Number of Docs:  121  Starting...
+Current date:  2008-05-05  Significance calculation complete.
+87386 16496
+49
+Current date:  2008-05-07  Number of Docs:  49  Starting...
+Current date:  2008-05-07  Significance calculation complete.
+87386 16496
+263
+Current date:  2008-05-08  Number of Docs:  263  Starting...
+Current date:  2008-05-08  Significance calculation complete.
+87386 16496
+87
+Current date:  2008-05-10  Number of Docs:  87  Starting...
+Current date:  2008-05-10  Significance calculation complete.
+87386 16496
+14
+Current date:  2008-05-15  Number of Docs:  14  Starting...
+Current date:  2008-05-15  Significance calculation complete.
+87386 16496
+114
+Current date:  2008-05-21  Number of Docs:  114  Starting...
+Current date:  2008-05-21  Significance calculation complete.
+87386 16496
+57
+Current date:  2008-06-05  Number of Docs:  57  Starting...
+Current date:  2008-06-05  Significance calculation complete.
+87386 16496
+29
+Current date:  2008-06-12  Number of Docs:  29  Starting...
+Current date:  2008-06-12  Significance calculation complete.
+87386 16496
+127
+Current date:  2008-06-13  Number of Docs:  127  Starting...
+Current date:  2008-06-13  Significance calculation complete.
+87386 16496
+20
+Current date:  2008-06-18  Number of Docs:  20  Starting...
+Current date:  2008-06-18  Significance calculation complete.
+87386 16496
+225
+Current date:  2008-06-19  Number of Docs:  225  Starting...
+Current date:  2008-06-19  Significance calculation complete.
+87386 16496
+285
+Current date:  2008-06-26  Number of Docs:  285  Starting...
+Current date:  2008-06-26  Significance calculation complete.
+87386 16496
+25
+Current date:  2008-07-02  Number of Docs:  25  Starting...
+Current date:  2008-07-02  Significance calculation complete.
+87386 16496
+6
+Current date:  2008-07-03  Number of Docs:  6  Starting...
+Current date:  2008-07-03  Significance calculation complete.
+87386 16496
+27
+Current date:  2008-07-06  Number of Docs:  27  Starting...
+Current date:  2008-07-06  Significance calculation complete.
+87386 16496
+54
+Current date:  2008-07-10  Number of Docs:  54  Starting...
+Current date:  2008-07-10  Significance calculation complete.
+87386 16496
+98
+Current date:  2008-07-16  Number of Docs:  98  Starting...
+Current date:  2008-07-16  Significance calculation complete.
+87386 16496
+206
+Current date:  2008-07-17  Number of Docs:  206  Starting...
+Current date:  2008-07-17  Significance calculation complete.
+87386 16496
+54
+Current date:  2008-07-18  Number of Docs:  54  Starting...
+Current date:  2008-07-18  Significance calculation complete.
+87386 16496
+128
+Current date:  2008-07-21  Number of Docs:  128  Starting...
+Current date:  2008-07-21  Significance calculation complete.
+87386 16496
+24
+Current date:  2008-07-23  Number of Docs:  24  Starting...
+Current date:  2008-07-23  Significance calculation complete.
+87386 16496
+130
+Current date:  2008-07-24  Number of Docs:  130  Starting...
+Current date:  2008-07-24  Significance calculation complete.
+87386 16496
+83
+Current date:  2008-07-28  Number of Docs:  83  Starting...
+Current date:  2008-07-28  Significance calculation complete.
+87386 16496
+419
+Current date:  2008-07-31  Number of Docs:  419  Starting...
+Current date:  2008-07-31  Significance calculation complete.
+87386 16496
+57
+Current date:  2008-08-01  Number of Docs:  57  Starting...
+Current date:  2008-08-01  Significance calculation complete.
+87386 16496
+143
+Current date:  2008-08-05  Number of Docs:  143  Starting...
+Current date:  2008-08-05  Significance calculation complete.
+87386 16496
+131
+Current date:  2008-08-06  Number of Docs:  131  Starting...
+Current date:  2008-08-06  Significance calculation complete.
+87386 16496
+76
+Current date:  2008-08-07  Number of Docs:  76  Starting...
+Current date:  2008-08-07  Significance calculation complete.
+87386 16496
+75
+Current date:  2008-08-13  Number of Docs:  75  Starting...
+Current date:  2008-08-13  Significance calculation complete.
+87386 16496
+32
+Current date:  2008-08-18  Number of Docs:  32  Starting...
+Current date:  2008-08-18  Significance calculation complete.
+87386 16496
+55
+Current date:  2008-08-19  Number of Docs:  55  Starting...
+Current date:  2008-08-19  Significance calculation complete.
+87386 16496
+144
+Current date:  2008-08-20  Number of Docs:  144  Starting...
+Current date:  2008-08-20  Significance calculation complete.
+87386 16496
+109
+Current date:  2008-08-21  Number of Docs:  109  Starting...
+Current date:  2008-08-21  Significance calculation complete.
+87386 16496
+169
+Current date:  2008-08-22  Number of Docs:  169  Starting...
+Current date:  2008-08-22  Significance calculation complete.
+87386 16496
+90
+Current date:  2008-08-27  Number of Docs:  90  Starting...
+Current date:  2008-08-27  Significance calculation complete.
+87386 16496
+120
+Current date:  2008-08-28  Number of Docs:  120  Starting...
+Current date:  2008-08-28  Significance calculation complete.
+87386 16496
+101
+Current date:  2008-09-03  Number of Docs:  101  Starting...
+Current date:  2008-09-03  Significance calculation complete.
+87386 16496
+119
+Current date:  2008-09-09  Number of Docs:  119  Starting...
+Current date:  2008-09-09  Significance calculation complete.
+87386 16496
+422
+Current date:  2008-09-12  Number of Docs:  422  Starting...
+Current date:  2008-09-12  Significance calculation complete.
+87386 16496
+207
+Current date:  2008-09-17  Number of Docs:  207  Starting...
+Current date:  2008-09-17  Significance calculation complete.
+87386 16496
+92
+Current date:  2008-09-18  Number of Docs:  92  Starting...
+Current date:  2008-09-18  Significance calculation complete.
+87386 16496
+318
+Current date:  2008-09-24  Number of Docs:  318  Starting...
+Current date:  2008-09-24  Significance calculation complete.
+87386 16496
+161
+Current date:  2008-09-25  Number of Docs:  161  Starting...
+Current date:  2008-09-25  Significance calculation complete.
+87386 16496
+236
+Current date:  2008-09-29  Number of Docs:  236  Starting...
+Current date:  2008-09-29  Significance calculation complete.
+87386 16496
+116
+Current date:  2008-09-30  Number of Docs:  116  Starting...
+Current date:  2008-09-30  Significance calculation complete.
+87386 16496
+204
+Current date:  2008-10-01  Number of Docs:  204  Starting...
+Current date:  2008-10-01  Significance calculation complete.
+87386 16496
+28
+Current date:  2008-10-09  Number of Docs:  28  Starting...
+Current date:  2008-10-09  Significance calculation complete.
+87386 16496
+48
+Current date:  2008-10-10  Number of Docs:  48  Starting...
+Current date:  2008-10-10  Significance calculation complete.
+87386 16496
+42
+Current date:  2008-10-12  Number of Docs:  42  Starting...
+Current date:  2008-10-12  Significance calculation complete.
+87386 16496
+16
+Current date:  2008-10-15  Number of Docs:  16  Starting...
+Current date:  2008-10-15  Significance calculation complete.
+87386 16496
+89
+Current date:  2008-10-16  Number of Docs:  89  Starting...
+Current date:  2008-10-16  Significance calculation complete.
+87386 16496
+267
+Current date:  2008-10-17  Number of Docs:  267  Starting...
+Current date:  2008-10-17  Significance calculation complete.
+87386 16496
+72
+Current date:  2008-10-21  Number of Docs:  72  Starting...
+Current date:  2008-10-21  Significance calculation complete.
+87386 16496
+84
+Current date:  2008-10-22  Number of Docs:  84  Starting...
+Current date:  2008-10-22  Significance calculation complete.
+87386 16496
+183
+Current date:  2008-10-23  Number of Docs:  183  Starting...
+Current date:  2008-10-23  Significance calculation complete.
+87386 16496
+49
+Current date:  2008-10-24  Number of Docs:  49  Starting...
+Current date:  2008-10-24  Significance calculation complete.
+87386 16496
+64
+Current date:  2008-10-25  Number of Docs:  64  Starting...
+Current date:  2008-10-25  Significance calculation complete.
+87386 16496
+118
+Current date:  2008-10-26  Number of Docs:  118  Starting...
+Current date:  2008-10-26  Significance calculation complete.
+87386 16496
+76
+Current date:  2008-10-28  Number of Docs:  76  Starting...
+Current date:  2008-10-28  Significance calculation complete.
+87386 16496
+283
+Current date:  2008-10-30  Number of Docs:  283  Starting...
+Current date:  2008-10-30  Significance calculation complete.
+87386 16496
+332
+Current date:  2008-10-31  Number of Docs:  332  Starting...
+Current date:  2008-10-31  Significance calculation complete.
+87386 16496
+185
+Current date:  2008-11-01  Number of Docs:  185  Starting...
+Current date:  2008-11-01  Significance calculation complete.
+87386 16496
+102
+Current date:  2008-11-02  Number of Docs:  102  Starting...
+Current date:  2008-11-02  Significance calculation complete.
+87386 16496
+56
+Current date:  2008-11-03  Number of Docs:  56  Starting...
+Current date:  2008-11-03  Significance calculation complete.
+87386 16496
+82
+Current date:  2008-11-04  Number of Docs:  82  Starting...
+Current date:  2008-11-04  Significance calculation complete.
+87386 16496
+176
+Current date:  2008-11-05  Number of Docs:  176  Starting...
+Current date:  2008-11-05  Significance calculation complete.
+87386 16496
+114
+Current date:  2008-11-06  Number of Docs:  114  Starting...
+Current date:  2008-11-06  Significance calculation complete.
+87386 16496
+32
+Current date:  2008-11-07  Number of Docs:  32  Starting...
+Current date:  2008-11-07  Significance calculation complete.
+87386 16496
+54
+Current date:  2008-11-10  Number of Docs:  54  Starting...
+Current date:  2008-11-10  Significance calculation complete.
+87386 16496
+60
+Current date:  2008-11-11  Number of Docs:  60  Starting...
+Current date:  2008-11-11  Significance calculation complete.
+87386 16496
+338
+Current date:  2008-11-13  Number of Docs:  338  Starting...
+Current date:  2008-11-13  Significance calculation complete.
+87386 16496
+406
+Current date:  2008-11-20  Number of Docs:  406  Starting...
+Current date:  2008-11-20  Significance calculation complete.
+87386 16496
+826
+Current date:  2008-11-27  Number of Docs:  826  Starting...
+Current date:  2008-11-27  Significance calculation complete.
+87386 16496
+703
+Current date:  2008-12-04  Number of Docs:  703  Starting...
+Current date:  2008-12-04  Significance calculation complete.
+87386 16496
+416
+Current date:  2008-12-11  Number of Docs:  416  Starting...
+Current date:  2008-12-11  Significance calculation complete.
+87386 16496
+432
+Current date:  2008-12-17  Number of Docs:  432  Starting...
+Current date:  2008-12-17  Significance calculation complete.
+87386 16496
+14
+Current date:  2008-12-20  Number of Docs:  14  Starting...
+Current date:  2008-12-20  Significance calculation complete.
+87386 16496
+285
+Current date:  2008-12-23  Number of Docs:  285  Starting...
+Current date:  2008-12-23  Significance calculation complete.
+87386 16496
+435
+Current date:  2008-12-31  Number of Docs:  435  Starting...
+Current date:  2008-12-31  Significance calculation complete.
+87386 16496
+610
+Current date:  2009-01-08  Number of Docs:  610  Starting...
+Current date:  2009-01-08  Significance calculation complete.
+87386 16496
+201
+Current date:  2009-01-15  Number of Docs:  201  Starting...
+Current date:  2009-01-15  Significance calculation complete.
+87386 16496
+306
+Current date:  2009-01-22  Number of Docs:  306  Starting...
+Current date:  2009-01-22  Significance calculation complete.
+87386 16496
+355
+Current date:  2009-01-29  Number of Docs:  355  Starting...
+Current date:  2009-01-29  Significance calculation complete.
+87386 16496
+352
+Current date:  2009-02-05  Number of Docs:  352  Starting...
+Current date:  2009-02-05  Significance calculation complete.
+87386 16496
+390
+Current date:  2009-02-12  Number of Docs:  390  Starting...
+Current date:  2009-02-12  Significance calculation complete.
+87386 16496
+466
+Current date:  2009-02-19  Number of Docs:  466  Starting...
+Current date:  2009-02-19  Significance calculation complete.
+87386 16496
+306
+Current date:  2009-02-26  Number of Docs:  306  Starting...
+Current date:  2009-02-26  Significance calculation complete.
+87386 16496
+830
+Current date:  2009-03-05  Number of Docs:  830  Starting...
+Current date:  2009-03-05  Significance calculation complete.
+87386 16496
+502
+Current date:  2009-03-12  Number of Docs:  502  Starting...
+Current date:  2009-03-12  Significance calculation complete.
+87386 16496
+323
+Current date:  2009-03-19  Number of Docs:  323  Starting...
+Current date:  2009-03-19  Significance calculation complete.
+87386 16496
+749
+Current date:  2009-03-26  Number of Docs:  749  Starting...
+Current date:  2009-03-26  Significance calculation complete.
+87386 16496
+285
+Current date:  2009-04-02  Number of Docs:  285  Starting...
+Current date:  2009-04-02  Significance calculation complete.
+87386 16496
+374
+Current date:  2009-04-08  Number of Docs:  374  Starting...
+Current date:  2009-04-08  Significance calculation complete.
+87386 16496
+120
+Current date:  2009-04-16  Number of Docs:  120  Starting...
+Current date:  2009-04-16  Significance calculation complete.
+87386 16496
+369
+Current date:  2009-04-23  Number of Docs:  369  Starting...
+Current date:  2009-04-23  Significance calculation complete.
+87386 16496
+301
+Current date:  2009-04-30  Number of Docs:  301  Starting...
+Current date:  2009-04-30  Significance calculation complete.
+87386 16496
+71
+Current date:  2009-05-07  Number of Docs:  71  Starting...
+Current date:  2009-05-07  Significance calculation complete.
+87386 16496
+306
+Current date:  2009-05-14  Number of Docs:  306  Starting...
+Current date:  2009-05-14  Significance calculation complete.
+87386 16496
+616
+Current date:  2009-05-20  Number of Docs:  616  Starting...
+Current date:  2009-05-20  Significance calculation complete.
+87386 16496
+32
+Current date:  2009-05-23  Number of Docs:  32  Starting...
+Current date:  2009-05-23  Significance calculation complete.
+87386 16496
+279
+Current date:  2009-05-28  Number of Docs:  279  Starting...
+Current date:  2009-05-28  Significance calculation complete.
+87386 16496
+195
+Current date:  2009-06-04  Number of Docs:  195  Starting...
+Current date:  2009-06-04  Significance calculation complete.
+87386 16496
+169
+Current date:  2009-06-10  Number of Docs:  169  Starting...
+Current date:  2009-06-10  Significance calculation complete.
+87386 16496
+371
+Current date:  2009-06-18  Number of Docs:  371  Starting...
+Current date:  2009-06-18  Significance calculation complete.
+87386 16496
+397
+Current date:  2009-06-25  Number of Docs:  397  Starting...
+Current date:  2009-06-25  Significance calculation complete.
+87386 16496
+560
+Current date:  2009-07-02  Number of Docs:  560  Starting...
+Current date:  2009-07-02  Significance calculation complete.
+87386 16496
+82
+Current date:  2009-07-09  Number of Docs:  82  Starting...
+Current date:  2009-07-09  Significance calculation complete.
+87386 16496
+483
+Current date:  2009-07-16  Number of Docs:  483  Starting...
+Current date:  2009-07-16  Significance calculation complete.
+87386 16496
+239
+Current date:  2009-07-23  Number of Docs:  239  Starting...
+Current date:  2009-07-23  Significance calculation complete.
+87386 16496
+371
+Current date:  2009-07-30  Number of Docs:  371  Starting...
+Current date:  2009-07-30  Significance calculation complete.
+87386 16496
+437
+Current date:  2009-08-06  Number of Docs:  437  Starting...
+Current date:  2009-08-06  Significance calculation complete.
+87386 16496
+285
+Current date:  2009-08-13  Number of Docs:  285  Starting...
+Current date:  2009-08-13  Significance calculation complete.
+87386 16496
+200
+Current date:  2009-08-20  Number of Docs:  200  Starting...
+Current date:  2009-08-20  Significance calculation complete.
+87386 16496
+159
+Current date:  2009-08-27  Number of Docs:  159  Starting...
+Current date:  2009-08-27  Significance calculation complete.
+87386 16496
+343
+Current date:  2009-09-03  Number of Docs:  343  Starting...
+Current date:  2009-09-03  Significance calculation complete.
+87386 16496
+338
+Current date:  2009-09-10  Number of Docs:  338  Starting...
+Current date:  2009-09-10  Significance calculation complete.
+87386 16496
+232
+Current date:  2009-09-17  Number of Docs:  232  Starting...
+Current date:  2009-09-17  Significance calculation complete.
+87386 16496
+141
+Current date:  2009-09-24  Number of Docs:  141  Starting...
+Current date:  2009-09-24  Significance calculation complete.
+87386 16496
+121
+Current date:  2009-10-01  Number of Docs:  121  Starting...
+Current date:  2009-10-01  Significance calculation complete.
+87386 16496
+203
+Current date:  2009-10-08  Number of Docs:  203  Starting...
+Current date:  2009-10-08  Significance calculation complete.
+87386 16496
+277
+Current date:  2009-10-15  Number of Docs:  277  Starting...
+Current date:  2009-10-15  Significance calculation complete.
+87386 16496
+451
+Current date:  2009-10-22  Number of Docs:  451  Starting...
+Current date:  2009-10-22  Significance calculation complete.
+87386 16496
+57
+Current date:  2009-10-29  Number of Docs:  57  Starting...
+Current date:  2009-10-29  Significance calculation complete.
+87386 16496
+368
+Current date:  2009-11-05  Number of Docs:  368  Starting...
+Current date:  2009-11-05  Significance calculation complete.
+87386 16496
+314
+Current date:  2009-11-12  Number of Docs:  314  Starting...
+Current date:  2009-11-12  Significance calculation complete.
+87386 16496
+293
+Current date:  2009-11-19  Number of Docs:  293  Starting...
+Current date:  2009-11-19  Significance calculation complete.
+87386 16496
+249
+Current date:  2009-11-26  Number of Docs:  249  Starting...
+Current date:  2009-11-26  Significance calculation complete.
+87386 16496
+243
+Current date:  2009-12-03  Number of Docs:  243  Starting...
+Current date:  2009-12-03  Significance calculation complete.
+87386 16496
+228
+Current date:  2009-12-10  Number of Docs:  228  Starting...
+Current date:  2009-12-10  Significance calculation complete.
+87386 16496
+474
+Current date:  2009-12-17  Number of Docs:  474  Starting...
+Current date:  2009-12-17  Significance calculation complete.
+87386 16496
+201
+Current date:  2009-12-22  Number of Docs:  201  Starting...
+Current date:  2009-12-22  Significance calculation complete.
+87386 16496
+78
+Current date:  2009-12-30  Number of Docs:  78  Starting...
+Current date:  2009-12-30  Significance calculation complete.
+87386 16496
+298
+Current date:  2010-01-07  Number of Docs:  298  Starting...
+Current date:  2010-01-07  Significance calculation complete.
+87386 16496
+607
+Current date:  2010-01-14  Number of Docs:  607  Starting...
+Current date:  2010-01-14  Significance calculation complete.
+87386 16496
+195
+Current date:  2010-01-21  Number of Docs:  195  Starting...
+Current date:  2010-01-21  Significance calculation complete.
+87386 16496
+410
+Current date:  2010-01-28  Number of Docs:  410  Starting...
+Current date:  2010-01-28  Significance calculation complete.
+87386 16496
+224
+Current date:  2010-02-04  Number of Docs:  224  Starting...
+Current date:  2010-02-04  Significance calculation complete.
+87386 16496
+381
+Current date:  2010-02-11  Number of Docs:  381  Starting...
+Current date:  2010-02-11  Significance calculation complete.
+87386 16496
+194
+Current date:  2010-02-18  Number of Docs:  194  Starting...
+Current date:  2010-02-18  Significance calculation complete.
+87386 16496
+261
+Current date:  2010-02-25  Number of Docs:  261  Starting...
+Current date:  2010-02-25  Significance calculation complete.
+87386 16496
+287
+Current date:  2010-03-04  Number of Docs:  287  Starting...
+Current date:  2010-03-04  Significance calculation complete.
+87386 16496
+249
+Current date:  2010-03-11  Number of Docs:  249  Starting...
+Current date:  2010-03-11  Significance calculation complete.
+87386 16496
+481
+Current date:  2010-03-18  Number of Docs:  481  Starting...
+Current date:  2010-03-18  Significance calculation complete.
+87386 16496
+320
+Current date:  2010-03-25  Number of Docs:  320  Starting...
+Current date:  2010-03-25  Significance calculation complete.
+87386 16496
+146
+Current date:  2010-03-31  Number of Docs:  146  Starting...
+Current date:  2010-03-31  Significance calculation complete.
+87386 16496
+206
+Current date:  2010-04-08  Number of Docs:  206  Starting...
+Current date:  2010-04-08  Significance calculation complete.
+87386 16496
+258
+Current date:  2010-04-15  Number of Docs:  258  Starting...
+Current date:  2010-04-15  Significance calculation complete.
+87386 16496
+255
+Current date:  2010-04-22  Number of Docs:  255  Starting...
+Current date:  2010-04-22  Significance calculation complete.
+87386 16496
+416
+Current date:  2010-04-29  Number of Docs:  416  Starting...
+Current date:  2010-04-29  Significance calculation complete.
+87386 16496
+314
+Current date:  2010-05-06  Number of Docs:  314  Starting...
+Current date:  2010-05-06  Significance calculation complete.
+87386 16496
+553
+Current date:  2010-05-12  Number of Docs:  553  Starting...
+Current date:  2010-05-12  Significance calculation complete.
+87386 16496
+508
+Current date:  2010-05-20  Number of Docs:  508  Starting...
+Current date:  2010-05-20  Significance calculation complete.
+87386 16496
+778
+Current date:  2010-05-27  Number of Docs:  778  Starting...
+Current date:  2010-05-27  Significance calculation complete.
+87386 16496
+131
+Current date:  2010-06-02  Number of Docs:  131  Starting...
+Current date:  2010-06-02  Significance calculation complete.
+87386 16496
+80
+Current date:  2010-06-10  Number of Docs:  80  Starting...
+Current date:  2010-06-10  Significance calculation complete.
+87386 16496
+163
+Current date:  2010-06-17  Number of Docs:  163  Starting...
+Current date:  2010-06-17  Significance calculation complete.
+87386 16496
+627
+Current date:  2010-06-24  Number of Docs:  627  Starting...
+Current date:  2010-06-24  Significance calculation complete.
+87386 16496
+228
+Current date:  2010-07-01  Number of Docs:  228  Starting...
+Current date:  2010-07-01  Significance calculation complete.
+87386 16496
+138
+Current date:  2010-07-08  Number of Docs:  138  Starting...
+Current date:  2010-07-08  Significance calculation complete.
+87386 16496
+145
+Current date:  2010-07-15  Number of Docs:  145  Starting...
+Current date:  2010-07-15  Significance calculation complete.
+87386 16496
+155
+Current date:  2010-07-22  Number of Docs:  155  Starting...
+Current date:  2010-07-22  Significance calculation complete.
+87386 16496
+189
+Current date:  2010-07-29  Number of Docs:  189  Starting...
+Current date:  2010-07-29  Significance calculation complete.
+87386 16496
+147
+Current date:  2010-08-05  Number of Docs:  147  Starting...
+Current date:  2010-08-05  Significance calculation complete.
+87386 16496
+552
+Current date:  2010-08-12  Number of Docs:  552  Starting...
+Current date:  2010-08-12  Significance calculation complete.
+87386 16496
+210
+Current date:  2010-08-19  Number of Docs:  210  Starting...
+Current date:  2010-08-19  Significance calculation complete.
+87386 16496
+232
+Current date:  2010-08-26  Number of Docs:  232  Starting...
+Current date:  2010-08-26  Significance calculation complete.
+87386 16496
+285
+Current date:  2010-09-02  Number of Docs:  285  Starting...
+Current date:  2010-09-02  Significance calculation complete.
+87386 16496
+196
+Current date:  2010-09-09  Number of Docs:  196  Starting...
+Current date:  2010-09-09  Significance calculation complete.
+87386 16496
+172
+Current date:  2010-09-16  Number of Docs:  172  Starting...
+Current date:  2010-09-16  Significance calculation complete.
+87386 16496
+188
+Current date:  2010-09-23  Number of Docs:  188  Starting...
+Current date:  2010-09-23  Significance calculation complete.
+87386 16496
+312
+Current date:  2010-09-30  Number of Docs:  312  Starting...
+Current date:  2010-09-30  Significance calculation complete.
+87386 16496
+287
+Current date:  2010-10-07  Number of Docs:  287  Starting...
+Current date:  2010-10-07  Significance calculation complete.
+87386 16496
+437
+Current date:  2010-10-14  Number of Docs:  437  Starting...
+Current date:  2010-10-14  Significance calculation complete.
+87386 16496
+218
+Current date:  2010-10-21  Number of Docs:  218  Starting...
+Current date:  2010-10-21  Significance calculation complete.
+87386 16496
+256
+Current date:  2010-10-28  Number of Docs:  256  Starting...
+Current date:  2010-10-28  Significance calculation complete.
+87386 16496
+411
+Current date:  2010-11-04  Number of Docs:  411  Starting...
+Current date:  2010-11-04  Significance calculation complete.
+87386 16496
+121
+Current date:  2010-11-11  Number of Docs:  121  Starting...
+Current date:  2010-11-11  Significance calculation complete.
+87386 16496
+584
+Current date:  2010-11-18  Number of Docs:  584  Starting...
+Current date:  2010-11-18  Significance calculation complete.
+87386 16496
+418
+Current date:  2010-11-25  Number of Docs:  418  Starting...
+Current date:  2010-11-25  Significance calculation complete.
+87386 16496
+269
+Current date:  2010-12-02  Number of Docs:  269  Starting...
+Current date:  2010-12-02  Significance calculation complete.
+87386 16496
+200
+Current date:  2010-12-09  Number of Docs:  200  Starting...
+Current date:  2010-12-09  Significance calculation complete.
+87386 16496
+268
+Current date:  2010-12-16  Number of Docs:  268  Starting...
+Current date:  2010-12-16  Significance calculation complete.
+87386 16496
+395
+Current date:  2010-12-22  Number of Docs:  395  Starting...
+Current date:  2010-12-22  Significance calculation complete.
+87386 16496
+120
+Current date:  2010-12-23  Number of Docs:  120  Starting...
+Current date:  2010-12-23  Significance calculation complete.
+87386 16496
+68
+Current date:  2010-12-30  Number of Docs:  68  Starting...
+Current date:  2010-12-30  Significance calculation complete.
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=13996 on localhost:11007 at 14:42:50.792
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=16256 on localhost:11007 at 08:25:31.497
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
