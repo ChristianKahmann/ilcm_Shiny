@@ -951,3 +951,50 @@ calculate_dictioanry_frequencies<-function(meta,dtm,dict_terms,conceptnames,dict
   )
   
 }
+
+
+# function to copy a list but remove values being NULL and character values being empty
+# work around for:
+# parameters are set via GUI/App, which result in empty character values when not set, this should be equal to not being set
+# for all optional parameters not set (=NULL), they will be removed from the resulting parameter list, because parent abstract class of tm_abstr stops with error when parameters have a value of NULL
+copyListButRemoveNullValuesAndEmptyStringValues = function(inputList){
+  
+  if(!is.list(inputList)){
+    stop("Parameters in argument are not a list ")
+  }
+  resultList = list()
+  namesUsed <- names(inputList)
+  for (name in namesUsed ) {
+    print(name)
+    listValue <- inputList[[name]]
+    if(is.character(listValue) && nchar(listValue)==0){
+      listValue <- NULL
+    }
+    if(is.null(listValue)){
+      next # skip/do not include this parameter (work around for optional parameters which are not set (set to NULL)) because abstract class stops with error when a parameter is NULL. So this removes these parameters completely which only gives a warning for missing parameters.
+    }
+
+    resultList[[name]] <- listValue
+  }
+  return (resultList)
+  
+}
+
+# function
+# meta data: set names from mde1/mde2 etc to real meta names
+combineMetaDataWithMetaNamesForMDEs <- function(meta, metanames){
+  colNamesUsed <- colnames(meta)
+  colnamesInclMetaNames <- character(length(colNamesUsed))
+  colNameCounter <-0
+  for(colName in colNamesUsed){
+    colNameCounter <- colNameCounter+1
+    if(startsWith(x=colName, prefix = "mde")){
+      colnamesInclMetaNames[colNameCounter] <- meta_names[[colName]]
+    }else{
+      colnamesInclMetaNames[colNameCounter] <- colName
+    }
+  }
+  metaDataToUse <- meta
+  colnames(metaDataToUse) <- colnamesInclMetaNames
+  return (metaDataToUse)
+}
