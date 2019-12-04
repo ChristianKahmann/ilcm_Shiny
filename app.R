@@ -88,8 +88,6 @@ source("www/ilcm_dashboard_theme.R")
 source("config_file.R")
 
 
-
-
 if(look=="fancy"){
   navbarstyle="spacelab"
   #navbarstyle="paper"
