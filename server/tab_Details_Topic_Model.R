@@ -1569,7 +1569,7 @@ output$Det_TM_Meta8<-renderUI({
 
 
 
-output$Det_TM_Meta8<-renderUI({
+output$Det_TM_Meta9<-renderUI({
   if(colnames(values$TM_meta)[12]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
@@ -1619,7 +1619,7 @@ output$Det_TM_Meta8<-renderUI({
 
 
 
-output$Det_TM_Meta9<-renderUI({
+output$Det_TM_Meta10<-renderUI({
   if(colnames(values$TM_meta)[13]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
@@ -1667,7 +1667,7 @@ output$Det_TM_Meta9<-renderUI({
 })
 
 
-output$Det_TM_Meta10<-renderUI({
+output$Det_TM_Meta11<-renderUI({
   if(colnames(values$TM_meta)[14]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
@@ -1716,7 +1716,7 @@ output$Det_TM_Meta10<-renderUI({
 
 
 
-output$Det_TM_Meta11<-renderUI({
+output$Det_TM_Meta12<-renderUI({
   if(colnames(values$TM_meta)[15]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
