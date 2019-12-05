@@ -66,3 +66,4 @@ packrat/lib*/
 /collections/ecpmf_resources/*
 !/collections/ecpmf_resources/.gitkeep
 /play/*
+/stm-visualization/*
