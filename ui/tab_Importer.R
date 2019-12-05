@@ -224,13 +224,35 @@ tabPanel("Importer",
                                                                                                   "text/comma-separated-values,text/plain",
                                                                                                   ".csv")
                                                                                       )%>%
-                                                                                        shinyInput_label_embed(
-                                                                                          icon("info") %>%
-                                                                                            bs_embed_tooltip(title = "The files are imported in alphabetical order based on their filenames. Please make sure, that the order of the rows in the metadata csv corresponds to this chronology.")
-                                                                                        ),
+                                                                                      shinyInput_label_embed(
+                                                                                        icon("info") %>%
+                                                                                          bs_embed_tooltip(title = "The files are imported in alphabetical order based on their filenames. Please make sure, that the order of the rows in the metadata csv corresponds to this chronology.")
+                                                                                      ),
                                                                                       prettyCheckbox(inputId = "Import_mtf_metadata_csv_header",label = "header?",value = TRUE,status = "primary",shape = "curve"),
                                                                                       textInput(inputId = "import_load_mtf_seperator",label = "seperator:",value = ","),
                                                                                       textInput(inputId = "import_load_mtf_encoding",label = "encoding:",value = "UTF-8")
+                                                                                  ),
+                                                                                  box(width=2,title = "Split Method",status = "primary",collapsible = T,
+                                                                                      selectInput(inputId = "Import_mtf_split_method", "Method:",
+                                                                                                  choices=c("None", "Regular Expression", "Separating Number", "Script")
+                                                                                      )%>%
+                                                                                      shinyInput_label_embed(
+                                                                                        icon("info") %>%
+                                                                                          bs_embed_tooltip(title = "This Method will split the text of the imported files.")
+                                                                                      ),
+                                                                                      uiOutput("UI_Import_mtf_column_name"),
+                                                                                      conditionalPanel(
+                                                                                        condition = "input.Import_mtf_split_method == 'Regular Expression'",
+                                                                                        textInput(inputId = "Import_mtf_split_method_regex",label = "Regular Expression:", value = "\\n\\n")
+                                                                                      ),
+                                                                                      conditionalPanel(
+                                                                                        condition = "input.Import_mtf_split_method == 'Separating Number'",
+                                                                                        numericInput(inputId = "Import_mtf_split_method_sep_number",label = "Separating Number:", value = 2000, min = 1)
+                                                                                      ),
+                                                                                      conditionalPanel(
+                                                                                        condition = "input.Import_mtf_split_method == 'Script'",
+                                                                                        shinyBS::bsButton("Import_mtf_split_method_script",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script to split text in imported files")
+                                                                                      )
                                                                                   ),
                                                                                   shinyBS::bsButton(inputId = "Import_check_mtf",label = "check import",icon = icon("search"),style = "primary"),
                                                                                   shinyBS::bsButton(inputId = "Import_start_mapping_mtf",label = "start mapping",icon = icon("play"),style="info")

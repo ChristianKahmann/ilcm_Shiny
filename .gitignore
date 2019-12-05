@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+ilcm_Shiny.Rproj
 /data_import/processed_data/*
 
 /collections/collections/*
@@ -63,3 +64,8 @@ packrat/lib*/
 !/collections/results/volatility-analysis/.gitkeep
 /collections/results/syntactic-parsing/*
 !/collections/results/syntactic-parsing/.gitkeep
+/collections/tmp/*
+!/collections/tmp/.gitkeep
+/collections/ecpmf_resources/*
+!/collections/ecpmf_resources/.gitkeep
+/play/*

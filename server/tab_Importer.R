@@ -661,6 +661,8 @@ values$Import_mtf_language<-""
 values$Import_mtf_token<-""
 values$Import_mtf_dataset<-""
 values$Import_mtf_scripts<-""
+values$Import_mtf_split_scripts<-""
+
 
 
 output$UI_Import_mtf_file<-renderUI({
@@ -714,6 +716,7 @@ observeEvent(input$Import_load_mtf,{
     validate(
       need(length(list.dirs("data_import/unprocessed_data/"))>1,message=FALSE)
     )
+
     data<-data.frame(id_doc=1:length(list.files(paste0("data_import/unprocessed_data/",input$Import_mtf_files))))
     values$Import_mtf_scripts<-rep(default_script_decription,13) # 13 for id_doc, title, date, body and 9 mde's
     texte<-list()
@@ -726,6 +729,11 @@ observeEvent(input$Import_load_mtf,{
     values$header_mtf<-colnames(data)
     values$data_mtf<-data
     values$data_load_mtf_success<-TRUE
+    
+    values$Import_mtf_split_scripts <- '# You need to specify split_data
+# split_data is a list of vectors where every element of the list represents an imported file.
+# The imported files are in file_data (dataframe).
+# The data of the select column is selected_data (array).'
   })
 })
 ###meta data csv
@@ -742,9 +750,62 @@ observeEvent(input$Import_mtf_metadata_csv,{
   }
 })
 
+### split
 
+observeEvent(input$Import_mtf_split_method_script,{
+  showModal(
+    modalDialog(size = "l",easyClose = T,fade = T,
+                aceEditor("script_split_method",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value=values$Import_mtf_split_scripts),
+                footer = tagList(
+                  actionButton("save_script_split_method", "save")
+                )
+    )
+  )
+})
+observeEvent(input$save_script_split_method,{
+  values$Import_mtf_split_scripts <- input$script_split_method
+  removeModal()
+})
 
 observeEvent(input$Import_start_mapping_mtf,{
+  if(input$Import_mtf_split_method != 'None') {
+    file_data <- values$data_mtf
+    selected_col <- input$Import_mtf_column_name
+    selected_data <- file_data[[selected_col]]
+    split_data <- list()
+    if(input$Import_mtf_split_method == 'Regular Expression') {
+      split_data <- strsplit(selected_data, input$Import_mtf_split_method_regex)
+    } else if (input$Import_mtf_split_method == 'Separating Number') {
+      x <- input$Import_mtf_split_method_sep_number
+      for(i in 1:length(selected_data)) {
+        splits <- floor(nchar(selected_data[[i]])/x)
+        split_data[[i]] <- substring(selected_data[[i]], ((0:splits)*x+1),((1:(splits+1))*x))
+      }
+    } else if (input$Import_mtf_split_method == 'Script') {
+      tryCatch({
+        eval(parse(text=input$script_split_method))
+        if(!is.list(split_data) || !is.character(unlist(split_data))) {
+          stop("Result needs to be a list of strings.")
+        }
+      },
+      error=function(e){
+        shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+      })
+    }
+    
+    main_ids <- rep(1:length(split_data),lengths(split_data))
+    sub_ids <- vector()
+    for(split_length in lengths(split_data)) {
+      sub_ids <- c(sub_ids,1:split_length)
+    }
+    ids <- sprintf("%d-%d", main_ids, sub_ids)
+    
+    file_data[[selected_col]] <- NULL
+    file_data <- file_data[main_ids, 1:ncol(file_data)]
+    file_data[[selected_col]] <- unlist(split_data)
+    file_data$id <- ids
+    values$data_mtf <- file_data
+  }
   values$start_mapping_mtf<-TRUE
 })
 
@@ -779,6 +840,14 @@ observeEvent(input$Import_check_mtf,{
 })
 
 
+
+output$UI_Import_mtf_column_name <- renderUI({
+  selectInput(inputId = "Import_mtf_column_name", "Column:", choices=values$header_mtf)%>%
+  shinyInput_label_embed(
+    icon("info") %>%
+      bs_embed_tooltip(title = "Select a column with the data you want to split.")
+  )
+})
 
 output$UI_Import_mtf_id_doc<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_id_doc",label = "Map id_doc",
