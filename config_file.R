@@ -26,3 +26,12 @@ c25 <- rainbow(25)
 
 #set python path
 Sys.setenv(PATH="/home/rstudio/miniconda3/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games")
+
+#login credentials
+library(sodium)
+credentials = data.frame(
+  username_id = c("rstudio"),
+  passod   = sapply(c("rstudio"),password_store),
+  permission  = c("basic"), 
+  stringsAsFactors = F
+)
