@@ -574,13 +574,13 @@ observe({
 observeEvent(input$Import_script_mde4,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_type",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_type can be specified in this script
+                aceEditor("script_mde4",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
+                          #the vector values$Import_csv_mde4 can be specified in this script
                           #if you want to use data from the imported csv file, you can use values$data_csv
                           #example:
-                          # values$Import_csv_type<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
+                          # values$Import_csv_mde4<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
                           #or
-                          # values$Import_csv_type<-rep("unbekannter Titel",dim(values$data_csv)[1])
+                          # values$Import_csv_mde4<-rep("unbekannter Titel",dim(values$data_csv)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde4", "save")
@@ -602,7 +602,7 @@ observeEvent(input$save_Imp_mde4,{
 observeEvent(input$Import_type_mde4,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_type",label = "types (one for all)",placeholder = "Please type in the type"),
+                textInput(inputId = "Import_csv_save_man_mde4",label = "types (one for all)",placeholder = "Please type in the type"),
                 actionButton("Import_csv_save_man_save_mde4", "save")
     )
   )
@@ -631,13 +631,13 @@ observe({
 observeEvent(input$Import_script_mde5,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_type",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_type can be specified in this script
+                aceEditor("script_mde5",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
+                          #the vector values$Import_csv_mde5 can be specified in this script
                           #if you want to use data from the imported csv file, you can use values$data_csv
                           #example:
-                          # values$Import_csv_type<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
+                          # values$Import_csv_mde5<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
                           #or
-                          # values$Import_csv_type<-rep("unbekannter Titel",dim(values$data_csv)[1])
+                          # values$Import_csv_mde5<-rep("unbekannter Titel",dim(values$data_csv)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde5", "save")
@@ -659,8 +659,8 @@ observeEvent(input$save_Imp_mde5,{
 observeEvent(input$Import_type_mde5,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_type",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_csv_save_man_save_mde4", "save")
+                textInput(inputId = "Import_csv_save_man_mde5",label = "types (one for all)",placeholder = "Please type in the type"),
+                actionButton("Import_csv_save_man_save_mde5", "save")
     )
   )
 }
@@ -688,13 +688,13 @@ observe({
 observeEvent(input$Import_script_mde6,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_type",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_type can be specified in this script
+                aceEditor("script_mde6",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
+                          #the vector values$Import_csv_mde6 can be specified in this script
                           #if you want to use data from the imported csv file, you can use values$data_csv
                           #example:
-                          # values$Import_csv_type<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
+                          # values$Import_csv_mde6<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
                           #or
-                          # values$Import_csv_type<-rep("unbekannter Titel",dim(values$data_csv)[1])
+                          # values$Import_csv_mde6<-rep("unbekannter Titel",dim(values$data_csv)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde6", "save")
@@ -716,7 +716,7 @@ observeEvent(input$save_Imp_mde6,{
 observeEvent(input$Import_type_mde6,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_type",label = "types (one for all)",placeholder = "Please type in the type"),
+                textInput(inputId = "Import_csv_save_man_mde6",label = "types (one for all)",placeholder = "Please type in the type"),
                 actionButton("Import_csv_save_man_save_mde6", "save")
     )
   )
@@ -745,13 +745,13 @@ observe({
 observeEvent(input$Import_script_mde7,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_type",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_type can be specified in this script
+                aceEditor("script_mde7",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
+                          #the vector values$Import_csv_mde7 can be specified in this script
                           #if you want to use data from the imported csv file, you can use values$data_csv
                           #example:
-                          # values$Import_csv_type<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
+                          # values$Import_csv_mde7<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
                           #or
-                          # values$Import_csv_type<-rep("unbekannter Titel",dim(values$data_csv)[1])
+                          # values$Import_csv_mde7<-rep("unbekannter Titel",dim(values$data_csv)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde7", "save")
@@ -773,7 +773,7 @@ observeEvent(input$save_Imp_mde7,{
 observeEvent(input$Import_type_mde7,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_type",label = "types (one for all)",placeholder = "Please type in the type"),
+                textInput(inputId = "Import_csv_save_man_mde7",label = "types (one for all)",placeholder = "Please type in the type"),
                 actionButton("Import_csv_save_man_save_mde7", "save")
     )
   )
@@ -802,13 +802,13 @@ observe({
 observeEvent(input$Import_script_mde8,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_type",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_type can be specified in this script
+                aceEditor("script_mde8",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
+                          #the vector values$Import_csv_mde8 can be specified in this script
                           #if you want to use data from the imported csv file, you can use values$data_csv
                           #example:
-                          # values$Import_csv_type<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
+                          # values$Import_csv_mde8<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
                           #or
-                          # values$Import_csv_type<-rep("unbekannter Titel",dim(values$data_csv)[1])
+                          # values$Import_csv_mde8<-rep("unbekannter Titel",dim(values$data_csv)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde8", "save")
@@ -830,7 +830,7 @@ observeEvent(input$save_Imp_mde8,{
 observeEvent(input$Import_type_mde8,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_type",label = "types (one for all)",placeholder = "Please type in the type"),
+                textInput(inputId = "Import_csv_save_man_mde8",label = "types (one for all)",placeholder = "Please type in the type"),
                 actionButton("Import_csv_save_man_save_mde8", "save")
     )
   )
@@ -859,13 +859,13 @@ observe({
 observeEvent(input$Import_script_mde9,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_type",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_type can be specified in this script
+                aceEditor("script_mde9",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
+                          #the vector values$Import_csv_mde9 can be specified in this script
                           #if you want to use data from the imported csv file, you can use values$data_csv
                           #example:
-                          # values$Import_csv_type<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
+                          # values$Import_csv_mde9<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
                           #or
-                          # values$Import_csv_type<-rep("unbekannter Titel",dim(values$data_csv)[1])
+                          # values$Import_csv_mde9<-rep("unbekannter Titel",dim(values$data_csv)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde9", "save")
@@ -887,7 +887,7 @@ observeEvent(input$save_Imp_mde9,{
 observeEvent(input$Import_type_mde9,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_type",label = "types (one for all)",placeholder = "Please type in the type"),
+                textInput(inputId = "Import_csv_save_man_mde9",label = "types (one for all)",placeholder = "Please type in the type"),
                 actionButton("Import_csv_save_man_save_mde9", "save")
     )
   )
@@ -1931,12 +1931,12 @@ observeEvent(input$Import_script_mde1_mtf,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
                 aceEditor("script_mde1_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_type can be specified in this script
+                          #the vector values$Import_mtf_mde1 can be specified in this script
                           #if you want to use data from the imported mtf file, you can use values$data_mtf
                           #example:
-                          # values$Import_mtf_type<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
+                          # values$Import_mtf_mde1<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
                           #or
-                          # values$Import_mtf_type<-rep("unbekannter Titel",dim(values$data_mtf)[1])
+                          # values$Import_mtf_mde1<-rep("unbekannter Titel",dim(values$data_mtf)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde1_mtf", "save")
@@ -1988,12 +1988,12 @@ observeEvent(input$Import_script_mde2_mtf,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
                 aceEditor("script_mde2_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_type can be specified in this script
+                          #the vector values$Import_mtf_mde2 can be specified in this script
                           #if you want to use data from the imported mtf file, you can use values$data_mtf
                           #example:
-                          # values$Import_mtf_type<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
+                          # values$Import_mtf_mde2<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
                           #or
-                          # values$Import_mtf_type<-rep("unbekannter Titel",dim(values$data_mtf)[1])
+                          # values$Import_mtf_mde2<-rep("unbekannter Titel",dim(values$data_mtf)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde2_mtf", "save")
@@ -2045,12 +2045,12 @@ observeEvent(input$Import_script_mde3_mtf,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
                 aceEditor("script_mde3_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_type can be specified in this script
+                          #the vector values$Import_mtf_mde3 can be specified in this script
                           #if you want to use data from the imported mtf file, you can use values$data_mtf
                           #example:
-                          # values$Import_mtf_type<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
+                          # values$Import_mtf_mde3<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
                           #or
-                          # values$Import_mtf_type<-rep("unbekannter Titel",dim(values$data_mtf)[1])
+                          # values$Import_mtf_mde3<-rep("unbekannter Titel",dim(values$data_mtf)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde3_mtf", "save")
@@ -2102,12 +2102,12 @@ observeEvent(input$Import_script_mde4_mtf,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
                 aceEditor("script_mde4_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_type can be specified in this script
+                          #the vector values$Import_mtf_mde4 can be specified in this script
                           #if you want to use data from the imported mtf file, you can use values$data_mtf
                           #example:
-                          # values$Import_mtf_type<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
+                          # values$Import_mtf_mde4<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
                           #or
-                          # values$Import_mtf_type<-rep("unbekannter Titel",dim(values$data_mtf)[1])
+                          # values$Import_mtf_mde4<-rep("unbekannter Titel",dim(values$data_mtf)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde4_mtf", "save")
@@ -2159,12 +2159,12 @@ observeEvent(input$Import_script_mde5_mtf,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
                 aceEditor("script_mde5_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_type can be specified in this script
+                          #the vector values$Import_mtf_mde5 can be specified in this script
                           #if you want to use data from the imported mtf file, you can use values$data_mtf
                           #example:
-                          # values$Import_mtf_type<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
+                          # values$Import_mtf_mde5<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
                           #or
-                          # values$Import_mtf_type<-rep("unbekannter Titel",dim(values$data_mtf)[1])
+                          # values$Import_mtf_mde5<-rep("unbekannter Titel",dim(values$data_mtf)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde5_mtf", "save")
@@ -2216,12 +2216,12 @@ observeEvent(input$Import_script_mde6_mtf,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
                 aceEditor("script_mde6_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_type can be specified in this script
+                          #the vector values$Import_mtf_mde6 can be specified in this script
                           #if you want to use data from the imported mtf file, you can use values$data_mtf
                           #example:
-                          # values$Import_mtf_type<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
+                          # values$Import_mtf_mde6<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
                           #or
-                          # values$Import_mtf_type<-rep("unbekannter Titel",dim(values$data_mtf)[1])
+                          # values$Import_mtf_mde6<-rep("unbekannter Titel",dim(values$data_mtf)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde6_mtf", "save")
@@ -2273,12 +2273,12 @@ observeEvent(input$Import_script_mde7_mtf,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
                 aceEditor("script_mde7_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_type can be specified in this script
+                          #the vector values$Import_mtf_mde7 can be specified in this script
                           #if you want to use data from the imported mtf file, you can use values$data_mtf
                           #example:
-                          # values$Import_mtf_type<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
+                          # values$Import_mtf_mde7<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
                           #or
-                          # values$Import_mtf_type<-rep("unbekannter Titel",dim(values$data_mtf)[1])
+                          # values$Import_mtf_mde7<-rep("unbekannter Titel",dim(values$data_mtf)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde7_mtf", "save")
@@ -2330,12 +2330,12 @@ observeEvent(input$Import_script_mde8_mtf,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
                 aceEditor("script_mde8_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_type can be specified in this script
+                          #the vector values$Import_mtf_mde8 can be specified in this script
                           #if you want to use data from the imported mtf file, you can use values$data_mtf
                           #example:
-                          # values$Import_mtf_type<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
+                          # values$Import_mtf_mde8<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
                           #or
-                          # values$Import_mtf_type<-rep("unbekannter Titel",dim(values$data_mtf)[1])
+                          # values$Import_mtf_mde8<-rep("unbekannter Titel",dim(values$data_mtf)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde8_mtf", "save")
@@ -2387,12 +2387,12 @@ observeEvent(input$Import_script_mde9_mtf,{
   showModal(
     modalDialog(size = "l",easyClose = T,fade = T,
                 aceEditor("script_mde9_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_type can be specified in this script
+                          #the vector values$Import_mtf_mde9 can be specified in this script
                           #if you want to use data from the imported mtf file, you can use values$data_mtf
                           #example:
-                          # values$Import_mtf_type<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
+                          # values$Import_mtf_mde9<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
                           #or
-                          # values$Import_mtf_type<-rep("unbekannter Titel",dim(values$data_mtf)[1])
+                          # values$Import_mtf_mde9<-rep("unbekannter Titel",dim(values$data_mtf)[1])
                           '),
                 footer = tagList(
                   actionButton("save_Imp_mde9_mtf", "save")

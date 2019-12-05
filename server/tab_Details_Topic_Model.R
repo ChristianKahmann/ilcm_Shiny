@@ -30,6 +30,9 @@ output$download_phi<-downloadHandler(
 #render LDA Viz plot based on the calculated topic models
 output$TM_LDAvis <- LDAvis::renderVis({
   #svd_tsne <- function(x) tsne::tsne(svd(x)$u)
+  validate(
+    need(!is.null(input$coll),message=F)
+  )
   if(input$coll=="Results"){
     return(NULL)
   }

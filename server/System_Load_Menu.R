@@ -41,104 +41,122 @@ observeEvent(input$openOptionsModal, {
   showModal(
     modalDialog(title = tags$h2("Options"),footer = NULL,easyClose = T,size = "l",fade = T,
                 tags$h3("Languages"),
-                fluidRow(
-                  column(3,
-                         tags$span(icon("language"),tags$b("Available languages in spaCy:"))
-                  ),
-                  column(4,
-                         uiOutput("options_spacy_installed")
-                  ),
-                  column(4,offset=1,
-                         uiOutput("options_add_model_select_UI"),
-                         withBusyIndicatorUI(
-                           bsButton(inputId = "options_add_model",label = "Add model",icon = icon("plus"),style = "success")
+                fluidRow(style="margin-left:0px;margin-right:0px",
+                         column(3,
+                                tags$span(icon("language"),tags$b("Available languages in spaCy:"))
+                         ),
+                         column(4,
+                                uiOutput("options_spacy_installed")
+                         ),
+                         column(4,offset=1,
+                                uiOutput("options_add_model_select_UI"),
+                                withBusyIndicatorUI(
+                                  bsButton(inputId = "options_add_model",label = "Add model",icon = icon("plus"),style = "success")
+                                )
                          )
-                  )
                 ),
                 tags$hr(),
                 tags$br(),
                 tags$h3("Connections"),
-                fluidRow(
-                  column(5,
-                         fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
-                                  icon("database"),
-                                  tags$b("MariaDB")
-                         ),
-                         column(6,
-                                textInput(inputId = "options_database_host",value = values$host,label = "Host:")
-                         ),
-                         column(6,
-                                textInput(inputId = "options_database_port",value = values$db_port,label = "Port:")
-                         ),
-                         fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
-                                  column(6,
-                                         withBusyIndicatorUI(
-                                           bsButton(inputId = "options_database_change",label = "change connection",icon = icon("edit"),style = "warning")
+                fluidRow(style="margin-left:0px;margin-right:0px",
+                         column(5,
+                                fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
+                                         icon("database"),
+                                         tags$b("MariaDB")
+                                ),
+                                column(6,
+                                       textInput(inputId = "options_database_host",value = values$host,label = "Host:")
+                                ),
+                                column(6,
+                                       textInput(inputId = "options_database_port",value = values$db_port,label = "Port:")
+                                ),
+                                fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
+                                         column(6,
+                                                withBusyIndicatorUI(
+                                                  bsButton(inputId = "options_database_change",label = "change connection",icon = icon("edit"),style = "warning")
+                                                )
+                                         ),
+                                         column(6,
+                                                uiOutput(outputId = "options_database_connected")
                                          )
-                                  ),
-                                  column(6,
-                                         uiOutput(outputId = "options_database_connected")
-                                  )
-                         )
-                  ),
-                  column(5,offset=2,
-                         fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
-                                  icon("search"),
-                                  tags$b("Solr")
+                                )
                          ),
-                         column(6,
-                                textInput(inputId = "options_solr_host",value = values$update_solr_url,label = "Host:")
-                         ),
-                         column(6,
-                                textInput(inputId = "options_solr_port",value = values$update_solr_port,label = "Port:")
-                         ),
-                         fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
-                                  column(6,
-                                         withBusyIndicatorUI(
-                                           bsButton(inputId = "options_solr_change",label = "change connection",icon = icon("edit"),style = "warning")
+                         column(5,offset=2,
+                                fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
+                                         icon("search"),
+                                         tags$b("Solr")
+                                ),
+                                column(6,
+                                       textInput(inputId = "options_solr_host",value = values$update_solr_url,label = "Host:")
+                                ),
+                                column(6,
+                                       textInput(inputId = "options_solr_port",value = values$update_solr_port,label = "Port:")
+                                ),
+                                fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
+                                         column(6,
+                                                withBusyIndicatorUI(
+                                                  bsButton(inputId = "options_solr_change",label = "change connection",icon = icon("edit"),style = "warning")
+                                                )
+                                         ),
+                                         column(6,
+                                                uiOutput(outputId = "options_solr_connected")
                                          )
-                                  ),
-                                  column(6,
-                                         uiOutput(outputId = "options_solr_connected")
-                                  )
+                                )
                          )
-                  )
                 ),
                 #Delete existing copora
                 tags$hr(),
                 tags$br(),
                 tags$h3("Corpora"),
-                fluidRow(
-                  column(3,
-                         tags$span(icon("trash"),tags$b("Remove Corpora"))
-                  ),
-                  column(3,
-                         selectInput(inputId ="Options_delete_dataset_select",label = "Corpus:",choices = values$datasets_available,multiple = F)
-                  ),
-                  column(2,
-                         checkboxInput(inputId = "options_delete_dataset_annotations",label = "Include Annotations",value = FALSE)
-                  )
-                ),
-                fluidRow(
-                  column(3,     
-                         shinyBS::bsButton(inputId = "options_delete_dataset_action",label = "Delete chosen dataset",icon = icon("trash"),style = "danger")
-                  ),
-                  column(4,
-                         withBusyIndicatorUI(
-                           shinyBS::bsButton(inputId = "options_update_solr",label = "Re-index solr",icon = icon("refresh"),style = "default")
+                fluidRow(style="margin-left:0px;margin-right:0px",
+                         column(3,
+                                tags$span(icon("trash"),tags$b("Remove Corpora"))
+                         ),
+                         column(3,
+                                selectInput(inputId ="Options_delete_dataset_select",label = "Corpus:",choices = values$datasets_available,multiple = F)
+                         ),
+                         column(2,
+                                checkboxInput(inputId = "options_delete_dataset_annotations",label = "Include Annotations",value = FALSE)
                          )
-                  )
+                ),
+                fluidRow(style="margin-left:0px;margin-right:0px",
+                         column(3,     
+                                shinyBS::bsButton(inputId = "options_delete_dataset_action",label = "Delete chosen dataset",icon = icon("trash"),style = "danger")
+                         ),
+                         column(4,
+                                withBusyIndicatorUI(
+                                  shinyBS::bsButton(inputId = "options_update_solr",label = "Re-index solr",icon = icon("refresh"),style = "default")
+                                )
+                         )
+                ),
+                #add new users
+                tags$hr(),
+                tags$br(),
+                tags$h3("User"),
+                fluidRow(style="margin-left:0px;margin-right:0px",
+                         column(3,
+                                tags$span(icon("user"),tags$b("Add Users"))
+                         ),
+                         column(4,
+                                textInput(inputId = "options_newuser_username",label = "Username",placeholder = "username",value = "")
+                         ),
+                         column(4,
+                                passwordInput(inputId = "options_newuser_password",label = "Password",placeholder = "passwd",value = "")
+                         )
+                ),
+                fluidRow(style="margin-left:0px;margin-right:0px",
+                         shinyBS::bsButton(inputId = "option_create_newuser",label = "Add user",icon = icon("user-plus"),style = "success")   
                 ),
                 tags$hr(),
                 tags$br(),
                 tags$h3("Other"),
-                fluidRow(
-                  column(3,
-                         tags$span(icon("upload"),tags$b("File Upload"))
-                  ),
-                  column(4,
-                         numericInput(inputId = "options_max_size_import",label = "max upload size for data import in Mb",value = max_upload_file_size,min = 5,max = 1000,step = 1)
-                  )
+                fluidRow(style="margin-left:0px;margin-right:0px",
+                         column(3,
+                                tags$span(icon("upload"),tags$b("File Upload"))
+                         ),
+                         column(4,
+                                numericInput(inputId = "options_max_size_import",label = "max upload size for data import in Mb",value = max_upload_file_size,min = 5,max = 1000,step = 1)
+                         )
                 )
                 
     )
@@ -392,4 +410,31 @@ observeEvent(ignoreInit = T,input$options_add_model,{
       shinyWidgets::sendSweetAlert(session=session,title = "there was an error" ,text = paste(ret,collapse = " "),type = "error")
     }
   })
+})
+
+
+
+
+#add users
+observeEvent(input$option_create_newuser,{
+  
+  name<-input$options_newuser_username
+  passwd<-input$options_newuser_password
+  if(nchar(name)<1){
+    shinyWidgets::sendSweetAlert(session = session,title = "No username specified",text = "Please give a username",type = "warning")
+    return()
+  }
+  if(nchar(passwd)<1){
+    shinyWidgets::sendSweetAlert(session = session,title = "No password specified",text = "Please give a password",type = "warning")
+    return()
+  }
+  if(name%in%credentials$username_id){
+    shinyWidgets::sendSweetAlert(session = session,title = "This username is already used",text = "Please give another username",type = "warning")
+    return()
+  }
+  
+  credentials<<-rbind(credentials,c(name,sodium::password_store(passwd),"basic"))
+  Code_for_config_file<-paste0("credentials<-rbind(credentials,c('",name,"',sodium::password_store('",passwd,"'),'basic'))")
+  write(Code_for_config_file,file = "config_file.R",append = T)
+  shinyWidgets::sendSweetAlert(session = session,title = "New User created",text = "You can logout and then use thw created User to Login",type = "success")
 })

@@ -32,6 +32,9 @@ observeEvent(input$Results_Reset,{
 
 #reset details to null lwhen results tab is oben
 observe({
+  validate(
+    need(!is.null(input$coll),message=F)
+  )
   if(input$coll=="Results"){
     values$Details_Analysis<-NULL
     values$fe_vocab<-NULL

@@ -93,6 +93,9 @@ output$script_UI<-renderUI({
 
 
 observe({
+  validate(
+    need(!is.null(input$analyses_selected),message=F)
+  )
   if(input$analysis_selected%in%c("Cooccurrence_Analysis","Frequency_Extraction",
                                   "Volatility_Analysis","Topic_Model","Dictionary_Extraction","Classification","Sentiment_Analysis","Factorial_Analysis","Document_Deduplication","Keyword_Extraction")){
     

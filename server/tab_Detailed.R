@@ -384,6 +384,9 @@ output$Det_zu<-renderUI({
 
 #create solr suggest suggestions for detailed search
 observe({
+  validate(
+    need(!is.null(input$Det_inputtext),message=F)
+  )
   x<-input$Det_inputtext
   praefix<-stringr::str_extract_all(string = x,pattern = "([a-zA-Z\\(\\\"\\+\\#\\-)]{1,100}[\\+\\-\\#]{1})*",simplify = T)[1,1]
   x<-stringr::str_replace(string = x,pattern = "([a-zA-Z\\(\\\"\\+\\#\\-)]{1,100}[\\+\\-\\#]{1})*",replacement="")

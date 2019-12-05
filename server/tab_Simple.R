@@ -66,6 +66,9 @@ observeEvent(input$simple_action,{
 
 #create solr suggest suggestions for simple search
 observe({
+  validate(
+    need(!is.null(input$simple_inputtext),message=F)
+  )
   x<-input$simple_inputtext
   praefix<-stringr::str_extract_all(string = x,pattern = "([a-zA-Z\\(\\\"\\+\\#\\-)]{1,100}[\\+\\-\\#]{1})*",simplify = T)[1,1]
   x<-stringr::str_replace(string = x,pattern = "([a-zA-Z\\(\\\"\\+\\#\\-)]{1,100}[\\+\\-\\#]{1})*",replacement="")
