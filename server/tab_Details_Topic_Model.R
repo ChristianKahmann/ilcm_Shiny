@@ -300,17 +300,14 @@ output$TM_stm_hist <- renderPlot({
 
 # topic correlation
 observeEvent(input$TM_stm_topicCorr_start,{
-  print(" obeserve event input$TM_stm_topicCorr_start => set values$TM_stm_topicCorr_show <- TRUE")
   values$TM_stm_topicCorr_show <- TRUE
   })
 
 output$TM_stm_topicCorr_show<-reactive({
-  print(paste("output$TM_stm_topicCorr_show<-reactive: values: ", values$TM_stm_topicCorr_show))
   return(values$TM_stm_topicCorr_show)
 })
 
 output$TM_stm_topicCorr_calc <- renderPlot({
-  print("calculate topic correlation")
   values$tm_stm_topicCorr_method <- "simple"
   topicCorrResult <- topicCorr(model = values$tm_stm_model, method = values$tm_stm_topicCorr_method)
   plot.topicCorr(x = topicCorrResult)
@@ -320,19 +317,16 @@ outputOptions(output, "TM_stm_topicCorr_show", suspendWhenHidden = FALSE)
 
 #estimateEffect
 observeEvent(input$TM_stm_estimateEffect_start,{
-  print(" observe event input$TM_stm_estimateEffect_start => set values$TM_stm_estimateEffect_show <- TRUE")
   load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
   values$tm_stm_metaData <- combineMetaDataWithMetaNamesForMDEs(meta, meta_names)
   values$TM_stm_estimateEffect_show <- TRUE
 })
 
 output$TM_stm_estimateEffect_show<-reactive({
-  print(paste("output$TM_stm_estimateEffect_show<-reactive: values: ", values$TM_stm_topicCorr_show))
   values$TM_stm_estimateEffect_show
 })
 
 output$TM_stm_estimateEffect_calc <- renderPlot({
-  print("calculate estimateEffect")
   values$tm_stm_metaData$countryName <- as.factor(values$tm_stm_metaData$countryName)
   values$tm_stm_estimateEffect_formula <- ~countryName
   values$tm_stm_estimateEffect_covariate <- "countryName"
