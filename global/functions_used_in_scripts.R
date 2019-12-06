@@ -998,3 +998,19 @@ combineMetaDataWithMetaNamesForMDEs <- function(meta, metanames){
   colnames(metaDataToUse) <- colnamesInclMetaNames
   return (metaDataToUse)
 }
+
+getParametersFromRData <- function(pathToResultsFolder, specificFolderName){
+  load(paste(pathToResultsFolder,specificFolderName,"/parameters.RData", sep=""))
+  return(parameters)
+}
+
+
+# data is a matrix having columns "task id", "collection" and "creation time" as first 3 elements in this order from which the sepcific folder name is created by pasting with underscore e.g. "165_myCollection_2019-11-27 15:20:40"
+# this data object is created at output$more_details_topic_table selecting the selected row from values$tasks_tm (which is a matrix like described above but with multiple entries for all results) created by output$Topic_Results in the value "data_finished"
+# this is used as a work around to not refactor all existing code but to also get parameters from RData object using the given data produced with the existing code before.
+# it is necessary to get parameters from RData object because Structural Topic Models have many additional parameters than used before. The storage of these parameters in the database would lots of additional code work and it is planned to read them from RData in the furture and skip storage of parameters in database 
+getSpecificResultFolderNameFromSelectedTopic <- function(data){
+  specificResultFolderName <- paste(data[1],data[2],data[3], sep = "_")
+  
+  return(specificResultFolderName)
+}
