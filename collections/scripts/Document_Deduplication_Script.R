@@ -38,13 +38,27 @@ error<-try(expr = {
   RMariaDB::dbDisconnect(mydb)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished loading data from database",file = logfile)
   
+  
+  #sanity check
+  log_to_file(message = "<b>Step 3/9: Sanity check</b>",file = logfile)
+  #token object not empty
+  log_to_file(message = "&emsp; meta object not empty?",logfile)
+  if(dim(meta)[1]>1){
+    log_to_file(message = "&emsp; ✔",logfile)
+  }
+  else{
+    log_to_file(message = "&emsp;<b style='color:red'>&#10008; No documents were found in the database for the specified collection.</b>",logfile)
+    stop("Meta empty")
+  }
+
+  
   #create minhashes
-  log_to_file(message = "<b>Step 3/9: Creating hash fucntion</b>",file = logfile)
+  log_to_file(message = "<b>Step 4/9: Creating hash fucntion</b>",file = logfile)
   minhash <- minhash_generator(n = 480, seed = 3552)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  ",file = logfile)
   
   # create corpus object
-  log_to_file(message = "<b>Step 4/9: Creating corpus object and calculating hashes</b>",file = logfile)
+  log_to_file(message = "<b>Step 5/9: Creating corpus object and calculating hashes</b>",file = logfile)
   corpus <- TextReuseCorpus(text=meta$body, tokenizer = tokenize_ngrams, n = 5,
                             minhash_func = minhash, keep_tokens = TRUE,
                             progress = TRUE)
@@ -54,13 +68,13 @@ error<-try(expr = {
   
   
   # find candidates
-  log_to_file(message = "<b>Step 5/9: Extract possible candidates</b>",file = logfile)
+  log_to_file(message = "<b>Step 6/9: Extract possible candidates</b>",file = logfile)
   candidates <- lsh_candidates(buckets)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  ",file = logfile)
   
   
   # calculate similarity
-  log_to_file(message = "<b>Step 6/9: Calculate similarity score for candidates</b>",file = logfile)
+  log_to_file(message = "<b>Step 7/9: Calculate similarity score for candidates</b>",file = logfile)
   if(parameters$DD_similarity_measure=="jaccard bag similarity"){
     results<-data.frame(lsh_compare(candidates, corpus, jaccard_bag_similarity, progress = FALSE),stringsAsFactors = F)
   }
@@ -82,7 +96,7 @@ error<-try(expr = {
         log_to_file(message = "<b>No document pair had a higher similarity than the specified threshold. As a result no new collection was created.</b>",file = logfile)
       }
       else{
-        log_to_file(message = "<b>Step 7/9: Determine which documents to keep and which to remove from collection</b>",file = logfile)
+        log_to_file(message = "<b>Step 8/9: Determine which documents to keep and which to remove from collection</b>",file = logfile)
         ####non interactive mode###
         log_to_file(message = "<b>Non-interactive mode chosen</b>",file = logfile)
         results<-results[remove,,drop=F]
@@ -287,14 +301,14 @@ error<-try(expr = {
       ###interactive mode###
       log_to_file(message = "<b>Interactive mode chosen</b>",file = logfile)
       
-      log_to_file(message = "<b>Step 7/8: Saving results for interactive adjustments</b>",file = logfile)
+      log_to_file(message = "<b>Step 8/9: Saving results for interactive adjustments</b>",file = logfile)
       dir.create(path0)
       save(info,results,meta,file=paste0(path0,"info_and_removal_candidates.RData"))
       log_to_file(message = "   <b style='color:green'> ✔ </b> Finished saving results",logfile)
       
       
       #Wrinting metadata to database Task column
-      log_to_file(message = "<b>Step 8/8: Writing task parameter to database</b>",file = logfile)
+      log_to_file(message = "<b>Step 9/9: Writing task parameter to database</b>",file = logfile)
       write_metadata_to_database(parameters,host = host,port = db_port)
       log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
       

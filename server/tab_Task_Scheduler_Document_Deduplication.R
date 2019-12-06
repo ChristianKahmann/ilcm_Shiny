@@ -5,16 +5,16 @@ output$Analysis_Parameter_DD<-renderUI({
     tags$hr(),
     #standard parameters
     fluidRow(
-      column(2,
-             materialSwitch(inputId = "DD_interactive",label = "Interactive mode?",value = TRUE,status = "primary",right = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "The interactive mode allows user interaction in choosing the strategy and the documents to keep by hand inside the Results-Tab.
-                     The non nteractive mode will create a new collection with the suffix '_deduplicated' based on the parameters chosen in the task scheduler.", placement = "right"
-                   )
-               ) 
-      ),
+      # column(2,
+      #        materialSwitch(inputId = "DD_interactive",label = "Interactive mode?",value = TRUE,status = "primary",right = T)%>%
+      #          shinyInput_label_embed(
+      #            shiny_iconlink() %>%
+      #              bs_embed_popover(
+      #                title = "The interactive mode allows user interaction in choosing the strategy and the documents to keep by hand inside the Results-Tab.
+      #                The non nteractive mode will create a new collection with the suffix '_deduplicated' based on the parameters chosen in the task scheduler.", placement = "right"
+      #              )
+      #          ) 
+      # ),
       column(2,
              #"ratio of matches" entfernt, da kein symetrisches Maß, die graphbasierte Entfernung dies aber vorsieht  
              selectInput(inputId = "DD_similarity_measure",label = "Similarity measure",choices = c("jaccard similarity","jaccard bag similarity"),multiple = F)%>%
@@ -33,40 +33,40 @@ output$Analysis_Parameter_DD<-renderUI({
                ) 
       )
     ),
-    fluidRow(
-      conditionalPanel(condition="input.DD_interactive==false",
-                        column(1,
-                              conditionalPanel(condition = 'input.DD_similarity_measure=="jaccard bag similarity"',
-                                               numericInput(inputId = "DD_threshold",label="Threshold",value = 0.2,min=0,max=0.5,step = 0.05)%>%
-                                                 shinyInput_label_embed(
-                                                   shiny_iconlink() %>%
-                                                     bs_embed_popover(
-                                                       title = "If a documents pairs similarity is bigger than the treshold, one of them will be removed according to the chosen strategy.", placement = "right"
-                                                     )
-                                                 ) 
-                              ),
-                              conditionalPanel(condition = 'input.DD_similarity_measure!="jaccard bag similarity"',
-                                               numericInput(inputId = "DD_threshold",label="Threshold",value = 0.4,min=0,max=1,step = 0.05)%>%
-                                                 shinyInput_label_embed(
-                                                   shiny_iconlink() %>%
-                                                     bs_embed_popover(
-                                                       title = "If a documents pairs similarity is bigger than the treshold, one of them will be removed according to the chosen strategy.", placement = "right"
-                                                     )
-                                                 ) 
-                              )
-                       ),
-                       column(2,
-                              selectInput(inputId = "DD_strategy",label = "Document choice strategy",choices = c("longest","shortest","latest","earliest","random","maximum node degree"))%>%
-                                shinyInput_label_embed(
-                                  shiny_iconlink() %>%
-                                    bs_embed_popover(
-                                      title = "Which strategy shall be applied, while choosing the documents to remove from the collection. 'longest' and 'shortest' consider the amount of tokens per document. 
-                                                  Whereas 'latest' and 'earliest' use the meta data 'date' to determine which document to keep and which to remove. The random option selects one of the documents randomly." , placement = "right"
-                                    )
-                                ) 
-                       )
-      )
-    ),
+    # fluidRow(
+    #   conditionalPanel(condition="input.DD_interactive==false",
+    #                     column(1,
+    #                           conditionalPanel(condition = 'input.DD_similarity_measure=="jaccard bag similarity"',
+    #                                            numericInput(inputId = "DD_threshold",label="Threshold",value = 0.2,min=0,max=0.5,step = 0.05)%>%
+    #                                              shinyInput_label_embed(
+    #                                                shiny_iconlink() %>%
+    #                                                  bs_embed_popover(
+    #                                                    title = "If a documents pairs similarity is bigger than the treshold, one of them will be removed according to the chosen strategy.", placement = "right"
+    #                                                  )
+    #                                              ) 
+    #                           ),
+    #                           conditionalPanel(condition = 'input.DD_similarity_measure!="jaccard bag similarity"',
+    #                                            numericInput(inputId = "DD_threshold",label="Threshold",value = 0.4,min=0,max=1,step = 0.05)%>%
+    #                                              shinyInput_label_embed(
+    #                                                shiny_iconlink() %>%
+    #                                                  bs_embed_popover(
+    #                                                    title = "If a documents pairs similarity is bigger than the treshold, one of them will be removed according to the chosen strategy.", placement = "right"
+    #                                                  )
+    #                                              ) 
+    #                           )
+    #                    ),
+    #                    column(2,
+    #                           selectInput(inputId = "DD_strategy",label = "Document choice strategy",choices = c("longest","shortest","latest","earliest","random","maximum node degree"))%>%
+    #                             shinyInput_label_embed(
+    #                               shiny_iconlink() %>%
+    #                                 bs_embed_popover(
+    #                                   title = "Which strategy shall be applied, while choosing the documents to remove from the collection. 'longest' and 'shortest' consider the amount of tokens per document. 
+    #                                               Whereas 'latest' and 'earliest' use the meta data 'date' to determine which document to keep and which to remove. The random option selects one of the documents randomly." , placement = "right"
+    #                                 )
+    #                             ) 
+    #                    )
+    #   )
+    # ),
     bsButton(inputId = "DD_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
 })
@@ -78,7 +78,8 @@ output$Analysis_Parameter_DD<-renderUI({
 observeEvent(input$DD_Submit_Script,{
   #save needed parameters
   parameters<-list(collection=input$collection_selected,
-                   DD_interactive=input$DD_interactive,
+                   #DD_interactive=input$DD_interactive,
+                   DD_interactive=TRUE,
                    DD_similarity_measure=input$DD_similarity_measure,
                    DD_treshold=input$DD_threshold,
                    DD_strategy=input$DD_strategy

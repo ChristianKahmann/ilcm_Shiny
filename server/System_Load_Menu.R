@@ -1,5 +1,6 @@
 
 output$datasets_avaiable<-renderUI({
+  values$import_files_changed
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
   RMariaDB::dbBegin(conn = mydb)
   RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
