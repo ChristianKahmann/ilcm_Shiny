@@ -1,3 +1,5 @@
+source("global/functions_used_in_scripts.R")
+
 
 #render table with finished results for topic models
 output$Topic_Results <- renderDataTable({
@@ -19,8 +21,10 @@ output$Topic_Results <- renderDataTable({
             string = files[i],
             pattern = "_",
             simplify = TRUE
-          )[1, 1:2],
-          as.character(file.info(files_for_date[i])$mtime)
+          )
+          # removed: following part uses mtime instead time stamp in file name which is different
+          #[1, 1:2],
+          #as.character(file.info(files_for_date[i])$mtime)
         ))
     }
   }
@@ -145,7 +149,24 @@ output$more_details_topic_table<-DT::renderDataTable({
   data<-t(data)
   data<-data[-which(is.na(data[,1])),1,drop=F]
   colnames(data)<-paste("Task:",data[1,1])
-  datatable(data = data,selection = "none",
+  dataToUse <- data
+
+  # get parameters from RData object using the first 3 columns being task id, collname and timestamp to get filepath and stored parameters.RData, this only works if in output$Topic_Results mtime is not used (removed there)
+  specificResultFolderName <- getSpecificResultFolderNameFromSelectedTopic(data)
+  parametersForSelectedTM <- getParametersFromRData(pathToResultsFolder = "collections/results/topic-model/", specificFolderName=specificResultFolderName)
+  # add this parameter list to data,  matrix need all same type, so tranform values of to string first
+  indexOfData <- length(dataToUse)+1
+  for(parameterName in names(parametersForSelectedTM)){
+    parameterValue <- parametersForSelectedTM[[parameterName]]
+    parameterValueAsString <- as.String(parameterValue)
+    rowNamesBefore <- rownames(dataToUse)
+    dataToUse <- rbind(dataToUse, c(parameterValueAsString))
+    rownames(dataToUse) <- c(rowNamesBefore,parameterName)
+    indexOfData <- indexOfData +1
+  }
+  
+  datatable(data = dataToUse,selection = "none",
             options = list(dom = 'tp',ordering=F,pageLength=100)
   )
 })
+
