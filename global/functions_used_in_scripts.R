@@ -982,7 +982,7 @@ copyListButRemoveNullValuesAndEmptyStringValues = function(inputList){
 
 # function
 # meta data: set names from mde1/mde2 etc to real meta names
-combineMetaDataWithMetaNamesForMDEs <- function(meta, metanames){
+combineMetaDataWithMetaNamesForMDEs <- function(meta, meta_names){
   colNamesUsed <- colnames(meta)
   colnamesInclMetaNames <- character(length(colNamesUsed))
   colNameCounter <-0

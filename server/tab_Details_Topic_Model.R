@@ -318,7 +318,7 @@ outputOptions(output, "TM_stm_topicCorr_show", suspendWhenHidden = FALSE)
 #estimateEffect
 observeEvent(input$TM_stm_estimateEffect_start,{
   load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
-  values$tm_stm_metaData <- combineMetaDataWithMetaNamesForMDEs(meta, meta_names)
+  values$tm_stm_metaData <- combineMetaDataWithMetaNamesForMDEs(meta = meta, meta_names = meta_names)
   values$TM_stm_estimateEffect_show <- TRUE
 })
 
