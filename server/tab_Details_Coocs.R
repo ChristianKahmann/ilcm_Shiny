@@ -329,16 +329,52 @@ output$cooc_examples_table<-DT::renderDataTable({
     example<-paste(tokens[max(1,(min(id_targets)-k)):min(dim(tokens)[1],(max(id_targets)+k)),"token"],collapse=" ")
     text[i,1]<-example
   }
-  
+  document_ids<-avail[1:number_of_examples]
+  values$coocs_examples_document_ids<-document_ids
   values$coocs_examples_texts<-text
-  #browser()
   for(i in 1:length(input$coocs_examples_words)){
     word<-input$coocs_examples_words[i]
     text[,1]<-stringr::str_replace_all(string = tolower(text[,1]),pattern = paste(" ",word," ",sep=""),replacement = paste0('<b style="color:',colors[i],'"> ',word,' </b>'))
   }
   
-  return(datatable(data = text,escape=F))
+  data<-data.frame(Text=text,
+                   SeeDocument = shinyInput(
+                     shinyBS::bsButton,
+                     length(document_ids),
+                     'coocs_kwic_show_doc_button_',
+                     label = "",
+                     style="primary",
+                     icon=icon("search"),
+                     onclick = 'Shiny.onInputChange(\"coocs_kwic_document\",  this.id)'
+                   ),stringsAsFactors = FALSE)
+  
+
+  return(datatable(data = data,escape=F,selection="none"))
 })
+
+
+#kwic show documents 
+observeEvent(input$coocs_kwic_document,{
+  selected_row<-as.numeric(stringr::str_split(string = input$coocs_kwic_document,pattern = "_",simplify = T)[1,6])
+  validate(
+    need(selected_row>0,message=F)
+  )
+  dataset<- stringr::str_split(string=values$coocs_examples_document_ids[selected_row],pattern = "_",simplify = T)[1,1]
+  doc_id<- stringr::str_split(string=values$coocs_examples_document_ids[selected_row],pattern = "_",simplify = T)[1,2]
+  token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,host=values$host,port=values$port)
+  
+  text<-paste(token[,"word"],collapse=" ")
+  showModal(
+    modalDialog(title = paste0("Document: ",dataset,"_",doc_id),easyClose = T,
+      tags$div(text)
+  ))
+  isolate(shinyjs::runjs('Shiny.onInputChange(\"coocs_kwic_document\",  "coocs_kwic_show_doc_button_0")'))
+})
+
+
+
+
+
 
 
 #link downloadbutton for the exampel texts in  co-occurrences  restuls tab
