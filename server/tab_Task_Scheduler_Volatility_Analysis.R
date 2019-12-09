@@ -390,7 +390,6 @@ output$VA_blacklist_UI<-renderUI({
 
 #start volatility analysis script, if submit button is clicked
 observeEvent(input$VA_Submit_Script,{
-  #browser()
   valid<-check_pruning_parameters(min_t_c = input$VA_min_termfreq_c,max_t_c = input$VA_max_termfreq_c,min_t_p =input$VA_min_termfreq_p,max_t_p =  input$VA_max_termfreq_p
                                   ,min_t_r =input$VA_min_termfreq_r,max_t_r = input$VA_max_termfreq_r,min_t_q = input$VA_min_termfreq_q, max_t_q = input$VA_max_termfreq_q
                                   ,min_d_c = input$VA_min_docfreq_c,max_d_c = input$VA_max_docfreq_c,min_d_p = input$VA_min_docfreq_p,max_d_p = input$VA_max_docfreq_p
@@ -477,11 +476,8 @@ observeEvent(input$VA_Submit_Script,{
                      whitelist_only_results=input$VA_whitelist_only_results
     )
     #create process ID
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-    RMariaDB::dbBegin(conn = mydb)
-    used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-    RMariaDB::dbDisconnect(mydb)
-    ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+    ID<-get_task_id_counter()+1
+    set_task_id_counter(ID)
     #save metadata for process
     process_info<-list(ID,isolate(input$collection_selected),isolate(input$analysis_selected),as.character(Sys.time()))
     #save logfile path
@@ -588,11 +584,8 @@ observeEvent(input$VA_pruning_continue,ignoreInit = T,{
                    whitelist_only_results=input$VA_whitelist_only_results
   )
   #create process ID
-  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-  RMariaDB::dbBegin(conn = mydb)
-  used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-  RMariaDB::dbDisconnect(mydb)
-  ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+  ID<-get_task_id_counter()+1
+  set_task_id_counter(ID)
   #save metadata for process
   process_info<-list(ID,isolate(input$collection_selected),isolate(input$analysis_selected),as.character(Sys.time()))
   #save logfile path

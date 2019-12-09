@@ -10,23 +10,24 @@ error<-try(expr = {
   library(spacyr)
   #load parameters
   load("collections/tmp/tmp.RData")
+  parameters_original<-parameters
   
   #load collection 
-  log_to_file(message = "<b>Step 1/9: Loading collection</b>",file = logfile)
+  log_to_file(message = "<b>Step 1/8: Loading collection</b>",file = logfile)
   load(paste("collections/collections/",unlist(parameters[1]),".RData",sep=""))
   log_to_file(message = "  <b style='color:green'> ✔ </b> Finished loading collection",file = logfile)
   
   
   
   #load data from database
-  log_to_file(message = "<b>Step 2/9: Loading data from database</b>",file = logfile)
+  log_to_file(message = "<b>Step 2/8: Loading data from database</b>",file = logfile)
   db_data<-get_token_meta_and_language_from_db(host=host,port=db_port,id=info[[1]],dataset=info[[2]])
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished loading data from database",file = logfile)
   
   
   
   #sanity check
-  log_to_file(message = "<b>Step 3/9: Sanity check</b>",file = logfile)
+  log_to_file(message = "<b>Step 3/8: Sanity check</b>",file = logfile)
   #token object not empty
   log_to_file(message = "&emsp; token object not empty?",logfile)
   if(dim(db_data$token)[1]>1){
@@ -52,25 +53,25 @@ error<-try(expr = {
   
   
   #preparing parameters
-  log_to_file(message = "<b>Step 4/9: Preparing input parameters</b>",file = logfile)
+  log_to_file(message = "<b>Step 4/8: Preparing input parameters</b>",file = logfile)
   parameters<-prepare_input_parameters(parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
   #preparing token object
-  log_to_file(message = "<b>Step 5/9: Preparing token object</b>",file = logfile)
+  log_to_file(message = "<b>Step 5/8: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
   
   
   #calculating dtm
-  log_to_file(message = "<b>Step 6/9: Calculating DTM</b>",file = logfile)
+  log_to_file(message = "<b>Step 6/8: Calculating DTM</b>",file = logfile)
   dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
   
   #calculating frequencies
-  log_to_file(message = "<b>Step 7/9: Calculating frequencies</b>",file = logfile)
+  log_to_file(message = "<b>Step 7/8: Calculating frequencies</b>",file = logfile)
   frequencies<-calculate_diachron_frequencies(dtm=dtm,meta=db_data$meta)
   doc_freqs_year<-frequencies$doc_freqs_year
   doc_freqs_month<-frequencies$doc_freqs_month
@@ -95,7 +96,7 @@ error<-try(expr = {
   
   
   #Saving results
-  log_to_file(message = "<b>Step 8/9: Saving results</b>",file = logfile)
+  log_to_file(message = "<b>Step 8/8: Saving results</b>",file = logfile)
   vocab<-cbind(colnames(dtm),colSums(dtm))
   vocab<-vocab[order(as.numeric(vocab[,2]),decreasing = T),]
   path<-paste(parameters$id,parameters$collection,sep = "_")
@@ -106,14 +107,10 @@ error<-try(expr = {
   save(vocab,file=paste0(path0,"vocab.RData"))
   save(dtm,file=paste0(path0,"dtm.RData"))
   save(info,file=paste0(path0,"info.RData"))
+  parameters<-parameters_original
   save(parameters,file=paste0(path0,"parameters.RData"))
   log_to_file(message = "   <b style='color:green'> ✔ </b> Finished saving results",logfile)
-  
-  
-  #Wrinting metadata to database Task column
-  log_to_file(message = "<b>Step 9/9: Writing task parameter to database</b>",file = logfile)
-  write_metadata_to_database(parameters,host=host,port=db_port)
-  log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
+
   
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Term Frequency Extraction </b>",logfile)
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))

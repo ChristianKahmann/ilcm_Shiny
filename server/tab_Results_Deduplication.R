@@ -11,6 +11,34 @@ output$Deduplication_Results <- renderDataTable({
   )
   files_for_date <-
     list.files("collections/results/document-deduplication//", full.names = T)
+  #get parameters
+  parameters_all_tasks<-list()
+  for(i in 1:length(files_for_date)){
+    parameters<-list()
+    try({
+      load(paste0(files_for_date[i],"/parameters.RData"))
+    },silent = T)
+    parameters_all_tasks[[i]]<-parameters
+  }
+  
+  parameters_all_tasks<-lapply(parameters_all_tasks,FUN = function(x){
+    lapply(x,FUN = function(y){
+      paste(as.character(y),collapse=" ")
+    })
+  })
+  
+  parameters_all_tasks<-data.table::rbindlist(lapply(parameters_all_tasks,FUN = function(x){
+    parameter_values<-unlist(x)
+    if(length(parameter_values)>0){
+      parameters<-data.frame(t(parameter_values))
+    }
+    else{
+      parameters<-data.frame(collection="")
+    }
+    return(parameters)
+  }),
+  fill=T)
+  
   data_finished <- matrix(c(0), 0, 3)
   if (length(files) > 0) {
     for (i in 1:length(files)) {
@@ -25,32 +53,32 @@ output$Deduplication_Results <- renderDataTable({
         ))
     }
   }
+  
+  data_finished<-cbind(data_finished,parameters_all_tasks[,-1])
+  
   files<-files_for_date
   #just show the results for current selection if a collection is selected
   if(!is.null(values$collection_selected)){
     files<-files_for_date[which(data_finished[,2]==values$collection_selected)]
-    data_finished<-matrix(data_finished[which(data_finished[,2]==values$collection_selected),],ncol=dim(data_finished)[2])
+    data_finished<-data_finished[which(data_finished[,2]==values$collection_selected),,drop=F]
   }
   validate(
     need(length(files)>0,"no results for this collection")
   )
   files<-files[order(data_finished[,3],decreasing = T)]
-  data_finished<-matrix(data_finished[order(data_finished[,3],decreasing=T),],ncol=3)
+  data_finished<-data_finished[order(data_finished[,3],decreasing=T),,drop=F]
   values$Deduplication_Results_Files<-files
   
   #get parameter settings for the tasks from database
-  colnames(data_finished)<-c("task id","collection","creation time")
-  try({parameters<-get_parameters_from_database(data_finished)})
-  if(dim(parameters)[1]>0){
-    colnames(parameters)[1]<-"task id"
-    data_finished<-plyr::join(x = data.frame(data_finished),y = data.frame(parameters),type="left")
-    colnames(data_finished)[1]<-"task id"
-    values$tasks_deduplication<-data_finished
-    data_finished<-data_finished[,c("task id","collection","creation.time","DD.similarity.measure","DD.threshold","DD.strategy")]
-  }
-  else{
-    values$tasks_deduplication<-data_finished
-  }
+  colnames(data_finished)[1:3]<-c("task id","collection","creation time")
+  data_finished<-data.frame(data_finished)
+  values$tasks_deduplication<-data_finished
+  
+
+  available_parameters<-intersect(c("task.id","collection","creation.time","DD_similarity_measure"),colnames(data_finished))
+  data_finished<-data_finished[,available_parameters]
+  
+
   data_finished<-cbind(data_finished,Delete = shinyInput(
     shinyBS::bsButton,
     dim(data_finished)[1],
@@ -73,7 +101,7 @@ output$Deduplication_Results <- renderDataTable({
   ))
   
   try({
-    colnames(data_finished)<-c("Task id","Collection","Creation time","Similarity measure","Threshold","Strategy","Delete","More details")
+    colnames(data_finished)<-c("Task id","Collection","Creation time","Similarity measure","Delete","More details")
   })
   colnames(data_finished) = str_wrap(colnames(data_finished),width = 8)
   data_finished<-replace_TRUE_FALSE(data_finished)
@@ -144,6 +172,10 @@ output$more_details_deduplication_table<-DT::renderDataTable({
   )
   data<-isolate(values$tasks_deduplication[values$deduplication_selected_row,,drop=F])
   data<-t(data)
+  nas<-which(is.na(data[,1]))
+  if(length(nas)>0){
+    data<-data[-which(is.na(data[,1])),1,drop=F]
+  }
   colnames(data)<-paste("Task:",data[1,1])
   datatable(data = data,selection = "none",
             options = list(dom = 'tp',ordering=F,pageLength=100)

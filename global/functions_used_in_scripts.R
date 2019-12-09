@@ -71,7 +71,7 @@ prepare_input_parameters<-function(param){
       param$remove_custom<-remove_custom
     }
   }
-  
+  param$remove_custom<-stringr::str_remove_all(string = param$remove_custom,pattern=" ")
   #append whitelist words to custom keep words
   if(!is.null(param$whitelist)){
     if(param$use_whitelist==TRUE){
@@ -86,6 +86,8 @@ prepare_input_parameters<-function(param){
       param$keep_custom<-keep_custom
     }
   }
+  param$keep_custom<-stringr::str_remove_all(string = param$keep_custom,pattern=" ")
+  
   
   try({class(param$ngrams)<-"numeric"})
   param$id<-process_info[[1]]

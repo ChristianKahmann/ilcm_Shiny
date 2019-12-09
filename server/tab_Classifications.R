@@ -539,11 +539,9 @@ output$Class_classifications<-DT::renderDataTable({
 
 observeEvent(input$classification_buttons_rerun,{
   file_id<-as.numeric(stringr::str_split(string = input$classification_buttons_rerun,pattern = "_",simplify = "")[1,4])
-  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-  RMariaDB::dbBegin(conn = mydb)
-  used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-  RMariaDB::dbDisconnect(mydb)
-  ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+  #get task_id
+  ID<-get_task_id_counter()+1
+  set_task_id_counter(ID)
   
   
   load(list.files(path = paste0("collections/results/classification/activeLearning/",input$project_selected),

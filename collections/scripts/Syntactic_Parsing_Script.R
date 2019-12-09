@@ -13,16 +13,17 @@ error<-try(expr = {
   library(udpipe)
   #load parameters
   load("collections/tmp/tmp.RData")
+  parameters_original<-parameters
   
   #load collection 
-  log_to_file(message = "<b>Step 1/8: Loading collection</b>",file = logfile)
+  log_to_file(message = "<b>Step 1/7: Loading collection</b>",file = logfile)
   load(paste("collections/collections/",unlist(parameters[1]),".RData",sep=""))
   log_to_file(message = "  <b style='color:green'> ✔ </b> Finished loading collection",file = logfile)
   
   
   
   #load data from database
-  log_to_file(message = "<b>Step 2/8: Loading data from database</b>",file = logfile)
+  log_to_file(message = "<b>Step 2/7: Loading data from database</b>",file = logfile)
   db_data<-get_token_meta_and_language_from_db(get_meta = F,get_language = T,get_global_doc_ids = F,host=host,port=db_port,id=info[[1]],dataset=info[[2]])
   #token<-db_data$token[,c("id","word")]
   #colnames(token)<-c("doc_id","token")
@@ -37,7 +38,7 @@ error<-try(expr = {
   
   
   #sanity check
-  log_to_file(message = "<b>Step 3/8: Sanity check</b>",file = logfile)
+  log_to_file(message = "<b>Step 3/7: Sanity check</b>",file = logfile)
   #token object not empty
   log_to_file(message = "&emsp; token object not empty?",logfile)
   if(dim(db_data$token)[1]>1){
@@ -51,14 +52,14 @@ error<-try(expr = {
   
   
   #preparing parameters
-  log_to_file(message = "<b>Step 4/8: Preparing input parameters</b>",file = logfile)
+  log_to_file(message = "<b>Step 4/7: Preparing input parameters</b>",file = logfile)
   parameters<-prepare_input_parameters(param = parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
   #annotate texts
   #Fetching model
-  log_to_file(message = "<b>Step 5/8:Fetching model</b>",file = logfile)
+  log_to_file(message = "<b>Step 5/7:Fetching model</b>",file = logfile)
   models<-list.files("collections/ud_models/",full.names = T)
   lang<-match_language_udpipe(db_data$language)
   if(any(grepl(pattern = lang,x = models))){
@@ -76,7 +77,7 @@ error<-try(expr = {
   
   
   #annotating
-  log_to_file(message = "<b>Step 6/8:Annotating the data</b>",file = logfile)
+  log_to_file(message = "<b>Step 6/7:Annotating the data</b>",file = logfile)
   txt<-meta$body
   txt_split<-split(txt,seq(1,length(txt),by=ceiling(length(txt)/10)))
   doc_id_split<-split(paste(meta$dataset,meta$id_doc,sep = "_"),seq(1,length(paste(meta$dataset,meta$id_doc,sep = "_")),by=ceiling(length(paste(meta$dataset,meta$id_doc,sep = "_"))/10)))
@@ -102,22 +103,18 @@ error<-try(expr = {
   
   
   #Saving results
-  log_to_file(message = "<b>Step 7/8: Saving results</b>",file = logfile)
+  log_to_file(message = "<b>Step 7/7: Saving results</b>",file = logfile)
   path0<-paste0("collections/results/syntactic-parsing/",paste(process_info[[1]],process_info[[2]],process_info[[4]],sep="_"),"/")
   dir.create(path0)
   save(annotation,file = paste0(path0,"annotations.RData"))
   save(meta,file = paste0(path0,"meta.RData"))
   save(info,file=paste0(path0,"info.RData"))
+  parameters<-parameters_original
   save(parameters,file=paste0(path0,"parameters.RData"))
   log_to_file(message = "   <b style='color:green'> ✔ </b> Finished saving results",logfile)
   
   
-  
-  
-  #Wrinting metadata to database Task column
-  log_to_file(message = "<b>Step 8/8: Writing task parameter to database</b>",file = logfile)
-  write_metadata_to_database(parameters,host=host,port=db_port)
-  log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
+
   
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Syntactic Parsing </b>",logfile)
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))

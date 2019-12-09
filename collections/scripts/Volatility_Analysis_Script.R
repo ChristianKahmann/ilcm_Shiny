@@ -10,23 +10,24 @@ error<-try(expr = {
   library(spacyr)
   #load parameters
   load("collections/tmp/tmp.RData")
+  parameters_original<-parameters
   
   #load collection 
-  log_to_file(message = "<b>Step 1/11: Loading collection</b>",file = logfile)
+  log_to_file(message = "<b>Step 1/10: Loading collection</b>",file = logfile)
   load(paste("collections/collections/",unlist(parameters[1]),".RData",sep=""))
   log_to_file(message = "  <b style='color:green'> ✔ </b> Finished loading collection",file = logfile)
   
   
   
   #load data from database
-  log_to_file(message = "<b>Step 2/11: Loading data from database</b>",file = logfile)
+  log_to_file(message = "<b>Step 2/10: Loading data from database</b>",file = logfile)
   db_data<-get_token_meta_and_language_from_db(host=host,port=db_port,id=info[[1]],dataset=info[[2]])
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished loading data from database",file = logfile)
   
   
   
   #sanity check
-  log_to_file(message = "<b>Step 3/11: Sanity check</b>",file = logfile)
+  log_to_file(message = "<b>Step 3/10: Sanity check</b>",file = logfile)
   #enough dates specified
   log_to_file(message = "&emsp; enough points in time avaibale?",logfile)
   if(length(unique(db_data$meta[,2]))>parameters$va_history){
@@ -61,24 +62,24 @@ error<-try(expr = {
   
   
   #preparing parameters
-  log_to_file(message = "<b>Step 4/11: Preparing input parameters</b>",file = logfile)
+  log_to_file(message = "<b>Step 4/10: Preparing input parameters</b>",file = logfile)
   parameters<-prepare_input_parameters(parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
   #preparing token object
-  log_to_file(message = "<b>Step 5/11: Preparing token object</b>",file = logfile)
+  log_to_file(message = "<b>Step 5/10: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
   
   
   #calculating dtm
-  log_to_file(message = "<b>Step 6/11: Calculating DTM</b>",file = logfile)
+  log_to_file(message = "<b>Step 6/10: Calculating DTM</b>",file = logfile)
   dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
   #calculate co-occurrence statistics
-  log_to_file(message = "<b>Step 7/11: Calculating diachronic co-occurrence statistics</b>",file = logfile)
+  log_to_file(message = "<b>Step 7/10: Calculating diachronic co-occurrence statistics</b>",file = logfile)
   diachron_data<-calculate_diachronic_cooccurrences(dtm = dtm,parameters = parameters,meta = db_data$meta)
   diachron_Coocs<-diachron_data$diachron_Coocs
   word_Frequencies<-diachron_data$word_Frequencies
@@ -91,12 +92,16 @@ error<-try(expr = {
   
   
   #calculate volatility
-  log_to_file(message = "<b>Step 8/11: Calculating volatility statistics</b>",file = logfile)
+  log_to_file(message = "<b>Step 8/10: Calculating volatility statistics</b>",file = logfile)
   if(parameters$whitelist_only_results==TRUE){
     log_to_file(message = paste0("&emsp; Creating results only for words in whitelist and keep_custom input"),logfile)
     voldata<-tmca.contextvolatility::calculate_context_volatility(memory = parameters$va_history,Coocs_TimeSlices = diachron_Coocs,global =global_Coocs,un_dates=un_dates,
-                                                                  terms = as.vector(stringr::str_split(string = parameters$keep_custom,pattern = ",",simplify = T)),
+                                                                  terms = intersect(as.vector(stringr::str_split(string = parameters$keep_custom,pattern = ",",simplify = T)[1,]),terms_to_use),
                                                                   measure =parameters$va_method,wf = parameters$va_weightfactor,logfile=logfile ) 
+    out_of_vocab_words<-setdiff(as.vector(stringr::str_split(string = parameters$keep_custom,pattern = ",",simplify = T)),terms_to_use)
+    out_of_vocab_data<-matrix(c(NA),length(out_of_vocab_words),dim(voldata)[2])
+    rownames(out_of_vocab_data)<-out_of_vocab_words
+    voldata<-rbind(voldata,out_of_vocab_data)
   }
   else{
     voldata<-tmca.contextvolatility::calculate_context_volatility(memory = parameters$va_history,Coocs_TimeSlices = diachron_Coocs,global = global_Coocs,un_dates=un_dates,
@@ -118,7 +123,7 @@ error<-try(expr = {
   
   
   #extract NER- and POS Tags
-  log_to_file(message = "<b>Step 9/11: Extracting NER- and POS-tags</b>",file = logfile)
+  log_to_file(message = "<b>Step 9/10: Extracting NER- and POS-tags</b>",file = logfile)
   pos_ner_tags<-get_ner_and_pos_tags(token=db_data$token,parameters = parameters,terms=terms)
   pos_tags<-pos_ner_tags$pos_tags
   ner_tags<-pos_ner_tags$ner_tags
@@ -126,7 +131,7 @@ error<-try(expr = {
   
   
   #Saving results
-  log_to_file(message = "<b>Step 10/11: Saving results</b>",file = logfile)
+  log_to_file(message = "<b>Step 10/10: Saving results</b>",file = logfile)
   path<-paste(parameters$id,parameters$collection,sep = "_")
   path0<-paste0("collections/results/volatility-analysis/",path,"/")
   dir.create(path0)
@@ -136,14 +141,11 @@ error<-try(expr = {
   save(voldata,file = paste0(path0,"voldata.RData"))
   save(un_dates,file= paste0(path0,"labels.RData"))
   save(info,file=paste0(path0,"info.RData"))
+  parameters<-parameters_original
   save(parameters,file=paste0(path0,"parameters.RData"))
   log_to_file(message = "   <b style='color:green'> ✔ </b> Finished saving results",logfile)
   
-  
-  #Wrinting metadata to database Task column
-  log_to_file(message = "<b>Step 11/11: Writing task parameter to database</b>",file = logfile)
-  write_metadata_to_database(parameters,host=host,port=db_port)
-  log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
+
   
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Context Volatility </b>",logfile)
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))

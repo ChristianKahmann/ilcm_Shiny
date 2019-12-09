@@ -403,11 +403,8 @@ observeEvent(input$CA_Submit_Script,{
                      whitelist_only=input$CA_whitelist_only
     )
     #create process ID
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-    RMariaDB::dbBegin(conn = mydb)
-    used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-    RMariaDB::dbDisconnect(mydb)
-    ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+    ID<-get_task_id_counter()+1
+    set_task_id_counter(ID)
     #save metadata for process
     process_info<-list(ID,isolate(input$collection_selected),isolate(input$analysis_selected),as.character(Sys.time()))
     #save logfile path
@@ -508,11 +505,8 @@ observeEvent(input$CA_pruning_continue,ignoreInit = T,{
                    whitelist_only=input$CA_whitelist_only
   )
   #create process ID
-  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-  RMariaDB::dbBegin(conn = mydb)
-  used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-  RMariaDB::dbDisconnect(mydb)
-  ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+  ID<-get_task_id_counter()+1
+  set_task_id_counter(ID)
   #save metadata for process
   process_info<-list(ID,isolate(input$collection_selected),isolate(input$analysis_selected),as.character(Sys.time()))
   #save logfile path

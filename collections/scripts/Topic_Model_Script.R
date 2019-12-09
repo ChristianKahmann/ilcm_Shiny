@@ -10,9 +10,10 @@ error<-try(expr = {
   library(spacyr)
   #load parameters
   load("collections/tmp/tmp.RData")
+  parameters_original<-parameters
   
   #load collection 
-  log_to_file(message = "<b>Step 1/14: Loading collection</b>",file = logfile)
+  log_to_file(message = "<b>Step 1/13: Loading collection</b>",file = logfile)
   load(paste("collections/collections/",unlist(parameters[1]),".RData",sep=""))
   log_to_file(message = "  <b style='color:green'> ✔ </b> Finished loading collection",file = logfile)
   
@@ -20,7 +21,7 @@ error<-try(expr = {
   
   
   #load data from database
-  log_to_file(message = "<b>Step 2/14: Loading data from database</b>",file = logfile)
+  log_to_file(message = "<b>Step 2/13: Loading data from database</b>",file = logfile)
   db_data<-get_token_meta_and_language_from_db(get_meta = F,get_language = T,get_global_doc_ids = F,host=host,port=db_port,id=info[[1]],dataset=info[[2]])
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished loading data from database",file = logfile)
   
@@ -28,7 +29,7 @@ error<-try(expr = {
   
   
   #sanity check
-  log_to_file(message = "<b>Step 3/14: Sanity check</b>",file = logfile)
+  log_to_file(message = "<b>Step 3/13: Sanity check</b>",file = logfile)
   #token object not empty
   log_to_file(message = "&emsp; token object not empty?",logfile)
   if(dim(db_data$token)[1]>1){
@@ -44,7 +45,7 @@ error<-try(expr = {
   
   
   #preparing parameters
-  log_to_file(message = "<b>Step 4/14: Preparing input parameters</b>",file = logfile)
+  log_to_file(message = "<b>Step 4/13: Preparing input parameters</b>",file = logfile)
   parameters<-prepare_input_parameters(parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
@@ -52,7 +53,7 @@ error<-try(expr = {
   
   
   #get original documents 
-  log_to_file(message = "<b>Step 5/14: Create original documents</b>",file = logfile)
+  log_to_file(message = "<b>Step 5/13: Create original documents</b>",file = logfile)
   doc_ids<-unique(db_data$token[,2])
   documents_original<-unlist(lapply(X = doc_ids,FUN = function(x){
     paste(db_data$token[which(db_data$token[,1]==x),4],collapse=" ")
@@ -62,7 +63,7 @@ error<-try(expr = {
 
   
   #get metadata
-  log_to_file(message = "<b>Step 6/14: Getting metadata for detailed metadata analysis from database</b>",file = logfile)
+  log_to_file(message = "<b>Step 6/13: Getting metadata for detailed metadata analysis from database</b>",file = logfile)
   if(parameters$tm_detailed_meta==TRUE){
     meta_data<-get_meta_data_for_detailed_topic_analysis(host = host,port = db_port,ids = info[[3]],datasets = unique(info[[2]]),token = db_data$token)
     meta<-meta_data$meta
@@ -78,7 +79,7 @@ error<-try(expr = {
   
   
   #preparing token object
-  log_to_file(message = "<b>Step 7/14: Preparing token object</b>",file = logfile)
+  log_to_file(message = "<b>Step 7/13: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
   
@@ -87,7 +88,7 @@ error<-try(expr = {
   
   
   #calculating dtm
-  log_to_file(message = "<b>Step 8/14: Calculating DTM</b>",file = logfile)
+  log_to_file(message = "<b>Step 8/13: Calculating DTM</b>",file = logfile)
   dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
@@ -95,7 +96,7 @@ error<-try(expr = {
   
   
   
-  log_to_file(message = "<b>Step 9/14: Clean vocabulary from non asci2 characters</b>",file = logfile)
+  log_to_file(message = "<b>Step 9/13: Clean vocabulary from non asci2 characters</b>",file = logfile)
   #just keep alpha
   # remove<-which(!grepl("[[:alpha:]]", colnames(dtm)) & !grepl("[[:digit:]]", colnames(dtm)))
   # if(length(remove)>0){
@@ -119,7 +120,7 @@ error<-try(expr = {
   
   
   #remove empty documents
-  log_to_file(message = "<b>Step 10/14: Removing empty documents</b>",file = logfile)
+  log_to_file(message = "<b>Step 10/13: Removing empty documents</b>",file = logfile)
   empty<-which(Matrix::rowSums(dtm)==0)
   if(length(empty)>0){
     dtm<-dtm[-empty,]
@@ -137,7 +138,7 @@ error<-try(expr = {
   
   
   #calculate topic model
-  log_to_file(message = "<b>Step 11/14: Create Topic Model</b>",file = logfile)
+  log_to_file(message = "<b>Step 11/13: Create Topic Model</b>",file = logfile)
   t <- tmca.unsupervised::tmodel$new(method =parameters$tm_method)
   t$input_preprocessed(dtm = dtm,documents)
   t$set_parameters(par_list = list("alpha"=parameters$tm_alpha,"K"=parameters$tm_number_of_topics))
@@ -146,7 +147,7 @@ error<-try(expr = {
   
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating topic model",file = logfile)
   
-  log_to_file(message = "<b>Step 12/14: Create Variables for Visulization</b>",file = logfile)
+  log_to_file(message = "<b>Step 12/13: Create Variables for Visulization</b>",file = logfile)
   model<-t$get_model()
   theta<-model$theta
   phi<-model$phi
@@ -174,7 +175,7 @@ error<-try(expr = {
   
   
   #Saving results
-  log_to_file(message = "<b>Step 13/14: Saving results</b>",file = logfile)
+  log_to_file(message = "<b>Step 13/13: Saving results</b>",file = logfile)
   lang<-db_data$language
   path0<-paste0("collections/results/topic-model/",paste(process_info[[1]],process_info[[2]],process_info[[4]],sep="_"),"/")
   dir.create(path0)
@@ -186,16 +187,13 @@ error<-try(expr = {
     save(meta,meta_names,file=paste0(path0,"meta_TM.RData"))
   }
   save(info,file=paste0(path0,"info.RData"))
+  parameters<-parameters_original
   save(parameters,lang,file=paste0(path0,"parameters.RData"))
   log_to_file(message = "   <b style='color:green'> ✔ </b> Finished saving results",logfile)
   
   
   
-  
-  #Wrinting metadata to database Task column
-  log_to_file(message = "<b>Step 14/14: Writing task parameter to database</b>",file = logfile)
-  write_metadata_to_database(parameters,host=host,port=db_port)
-  log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
+
   
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Topic Model </b>",logfile)
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))

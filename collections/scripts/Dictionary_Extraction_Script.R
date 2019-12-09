@@ -10,23 +10,24 @@ error<-try(expr = {
   library(spacyr)
   #load parameters
   load("collections/tmp/tmp.RData")
+  parameters_original<-parameters
   
   #load collection 
-  log_to_file(message = "<b>Step 1/10: Loading collection</b>",file = logfile)
+  log_to_file(message = "<b>Step 1/9: Loading collection</b>",file = logfile)
   load(paste("collections/collections/",unlist(parameters[1]),".RData",sep=""))
   log_to_file(message = "  <b style='color:green'> ✔ </b> Finished loading collection",file = logfile)
   
   
   
   #load data from database
-  log_to_file(message = "<b>Step 2/10: Loading data from database</b>",file = logfile)
+  log_to_file(message = "<b>Step 2/9: Loading data from database</b>",file = logfile)
   db_data<-get_token_meta_and_language_from_db(host=host,port=db_port,id=info[[1]],dataset=info[[2]])
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished loading data from database",file = logfile)
   
   
   
   #sanity check
-  log_to_file(message = "<b>Step 3/10: Sanity check</b>",file = logfile)
+  log_to_file(message = "<b>Step 3/9: Sanity check</b>",file = logfile)
   #token object not empty
   log_to_file(message = "&emsp; token object not empty?",logfile)
   if(dim(db_data$token)[1]>1){
@@ -52,26 +53,26 @@ error<-try(expr = {
   
   
   #preparing parameters
-  log_to_file(message = "<b>Step 4/10: Preparing input parameters</b>",file = logfile)
+  log_to_file(message = "<b>Step 4/9: Preparing input parameters</b>",file = logfile)
   parameters<-prepare_input_parameters(parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
   #preparing token object
-  log_to_file(message = "<b>Step 5/10: Preparing token object</b>",file = logfile)
+  log_to_file(message = "<b>Step 5/9: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
   
   
   #calculating dtm
-  log_to_file(message = "<b>Step 6/10: Calculating DTM</b>",file = logfile)
+  log_to_file(message = "<b>Step 6/9: Calculating DTM</b>",file = logfile)
   dtm<-calculate_dtm_for_dictionary_extraction(token = db_data$token,parameters = parameters,lang = db_data$language)
   db_data$meta<-db_data$meta[which(db_data$meta[,1]%in%rownames(dtm)),]
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
 
   #parse dictionaries  
-  log_to_file(message = "<b>Step 7/10: Parsing dictionary</b>",file = logfile)
+  log_to_file(message = "<b>Step 7/9: Parsing dictionary</b>",file = logfile)
   if(isFALSE(parameters$de_use_reg_exp)){
     load(paste0("collections/dictionaries/",parameters$Dictionary,".RData"))
     dicts<-dict
@@ -100,7 +101,7 @@ error<-try(expr = {
   
   
   #parse dictionaries  
-  log_to_file(message = "<b>Step 8/10: Calculate frequencies</b>",file = logfile)
+  log_to_file(message = "<b>Step 8/9: Calculate frequencies</b>",file = logfile)
   frequencies<-calculate_dictioanry_frequencies(meta =db_data$meta,dtm = dtm,dict_terms = dict_terms,conceptnames = conceptnames,dicts_available = dicts_available,bin_dtm = bin_dtm )
   doc_freqs_year_dict<-frequencies$doc_freqs_year_dict
   doc_freqs_month_dict<-frequencies$doc_freqs_month_dict
@@ -126,7 +127,7 @@ error<-try(expr = {
   
   
   #Saving results
-  log_to_file(message = "<b>Step 9/10: Saving results</b>",file = logfile)
+  log_to_file(message = "<b>Step 9/9: Saving results</b>",file = logfile)
   path<-paste(parameters$id,parameters$collection,sep = "_")
   path0<-paste0("collections/results/dictionary-extraction/",path,"/")
   dir.create(path0)
@@ -139,15 +140,11 @@ error<-try(expr = {
   save(dtm,dicts,file=paste0(path0,"extra_information.RData"))
   save(vocab,file=paste0(path0,"vocab.RData"))
   save(info,file=paste0(path0,"info.RData"))
+  parameters<-parameters_original
   save(parameters,file=paste0(path0,"parameters.RData"))
   log_to_file(message = "   <b style='color:green'> ✔ </b> Finished saving results",logfile)
   
   
-  
-  #Wrinting metadata to database Task column
-  log_to_file(message = "<b>Step 10/10: Writing task parameter to database</b>",file = logfile)
-  write_metadata_to_database(parameters,host=host,port=db_port)
-  log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
   
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Term Frequency Extraction </b>",logfile)
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))

@@ -20,6 +20,7 @@ error<-try(expr = {
   
   #preparing parameters
   log_to_file(message = "<b>Step 2: Preparing input parameters</b>",file = logfile)
+  parameters_original<-parameters
   parameters<-prepare_input_parameters(param = parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
@@ -29,7 +30,7 @@ error<-try(expr = {
   if(parameters$class_use_model==FALSE){
     log_to_file(message = "<b> Creating w2v model from collection data</b>",file = logfile)
     #getting data from db
-    log_to_file(message = "<b>Step 3/10: Loading data from database</b>",file = logfile)
+    log_to_file(message = "<b>Step 3/9: Loading data from database</b>",file = logfile)
     mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
     rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
     ids<-info[[3]]
@@ -43,7 +44,7 @@ error<-try(expr = {
     
  
     #sanity check
-    log_to_file(message = "<b>Step 4/10: Sanity check</b>",file = logfile)
+    log_to_file(message = "<b>Step 4/9: Sanity check</b>",file = logfile)
     #specified language has quanteda stopwordlist?
     if(parameters$remove_stopwords==T){
       log_to_file(message = "&emsp; stopwords available for specified language?",logfile)
@@ -60,7 +61,7 @@ error<-try(expr = {
     
     
     
-    log_to_file(message = "<b>Step 5/10: Preprocessing texts</b>",file = logfile)
+    log_to_file(message = "<b>Step 5/9: Preprocessing texts</b>",file = logfile)
     text<-paste(texts[,1],collapse=" ")
     #remove newline
     text<-stringr::str_replace_all(string = text,pattern ="\\\\n" ,replacement = " ")
@@ -105,7 +106,7 @@ error<-try(expr = {
     
     
     
-    log_to_file(message = "<b>Step 6/10: Writing text to input.txt file</b>",file = logfile)
+    log_to_file(message = "<b>Step 6/9: Writing text to input.txt file</b>",file = logfile)
     path0<-paste0("collections/results/vector-space-representation/",paste(process_info[[1]],process_info[[2]],process_info[[4]],sep="_"),"/")
     path0<-stringr::str_replace_all(string = path0,pattern = " ",replacement = "_")
     dir.create(path0)
@@ -116,7 +117,7 @@ error<-try(expr = {
     
     
     
-    log_to_file(message = "<b>Step 7/10: Binding n-grams together</b>",file = logfile)
+    log_to_file(message = "<b>Step 7/9: Binding n-grams together</b>",file = logfile)
     #here one could also set min_count and threshold for ngrams
     wordVectors::prep_word2vec(origin = paste0(path0,"training//inputtext.txt"),destination = paste0(path0,"training/input.txt"),lowercase=F,bundle_ngrams=parameters$ngrams,min_count=parameters$w2v_min_occ)
     log_to_file(message = "  <b style='color:green'> ✔ </b>  ",file = logfile)
@@ -126,7 +127,7 @@ error<-try(expr = {
     
     
     
-    log_to_file(message = "<b>Step 8/10: Calculating Model...This might take a while</b>",file = logfile)
+    log_to_file(message = "<b>Step 8/9: Calculating Model...This might take a while</b>",file = logfile)
     model = train_word2vec(paste0(path0,"training//input.txt"),paste0(path0,"vectors.bin"),vectors=parameters$w2v_vectors,threads=parameters$w2v_threads,
                            window=parameters$w2v_window,iter=parameters$w2v_iterations,negative_samples=parameters$w2v_neg_samples)
     log_to_file(message = "  <b style='color:green'> ✔ Finished creating w2v model</b>  ",file = logfile)
@@ -145,19 +146,16 @@ error<-try(expr = {
       
       
       
-      log_to_file(message = "<b>Step 9/10: Saving results</b>",file = logfile)
+      log_to_file(message = "<b>Step 9/9: Saving results</b>",file = logfile)
       save(pca,file=paste0(path0,"pca.RData"))
       save(tsne,file=paste0(path0,"tsne.RData"))
       save(info,file=paste0(path0,"info.RData"))
+      parameters<-parameters_original
       save(parameters,file=paste0(path0,"parameters.RData"))
       log_to_file(message = "   <b style='color:green'> ✔ </b> Finished saving results",logfile)
     }
 
-    #Wrinting metadata to database Task column
-    log_to_file(message = "<b>Step 10/10: Writing task parameter to database</b>",file = logfile)
-    write_metadata_to_database(parameters,host = host,port = db_port)
-    log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
-    
+
     log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Vector Space Representation </b>",logfile)
     system(paste("mv ",logfile," collections/logs/finished/",sep=""))
 
@@ -194,16 +192,12 @@ error<-try(expr = {
       save(pca,file=paste0(path0,"pca.RData"))
       save(tsne,file=paste0(path0,"tsne.RData"))
       save(info,file=paste0(path0,"info.RData"))
+      parameters<-parameters_original
       save(parameters,file=paste0(path0,"parameters.RData"))
       log_to_file(message = "   <b style='color:green'> ✔ </b> Finished saving results",logfile)
     }
     save(model,file=paste0(path0,"//model.RData"))
     
-    
-    #Wrinting metadata to database Task column
-    log_to_file(message = "<b>Step 5/5: Writing task parameter to database</b>",file = logfile)
-    write_metadata_to_database(parameters,host=host,port=db_port)
-    log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
     
     log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Vector Space Representation </b>",logfile)
     system(paste("mv ",logfile," collections/logs/finished/",sep=""))

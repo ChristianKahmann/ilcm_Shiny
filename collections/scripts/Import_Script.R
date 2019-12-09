@@ -5,11 +5,14 @@ source("config_file.R")
 
 #process
 error<-try(expr = {
-  load("collections/tmp/tmp.RData")
   library(Matrix)
   library(dplyr)
   library(spacyr)
   library(RMariaDB)
+  
+  #load parameters
+  load("collections/tmp/tmp.RData")
+
   
   metadata<-parameters[[1]]
   write_to_db<-parameters[[2]]
