@@ -605,6 +605,7 @@ output$details_visu<-renderUI({
                                                      )
                                             ),
                                             tabPanel(title = "Estimate Effect",
+                                                     busyIndicator(text = "calculating estimateEffect",wait = 0),
                                                      bsButton(inputId = "TM_stm_estimateEffect_start",label = "start calculation of estimate effect",style = "primary",icon=icon("play")),
                                                      conditionalPanel(condition = "output.TM_stm_estimateEffect_show==true",
                                                                       plotOutput(outputId = "TM_stm_estimateEffect_calc")       
