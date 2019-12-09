@@ -236,7 +236,7 @@ error<-try(expr = {
   
   
   
-  #Wrinting metadata to database Task column
+  #Wrinting parameters to database Task column
   log_to_file(message = "<b>Step 14/14: Writing task parameter to database</b>",file = logfile)
   write_metadata_to_database(parameters,host=host,port=db_port)
   log_to_file(message = " <b style='color:green'> ✔ </b>  Finished writing task parameter",logfile)
