@@ -317,25 +317,48 @@ outputOptions(output, "TM_stm_topicCorr_show", suspendWhenHidden = FALSE)
 
 #estimateEffect
 observeEvent(input$TM_stm_estimateEffect_start,{
+
   load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
   values$tm_stm_metaData <- combineMetaDataWithMetaNamesForMDEs(meta = meta, meta_names = meta_names)
-  values$TM_stm_estimateEffect_show <- TRUE
+  values$stm_visu_estimateEffect_calcParam_formula <- NULL
+  if(is.null(input$stm_visu_estimateEffect_calcParam_formula) || nchar(input$stm_visu_estimateEffect_calcParam_formula)==0) {
+    shinyWidgets::sendSweetAlert(type = "warning",session = session,title = "You have to provide a formula!")
+  }
+  else{
+      values$stm_visu_estimateEffect_calcParam_formula <- as.formula(input$stm_visu_estimateEffect_calcParam_formula)
+      values$tm_stm_estimateEffectResult  <- estimateEffect(formula = values$stm_visu_estimateEffect_calcParam_formula, stmobj = values$tm_stm_model, metadata = values$tm_stm_metaData)
+      values$TM_stm_estimateEffect_show <- TRUE
+  }
 })
 
 output$TM_stm_estimateEffect_show<-reactive({
   values$TM_stm_estimateEffect_show
 })
 
-output$TM_stm_estimateEffect_calc <- renderPlot({
-  values$tm_stm_metaData$countryName <- as.factor(values$tm_stm_metaData$countryName)
-  values$tm_stm_estimateEffect_formula <- ~countryName
-  values$tm_stm_estimateEffect_covariate <- "countryName"
-  values$tm_stm_estimateEffect_topicsToPlot <- c(1,2)
-  estimateEffectResult <- estimateEffect(formula = values$tm_stm_estimateEffect_formula, stmobj = values$tm_stm_model, metadata = values$tm_stm_metaData)
-  plot.estimateEffect(x = estimateEffectResult, covariate = values$tm_stm_estimateEffect_covariate, topics = values$tm_stm_estimateEffect_topicsToPlot)
+
+output$TM_stm_estimateEffect_summary <- renderPrint({
+  summary(values$tm_stm_estimateEffectResult)
 })
+
+output$TM_stm_estimateEffect_plot <- renderPlot({
+    print("plot estimate effect")
+    print(paste("covariate: ", input$tm_stm_estimateEffect_plot_covariate))
+    print(paste("topics: ", input$stm_visu_estimateEffect_plot_topics))
+    plot.estimateEffect(x = values$tm_stm_estimateEffectResult, covariate = input$tm_stm_estimateEffect_plot_covariate, topics = input$stm_visu_estimateEffect_plot_topics)
+})
+
 outputOptions(output, "TM_stm_estimateEffect_show", suspendWhenHidden = FALSE)
 
+
+observeEvent(input$TM_stm_estimateEffect_plotupdate,{
+  values$TM_stm_estimateEffect_plot_show <- TRUE
+})
+
+output$TM_stm_estimateEffect_plot_show<-reactive({
+  values$TM_stm_estimateEffect_plot_show
+})
+
+outputOptions(output, "TM_stm_estimateEffect_plot_show", suspendWhenHidden = FALSE)
 
 #############
 # end of STM

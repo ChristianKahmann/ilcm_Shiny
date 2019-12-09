@@ -476,10 +476,10 @@ output$details_parameter<-renderUI({
                            tags$hr(),
                            uiOutput("Det_TM_validation_metadata_UI")%>%withSpinner()
           ),
-          
+
           #stm
           conditionalPanel(condition = 'input.tabBox_tm=="Structural Topic Model"',
-  
+
                   # stm number of words to label topic
                   conditionalPanel(condition = 'input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"|| input.stm_visu=="Perspectives"',
                                    numericInput(inputId = "stm_visu_numberOfWordsToLabelTopic",label="number of words to label topics", value = 10, min = 2, max = 50, step = 1)
@@ -500,7 +500,7 @@ output$details_parameter<-renderUI({
                                    selectInput(inputId = "stm_visu_perspectives_topic1",label="select topic 1",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 1),
                                    selectInput(inputId = "stm_visu_perspectives_topic2",label="select topic 2",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 2)
                   ),
-                  
+
                   # stm frexweight
                   conditionalPanel(condition = 'input.stm_visu_labeltype=="frex"',
                                    numericInput(inputId = "stm_visu_frexweight",label="frex weight",value = 0.5, min = 0, max = 1, step = 0.1)%>%
@@ -512,7 +512,7 @@ output$details_parameter<-renderUI({
                                          )
                                      )
                   )
-          )       
+          )
           
           
         )
@@ -601,17 +601,48 @@ output$details_visu<-renderUI({
                                             tabPanel(title = "Topic Correlation",
                                                      bsButton(inputId = "TM_stm_topicCorr_start",label = "start calculation of Topic Correlation",style = "primary",icon=icon("play")),
                                                      conditionalPanel(condition = "output.TM_stm_topicCorr_show==true",
-                                                                      plotOutput(outputId = "TM_stm_topicCorr_calc")       
+                                                                      plotOutput(outputId = "TM_stm_topicCorr_calc")
                                                      )
                                             ),
                                             tabPanel(title = "Estimate Effect",
                                                      busyIndicator(text = "calculating estimateEffect",wait = 0),
+                                                     textInput(inputId = "stm_visu_estimateEffect_calcParam_formula",label = "formula")%>%
+                                                                        shinyInput_label_embed(
+                                                                          shiny_iconlink() %>%
+                                                                            bs_embed_popover(
+                                                                              title = "A formula for the regression. It should have an integer or vector of numbers on the left-hand side and an equation with covariates on the right hand side. See Details of STM documentation for more information. Typically, users will pass the same model of topical prevalence used in estimating the STM to the estimateEffect function. The syntax of the estimateEffect function is designed so users specify the set of topics they wish to use for estimation, and then a formula for metadata of interest. Examples: 'c(1) ~ treatment', '1:3 ~ treatment' ",
+                                                                              placement = "right"
+                                                                            )
+                                                                        ),
+
+
+
+
                                                      bsButton(inputId = "TM_stm_estimateEffect_start",label = "start calculation of estimate effect",style = "primary",icon=icon("play")),
                                                      conditionalPanel(condition = "output.TM_stm_estimateEffect_show==true",
-                                                                      plotOutput(outputId = "TM_stm_estimateEffect_calc")       
+                                                                      tabsetPanel(type="tabs",
+                                                                                  tabPanel(title="Summary",
+                                                                                           verbatimTextOutput (outputId = "TM_stm_estimateEffect_summary")
+                                                                                  ),
+                                                                                  tabPanel(title="Plot",
+                                                                                           textInput(inputId = "stm_visu_estimateEffect_plot_covariate",label = "covariate")%>%
+                                                                                               shinyInput_label_embed(
+                                                                                               shiny_iconlink() %>%
+                                                                                                 bs_embed_popover(
+                                                                                                   title = "The covariate of interest. Example: 'treatment'",
+                                                                                                   placement = "right"
+                                                                                                 )
+                                                                                             ),
+                                                                                           checkboxGroupInput(inputId = "stm_visu_estimateEffect_plot_topics", label = "topics", choices = c(1:values$tm_stm_model$settings$dim$K), selected = 1),
+                                                                                           bsButton(inputId = "TM_stm_estimateEffect_plotupdate",label = "Show plot for given parameters",style = "primary",icon=icon("play")),
+                                                                                           conditionalPanel(condition = "output.TM_stm_estimateEffect_plot_show==true",
+                                                                                                            plotOutput(outputId = "TM_stm_estimateEffect_plot")
+                                                                                                            )
+                                                                                  )
+                                                                      )
                                                      )
                                             )
-                                            
+
                                 )
         )
 
