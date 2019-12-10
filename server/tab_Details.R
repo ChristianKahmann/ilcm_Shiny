@@ -502,7 +502,7 @@ output$details_parameter<-renderUI({
                   ),
 
                   # stm frexweight
-                  conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex"',
+                  conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex" && (input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"")', 
                                    numericInput(inputId = "tm_stm_visu_frexweight",label="frex weight",value = 0.5, min = 0, max = 1, step = 0.1)%>%
                                      shinyInput_label_embed(
                                        shiny_iconlink() %>%
