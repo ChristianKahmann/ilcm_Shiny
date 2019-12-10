@@ -270,95 +270,97 @@ output$tm_method<-reactive({
 
 #stm
 # plot.STM summary
-output$TM_stm_summary <- renderPlot({
-  plot.STM(x = values$tm_stm_model, type = "summary", n = input$stm_visu_numberOfWordsToLabelTopic, labeltype = input$stm_visu_labeltype, frexw = input$stm_visu_frexweight)
+output$TM_stm_visu_summary <- renderPlot({
+  plot.STM(x = values$tm_stm_model, type = "summary", n = input$tm_stm_visu_numberOfWordsToLabelTopic, labeltype = input$tm_stm_visu_labeltype, frexw = input$tm_stm_visu_frexweight)
 })
 # plot.STM labels
-output$TM_stm_labels <- renderPlot({
-  plot.STM(x = values$tm_stm_model, type = "labels", n = input$stm_visu_numberOfWordsToLabelTopic, labeltype = input$stm_visu_labeltype, frexw = input$stm_visu_frexweight)
+output$TM_stm_visu_labels <- renderPlot({
+  plot.STM(x = values$tm_stm_model, type = "labels", n = input$tm_stm_visu_numberOfWordsToLabelTopic, labeltype = input$tm_stm_visu_labeltype, frexw = input$tm_stm_visu_frexweight)
 })
 
 # plot.STM perspectives
-output$TM_stm_perspectives <- renderPlot({
+output$TM_stm_visu_perspectives <- renderPlot({
   validate(
-    need(!is.null(input$stm_visu_perspectives_topic1),message="please select topic 1")
+    need(!is.null(input$tm_stm_visu_perspectives_topic1),message="please select topic 1")
   )
   validate(
-    need(!is.null(input$stm_visu_perspectives_topic2),message="please select topic 2")
+    need(!is.null(input$tm_stm_visu_perspectives_topic2),message="please select topic 2")
   )
-  selectedTopic1 <- as.integer(input$stm_visu_perspectives_topic1)
-  selectedTopic2 <- as.integer(input$stm_visu_perspectives_topic2)
+  selectedTopic1 <- as.integer(input$tm_stm_visu_perspectives_topic1)
+  selectedTopic2 <- as.integer(input$tm_stm_visu_perspectives_topic2)
 
-  plot.STM(x = values$tm_stm_model, type = "perspectives", topics = c(selectedTopic1, selectedTopic2), n = input$stm_visu_numberOfWordsToLabelTopic)
+  plot.STM(x = values$tm_stm_model, type = "perspectives", topics = c(selectedTopic1, selectedTopic2), n = input$tm_stm_visu_numberOfWordsToLabelTopic)
 })
 
 # plot.STM hist
-output$TM_stm_hist <- renderPlot({
-  plot.STM(x = values$tm_stm_model, type = "hist", n = input$stm_visu_numberOfWordsToLabelTopic, labeltype = input$stm_visu_labeltype, frexw = input$stm_visu_frexweight)
+output$TM_stm_visu_hist <- renderPlot({
+  plot.STM(x = values$tm_stm_model, type = "hist", n = input$tm_stm_visu_numberOfWordsToLabelTopic, labeltype = input$tm_stm_visu_labeltype, frexw = input$tm_stm_visu_frexweight)
 })
 
 
 # topic correlation
-observeEvent(input$TM_stm_topicCorr_start,{
-  values$TM_stm_topicCorr_show <- TRUE
+observeEvent(input$tm_stm_visu_topicCorr_start,{
+  values$tm_stm_visu_topicCorr_show <- TRUE
   })
 
-output$TM_stm_topicCorr_show<-reactive({
-  return(values$TM_stm_topicCorr_show)
+output$TM_stm_visu_topicCorr_show<-reactive({
+  return(values$tm_stm_visu_topicCorr_show)
 })
 
-output$TM_stm_topicCorr_calc <- renderPlot({
-  values$tm_stm_topicCorr_method <- "simple"
-  topicCorrResult <- topicCorr(model = values$tm_stm_model, method = values$tm_stm_topicCorr_method)
+output$TM_stm_visu_topicCorr_calc <- renderPlot({
+  values$tm_stm_visu_topicCorr_method <- "simple"
+  topicCorrResult <- topicCorr(model = values$tm_stm_model, method = values$tm_stm_visu_topicCorr_method)
   plot.topicCorr(x = topicCorrResult)
 })
-outputOptions(output, "TM_stm_topicCorr_show", suspendWhenHidden = FALSE)
+outputOptions(output, "TM_stm_visu_topicCorr_show", suspendWhenHidden = FALSE)
 
 
 #estimateEffect
-observeEvent(input$TM_stm_estimateEffect_start,{
+observeEvent(input$tm_stm_visu_estimateEffect_calcButton,{
 
   load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
   values$tm_stm_metaData <- combineMetaDataWithMetaNamesForMDEs(meta = meta, meta_names = meta_names)
-  values$stm_visu_estimateEffect_calcParam_formula <- NULL
-  if(is.null(input$stm_visu_estimateEffect_calcParam_formula) || nchar(input$stm_visu_estimateEffect_calcParam_formula)==0) {
+  values$tm_stm_visu_estimateEffect_calcParam_formula <- NULL
+  if(is.null(input$tm_stm_visu_estimateEffect_calcParam_formula) || nchar(input$tm_stm_visu_estimateEffect_calcParam_formula)==0) {
     shinyWidgets::sendSweetAlert(type = "warning",session = session,title = "You have to provide a formula!")
   }
   else{
-      values$stm_visu_estimateEffect_calcParam_formula <- as.formula(input$stm_visu_estimateEffect_calcParam_formula)
-      values$tm_stm_estimateEffectResult  <- estimateEffect(formula = values$stm_visu_estimateEffect_calcParam_formula, stmobj = values$tm_stm_model, metadata = values$tm_stm_metaData)
-      values$TM_stm_estimateEffect_show <- TRUE
+      values$tm_stm_visu_estimateEffect_calcParam_formula <- as.formula(input$tm_stm_visu_estimateEffect_calcParam_formula)
+      values$tm_stm_visu_estimateEffectResult  <- estimateEffect(formula = values$tm_stm_visu_estimateEffect_calcParam_formula, stmobj = values$tm_stm_model, metadata = values$tm_stm_metaData)
+      values$tm_stm_visu_estimateEffect_show <- TRUE
   }
 })
 
-output$TM_stm_estimateEffect_show<-reactive({
-  values$TM_stm_estimateEffect_show
+output$TM_stm_visu_estimateEffect_show<-reactive({
+  values$tm_stm_visu_estimateEffect_show
 })
 
+outputOptions(output, "TM_stm_visu_estimateEffect_show", suspendWhenHidden = FALSE)
 
-output$TM_stm_estimateEffect_summary <- renderPrint({
-  summary(values$tm_stm_estimateEffectResult)
+
+# estimate effect summary
+output$TM_stm_visu_estimateEffect_summary <- renderPrint({
+  summary(values$tm_stm_visu_estimateEffectResult)
 })
 
-output$TM_stm_estimateEffect_plot <- renderPlot({
-    print("plot estimate effect")
-    print(paste("covariate: ", input$tm_stm_estimateEffect_plot_covariate))
-    print(paste("topics: ", input$stm_visu_estimateEffect_plot_topics))
-    plot.estimateEffect(x = values$tm_stm_estimateEffectResult, covariate = input$tm_stm_estimateEffect_plot_covariate, topics = input$stm_visu_estimateEffect_plot_topics)
+# estimate effect plot
+observeEvent(input$tm_stm_visu_estimateEffect_plotupdate,{
+  values$tm_stm_visu_estimateEffect_plot_show <- TRUE
 })
 
-outputOptions(output, "TM_stm_estimateEffect_show", suspendWhenHidden = FALSE)
-
-
-observeEvent(input$TM_stm_estimateEffect_plotupdate,{
-  values$TM_stm_estimateEffect_plot_show <- TRUE
+output$TM_stm_visu_estimateEffect_plot_show<-reactive({
+  values$tm_stm_visu_estimateEffect_plot_show
 })
 
-output$TM_stm_estimateEffect_plot_show<-reactive({
-  values$TM_stm_estimateEffect_plot_show
+output$TM_stm_visu_estimateEffect_plot <- renderPlot({
+  print("plot estimate effect")
+  print(paste("covariate: ", input$tm_stm_visu_estimateEffect_plot_covariate))
+  print(paste("topics: ", input$tm_stm_visu_estimateEffect_plot_topics))
+  plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics)
+  values$tm_stm_visu_estimateEffect_plot_show <- TRUE
 })
 
-outputOptions(output, "TM_stm_estimateEffect_plot_show", suspendWhenHidden = FALSE)
+outputOptions(output, "TM_stm_visu_estimateEffect_plot_show", suspendWhenHidden = FALSE)
 
 #############
 # end of STM

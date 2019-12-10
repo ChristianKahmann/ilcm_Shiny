@@ -378,7 +378,7 @@ output$details_parameter<-renderUI({
         values$tm_stm_model <- model$stm_model # loaded via data_TM.RData
         load(paste0(values$Details_Data_TM,"/dtm_TM.RData"))
         values$dtm <- dtm
-        values$TM_stm_topicCorr_show <- FALSE
+        values$tm_stm_visu_topicCorr_show <- FALSE
       }
 
       topic.frequency <- colSums(theta * doc.length)
@@ -482,11 +482,11 @@ output$details_parameter<-renderUI({
 
                   # stm number of words to label topic
                   conditionalPanel(condition = 'input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"|| input.stm_visu=="Perspectives"',
-                                   numericInput(inputId = "stm_visu_numberOfWordsToLabelTopic",label="number of words to label topics", value = 10, min = 2, max = 50, step = 1)
+                                   numericInput(inputId = "tm_stm_visu_numberOfWordsToLabelTopic",label="number of words to label topics", value = 10, min = 2, max = 50, step = 1)
                   ),
                   #stm labeltype
                   conditionalPanel(condition = 'input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"',
-                                   selectInput(inputId = "stm_visu_labeltype",label="method to choose most important words",choices=c("prob", "frex", "lift", "score"),multiple=F, selected = "prob")%>%
+                                   selectInput(inputId = "tm_stm_visu_labeltype",label="method to choose most important words",choices=c("prob", "frex", "lift", "score"),multiple=F, selected = "prob")%>%
                                      shinyInput_label_embed(
                                        shiny_iconlink() %>%
                                          bs_embed_popover(
@@ -497,13 +497,13 @@ output$details_parameter<-renderUI({
                   ),
                   # stm perspectives topic 1 and 2
                   conditionalPanel(condition = 'input.stm_visu=="Perspectives"',
-                                   selectInput(inputId = "stm_visu_perspectives_topic1",label="select topic 1",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 1),
-                                   selectInput(inputId = "stm_visu_perspectives_topic2",label="select topic 2",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 2)
+                                   selectInput(inputId = "tm_stm_visu_perspectives_topic1",label="select topic 1",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 1),
+                                   selectInput(inputId = "tm_stm_visu_perspectives_topic2",label="select topic 2",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 2)
                   ),
 
                   # stm frexweight
-                  conditionalPanel(condition = 'input.stm_visu_labeltype=="frex"',
-                                   numericInput(inputId = "stm_visu_frexweight",label="frex weight",value = 0.5, min = 0, max = 1, step = 0.1)%>%
+                  conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex"',
+                                   numericInput(inputId = "tm_stm_visu_frexweight",label="frex weight",value = 0.5, min = 0, max = 1, step = 0.1)%>%
                                      shinyInput_label_embed(
                                        shiny_iconlink() %>%
                                          bs_embed_popover(
@@ -594,19 +594,19 @@ output$details_visu<-renderUI({
 
         tabPanelSTM <- tabPanel("Structural Topic Model",
                                 tabsetPanel(type="tabs", id = "stm_visu",
-                                            tabPanel(title = "Topics", plotOutput(outputId = "TM_stm_summary")),
-                                            tabPanel(title = "Labels", plotOutput(outputId = "TM_stm_labels")),
-                                            tabPanel(title = "Perspectives", plotOutput(outputId = "TM_stm_perspectives")),
-                                            tabPanel(title = "Histogramm", plotOutput(outputId = "TM_stm_hist")),
+                                            tabPanel(title = "Topics", plotOutput(outputId = "TM_stm_visu_summary")),
+                                            tabPanel(title = "Labels", plotOutput(outputId = "TM_stm_visu_labels")),
+                                            tabPanel(title = "Perspectives", plotOutput(outputId = "TM_stm_visu_perspectives")),
+                                            tabPanel(title = "Histogramm", plotOutput(outputId = "TM_stm_visu_hist")),
                                             tabPanel(title = "Topic Correlation",
-                                                     bsButton(inputId = "TM_stm_topicCorr_start",label = "start calculation of Topic Correlation",style = "primary",icon=icon("play")),
-                                                     conditionalPanel(condition = "output.TM_stm_topicCorr_show==true",
-                                                                      plotOutput(outputId = "TM_stm_topicCorr_calc")
+                                                     bsButton(inputId = "tm_stm_visu_topicCorr_start",label = "start calculation of Topic Correlation",style = "primary",icon=icon("play")),
+                                                     conditionalPanel(condition = "output.TM_stm_visu_topicCorr_show==true",
+                                                                      plotOutput(outputId = "TM_stm_visu_topicCorr_calc")
                                                      )
                                             ),
                                             tabPanel(title = "Estimate Effect",
                                                      busyIndicator(text = "calculating estimateEffect",wait = 0),
-                                                     textInput(inputId = "stm_visu_estimateEffect_calcParam_formula",label = "formula")%>%
+                                                     textInput(inputId = "tm_stm_visu_estimateEffect_calcParam_formula",label = "formula")%>%
                                                                         shinyInput_label_embed(
                                                                           shiny_iconlink() %>%
                                                                             bs_embed_popover(
@@ -618,14 +618,14 @@ output$details_visu<-renderUI({
 
 
 
-                                                     bsButton(inputId = "TM_stm_estimateEffect_start",label = "start calculation of estimate effect",style = "primary",icon=icon("play")),
-                                                     conditionalPanel(condition = "output.TM_stm_estimateEffect_show==true",
+                                                     bsButton(inputId = "tm_stm_visu_estimateEffect_calcButton",label = "start calculation of estimate effect",style = "primary",icon=icon("play")),
+                                                     conditionalPanel(condition = "output.TM_stm_visu_estimateEffect_show==true",
                                                                       tabsetPanel(type="tabs",
                                                                                   tabPanel(title="Summary",
-                                                                                           verbatimTextOutput (outputId = "TM_stm_estimateEffect_summary")
+                                                                                           verbatimTextOutput (outputId = "TM_stm_visu_estimateEffect_summary")
                                                                                   ),
                                                                                   tabPanel(title="Plot",
-                                                                                           textInput(inputId = "stm_visu_estimateEffect_plot_covariate",label = "covariate")%>%
+                                                                                           textInput(inputId = "tm_stm_visu_estimateEffect_plot_covariate",label = "covariate")%>%
                                                                                                shinyInput_label_embed(
                                                                                                shiny_iconlink() %>%
                                                                                                  bs_embed_popover(
@@ -633,10 +633,10 @@ output$details_visu<-renderUI({
                                                                                                    placement = "right"
                                                                                                  )
                                                                                              ),
-                                                                                           checkboxGroupInput(inputId = "stm_visu_estimateEffect_plot_topics", label = "topics", choices = c(1:values$tm_stm_model$settings$dim$K), selected = 1),
-                                                                                           bsButton(inputId = "TM_stm_estimateEffect_plotupdate",label = "Show plot for given parameters",style = "primary",icon=icon("play")),
-                                                                                           conditionalPanel(condition = "output.TM_stm_estimateEffect_plot_show==true",
-                                                                                                            plotOutput(outputId = "TM_stm_estimateEffect_plot")
+                                                                                           checkboxGroupInput(inputId = "tm_stm_visu_estimateEffect_plot_topics", label = "topics", choices = c(1:values$tm_stm_model$settings$dim$K), selected = 1),
+                                                                                           bsButton(inputId = "tm_stm_visu_estimateEffect_plotupdate",label = "Show plot for given parameters",style = "primary",icon=icon("play")),
+                                                                                           conditionalPanel(condition = "output.TM_stm_visu_estimateEffect_plot_show==true",
+                                                                                                            plotOutput(outputId = "TM_stm_visu_estimateEffect_plot")
                                                                                                             )
                                                                                   )
                                                                       )
