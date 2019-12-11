@@ -379,6 +379,8 @@ output$details_parameter<-renderUI({
         load(paste0(values$Details_Data_TM,"/dtm_TM.RData"))
         values$dtm <- dtm
         values$tm_stm_visu_topicCorr_show <- FALSE
+        values$tm_stm_visu_estimateEffect_plot_show <- FALSE
+        
       }
 
       topic.frequency <- colSums(theta * doc.length)
@@ -500,9 +502,8 @@ output$details_parameter<-renderUI({
                                    selectInput(inputId = "tm_stm_visu_perspectives_topic1",label="select topic 1",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 1),
                                    selectInput(inputId = "tm_stm_visu_perspectives_topic2",label="select topic 2",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 2)
                   ),
-
                   # stm frexweight
-                  conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex" && (input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"")', 
+                  conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex" && (input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm")', 
                                    numericInput(inputId = "tm_stm_visu_frexweight",label="frex weight",value = 0.5, min = 0, max = 1, step = 0.1)%>%
                                      shinyInput_label_embed(
                                        shiny_iconlink() %>%
@@ -648,7 +649,7 @@ output$details_visu<-renderUI({
                                                                                                  placement = "right"
                                                                                                )
                                                                                            ),
-                                                                                           conditionalPanel(condition = "input.tm_stm_visu_estimateEffect_plot_method == difference",
+                                                                                           conditionalPanel(condition = 'input.tm_stm_visu_estimateEffect_plot_method=="difference"',
                                                                                                             textInput(inputId = "tm_stm_visu_estimateEffect_plot_difference_covValue1",label = "covariate value 1")%>%
                                                                                                               shinyInput_label_embed(
                                                                                                                 shiny_iconlink() %>%
@@ -667,7 +668,7 @@ output$details_visu<-renderUI({
                                                                                                               )
                                                                                            ),
                                                                                            bsButton(inputId = "tm_stm_visu_estimateEffect_plotupdate",label = "Show plot for given parameters",style = "primary",icon=icon("play")),
-                                                                                           conditionalPanel(condition = "output.TM_stm_visu_estimateEffect_plot_show==true",
+                                                                                           conditionalPanel(condition = 'output.TM_stm_visu_estimateEffect_plot_show==true',
                                                                                                             plotOutput(outputId = "TM_stm_visu_estimateEffect_plot")
                                                                                                             )
                                                                                   )
