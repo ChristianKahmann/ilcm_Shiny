@@ -629,11 +629,43 @@ output$details_visu<-renderUI({
                                                                                                shinyInput_label_embed(
                                                                                                shiny_iconlink() %>%
                                                                                                  bs_embed_popover(
-                                                                                                   title = "The covariate of interest. Example: 'treatment'",
+                                                                                                   title = "The covariate of interest. Example: 'treatment'. All other covariates within the formula specified in estimateEffect will be kept at their median.",
                                                                                                    placement = "right"
                                                                                                  )
                                                                                              ),
-                                                                                           checkboxGroupInput(inputId = "tm_stm_visu_estimateEffect_plot_topics", label = "topics", choices = c(1:values$tm_stm_model$settings$dim$K), selected = 1),
+                                                                                           checkboxGroupInput(inputId = "tm_stm_visu_estimateEffect_plot_topics", label = "topics to plot", choices = c(1:values$tm_stm_model$settings$dim$K), selected = 1)%>%
+                                                                                             shinyInput_label_embed(
+                                                                                               shiny_iconlink() %>%
+                                                                                                 bs_embed_popover(
+                                                                                                   title = "Topics to plot. Please be aware that only topics can be plotted also used in the calculation of estimateEffect. So if you have used e.g. '1:3~treatment' for estimate effect only the first 3 topics can be selected to be plotted.",
+                                                                                                   placement = "right"
+                                                                                                 )
+                                                                                             ),
+                                                                                           selectInput(inputId = "tm_stm_visu_estimateEffect_plot_method",label="method used for plotting",choices=c("pointestimate", "difference", "continuous"),multiple=F, selected = "pointestimate")%>%shinyInput_label_embed(
+                                                                                             shiny_iconlink() %>%
+                                                                                               bs_embed_popover(
+                                                                                                 title = "Method used for plotting. 'pointestimate' estimates mean topic proportions for each value of the covariate. 'difference' estimates the mean difference in topic proportions for two different values of the covariate (cov.value1 and cov.value2 must be specified). 'continuous' estimates how topic proportions vary over the support of a continuous covariate",
+                                                                                                 placement = "right"
+                                                                                               )
+                                                                                           ),
+                                                                                           conditionalPanel(condition = "input.tm_stm_visu_estimateEffect_plot_method == difference",
+                                                                                                            textInput(inputId = "tm_stm_visu_estimateEffect_plot_difference_covValue1",label = "covariate value 1")%>%
+                                                                                                              shinyInput_label_embed(
+                                                                                                                shiny_iconlink() %>%
+                                                                                                                  bs_embed_popover(
+                                                                                                                    title = "the value or set of values of interest at which to set the covariate. In the case of calculating a treatment/control contrast, set the treatment to cov.value1.",
+                                                                                                                    placement = "right"
+                                                                                                                  )
+                                                                                                              ),
+                                                                                                            textInput(inputId = "tm_stm_visu_estimateEffect_plot_difference_covValue2",label = "covariate value 2")%>%
+                                                                                                              shinyInput_label_embed(
+                                                                                                                shiny_iconlink() %>%
+                                                                                                                  bs_embed_popover(
+                                                                                                                    title = "the value or set of values which will be set as the comparison group. cov.value1 and cov.value2 must be vectors of the same length",
+                                                                                                                    placement = "right"
+                                                                                                                  )
+                                                                                                              )
+                                                                                           ),
                                                                                            bsButton(inputId = "tm_stm_visu_estimateEffect_plotupdate",label = "Show plot for given parameters",style = "primary",icon=icon("play")),
                                                                                            conditionalPanel(condition = "output.TM_stm_visu_estimateEffect_plot_show==true",
                                                                                                             plotOutput(outputId = "TM_stm_visu_estimateEffect_plot")

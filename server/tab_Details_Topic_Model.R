@@ -353,10 +353,20 @@ output$TM_stm_visu_estimateEffect_plot_show<-reactive({
 })
 
 output$TM_stm_visu_estimateEffect_plot <- renderPlot({
-  print("plot estimate effect")
-  print(paste("covariate: ", input$tm_stm_visu_estimateEffect_plot_covariate))
-  print(paste("topics: ", input$tm_stm_visu_estimateEffect_plot_topics))
-  plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics)
+
+  plottingMethod <- input$tm_stm_visu_estimateEffect_plot_method
+  if(plottingMethod =="difference"){
+    covValue1 <- input$tm_stm_visu_estimateEffect_plot_difference_covValue1
+    covValue2 <- input$tm_stm_visu_estimateEffect_plot_difference_covValue2
+    plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod, 
+                        cov.value1 = covValue1, cov.value2 = covValue2,
+                        xlab = paste("More ", covValue2, " ... More ", covValue1)
+                        )
+    
+  }else{
+    plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod)
+    
+  }
   values$tm_stm_visu_estimateEffect_plot_show <- TRUE
 })
 
