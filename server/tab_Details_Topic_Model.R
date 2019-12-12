@@ -318,16 +318,29 @@ outputOptions(output, "TM_stm_visu_topicCorr_show", suspendWhenHidden = FALSE)
 #estimateEffect
 observeEvent(input$tm_stm_visu_estimateEffect_calcButton,{
 
-  load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
-  values$tm_stm_metaData <- combineMetaDataWithMetaNamesForMDEs(meta = meta, meta_names = meta_names)
+  #convert to factors and numeric
+  metaVarsToConvertToFactor <- input$tm_stm_visu_estimateEffect_metaVarsToConvertToFactor
+  metaVarsToConvertToNumeric <- input$tm_stm_visu_estimateEffect_metaVarsToConvertToNumeric
+  values$tm_stm_metaDataConverted <- values$tm_stm_metaData
+  for(i in 1:length(metaVarsToConvertToFactor)){
+    metaName <- metaVarsToConvertToFactor[i]
+    values$tm_stm_metaDataConverted[[metaName]] <-as.factor(values$tm_stm_metaData[[metaName]])
+  }
+  for(i in 1:length(metaVarsToConvertToNumeric)){
+    metaName <- metaVarsToConvertToNumeric[i]
+    values$tm_stm_metaDataConverted[[metaName]] <-as.numeric(values$tm_stm_metaData[[metaName]])
+  }
+
+  # read formula and estimate effect
   values$tm_stm_visu_estimateEffect_calcParam_formula <- NULL
   if(is.null(input$tm_stm_visu_estimateEffect_calcParam_formula) || nchar(input$tm_stm_visu_estimateEffect_calcParam_formula)==0) {
     shinyWidgets::sendSweetAlert(type = "warning",session = session,title = "You have to provide a formula!")
   }
   else{
       values$tm_stm_visu_estimateEffect_calcParam_formula <- as.formula(input$tm_stm_visu_estimateEffect_calcParam_formula)
-      values$tm_stm_visu_estimateEffectResult  <- estimateEffect(formula = values$tm_stm_visu_estimateEffect_calcParam_formula, stmobj = values$tm_stm_model, metadata = values$tm_stm_metaData)
+      values$tm_stm_visu_estimateEffectResult  <- estimateEffect(formula = values$tm_stm_visu_estimateEffect_calcParam_formula, stmobj = values$tm_stm_model, metadata = values$tm_stm_metaDataConverted)
       values$tm_stm_visu_estimateEffect_show <- TRUE
+      values$tm_stm_visu_estimateEffect_plot_show <- FALSE
   }
 })
 
@@ -363,7 +376,33 @@ output$TM_stm_visu_estimateEffect_plot <- renderPlot({
                         xlab = paste("More ", covValue2, " ... More ", covValue1)
                         )
     
-  }else{
+  }else if(plottingMethod =="continuous"){
+    
+    covariateOfInterest <- input$tm_stm_visu_estimateEffect_plot_covariate
+    
+    if(covariateOfInterest == "date"){
+      
+      # plot original dates on x-axes instead converted numeric values
+      minValueBeforeConversion <- min(values$tm_stm_metaData[[covariateOfInterest]]) # use from originaL data (not converted)
+      maxValueBeforeConversion <- max(values$tm_stm_metaData[[covariateOfInterest]])
+      
+      diff_in_days = difftime(maxValueBeforeConversion, minValueBeforeConversion, units = "days") # TODO: consider using different x axis labels depending on time span
+      
+      #set start and end date to beginn / end of month
+      minValueToUse <- format(as.Date(minValueBeforeConversion,"%Y-%m-%d"),"%Y-%m-01") # get first day in given month
+      maxValueToUse <- as.Date(format(as.Date(format(as.Date(maxValueBeforeConversion,"%Y-%m-%d"), "%Y-%m-01"), "%Y-%m-%d")+31,"%Y-%m-01"), "%Y-%m-%d")-1 # get the last day of given month
+      monthseq <- seq(from = as.Date(minValueToUse), to = as.Date(maxValueToUse), by = "month")
+
+      plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod, xaxt = "n")
+      axis.Date(1, at=monthseq, format = "%Y-%m")
+            
+    }else{
+      #TODO: consider using original values as labels for x axes ticks instead of converted numeric ones similar to date above
+      plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod)
+      
+    }
+   
+  }else{ # plotting method == pointestimate
     plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod)
     
   }

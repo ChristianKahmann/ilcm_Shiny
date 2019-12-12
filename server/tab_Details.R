@@ -592,7 +592,12 @@ output$details_visu<-renderUI({
 
       # additional panels specific for stm
       if(values$tm_method == "stm"){
-
+        
+        # load meta data
+        load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
+        values$tm_stm_metaData <- combineMetaDataWithMetaNamesForMDEs(meta = meta, meta_names = meta_names)
+        
+        # general STM tab panel
         tabPanelSTM <- tabPanel("Structural Topic Model",
                                 tabsetPanel(type="tabs", id = "stm_visu",
                                             tabPanel(title = "Topics", plotOutput(outputId = "TM_stm_visu_summary")),
@@ -600,25 +605,43 @@ output$details_visu<-renderUI({
                                             tabPanel(title = "Perspectives", plotOutput(outputId = "TM_stm_visu_perspectives")),
                                             tabPanel(title = "Histogramm", plotOutput(outputId = "TM_stm_visu_hist")),
                                             tabPanel(title = "Topic Correlation",
+                                                     busyIndicator(text = "calculating topic correlation",wait = 0),
                                                      bsButton(inputId = "tm_stm_visu_topicCorr_start",label = "start calculation of Topic Correlation",style = "primary",icon=icon("play")),
                                                      conditionalPanel(condition = "output.TM_stm_visu_topicCorr_show==true",
                                                                       plotOutput(outputId = "TM_stm_visu_topicCorr_calc")
                                                      )
                                             ),
                                             tabPanel(title = "Estimate Effect",
+                                                     
                                                      busyIndicator(text = "calculating estimateEffect",wait = 0),
+                                                     # formula
                                                      textInput(inputId = "tm_stm_visu_estimateEffect_calcParam_formula",label = "formula")%>%
                                                                         shinyInput_label_embed(
                                                                           shiny_iconlink() %>%
                                                                             bs_embed_popover(
-                                                                              title = "A formula for the regression. It should have an integer or vector of numbers on the left-hand side and an equation with covariates on the right hand side. See Details of STM documentation for more information. Typically, users will pass the same model of topical prevalence used in estimating the STM to the estimateEffect function. The syntax of the estimateEffect function is designed so users specify the set of topics they wish to use for estimation, and then a formula for metadata of interest. Examples: 'c(1) ~ treatment', '1:3 ~ treatment' ",
+                                                                              title = "A formula for the regression. It should have an integer or vector of numbers on the left-hand side and an equation with covariates on the right hand side. See Details of STM documentation for more information. Typically, users will pass the same model of topical prevalence used in estimating the STM to the estimateEffect function. The syntax of the estimateEffect function is designed so users specify the set of topics they wish to use for estimation, and then a formula for metadata of interest. Examples: 'c(1) ~ treatment', '1:3 ~ treatment' , c(1,3,5) ~ treatment + s(day)",
                                                                               placement = "right"
                                                                             )
                                                                         ),
-
-
-
-
+                                                     # meta vars to convert to factors 
+                                                     selectInput(inputId = "tm_stm_visu_estimateEffect_metaVarsToConvertToFactor", label = "meta variables to convert to factor", choices = names(values$tm_stm_metaData), multiple = T)%>%
+                                                       shinyInput_label_embed(
+                                                         shiny_iconlink() %>%
+                                                           bs_embed_popover(
+                                                             title = "before the estimate effect can be calculated, the variables used in the formula above should be converted to factors or numeric. Chosse those which should be converted to factors here",
+                                                             placement = "right"
+                                                           )
+                                                       ),
+                                                     # meta vars to convert to numeric
+                                                     selectInput(inputId = "tm_stm_visu_estimateEffect_metaVarsToConvertToNumeric", label = "meta variables to convert to numeric (continuous variables like dates)", choices = names(values$tm_stm_metaData), multiple = T)%>%
+                                                       shinyInput_label_embed(
+                                                         shiny_iconlink() %>%
+                                                           bs_embed_popover(
+                                                             title = "please select the variables to convert to numeric. These are continuous variables like e.g. dates",
+                                                             placement = "right"
+                                                           )
+                                                       ),
+ 
                                                      bsButton(inputId = "tm_stm_visu_estimateEffect_calcButton",label = "start calculation of estimate effect",style = "primary",icon=icon("play")),
                                                      conditionalPanel(condition = "output.TM_stm_visu_estimateEffect_show==true",
                                                                       tabsetPanel(type="tabs",
