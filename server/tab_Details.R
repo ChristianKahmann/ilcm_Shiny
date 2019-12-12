@@ -4,6 +4,7 @@ values$TM_Intrusion_show<-FALSE
 values$TM_topic_intrusion_run<-NULL
 values$TM_Intrusion_word_show<-FALSE
 values$TM_word_intrusion_run<-NULL
+values$tm_stm_parameters_contentFormula <- ""
 #render parameter tagset depending on the process
 output$details_parameter<-renderUI({
   if(!is.null(values$Details_Analysis)){
@@ -371,6 +372,7 @@ output$details_parameter<-renderUI({
       values$tm_json<-json
       values$tm_term.frequency<-term.frequency
       
+      
       # #stm
       load(paste0(values$Details_Data_TM,"/parameters.RData"))
       values$tm_parameters <- parameters
@@ -488,7 +490,7 @@ output$details_parameter<-renderUI({
                                    numericInput(inputId = "tm_stm_visu_numberOfWordsToLabelTopic",label="number of words to label topics", value = 10, min = 2, max = 50, step = 1)
                   ),
                   #stm labeltype (for sub tabs Topics, Labels and Histogram - but only if selected calculated structural topic model didn't have a content formula set. If a content formula was set, the label type is not selectable)
-                  conditionalPanel(condition = '(input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && !output$tm_stm_parameters_contentFormulaIsSet',
+                  conditionalPanel(condition = '(input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && output.tm_stm_parameters_contentFormulaIsSet==false',
                                    selectInput(inputId = "tm_stm_visu_labeltype",label="method to choose most important words",choices=c("prob", "frex", "lift", "score"),multiple=F, selected = "prob")%>%
                                      shinyInput_label_embed(
                                        shiny_iconlink() %>%
@@ -504,7 +506,7 @@ output$details_parameter<-renderUI({
                                    selectInput(inputId = "tm_stm_visu_perspectives_topic2",label="select topic 2",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 2)
                   ),
                   # stm frexweight (if labeltype == frex)
-                  conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex" && (input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && !output$tm_stm_parameters_contentFormulaIsSet', 
+                  conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex" && (input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && output.tm_stm_parameters_contentFormulaIsSet==false', 
                                    numericInput(inputId = "tm_stm_visu_frexweight",label="frex weight",value = 0.5, min = 0, max = 1, step = 0.1)%>%
                                      shinyInput_label_embed(
                                        shiny_iconlink() %>%
@@ -538,8 +540,7 @@ output$details_visu<-renderUI({
       updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = rownames(values$tm_theta))
       
       #stm
-      #print(paste("tm_method", values$tm_method))
-      
+
       #return visu for topic modeling
       tabPanelLDAVis <- tabPanel("LDA-Vis",
                                  #use the d3.js from ldavis library
@@ -604,7 +605,29 @@ output$details_visu<-renderUI({
                                 tabsetPanel(type="tabs", id = "stm_visu",
                                             tabPanel(title = "Topics", plotOutput(outputId = "TM_stm_visu_summary")),
                                             tabPanel(title = "Labels", plotOutput(outputId = "TM_stm_visu_labels")),
-                                            tabPanel(title = "Perspectives", plotOutput(outputId = "TM_stm_visu_perspectives")),
+                                            tabPanel(title = "Perspectives", 
+                                                     conditionalPanel(condition = "output.tm_stm_parameters_contentFormulaIsSet==true",
+                                                                      textInput(inputId = "tm_stm_visu_perspectives_covariateValue1",label = "covariate value 1")%>%
+                                                                        shinyInput_label_embed(
+                                                                          shiny_iconlink() %>%
+                                                                            bs_embed_popover(
+                                                                              title = "The covariate value 1 of interest. Example if the content covariate in the stm model was the country name: 'Russia'.",
+                                                                              placement = "right"
+                                                                            )
+                                                                        ),
+                                                                      textInput(inputId = "tm_stm_visu_perspectives_covariateValue2",label = "covariate value 1")%>%
+                                                                        shinyInput_label_embed(
+                                                                          shiny_iconlink() %>%
+                                                                            bs_embed_popover(
+                                                                              title = "The covariate value 2 of interest. Example if the content covariate in the stm model was the country name: 'Turkey'.",
+                                                                              placement = "right"
+                                                                            )
+                                                                        )
+                                                                  
+                                                     ),
+                                                     plotOutput(outputId = "TM_stm_visu_perspectives")
+                                                     
+                                                     ),
                                             tabPanel(title = "Histogramm", plotOutput(outputId = "TM_stm_visu_hist")),
                                             tabPanel(title = "Topic Correlation",
                                                      busyIndicator(text = "calculating topic correlation",wait = 0),

@@ -268,6 +268,11 @@ output$tm_method<-reactive({
   values$tm_method
 })
 
+output$tm_stm_parameters_contentFormula <- reactive({
+  values$tm_stm_parameters_contentFormula
+})
+
+outputOptions(output, "tm_stm_parameters_contentFormula", suspendWhenHidden = FALSE)
 
 output$tm_stm_parameters_contentFormulaIsSet <- reactive({
   if(nchar(values$tm_stm_parameters_contentFormula)>0){
@@ -276,6 +281,7 @@ output$tm_stm_parameters_contentFormulaIsSet <- reactive({
     return(FALSE)
   }
 })
+outputOptions(output, "tm_stm_parameters_contentFormulaIsSet", suspendWhenHidden = FALSE)
 
 
 #stm
@@ -308,7 +314,25 @@ output$TM_stm_visu_perspectives <- renderPlot({
   selectedTopic1 <- as.integer(input$tm_stm_visu_perspectives_topic1)
   selectedTopic2 <- as.integer(input$tm_stm_visu_perspectives_topic2)
 
-  plot.STM(x = values$tm_stm_model, type = "perspectives", topics = c(selectedTopic1, selectedTopic2), n = input$tm_stm_visu_numberOfWordsToLabelTopic)
+  # contentFormula in stm model set
+  if(nchar(values$tm_stm_parameters_contentFormula)>0){
+    # use additional parameters tm_stm_visu_perspectives_covariateValue1 and tm_stm_visu_perspectives_covariateValue1
+    validate(
+      need(!is.null(input$tm_stm_visu_perspectives_covariateValue1) && nchar(input$tm_stm_visu_perspectives_covariateValue1)>0,message="please select covariate value 1")
+    )
+    validate(
+      need(!is.null(input$tm_stm_visu_perspectives_covariateValue2) && nchar(input$tm_stm_visu_perspectives_covariateValue2)>0,message="please select covariate value 2")
+    )
+    covValue1 <- input$tm_stm_visu_perspectives_covariateValue1
+    covValue2 <- input$tm_stm_visu_perspectives_covariateValue2
+    
+    plot.STM(x = values$tm_stm_model, type = "perspectives", topics = c(selectedTopic1, selectedTopic2), n = input$tm_stm_visu_numberOfWordsToLabelTopic, covarlevels = c(covValue1, covValue2))
+    
+    
+  }else{ # contentFormula in stm model not set
+    plot.STM(x = values$tm_stm_model, type = "perspectives", topics = c(selectedTopic1, selectedTopic2), n = input$tm_stm_visu_numberOfWordsToLabelTopic)
+  }
+  
 })
 
 # plot.STM hist
@@ -392,6 +416,12 @@ output$TM_stm_visu_estimateEffect_plot <- renderPlot({
 
   plottingMethod <- input$tm_stm_visu_estimateEffect_plot_method
   if(plottingMethod =="difference"){
+    validate(
+      need(!is.null(input$tm_stm_visu_estimateEffect_plot_difference_covValue1),message="please select covariate value 1")
+    )
+    validate(
+      need(!is.null(input$tm_stm_visu_estimateEffect_plot_difference_covValue2),message="please select covariate value 2")
+    )
     covValue1 <- input$tm_stm_visu_estimateEffect_plot_difference_covValue1
     covValue2 <- input$tm_stm_visu_estimateEffect_plot_difference_covValue2
     plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod, 
