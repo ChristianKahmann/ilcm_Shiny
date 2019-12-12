@@ -263,19 +263,38 @@ output$TM_subColl_UI<-renderUI({
 ##############
 # STM
 ##############
-#stm
+
 output$tm_method<-reactive({
   values$tm_method
 })
 
+
+output$tm_stm_parameters_contentFormulaIsSet <- reactive({
+  if(nchar(values$tm_stm_parameters_contentFormula)>0){
+    return(TRUE)
+  }else{
+    return(FALSE)
+  }
+})
+
+
 #stm
 # plot.STM summary
 output$TM_stm_visu_summary <- renderPlot({
-  plot.STM(x = values$tm_stm_model, type = "summary", n = input$tm_stm_visu_numberOfWordsToLabelTopic, labeltype = input$tm_stm_visu_labeltype, frexw = input$tm_stm_visu_frexweight)
+  if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
+    plot.STM(x = values$tm_stm_model, type = "summary", n = input$tm_stm_visu_numberOfWordsToLabelTopic)
+  }else{
+    plot.STM(x = values$tm_stm_model, type = "summary", n = input$tm_stm_visu_numberOfWordsToLabelTopic, labeltype = input$tm_stm_visu_labeltype, frexw = input$tm_stm_visu_frexweight)
+    
+  }
 })
 # plot.STM labels
 output$TM_stm_visu_labels <- renderPlot({
-  plot.STM(x = values$tm_stm_model, type = "labels", n = input$tm_stm_visu_numberOfWordsToLabelTopic, labeltype = input$tm_stm_visu_labeltype, frexw = input$tm_stm_visu_frexweight)
+  if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
+    plot.STM(x = values$tm_stm_model, type = "labels", n = input$tm_stm_visu_numberOfWordsToLabelTopic)
+  }else{
+    plot.STM(x = values$tm_stm_model, type = "labels", n = input$tm_stm_visu_numberOfWordsToLabelTopic, labeltype = input$tm_stm_visu_labeltype, frexw = input$tm_stm_visu_frexweight)
+  }
 })
 
 # plot.STM perspectives
@@ -294,7 +313,11 @@ output$TM_stm_visu_perspectives <- renderPlot({
 
 # plot.STM hist
 output$TM_stm_visu_hist <- renderPlot({
-  plot.STM(x = values$tm_stm_model, type = "hist", n = input$tm_stm_visu_numberOfWordsToLabelTopic, labeltype = input$tm_stm_visu_labeltype, frexw = input$tm_stm_visu_frexweight)
+  if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
+    plot.STM(x = values$tm_stm_model, type = "hist", n = input$tm_stm_visu_numberOfWordsToLabelTopic)
+  }else{
+    plot.STM(x = values$tm_stm_model, type = "hist", n = input$tm_stm_visu_numberOfWordsToLabelTopic, labeltype = input$tm_stm_visu_labeltype, frexw = input$tm_stm_visu_frexweight)
+  }
 })
 
 

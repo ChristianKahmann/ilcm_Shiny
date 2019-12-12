@@ -373,6 +373,7 @@ output$details_parameter<-renderUI({
       
       # #stm
       load(paste0(values$Details_Data_TM,"/parameters.RData"))
+      values$tm_parameters <- parameters
       values$tm_method <- parameters$tm_method
       if(values$tm_method == "stm"){
         values$tm_stm_model <- model$stm_model # loaded via data_TM.RData
@@ -486,8 +487,8 @@ output$details_parameter<-renderUI({
                   conditionalPanel(condition = 'input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"|| input.stm_visu=="Perspectives"',
                                    numericInput(inputId = "tm_stm_visu_numberOfWordsToLabelTopic",label="number of words to label topics", value = 10, min = 2, max = 50, step = 1)
                   ),
-                  #stm labeltype
-                  conditionalPanel(condition = 'input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"',
+                  #stm labeltype (for sub tabs Topics, Labels and Histogram - but only if selected calculated structural topic model didn't have a content formula set. If a content formula was set, the label type is not selectable)
+                  conditionalPanel(condition = '(input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && !output$tm_stm_parameters_contentFormulaIsSet',
                                    selectInput(inputId = "tm_stm_visu_labeltype",label="method to choose most important words",choices=c("prob", "frex", "lift", "score"),multiple=F, selected = "prob")%>%
                                      shinyInput_label_embed(
                                        shiny_iconlink() %>%
@@ -502,8 +503,8 @@ output$details_parameter<-renderUI({
                                    selectInput(inputId = "tm_stm_visu_perspectives_topic1",label="select topic 1",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 1),
                                    selectInput(inputId = "tm_stm_visu_perspectives_topic2",label="select topic 2",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 2)
                   ),
-                  # stm frexweight
-                  conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex" && (input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm")', 
+                  # stm frexweight (if labeltype == frex)
+                  conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex" && (input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && !output$tm_stm_parameters_contentFormulaIsSet', 
                                    numericInput(inputId = "tm_stm_visu_frexweight",label="frex weight",value = 0.5, min = 0, max = 1, step = 0.1)%>%
                                      shinyInput_label_embed(
                                        shiny_iconlink() %>%
@@ -591,12 +592,13 @@ output$details_visu<-renderUI({
       )
 
       # additional panels specific for stm
+      # needs values$tm_parameters and values$tm_method to be set (via load parameters from file). This is currently performed in output$details_parameter above, so doesn't need to be performed again here
       if(values$tm_method == "stm"){
         
         # load meta data
         load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
         values$tm_stm_metaData <- combineMetaDataWithMetaNamesForMDEs(meta = meta, meta_names = meta_names)
-        
+        values$tm_stm_parameters_contentFormula <- values$tm_parameters$stm_contentFormula
         # general STM tab panel
         tabPanelSTM <- tabPanel("Structural Topic Model",
                                 tabsetPanel(type="tabs", id = "stm_visu",
