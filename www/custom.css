@@ -150,3 +150,7 @@
   bottom:75px;
   left:10px;
 }
+
+
+
+.dropdown-menu{z-index:10000 !important;}
