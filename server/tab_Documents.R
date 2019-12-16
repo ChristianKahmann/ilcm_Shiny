@@ -140,7 +140,7 @@ output$collection_documents<-DT::renderDataTable({
   #make titles appear bold
   data$title<-paste0("<b>",data$title,"</b>")
   remove_existing_checkboxes(1:10)
-  tabledata<-data.frame(data,keep=shinyInput_checkbox_Doc(checkboxInput,dim(data)[1],"Doccbox_",values=!(data[,2]%in%isolate(values$Doc_delete_documents)),label=NULL))
+  tabledata<-data.frame(data,keep=shinyInput_checkbox_Doc(checkboxInput,dim(data)[1],"Doccbox_",values=!(data[,"id"]%in%isolate(values$Doc_delete_documents)),label=NULL))
   
   #set options for datatable, check if output is already sorted by solr
   if(values$Doc_custom==TRUE){
@@ -450,11 +450,11 @@ observe({
          message=FALSE)
   )
   a<-do.call(rbind,a)
-  docs_del<-isolate(values$Documents_Results[which(a==F),2])
-  print(docs_del)
-  isolate(values$Doc_delete_documents<-setdiff(values$Doc_delete_documents,values$Documents_Results[,2]))
-  print(c(isolate(values$Doc_delete_documents),isolate(values$Documents_Results[which(a==F),2])))
-  isolate(values$Doc_delete_documents<-c(isolate(values$Doc_delete_documents),isolate(values$Documents_Results[which(a==F),2])))
+  docs_del<-isolate(values$Documents_Results[which(a==F),"id"])
+
+  isolate(values$Doc_delete_documents<-setdiff(values$Doc_delete_documents,values$Documents_Results[,"id"]))
+
+  isolate(values$Doc_delete_documents<-c(isolate(values$Doc_delete_documents),isolate(values$Documents_Results[which(a==F),"id"])))
   
 })
 
@@ -526,6 +526,8 @@ observeEvent(input$confirm_delete_docs,{
     save_collection_to_db(info)
     values$Doc_reload_keep<-TRUE
     values$Doc_delete_documents<-NULL
+    values$numFound_Sub<-nrow(info[[1]])
+    Sys.sleep(1.5)
   }
 })
 

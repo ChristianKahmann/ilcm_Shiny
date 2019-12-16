@@ -106,7 +106,7 @@ output$export_results_special_topic_phi<-downloadHandler(
 
 
 #get annotations from database and render them in a datatable
-output$export_annotations<-renderDataTable({
+output$export_annotations<-DT::renderDataTable({
   input$export_update_annotations
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
   rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')

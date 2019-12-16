@@ -571,7 +571,7 @@ output$Fac_mde5_abs<-renderUI({
   }
   values$Fac_mde5_abs<-data
   height<-round(max((dim(data)[1]/30)*100,25),digits = 0)
-  plot_output_list <- lapply(1:1, function(i) {
+    plot_output_list <- lapply(1:1, function(i) {
     plotname <- paste0("plotly_mde5_abs")
     plot_output_object <- plotlyOutput(plotname)
     plot_output_object <- renderPlotly({

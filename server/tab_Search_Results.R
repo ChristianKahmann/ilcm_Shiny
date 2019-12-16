@@ -103,7 +103,7 @@ output$search_results_datatable<-DT::renderDataTable({
   #set options for datatable, check if output is already sorted by solr
   if(values$custom==TRUE){
     remove_existing_checkboxes(1:10)
-    data<-datatable(data.frame(data,keep=shinyInput_checkbox(checkboxInput,dim(data)[1],"cbox_",values=!(data[,2]%in%isolate(values$delete_documents)),label=NULL))
+    data<-datatable(data.frame(data,keep=shinyInput_checkbox(checkboxInput,dim(data)[1],"cbox_",values=!(data[,"id"]%in%isolate(values$delete_documents)),label=NULL))
                     ,selection = "single",rownames = FALSE,escape = F,class = "row-border compact",options = list(
                       preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
                       drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
@@ -123,7 +123,7 @@ output$search_results_datatable<-DT::renderDataTable({
     if(!is.null(isolate(input$sort))){
       if(nchar(isolate(input$sort))>0){
         remove_existing_checkboxes(1:10)
-        data<-datatable(data.frame(data,keep=shinyInput_checkbox(checkboxInput,dim(data)[1],"cbox_",values=!(data[,2]%in%isolate(values$delete_documents)),label=NULL))
+        data<-datatable(data.frame(data,keep=shinyInput_checkbox(checkboxInput,dim(data)[1],"cbox_",values=!(data[,"id"]%in%isolate(values$delete_documents)),label=NULL))
                         ,selection = "single",rownames = FALSE,escape = F,class = "row-border compact",options = list(
                           preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
                           drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
@@ -232,7 +232,7 @@ $(".sorting_asc").on("click",function() {
       }
     }
     else{
-      data<-datatable(data.frame(data,keep=shinyInput_checkbox(checkboxInput,dim(data)[1],"cbox_",values=!(data[,2]%in%isolate(values$delete_documents)),label=NULL)),selection = "single",rownames = FALSE,class = "row-border compact",escape = F,options = list(
+      data<-datatable(data.frame(data,keep=shinyInput_checkbox(checkboxInput,dim(data)[1],"cbox_",values=!(data[,"id"]%in%isolate(values$delete_documents)),label=NULL)),selection = "single",rownames = FALSE,class = "row-border compact",escape = F,options = list(
         preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
         drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
         dom="t",
@@ -395,9 +395,9 @@ observe({
          message=FALSE)
   )
   a<-do.call(rbind,a)
-  docs_del<-isolate(values$Search_Results[which(a==F),2])
-  isolate(values$delete_documents<-setdiff(values$delete_documents,values$Search_Results[,2]))
-  isolate(values$delete_documents<-c(isolate(values$delete_documents),isolate(values$Search_Results[which(a==F),2])))
+  docs_del<-isolate(values$Search_Results[which(a==F),"id"])
+  isolate(values$delete_documents<-setdiff(values$delete_documents,values$Search_Results[,"id"]))
+  isolate(values$delete_documents<-c(isolate(values$delete_documents),isolate(values$Search_Results[which(a==F),"id"])))
 })
 
 #reset the list for documents marked for deletion when corpus is changed
