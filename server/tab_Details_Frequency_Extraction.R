@@ -155,11 +155,11 @@ output$download_FE_frequencies<-downloadHandler(
                                type="warning"  )
         break;
       }
-      data<-as.matrix(values$freq_matrix[,input$FE_CB_words_to_export])
+      data<-as.matrix(values$freq_matrix[,input$FE_CB_words_to_export,drop=F])
       colnames(data)<-input$FE_CB_words_to_export
     }
     else{
-      data<-as.matrix(values$freq_matrix[,1])
+      data<-as.matrix(values$freq_matrix[,1,drop=F])
       colnames(data)<-input$Det_FE_regexp
     }
     write.csv(data, con)
