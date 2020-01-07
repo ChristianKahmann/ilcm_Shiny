@@ -256,15 +256,33 @@ output$visNetwork_cooc_net<-visNetwork::renderVisNetwork({
   nodes<-cbind(nodes,apply(nodes,MARGIN = 1,FUN = function(x){paste0(x[2],": ",x[4])}))
   values$name_for_cooc_knk<-nodes[,"name"]
   colnames(nodes)<-c("id","label","group","value","shadow","title")
-  visNetwork::visNetwork(nodes = nodes,edges = edges)%>%
-    visNetwork::visNodes(font = list(color="black",size=20,background="white"))%>%
-    visNetwork::visEdges(scaling=list(min=2,max=8))%>%
-    visNetwork::visPhysics(barnesHut = list(gravitationalConstant=input$Det_CO_gravity))%>%
-    visNetwork::visLayout(randomSeed = 1,hierarchical = input$Det_CO_Layout)%>%
-    visNetwork::visEvents(click = "function(nodes){
+  if(input$Det_CO_use_igraph_layout==TRUE){
+    return(
+      visNetwork::visNetwork(nodes = nodes,edges = edges)%>%
+        visNetwork::visIgraphLayout(randomSeed = 1)%>%
+        visNetwork::visNodes(font = list(color="black",size=20,background="white"))%>%
+        visNetwork::visEdges(scaling=list(min=2,max=8))%>%
+        visNetwork::visPhysics(barnesHut = list(gravitationalConstant=input$Det_CO_gravity))%>%
+        visNetwork::visLayout(randomSeed = 1,hierarchical = input$Det_CO_Layout)%>%
+        visNetwork::visEvents(click = "function(nodes){
                           Shiny.onInputChange('cooc_word', nodes.nodes[0]);
                           ;}"
+        )
     )
+  }
+  else{
+    return(
+      visNetwork::visNetwork(nodes = nodes,edges = edges)%>%
+        visNetwork::visNodes(font = list(color="black",size=20,background="white"))%>%
+        visNetwork::visEdges(scaling=list(min=2,max=8))%>%
+        visNetwork::visPhysics(barnesHut = list(gravitationalConstant=input$Det_CO_gravity))%>%
+        visNetwork::visLayout(randomSeed = 1,hierarchical = input$Det_CO_Layout)%>%
+        visNetwork::visEvents(click = "function(nodes){
+                          Shiny.onInputChange('cooc_word', nodes.nodes[0]);
+                          ;}"
+        )
+    )
+  }
 })
 
 #set clicked word in cooc-graph as input word in knk
@@ -348,7 +366,7 @@ output$cooc_examples_table<-DT::renderDataTable({
                      onclick = 'Shiny.onInputChange(\"coocs_kwic_document\",  this.id)'
                    ),stringsAsFactors = FALSE)
   
-
+  
   return(datatable(data = data,escape=F,selection="none"))
 })
 
@@ -366,8 +384,8 @@ observeEvent(input$coocs_kwic_document,{
   text<-paste(token[,"word"],collapse=" ")
   showModal(
     modalDialog(title = paste0("Document: ",dataset,"_",doc_id),easyClose = T,
-      tags$div(text)
-  ))
+                tags$div(text)
+    ))
   isolate(shinyjs::runjs('Shiny.onInputChange(\"coocs_kwic_document\",  "coocs_kwic_show_doc_button_0")'))
 })
 

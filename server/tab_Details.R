@@ -158,6 +158,7 @@ output$details_parameter<-renderUI({
                            sliderInput(inputId = "Det_CO_Depth",label = "Depth of Graph",min=1,max = 4,value = 2,step = 1,width = "90%")
           ),
           conditionalPanel(condition = 'input.tabBox_coocs=="Co-occurrence Graph"',
+                           checkboxInput(inputId = "Det_CO_use_igraph_layout",label = "use iGraph-layout?",value = T),
                            sliderInput(inputId = "Det_CO_Max_Edges",label = "Maximum Number of Edges",min=10,max = 1000,value = 40,step = 1,width = "90%"),
                            sliderInput(inputId = "Det_CO_gravity",label = "Charge of Graph",value = -2500,min = -10000,max = 0,width = "90%"),
                            checkboxInput(inputId = "Det_CO_Layout",label = "Layout hierarchical",width = "90%"),
