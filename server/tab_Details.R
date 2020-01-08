@@ -491,11 +491,11 @@ output$details_parameter<-renderUI({
                   ),
                   #stm labeltype (for sub tabs Topics, Labels and Histogram - but only if selected calculated structural topic model didn't have a content formula set. If a content formula was set, the label type is not selectable)
                   conditionalPanel(condition = '(input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && output.tm_stm_parameters_contentFormulaIsSet==false',
-                                   selectInput(inputId = "tm_stm_visu_labeltype",label="method to choose most important words",choices=c("prob", "frex", "lift", "score"),multiple=F, selected = "prob")%>%
+                                   selectInput(inputId = "tm_stm_visu_labeltype",label="labeltype (method to choose most important words)",choices=c("prob", "frex", "lift", "score"),multiple=F, selected = "prob")%>%
                                      shinyInput_label_embed(
                                        shiny_iconlink() %>%
                                          bs_embed_popover(
-                                           title = "PROB: words within each topic with the highest probability. FREX: words which are both frequent in and exclusive to a topic of interest identifying words that distinguish topics. SCORE: divides the log frequency of the word in the topic by the log frequency of the word in other topics. For more information on score, see the lda R package. LIFT: words according to the lift metric: Lift is calculated by dividing the topic-word distribution by the empirical word count probability distribution. For more information see R calclift",
+                                           title = "PROB: words within each topic with the highest probability. FREX: words which are both frequent in and exclusive to a topic of interest identifying words that distinguish topics. SCORE: divides the log frequency of the word in the topic by the log frequency of the word in other topics. For more information on score, see the lda R package. LIFT: words according to the lift metric: Lift is calculated by dividing the topic-word distribution by the empirical word count probability distribution. For more information see R calclift. The selection of the label type is only available if the calculated structural topic model didn't have a content formula set. If a content formula was set, the label type is not selectable",
                                            placement = "right"
                                          )
                                      )
