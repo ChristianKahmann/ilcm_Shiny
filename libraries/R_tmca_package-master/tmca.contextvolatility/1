@@ -1,0 +1,354 @@
+starting worker pid=5436 on localhost:11007 at 14:26:08.405
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=14976 on localhost:11007 at 14:33:08.086
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=2272 on localhost:11007 at 12:12:27.836
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=3244 on localhost:11007 at 12:20:00.322
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=13816 on localhost:11007 at 13:00:03.745
+starting worker pid=9256 on localhost:11007 at 15:24:10.182
+starting worker pid=5380 on localhost:11007 at 15:24:10.511
+starting worker pid=13488 on localhost:11007 at 16:07:28.370
+starting worker pid=5492 on localhost:11007 at 16:07:28.837
+starting worker pid=13984 on localhost:11007 at 16:07:29.055
+starting worker pid=16040 on localhost:11007 at 16:11:10.800
+starting worker pid=13368 on localhost:11007 at 16:11:11.013
+starting worker pid=14528 on localhost:11007 at 16:15:22.409
+starting worker pid=7956 on localhost:11007 at 16:15:22.601
+starting worker pid=10284 on localhost:11007 at 16:15:22.818
+Current date:  2005-01-04
+Current date:  2007-04-04
+Current date:  2008-09-17
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=15228 on localhost:11007 at 16:21:35.021
+starting worker pid=7584 on localhost:11007 at 16:21:35.210
+starting worker pid=4724 on localhost:11007 at 16:21:35.396
+Current date:  2005-01-04
+Current date:  2007-04-04
+Current date:  2008-09-17
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=10424 on localhost:11007 at 16:26:19.178
+starting worker pid=6892 on localhost:11007 at 16:26:19.360
+starting worker pid=12080 on localhost:11007 at 16:26:19.542
+Current date:  2005-01-04
+Current date:  2007-04-04
+Current date:  2008-09-17
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=12460 on localhost:11007 at 10:16:44.462
+starting worker pid=2608 on localhost:11007 at 10:16:44.886
+starting worker pid=8808 on localhost:11007 at 10:16:45.089
+Current date:  2005-01-04
+Current date:  2007-04-04
+Current date:  2008-09-17
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=7324 on localhost:11007 at 10:19:52.979
+starting worker pid=316 on localhost:11007 at 10:19:53.164
+starting worker pid=11664 on localhost:11007 at 10:19:53.346
+Current date:  2005-01-04
+Current date:  2007-04-04
+Current date:  2008-09-17
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=12888 on localhost:11007 at 10:23:45.669
+starting worker pid=7052 on localhost:11007 at 10:23:45.852
+starting worker pid=14492 on localhost:11007 at 10:23:46.032
+Current date:  2005-01-04
+Current date:  2007-04-04
+Current date:  2008-09-17
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=11852 on localhost:11007 at 10:26:24.367
+starting worker pid=15900 on localhost:11007 at 10:26:24.548
+starting worker pid=5524 on localhost:11007 at 10:26:24.732
+Current date:  2005-01-04
+Loading required package: Matrix
+Current date:  2007-04-04
+Loading required package: Matrix
+Current date:  2008-09-17
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=9084 on localhost:11007 at 10:30:01.570
+starting worker pid=9848 on localhost:11007 at 10:30:01.762
+starting worker pid=7860 on localhost:11007 at 10:30:01.945
+Current date:  2005-01-04
+Loading required package: Matrix
+Current date:  2007-04-04
+Loading required package: Matrix
+Current date:  2008-09-17
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=14000 on localhost:11007 at 10:33:33.206
+starting worker pid=4432 on localhost:11007 at 10:33:33.396
+starting worker pid=8740 on localhost:11007 at 10:33:33.580
+Current date:  2005-01-04
+Loading required package: Matrix
+Current date:  2007-04-04
+Loading required package: Matrix
+Current date:  2008-09-17
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=7220 on localhost:11007 at 10:36:47.412
+starting worker pid=11424 on localhost:11007 at 10:36:47.623
+starting worker pid=14040 on localhost:11007 at 10:36:47.834
+Current date: Current date: Current date: 
+
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=13408 on localhost:11007 at 10:41:04.747
+starting worker pid=14820 on localhost:11007 at 10:41:05.047
+starting worker pid=11360 on localhost:11007 at 10:41:05.609
+Current date: 
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=8636 on localhost:11007 at 10:46:09.174
+starting worker pid=2988 on localhost:11007 at 10:46:09.360
+starting worker pid=16340 on localhost:11007 at 10:46:09.576
+Current date: 
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=12928 on localhost:11007 at 10:52:54.185
+starting worker pid=10528 on localhost:11007 at 10:52:54.861
+starting worker pid=8176 on localhost:11007 at 10:52:55.063
+Current date: 
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=13224 on localhost:11007 at 10:59:53.355
+starting worker pid=16228 on localhost:11007 at 10:59:53.582
+starting worker pid=6432 on localhost:11007 at 10:59:53.770
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=5876 on localhost:11007 at 11:05:36.769
+starting worker pid=11980 on localhost:11007 at 11:05:36.955
+starting worker pid=10780 on localhost:11007 at 11:05:37.139
+Current date: 
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=14288 on localhost:11007 at 11:15:13.143
+starting worker pid=9896 on localhost:11007 at 11:15:13.324
+starting worker pid=12520 on localhost:11007 at 11:15:13.503
+Current date: 
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=11736 on localhost:11007 at 11:33:00.844
+starting worker pid=12648 on localhost:11007 at 11:33:01.021
+starting worker pid=11748 on localhost:11007 at 11:33:01.200
+Current date: 
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=16336 on localhost:11007 at 11:39:24.281
+starting worker pid=12424 on localhost:11007 at 11:39:24.463
+starting worker pid=540 on localhost:11007 at 11:39:24.645
+Current date: Current date: 
+
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=9324 on localhost:11007 at 11:42:09.184
+starting worker pid=4548 on localhost:11007 at 11:42:09.372
+starting worker pid=1088 on localhost:11007 at 11:42:09.560
+Current date: Current date: 
+
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=1700 on localhost:11007 at 11:46:29.737
+starting worker pid=5704 on localhost:11007 at 11:46:29.917
+starting worker pid=10720 on localhost:11007 at 11:46:30.097
+1
+2
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=316 on localhost:11989 at 15:28:59.185
+starting worker pid=9380 on localhost:11989 at 15:28:59.428
+starting worker pid=14880 on localhost:11989 at 15:28:59.610
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+ namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten

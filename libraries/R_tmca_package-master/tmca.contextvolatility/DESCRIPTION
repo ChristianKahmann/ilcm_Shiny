@@ -1,0 +1,15 @@
+Package: tmca.contextvolatility
+Type: Package
+Title: Context Volatility
+Version: 1.0
+Date: 2016-09-22
+Author: Andreas Niekler, Christian Kahmann
+Maintainer: Andreas Niekler <aniekler@informatik.uni-leipzig.de>, Christian Kahmann <kahmann@informatik.uni-leipzig.de>
+Description: This package is an implementation of the Context Volatility model. The methods in this package can model dynamics in terms context and usage in order to find semantic changes or dynamic terms.
+License: GPL-2
+LazyData: TRUE
+Imports: Matrix, tmca.cooccurrence
+RoxygenNote: 6.1.0
+Depends: Matrix, testthat, tmca.cooccurrence
+Collate:
+	'context_volatility.R'

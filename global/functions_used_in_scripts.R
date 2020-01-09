@@ -953,3 +953,66 @@ calculate_dictioanry_frequencies<-function(meta,dtm,dict_terms,conceptnames,dict
   )
   
 }
+
+
+# function to copy a list but remove values being NULL and character values being empty
+# work around for:
+# parameters are set via GUI/App, which result in empty character values when not set, this should be equal to not being set
+# for all optional parameters not set (=NULL), they will be removed from the resulting parameter list, because parent abstract class of tm_abstr stops with error when parameters have a value of NULL
+copyListButRemoveNullValuesAndEmptyStringValues = function(inputList){
+  
+  if(!is.list(inputList)){
+    stop("Parameters in argument are not a list ")
+  }
+  resultList = list()
+  namesUsed <- names(inputList)
+  for (name in namesUsed ) {
+    print(name)
+    listValue <- inputList[[name]]
+    if(is.character(listValue) && nchar(listValue)==0){
+      listValue <- NULL
+    }
+    if(is.null(listValue)){
+      next # skip/do not include this parameter (work around for optional parameters which are not set (set to NULL)) because abstract class stops with error when a parameter is NULL. So this removes these parameters completely which only gives a warning for missing parameters.
+    }
+
+    resultList[[name]] <- listValue
+  }
+  return (resultList)
+  
+}
+
+# function
+# meta data: set names from mde1/mde2 etc to real meta names
+combineMetaDataWithMetaNamesForMDEs <- function(meta, meta_names){
+  colNamesUsed <- colnames(meta)
+  colnamesInclMetaNames <- character(length(colNamesUsed))
+  colNameCounter <-0
+  for(colName in colNamesUsed){
+    colNameCounter <- colNameCounter+1
+    if(startsWith(x=colName, prefix = "mde")){
+      colnamesInclMetaNames[colNameCounter] <- meta_names[[colName]]
+    }else{
+      colnamesInclMetaNames[colNameCounter] <- colName
+    }
+  }
+  metaDataToUse <- meta
+  colnames(metaDataToUse) <- colnamesInclMetaNames
+  return (metaDataToUse)
+}
+
+getParametersFromRData <- function(pathToResultsFolder, specificFolderName){
+  load(paste(pathToResultsFolder,specificFolderName,"/parameters.RData", sep=""))
+  return(parameters)
+}
+
+
+# data is a matrix having columns "task id", "collection" and "creation time" as first 3 elements in this order from which the sepcific folder name is created by pasting with underscore e.g. "165_myCollection_2019-11-27 15:20:40"
+# this data object is created at output$more_details_topic_table selecting the selected row from values$tasks_tm (which is a matrix like described above but with multiple entries for all results) created by output$Topic_Results in the value "data_finished"
+# this is used as a work around to not refactor all existing code but to also get parameters from RData object using the given data produced with the existing code before.
+# it is necessary to get parameters from RData object because Structural Topic Models have many additional parameters than used before. The storage of these parameters in the database would lots of additional code work and it is planned to read them from RData in the furture and skip storage of parameters in database 
+getSpecificResultFolderNameFromSelectedTopic <- function(data){
+  specificResultFolderName <- paste(data[1],data[2],data[3], sep = "_")
+  
+  return(specificResultFolderName)
+}

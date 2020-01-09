@@ -3,6 +3,7 @@ source("global/log_to_file.R")
 source("global/rbind_huge_sparse_Matrix.R")
 source("config_file.R")
 source("global/functions_used_in_scripts.R")
+library("tmca.unsupervised")
 
 error<-try(expr = {
   library(Matrix)
@@ -12,8 +13,10 @@ error<-try(expr = {
   load("collections/tmp/tmp.RData")
   parameters_original<-parameters
   
+
   #load collection 
   log_to_file(message = "<b>Step 1/13: Loading collection</b>",file = logfile)
+
   load(paste("collections/collections/",unlist(parameters[1]),".RData",sep=""))
   log_to_file(message = "  <b style='color:green'> ✔ </b> Finished loading collection",file = logfile)
   
@@ -60,11 +63,12 @@ error<-try(expr = {
   }))
   documents_original<-cbind(doc_ids,documents_original)  
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
-
+  
   
   #get metadata
   log_to_file(message = "<b>Step 6/13: Getting metadata for detailed metadata analysis from database</b>",file = logfile)
-  if(parameters$tm_detailed_meta==TRUE){
+  if(parameters$tm_detailed_meta==TRUE || parameters$tm_method == "stm"){
+
     meta_data<-get_meta_data_for_detailed_topic_analysis(host = host,port = db_port,ids = info[[3]],datasets = unique(info[[2]]),token = db_data$token)
     meta<-meta_data$meta
     meta_names<-meta_data$meta_names
@@ -127,7 +131,7 @@ error<-try(expr = {
     documents<-documents[-empty,]
     documents_original<-documents_original[-empty,]
     info[[6]]<-data.frame(info[[6]][-empty,1],stringsAsFactors = F)
-    if(parameters$tm_detailed_meta==TRUE){
+    if(parameters$tm_detailed_meta==TRUE || parameters$tm_method == "stm"){
       meta<-meta[-empty,]
     }
   }
@@ -141,7 +145,42 @@ error<-try(expr = {
   log_to_file(message = "<b>Step 11/13: Create Topic Model</b>",file = logfile)
   t <- tmca.unsupervised::tmodel$new(method =parameters$tm_method)
   t$input_preprocessed(dtm = dtm,documents)
-  t$set_parameters(par_list = list("alpha"=parameters$tm_alpha,"K"=parameters$tm_number_of_topics))
+  
+  # specific for Structural Topic Models because it has different parameters
+  if(parameters$tm_method == "stm"){
+    
+    # meta data: set names from mde1/mde2 etc to real meta names
+    metaDataToUse <- combineMetaDataWithMetaNamesForMDEs(meta, meta_names)
+
+    # get all stm parameters from parameters and also set metadata
+    parametersNeededForSTM <- t$get_parameters() # work around for missing parameters
+    parametersNeededForSTM[["metaData"]] <- metaDataToUse
+    parametersNeededForSTM[["K"]] <- parameters$tm_number_of_topics
+    prevalence <- NULL
+    if(nchar(parameters$stm_prevalenceFormula)>0) {prevalence <- as.formula(parameters$stm_prevalenceFormula)}
+    parametersNeededForSTM[["prevalence"]] <- prevalence
+    contentFormula <- NULL
+    if(nchar(parameters$stm_contentFormula)>0) {contentFormula <- as.formula(parameters$stm_contentFormula)}
+    parametersNeededForSTM[["content"]] <- contentFormula
+    parametersNeededForSTM[["init.type"]] <- parameters$stm_init_type
+    parametersNeededForSTM[["max.em.its"]] <- parameters$stm_max_em_its
+    parametersNeededForSTM[["emtol"]] <- parameters$stm_emtol
+    parametersNeededForSTM[["LDAbeta"]] <- parameters$stm_LDAbeta
+    parametersNeededForSTM[["interactions"]] <- parameters$stm_interactions
+    parametersNeededForSTM[["ngroups"]] <- parameters$stm_ngroups
+    parametersNeededForSTM[["gamma.prior"]] <- parameters$stm_gamma_prior
+    parametersNeededForSTM[["sigma.prior"]] <- parameters$stm_sigma_prior
+    parametersNeededForSTM[["kappa.prior"]] <- parameters$stm_kappa_prior
+
+    parametersToUse <- copyListButRemoveNullValuesAndEmptyStringValues(parametersNeededForSTM)
+    
+    t$set_parameters(par_list = parametersToUse)
+
+    
+  }else{
+    t$set_parameters(par_list = list("alpha"=parameters$tm_alpha,"K"=parameters$tm_number_of_topics))
+  }
+  
   t$create_tm()
   
   
@@ -151,6 +190,14 @@ error<-try(expr = {
   model<-t$get_model()
   theta<-model$theta
   phi<-model$phi
+  
+  #set column names and row names for theta and phi
+  if(is.null(colnames(theta))){colnames(theta) <- sapply(seq(1:parameters$tm_number_of_topics), function(x) x)} # topic names
+  if(is.null(rownames(theta))){rownames(theta) <- dtm@Dimnames$docs} # doc names
+  if(is.null(colnames(phi))){colnames(phi) <- dtm@Dimnames$features} # vocab
+  if(is.null(rownames(phi))){rownames(phi) <- sapply(seq(1:parameters$tm_number_of_topics), function(x) x)} # topic names
+  
+  
   doc.length<-Matrix::rowSums(dtm)
   vocab<-colnames(phi)
   term.frequency<-Matrix::colSums((dtm[,vocab]))
@@ -183,7 +230,7 @@ error<-try(expr = {
   save(dtm,file=paste0(path0,"dtm_TM.RData"))
   save(documents_original,file=paste0(path0,"documents_TM.RData"))
   #save(rel_counts,freqs,file=paste0(path0,"est_counts_TM.RData"))
-  if(parameters$tm_detailed_meta==TRUE){
+  if(parameters$tm_detailed_meta==TRUE || parameters$tm_method == "stm"){
     save(meta,meta_names,file=paste0(path0,"meta_TM.RData"))
   }
   save(info,file=paste0(path0,"info.RData"))
@@ -194,7 +241,6 @@ error<-try(expr = {
   
   
 
-  
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Topic Model </b>",logfile)
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))
   
@@ -202,7 +248,10 @@ error<-try(expr = {
 
 if(class(error)=="try-error"){
   system(paste("mv ",logfile," collections/logs/failed/",sep=""))
-  RMariaDB::dbDisconnect(mydb)
+  try(
+    expr = {RMariaDB::dbDisconnect(mydb)},
+    silent=T
+    )
   log_to_file(message=error[[1]],file = stringr::str_replace(string = logfile,pattern = "running",replacement = "failed"))
 }
 

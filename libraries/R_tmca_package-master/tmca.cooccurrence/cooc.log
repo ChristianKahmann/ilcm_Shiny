@@ -1,0 +1,65 @@
+starting worker pid=14680 on localhost:11007 at 14:03:36.820
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Zusätzlich: Warnmeldung:
+In file(file, ifelse(append, "a", "w")) :
+  kann Datei 'data' nicht öffnen: Permission denied
+Ausführung angehalten
+starting worker pid=9800 on localhost:11007 at 14:08:32.798
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Current date:  97
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=15704 on localhost:11007 at 14:31:16.051
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Current date:  2005-01-04
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=12424 on localhost:11007 at 09:32:50.692
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Current date:  2005-01-04
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=9720 on localhost:11007 at 09:40:08.563
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Current date:  2005-01-04
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=12968 on localhost:11007 at 09:49:47.022
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Current date:  2005-01-04
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=8000 on localhost:11007 at 09:58:54.440
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Current date:  2005-01-04
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten
+starting worker pid=5804 on localhost:11007 at 10:08:15.822
+Warnung: namespace 'tmca' is not available and has been replaced
+by .GlobalEnv when processing object ''
+Current date:  2005-01-04
+Loading required package: Matrix
+Fehler in unserialize(node$con) : Lesefehler aus Verbindung
+Ruft auf: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Ausführung angehalten

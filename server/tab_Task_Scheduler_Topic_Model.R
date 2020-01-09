@@ -240,7 +240,7 @@ output$Analysis_Parameter_TM<-renderUI({
       )
       
     ),
-    #specific parameters
+    #Topic Model specific parameters
     tags$hr(),
     tags$h4("Topic Model parameters"),
     fluidRow(
@@ -255,6 +255,17 @@ output$Analysis_Parameter_TM<-renderUI({
                )
       ),
       column(2,
+             selectInput(inputId = "TM_method",label = "method",choices = tmodel$list_methods())%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Choose one of the topic modelling backends.",
+                     placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             
              numericInput(inputId = "TM_alpha",label = "alpha",value=0.05,min=0.01,max=2,step=0.001)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -264,16 +275,7 @@ output$Analysis_Parameter_TM<-renderUI({
                    )
                )
       ),
-      column(2,
-             selectInput(inputId = "TM_method",label = "method",choices = tmodel$list_methods())%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Chosse one of the topic modelling backends.",
-                     placement = "right"
-                   )
-               )
-      ),
+      
       column(2,
              materialSwitch(inputId = "TM_detailed_meta_dist",label = "detailed meta distribution analysis?",value = F,status="info")%>%
                shinyInput_label_embed(
@@ -308,6 +310,174 @@ output$Analysis_Parameter_TM<-renderUI({
                )
       )
     ),
+    
+    # Structural Topic Model
+    fluidRow(
+      
+             conditionalPanel(condition = 'input.TM_method=="stm"',
+                              tags$hr(),
+                              tags$h4("Parameters specific for Structural Topic Model"),
+                              
+                              #documents
+                              #vocabulary
+                              #K
+                              column(2,
+                                     # prevalenceFormula = NULL,
+                                     textInput(inputId = "stm_prevalenceFormula",label = "prevalence formula")%>%
+                                       shinyInput_label_embed(
+                                         shiny_iconlink() %>%
+                                           bs_embed_popover(
+                                             title = "A formula object with no response variable or a matrix containing topic prevalence covariates. Use s, ns or bs to specify smooth terms. See details of stm for more information. \nThe model for topical prevalence includes covariates which the analyst believes may influence the frequency with which a topic is discussed. This is specified as a formula which can contain smooth terms using splines or by using the function s. The response portion of the formula should be left blank. See the examples in stm documentation. These variables can include numeric and factor variables. While including variables of class Dates or other non-numeric, non-factor types will work in stm it may not always work for downstream functions such as estimateEffect. Example: '~ countryName + s(date)'.",
+                                             placement = "right"
+                                           )
+                                       ),
+                                     
+                                     # contentFormula = NULL,
+                                     textInput(inputId = "stm_contentFormula",label = "content formula")%>%
+                                       shinyInput_label_embed(
+                                         shiny_iconlink() %>%
+                                           bs_embed_popover(
+                                             title = "A formula containing a single variable, a factor variable or something which can be coerced to a factor indicating the category of the content variable for each document. \nThe topical convent covariates are those which affect the way in which a topic is discussed. As currently implemented this must be a single variable which defines a discrete partition of the dataset (each document is in one and only one group). STM may relax this in the future. While including more covariates in topical prevalence will rarely affect the speed of the model, including additional levels of the content covariates can make the model much slower to converge. This is due to the model operating in the much higher dimensional space of words in dictionary (which tend to be in the thousands) as opposed to topics. Example: '~countryName'",
+                                             placement = "right"
+                                           )
+                                       ),
+                                     
+                                     #data => is meta data
+                                     
+                                     #init.type = Spectral
+                                     
+                                     selectInput(inputId = "stm_init_type",label = "init type",choices = c("Spectral", "LDA", "Random", "Custom"), selected = "Spectral")%>%
+                                       shinyInput_label_embed(
+                                         shiny_iconlink() %>%
+                                           bs_embed_popover(
+                                             title = "The method of initialization, by default the spectral initialization. Must be either Latent Dirichlet Allocation (\"LDA\"), \"Random\", \"Spectral\" or \"Custom\". See details of stm for more info. If you want to replicate a previous result, see the argument seed. For \"Custom\" see the format described in stm help under the custom.beta option of the control parameters",
+                                             placement = "right"
+                                           )
+                                       )
+                                     
+                                     # # seed = NULL,
+                                     # textInput(inputId = "stm_seed",label = "seed")%>%
+                                     #   shinyInput_label_embed(
+                                     #     shiny_iconlink() %>%
+                                     #       bs_embed_popover(
+                                     #         title = "Seed for the random number generator. stm saves the seed it uses on every run so that any result can be exactly reproduced. When attempting to reproduce a result with that seed, it should be specified here",
+                                     #         placement = "right"
+                                     #       )
+                                     #   ),
+                                     
+                                    
+                                     
+                              
+                              ),
+                              column(2,
+                                     #verbose = TRUE A logical flag indicating whether information should be printed to the screen. During the E-step (iteration over documents) a dot will print each time 1% of the documents are completed. At the end of each iteration the approximate bound will also be printed.
+                                     #reportevery = 5 An integer determining the intervals at which labels are printed to the screen during fitting. Defaults to every 5 iterations.
+                                     
+                                     #max.em.its = 500
+                                     numericInput(inputId = "stm_max_em_its",label = "maximum number of EM iterations",value=500,step = 50)%>%
+                                       shinyInput_label_embed(
+                                         shiny_iconlink() %>%
+                                           bs_embed_popover(
+                                             title = "The maximum number of EM iterations. If convergence has not been met at this point, a message will be printed. If you set this to 0 it will return the initialization",
+                                             placement = "right"
+                                           )
+                                       ),
+                                     
+                                     #emtol
+                                     numericInput(inputId = "stm_emtol",label = "Convergence tolerance",value=0.00001)%>%
+                                       shinyInput_label_embed(
+                                         shiny_iconlink() %>%
+                                           bs_embed_popover(
+                                             title = "Convergence tolerance. EM stops when the relative change in the approximate bound drops below this level. Defaults to .00001. You can set it to 0 to have the algorithm run max.em.its number of steps.",
+                                             placement = "right"
+                                           )
+                                       ),
+                                     
+                                     #ngroups
+                                     numericInput(inputId = "stm_ngroups",label = "Number of groups for memorized inference", value = 1)%>%
+                                       shinyInput_label_embed(
+                                         shiny_iconlink() %>%
+                                           bs_embed_popover(
+                                             title = "Specifying an integer greater than 1 for the argument ngroups causes the corpus to be broken into the specified number of groups. Global updates are then computed after each group in turn. This approach, called memoized variational inference in Hughes and Sudderth (2013), can lead to more rapid convergence when the number of documents is large. Note that the memory requirements scale linearly with the number of groups so this provides a tradeoff between memory efficiency and speed. The claim of speed here is based on the idea that increasing the number of global updates should help the model find a solution in fewer passes through the document set. However, itt is worth noting that for any particular case the model need not converge faster and definitely won't converge to the same location. This functionality should be considered somewhat experimental and stm team encourages users to let them know what their experiences are like here in practice.",
+                                             placement = "right"
+                                           )
+                                       ),
+                                     
+                                     #LDAbeta
+                                     checkboxInput(inputId = "stm_LDAbeta",label = "LDA beta", value = TRUE)%>%
+                                       shinyInput_label_embed(
+                                         shiny_iconlink() %>%
+                                           bs_embed_popover(
+                                             title = "a logical that defaults to TRUE when there are no content covariates. When set to FALSE the model performs SAGE style topic updates (sparse deviations from a baseline)",
+                                             placement = "right"
+                                           )
+                                       ),
+                                     
+                                     #interactions
+                                     checkboxInput(inputId = "stm_interactions",label = "interactions", value = TRUE)%>%
+                                       shinyInput_label_embed(
+                                         shiny_iconlink() %>%
+                                           bs_embed_popover(
+                                             title = "a logical that defaults to TRUE. This automatically includes interactions between content covariates and the latent topics. Setting it to FALSE reduces to a model with no interactive effects.",
+                                             placement = "right"
+                                           )
+                                       )
+                                     
+                                     
+                                     
+                                     # model = NULL, #Models can now be restarted by passing an STM object to the argument model. This is particularly useful if you run a model to the maximum iterations and it terminates without converging
+                              ),
+                              
+                              
+                              column(2,
+                                     #gamma.prior
+                                     selectInput(inputId = "stm_gamma_prior",label = "gamma prior",choices = c("Pooled", "L1"),selected = "Pooled")%>%
+                                       shinyInput_label_embed(
+                                         shiny_iconlink() %>%
+                                           bs_embed_popover(
+                                             title = "sets the prior estimation method for the prevalence covariate model. The default Pooled options uses Normal prior distributions with a topic-level pooled variance which is given a moderately regularizing half-cauchy(1,1) prior. The alternative L1 uses glmnet to estimate a grouped penalty between L1-L2. If your code is running slowly immediately after \"Completed E-Step\" appears, you may want to switch to the L1 option. See details in stm help",
+                                             placement = "right"
+                                           )
+                                       ),
+                                     
+                                     #sigma.prior
+                                     numericInput(inputId = "stm_sigma_prior",label = "sigma prior",value=0)%>%
+                                       shinyInput_label_embed(
+                                         shiny_iconlink() %>%
+                                           bs_embed_popover(
+                                             title = "a scalar between 0 and 1 which defaults to 0. This sets the strength of regularization towards a diagonalized covariance matrix. Setting the value above 0 can be useful if topics are becoming too highly correlated",
+                                             placement = "right"
+                                           )
+                                       ),
+                                     
+                                     
+                                     #kappa.prior
+                                     selectInput(inputId = "stm_kappa_prior",label = "kappa prior",choices = c("L1", "Jeffreys"),selected = "L1")%>%
+                                       shinyInput_label_embed(
+                                         shiny_iconlink() %>%
+                                           bs_embed_popover(
+                                             title = "a scalar between 0 and 1 which defaults to 0. This sets the strength of regularization towards a diagonalized covariance matrix. Setting the value above 0 can be useful if topics are becoming too highly correlated",
+                                             placement = "right"
+                                           )
+                                       )
+                                     
+                                     
+                                     
+                                     # control = list() a list of additional advanced parameters. See details of stm
+
+                              )
+                              
+             )
+             
+              
+             
+      
+      
+      
+    ),
+    
+    
+    
     bsButton(inputId = "TM_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
 })
@@ -341,7 +511,7 @@ output$TM_blacklist_UI<-renderUI({
 })
 
 
-#start cooccurrence analysis script, if submit button is clicked
+#start topic model analysis script, if submit button is clicked
 observeEvent(input$TM_Submit_Script,{
   valid<-check_pruning_parameters(min_t_c = input$TM_min_termfreq_c,max_t_c = input$TM_max_termfreq_c,min_t_p =input$TM_min_termfreq_p,max_t_p =  input$TM_max_termfreq_p
                                   ,min_t_r =input$TM_min_termfreq_r,max_t_r = input$TM_max_termfreq_r,min_t_q = input$TM_min_termfreq_q, max_t_q = input$TM_max_termfreq_q
@@ -424,6 +594,25 @@ observeEvent(input$TM_Submit_Script,{
                      tm_method=input$TM_method,
                      tm_detailed_meta=input$TM_detailed_meta_dist
     )
+    
+    if(input$TM_method == "stm"){
+      #add stm parameters
+      stm_parameters <- list(
+        stm_prevalenceFormula = input$stm_prevalenceFormula,
+        stm_contentFormula = input$stm_contentFormula,
+        stm_init_type = input$stm_init_type,
+        stm_max_em_its = input$stm_max_em_its,
+        stm_emtol = input$stm_emtol,
+        stm_LDAbeta = input$stm_LDAbeta,
+        stm_interactions = input$stm_interactions,
+        stm_ngroups = input$stm_ngroups,
+        stm_gamma_prior = input$stm_gamma_prior,
+        stm_sigma_prior = input$stm_sigma_prior,
+        stm_kappa_prior = input$stm_kappa_prior
+      )
+      parameters <- c(parameters, stm_parameters)
+    }
+    
     #create process ID
     ID<-get_task_id_counter()+1
     set_task_id_counter(ID)
@@ -434,6 +623,7 @@ observeEvent(input$TM_Submit_Script,{
     #create logfile
     write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
     #save data needed in script execution 
+    #print("save parameters")
     save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
     #start script
     if(input$use_custom_script==TRUE && !is.null(input$custom_script_options)){
@@ -529,6 +719,26 @@ observeEvent(input$TM_pruning_continue,ignoreInit = T,{
                    tm_method=input$TM_method,
                    tm_detailed_meta=input$TM_detailed_meta_dist
   )
+  
+  if(input$tm_method == "stm"){
+    #add stm parameters
+    stm_parameters <- list(
+      stm_prevalenceFormula = input$stm_prevalenceFormula,
+      stm_contentFormula = input$stm_contentFormula,
+      stm_init_type = input$stm_init_type,
+      stm_max_em_its = input$stm_max_em_its,
+      stm_emtol = input$stm_emtol,
+      stm_LDAbeta = input$stm_LDAbeta,
+      stm_interactions = input$stm_interactions,
+      stm_ngroups = input$stm_ngroups,
+      stm_gamma_prior = input$stm_gamma_prior,
+      stm_sigma_prior = input$stm_sigma_prior,
+      stm_kappa_prior = input$stm_kappa_prior
+    )
+    parameters <- c(parameters, stm_parameters)
+  }
+  
+  
   #create process ID
   ID<-get_task_id_counter()+1
   set_task_id_counter(ID)

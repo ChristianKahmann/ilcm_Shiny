@@ -35,3 +35,4 @@ credentials = data.frame(
   permission  = c("basic"), 
   stringsAsFactors = F
 )
+

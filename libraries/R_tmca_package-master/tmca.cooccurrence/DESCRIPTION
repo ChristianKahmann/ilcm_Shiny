@@ -1,0 +1,15 @@
+Package: tmca.cooccurrence
+Type: Package
+Title: Text mining for content analysis
+Version: 0.1.0
+Date: 2016-08-25
+Author: Gregor Wiedemann, Andreas Niekler
+Maintainer: Gregor Wiedemann <gregor.wiedemann@uni-leipzig.de>, Andreas Niekler <aniekler@informatik.uni-leipzig.de>
+Description: This package implements methods for Text Mining based Content Analysis.
+License: GPL-2
+LazyData: TRUE
+Imports: Matrix,igraph, parallel
+RoxygenNote: 6.1.0
+Depends: Matrix, testthat
+Collate:
+  'FastCooc.R'

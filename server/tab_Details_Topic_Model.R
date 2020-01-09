@@ -1,3 +1,4 @@
+source("global/functions_used_in_scripts.R")
 
 
 #link downloadbutton for theta in Topic Models Tab
@@ -262,6 +263,213 @@ output$TM_subColl_UI<-renderUI({
   }
 })
 
+##############
+# STM
+##############
+
+output$tm_method<-reactive({
+  values$tm_method
+})
+
+output$tm_stm_parameters_contentFormula <- reactive({
+  values$tm_stm_parameters_contentFormula
+})
+
+outputOptions(output, "tm_stm_parameters_contentFormula", suspendWhenHidden = FALSE)
+
+output$tm_stm_parameters_contentFormulaIsSet <- reactive({
+  if(nchar(values$tm_stm_parameters_contentFormula)>0){
+    return(TRUE)
+  }else{
+    return(FALSE)
+  }
+})
+outputOptions(output, "tm_stm_parameters_contentFormulaIsSet", suspendWhenHidden = FALSE)
+
+
+#stm
+# plot.STM summary
+output$TM_stm_visu_summary <- renderPlot({
+  if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
+    plot.STM(x = values$tm_stm_model, type = "summary", n = input$tm_stm_visu_numberOfWordsToLabelTopic)
+  }else{
+    plot.STM(x = values$tm_stm_model, type = "summary", n = input$tm_stm_visu_numberOfWordsToLabelTopic, labeltype = input$tm_stm_visu_labeltype, frexw = input$tm_stm_visu_frexweight)
+    
+  }
+})
+# plot.STM labels
+output$TM_stm_visu_labels <- renderPlot({
+  if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
+    plot.STM(x = values$tm_stm_model, type = "labels", n = input$tm_stm_visu_numberOfWordsToLabelTopic)
+  }else{
+    plot.STM(x = values$tm_stm_model, type = "labels", n = input$tm_stm_visu_numberOfWordsToLabelTopic, labeltype = input$tm_stm_visu_labeltype, frexw = input$tm_stm_visu_frexweight)
+  }
+})
+
+# plot.STM perspectives
+output$TM_stm_visu_perspectives <- renderPlot({
+  validate(
+    need(!is.null(input$tm_stm_visu_perspectives_topic1),message="please select topic 1")
+  )
+  validate(
+    need(!is.null(input$tm_stm_visu_perspectives_topic2),message="please select topic 2")
+  )
+  selectedTopic1 <- as.integer(input$tm_stm_visu_perspectives_topic1)
+  selectedTopic2 <- as.integer(input$tm_stm_visu_perspectives_topic2)
+
+  # contentFormula in stm model set
+  if(nchar(values$tm_stm_parameters_contentFormula)>0){
+    # use additional parameters tm_stm_visu_perspectives_covariateValue1 and tm_stm_visu_perspectives_covariateValue1
+    validate(
+      need(!is.null(input$tm_stm_visu_perspectives_covariateValue1) && nchar(input$tm_stm_visu_perspectives_covariateValue1)>0,message="please select covariate value 1")
+    )
+    validate(
+      need(!is.null(input$tm_stm_visu_perspectives_covariateValue2) && nchar(input$tm_stm_visu_perspectives_covariateValue2)>0,message="please select covariate value 2")
+    )
+    covValue1 <- input$tm_stm_visu_perspectives_covariateValue1
+    covValue2 <- input$tm_stm_visu_perspectives_covariateValue2
+    
+    plot.STM(x = values$tm_stm_model, type = "perspectives", topics = c(selectedTopic1, selectedTopic2), n = input$tm_stm_visu_numberOfWordsToLabelTopic, covarlevels = c(covValue1, covValue2))
+    
+    
+  }else{ # contentFormula in stm model not set
+    plot.STM(x = values$tm_stm_model, type = "perspectives", topics = c(selectedTopic1, selectedTopic2), n = input$tm_stm_visu_numberOfWordsToLabelTopic)
+  }
+  
+})
+
+# plot.STM hist
+output$TM_stm_visu_hist <- renderPlot({
+  if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
+    plot.STM(x = values$tm_stm_model, type = "hist", n = input$tm_stm_visu_numberOfWordsToLabelTopic)
+  }else{
+    plot.STM(x = values$tm_stm_model, type = "hist", n = input$tm_stm_visu_numberOfWordsToLabelTopic, labeltype = input$tm_stm_visu_labeltype, frexw = input$tm_stm_visu_frexweight)
+  }
+})
+
+
+# topic correlation
+observeEvent(input$tm_stm_visu_topicCorr_start,{
+  values$tm_stm_visu_topicCorr_show <- TRUE
+  })
+
+output$TM_stm_visu_topicCorr_show<-reactive({
+  return(values$tm_stm_visu_topicCorr_show)
+})
+
+output$TM_stm_visu_topicCorr_calc <- renderPlot({
+  values$tm_stm_visu_topicCorr_method <- "simple"
+  topicCorrResult <- topicCorr(model = values$tm_stm_model, method = values$tm_stm_visu_topicCorr_method)
+  plot.topicCorr(x = topicCorrResult)
+})
+outputOptions(output, "TM_stm_visu_topicCorr_show", suspendWhenHidden = FALSE)
+
+
+#estimateEffect
+observeEvent(input$tm_stm_visu_estimateEffect_calcButton,{
+
+  #convert to factors and numeric
+  metaVarsToConvertToFactor <- input$tm_stm_visu_estimateEffect_metaVarsToConvertToFactor
+  metaVarsToConvertToNumeric <- input$tm_stm_visu_estimateEffect_metaVarsToConvertToNumeric
+  values$tm_stm_metaDataConverted <- values$tm_stm_metaData
+  for(i in 1:length(metaVarsToConvertToFactor)){
+    metaName <- metaVarsToConvertToFactor[i]
+    values$tm_stm_metaDataConverted[[metaName]] <-as.factor(values$tm_stm_metaData[[metaName]])
+  }
+  for(i in 1:length(metaVarsToConvertToNumeric)){
+    metaName <- metaVarsToConvertToNumeric[i]
+    values$tm_stm_metaDataConverted[[metaName]] <-as.numeric(values$tm_stm_metaData[[metaName]])
+  }
+
+  # read formula and estimate effect
+  values$tm_stm_visu_estimateEffect_calcParam_formula <- NULL
+  if(is.null(input$tm_stm_visu_estimateEffect_calcParam_formula) || nchar(input$tm_stm_visu_estimateEffect_calcParam_formula)==0) {
+    shinyWidgets::sendSweetAlert(type = "warning",session = session,title = "You have to provide a formula!")
+  }
+  else{
+      values$tm_stm_visu_estimateEffect_calcParam_formula <- as.formula(input$tm_stm_visu_estimateEffect_calcParam_formula)
+      values$tm_stm_visu_estimateEffectResult  <- estimateEffect(formula = values$tm_stm_visu_estimateEffect_calcParam_formula, stmobj = values$tm_stm_model, metadata = values$tm_stm_metaDataConverted)
+      values$tm_stm_visu_estimateEffect_show <- TRUE
+      values$tm_stm_visu_estimateEffect_plot_show <- FALSE
+  }
+})
+
+output$TM_stm_visu_estimateEffect_show<-reactive({
+  values$tm_stm_visu_estimateEffect_show
+})
+
+outputOptions(output, "TM_stm_visu_estimateEffect_show", suspendWhenHidden = FALSE)
+
+
+# estimate effect summary
+output$TM_stm_visu_estimateEffect_summary <- renderPrint({
+  summary(values$tm_stm_visu_estimateEffectResult)
+})
+
+# estimate effect plot
+observeEvent(input$tm_stm_visu_estimateEffect_plotupdate,{
+  values$tm_stm_visu_estimateEffect_plot_show <- TRUE
+})
+
+output$TM_stm_visu_estimateEffect_plot_show<-reactive({
+  values$tm_stm_visu_estimateEffect_plot_show
+})
+
+output$TM_stm_visu_estimateEffect_plot <- renderPlot({
+
+  plottingMethod <- input$tm_stm_visu_estimateEffect_plot_method
+  if(plottingMethod =="difference"){
+    validate(
+      need(!is.null(input$tm_stm_visu_estimateEffect_plot_difference_covValue1),message="please select covariate value 1")
+    )
+    validate(
+      need(!is.null(input$tm_stm_visu_estimateEffect_plot_difference_covValue2),message="please select covariate value 2")
+    )
+    covValue1 <- input$tm_stm_visu_estimateEffect_plot_difference_covValue1
+    covValue2 <- input$tm_stm_visu_estimateEffect_plot_difference_covValue2
+    plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod, 
+                        cov.value1 = covValue1, cov.value2 = covValue2,
+                        xlab = paste("More ", covValue2, " ... More ", covValue1)
+                        )
+    
+  }else if(plottingMethod =="continuous"){
+    
+    covariateOfInterest <- input$tm_stm_visu_estimateEffect_plot_covariate
+    
+    if(covariateOfInterest == "date"){
+      
+      # plot original dates on x-axes instead converted numeric values
+      minValueBeforeConversion <- min(values$tm_stm_metaData[[covariateOfInterest]]) # use from originaL data (not converted)
+      maxValueBeforeConversion <- max(values$tm_stm_metaData[[covariateOfInterest]])
+      
+      diff_in_days = difftime(maxValueBeforeConversion, minValueBeforeConversion, units = "days") # TODO: consider using different x axis labels depending on time span
+      
+      #set start and end date to beginn / end of month
+      minValueToUse <- format(as.Date(minValueBeforeConversion,"%Y-%m-%d"),"%Y-%m-01") # get first day in given month
+      maxValueToUse <- as.Date(format(as.Date(format(as.Date(maxValueBeforeConversion,"%Y-%m-%d"), "%Y-%m-01"), "%Y-%m-%d")+31,"%Y-%m-01"), "%Y-%m-%d")-1 # get the last day of given month
+      monthseq <- seq(from = as.Date(minValueToUse), to = as.Date(maxValueToUse), by = "month")
+
+      plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod, xaxt = "n")
+      axis.Date(1, at=monthseq, format = "%Y-%m")
+            
+    }else{
+      #TODO: consider using original values as labels for x axes ticks instead of converted numeric ones similar to date above
+      plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod)
+      
+    }
+   
+  }else{ # plotting method == pointestimate
+    plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod)
+    
+  }
+  values$tm_stm_visu_estimateEffect_plot_show <- TRUE
+})
+
+outputOptions(output, "TM_stm_visu_estimateEffect_plot_show", suspendWhenHidden = FALSE)
+
+#############
+# end of STM
+##############
 
 observe({
   values$tm_random2
@@ -385,6 +593,7 @@ output$TM_Coherence_show<-reactive({
   values$TM_Coherence_show
 })
 outputOptions(output, "TM_Coherence_show", suspendWhenHidden = FALSE)
+
 
 output$TM_Coherence_topic_coherence<-renderPlotly({
   topic_coherence<-tmca.util::tmca_topic_coherence(DTM = values$TM_Coherence_dtm,phi = values$tm_phi)
@@ -1501,7 +1710,7 @@ output$Det_TM_Meta8<-renderUI({
 
 
 
-output$Det_TM_Meta8<-renderUI({
+output$Det_TM_Meta9<-renderUI({
   if(colnames(values$TM_meta)[12]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
@@ -1551,7 +1760,7 @@ output$Det_TM_Meta8<-renderUI({
 
 
 
-output$Det_TM_Meta9<-renderUI({
+output$Det_TM_Meta10<-renderUI({
   if(colnames(values$TM_meta)[13]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
@@ -1599,7 +1808,7 @@ output$Det_TM_Meta9<-renderUI({
 })
 
 
-output$Det_TM_Meta10<-renderUI({
+output$Det_TM_Meta11<-renderUI({
   if(colnames(values$TM_meta)[14]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
@@ -1648,7 +1857,7 @@ output$Det_TM_Meta10<-renderUI({
 
 
 
-output$Det_TM_Meta11<-renderUI({
+output$Det_TM_Meta12<-renderUI({
   if(colnames(values$TM_meta)[15]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){

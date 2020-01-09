@@ -1,9 +1,12 @@
+source("global/functions_used_in_scripts.R")
+
 
 #render table with finished results for topic models
 output$Topic_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_topic_result
   isolate(values$reload_topic_result<-FALSE)
+ 
   files <- list.files("collections/results/topic-model/")
   validate(
     need(length(files)>0,"no results found")
@@ -47,8 +50,10 @@ output$Topic_Results <- renderDataTable({
             string = files[i],
             pattern = "_",
             simplify = TRUE
-          )[1, 1:2],
-          as.character(file.info(files_for_date[i])$mtime)
+          )
+          # removed: following part uses mtime instead time stamp in file name which is different
+          #[1, 1:2],
+          #as.character(file.info(files_for_date[i])$mtime)
         ))
     }
   }
@@ -66,6 +71,7 @@ output$Topic_Results <- renderDataTable({
   )
   files<-files[order(data_finished[,3],decreasing = T)]
   data_finished<-data_finished[order(data_finished[,3],decreasing=T),,drop=F]
+  
   values$Topic_Results_Files<-files
   
   #select parameters to show
@@ -124,8 +130,11 @@ observe({
   s = input$Topic_Results_rows_selected
   if (length(s)) {
     values$Details_Analysis <- "TM"
+    print(s)
+    print(values$Topic_Results_Files)
     isolate(values$Details_Data_TM <-
               values$Topic_Results_Files[s])
+    
     isolate(values$current_task_id<- values$results_topic[s,1])
     updateTabsetPanel(session = session,
                       inputId = "coll",
@@ -167,6 +176,7 @@ output$more_details_topic_table<-DT::renderDataTable({
   validate(
     need(values$tm_selected_row>0,message=F)
   )
+
   data<-isolate(values$tasks_tm[values$tm_selected_row,,drop=F])
   data<-t(data)
   nas<-which(is.na(data[,1]))
@@ -174,7 +184,24 @@ output$more_details_topic_table<-DT::renderDataTable({
     data<-data[-which(is.na(data[,1])),1,drop=F]
   }
   colnames(data)<-paste("Task:",data[1,1])
-  datatable(data = data,selection = "none",
+  dataToUse <- data
+
+  # # get parameters from RData object using the first 3 columns being task id, collname and timestamp to get filepath and stored parameters.RData, this only works if in output$Topic_Results mtime is not used (removed there)
+  # specificResultFolderName <- getSpecificResultFolderNameFromSelectedTopic(data)
+  # parametersForSelectedTM <- getParametersFromRData(pathToResultsFolder = "collections/results/topic-model/", specificFolderName=specificResultFolderName)
+  # # add this parameter list to data,  matrix need all same type, so tranform values of to string first
+  # indexOfData <- length(dataToUse)+1
+  # for(parameterName in names(parametersForSelectedTM)){
+  #   parameterValue <- parametersForSelectedTM[[parameterName]]
+  #   parameterValueAsString <- as.String(parameterValue)
+  #   rowNamesBefore <- rownames(dataToUse)
+  #   dataToUse <- rbind(dataToUse, c(parameterValueAsString))
+  #   rownames(dataToUse) <- c(rowNamesBefore,parameterName)
+  #   indexOfData <- indexOfData +1
+  # }
+  
+  datatable(data = dataToUse,selection = "none",
             options = list(dom = 'tp',ordering=F,pageLength=100)
   )
 })
+

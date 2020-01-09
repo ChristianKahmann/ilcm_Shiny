@@ -300,7 +300,10 @@ write_metadata_to_database<-function(parameters,host,port){
 }
 
 
-
+# TODO: please specify what metadata is expected here (it is not the same metadata used at other places in code (metadata of documents) but apparently something different
+# it seems that a matrix is required listing the taskIds and the collection names, however a metadata<-matrix(metadata,ncol=3) is performed meaning 3 columns though only the first 2 are used?
+# additionally this function doesn't seem to be at the correct place (logtofile.R)
+# further question: why are the parameters retrieved from database, they are also stored in collections/results/ For getting other things like the calculation result or metadata this folder is used and not the database. Why is it different here?
 get_parameters_from_database<-function(metadata){
   source("config_file.R")
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)

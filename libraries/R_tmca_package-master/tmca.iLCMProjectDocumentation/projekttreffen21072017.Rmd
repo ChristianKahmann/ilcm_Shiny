@@ -1,0 +1,38 @@
+---
+title: "Projekttreffen 21.04.2017"
+output:
+  html_notebook: default
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+#Kick Off Publikation: 
+*	Vorpublikation
+* Gesis Blog, Uni Blog
+* GIT Repo mit Spiegel der Entwicklungen
+* Beitrag aufgrund Blog, Repo bei CSS Tagung im Herbst (London)
+* CSS Tagung:  Vorstellung des Projekts (Gender Bias, Demo, Bundestagstweets) mit erstem Code
+
+#MidTerm Workshop  Köln
+* Tagungsräume; Bekanntmachung über CSS Tagung
+* Einladung zur Arbeit mit Tool; Einreichungen über Workshop; Fertige Arbeiten Jan – Jun 18‘
+* Vorträge am Workshoptag
+* VÖ; Sammelband
+	
+#Kurs Big Data Text Mining – Git + Notebooks in Gallery
+
+#GIT Verwaltet
+* Dokumentation über Notebooks
+* GIT Wiki oder direkt Notebooks?
+* Arbeiten mit Notebooks; Rmd; möglichst diese Welt nicht verlassen
+
+#Shiny App als LCM
+* Start über Workspace
+* Skripte in import
+* Install/Start/Stop MySQL, Solr über Skript
+
+#Organisatorisches
+* Vorerst auf Uni Git
+* Gesis bekommt neben Arnim eigene Zugänge

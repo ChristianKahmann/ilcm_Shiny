@@ -1,0 +1,16 @@
+<dataConfig>
+  <dataSource type="JdbcDataSource" 
+              driver="org.mariadb.jdbc.Driver"
+              url="jdbc:mysql://rtmcapackage_db_1:3306/ilcm" 
+              user="root" 
+              password="ilcm"/>
+  <document>
+    <entity name="id" 
+            query="select * from documents">
+       <field column="id" name="id" meta="true"/>
+       <field column="title" name="title_txt" meta="true"/>
+       <field column="body" name="body_txt"/>
+       <field column="source" name="source_txt"/>
+    </entity>
+  </document>
+</dataConfig>
