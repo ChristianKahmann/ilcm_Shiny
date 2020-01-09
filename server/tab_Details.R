@@ -437,28 +437,27 @@ output$details_parameter<-renderUI({
           #isolate(shinyjs::runjs(paste0('Shiny.onInputChange(\"tm_ac_',i,'\",  0)')))
         }
       }
-      #tagList for topic modeling parameters for visualisation
-      return(
-        tagList(
-          conditionalPanel(condition = 'input.tabBox_tm=="LDA-Vis"',
+      #panels for topic modeling parameters for visualisation
+      
+          panelLDAVIs <- conditionalPanel(condition = 'input.tabBox_tm=="LDA-Vis"',
                            sliderInput("nTerms", "Number of terms to display", min = 20, max = 40, value = 30),
                            tags$br(),
                            downloadButton(outputId = "download_phi",label = "phi",icon=icon("download")),
                            downloadButton(outputId = "download_theta",label = "theta",icon=icon("download"))
                            
-          ),
-          conditionalPanel(condition = 'input.tabBox_tm=="Estimated word frequencies"',
+          )
+          panelEstWordFrequencies <- conditionalPanel(condition = 'input.tabBox_tm=="Estimated word frequencies"',
                            selectizeInput(inputId = "Det_TM_ewf_word",label = "word:",choices =  NULL,multiple = T),
                            materialSwitch(inputId = "Det_TM_emf_rel",label = "relative distribution over topics?",value = F),
                            tags$br(),
                            downloadButton(outputId = "download_rel_counts",label = "estimated frequencies",icon=icon("download"))
-          ),
-          conditionalPanel(condition = 'input.tabBox_tm=="Coherence"',
+          )
+          panelCoherence <- conditionalPanel(condition = 'input.tabBox_tm=="Coherence"',
                            sliderInput("TM_Coherence_runs", "Number of runs for interactive coherence measure", min = 5, max = 50, value = 10,step=1),
                            sliderInput("TM_Coherence_setsize", "set size for interactive coherence measure", min = 3, max = values$tm_number_of_topics, value = 4,step = 1),
                            checkboxInput("TM_Coherence_chance_correction",label = "chance correction?",value = F)
-          ),
-          conditionalPanel(condition = 'input.tabBox_tm=="Date distribution"',
+          )
+          panelDateDistribution <- conditionalPanel(condition = 'input.tabBox_tm=="Date distribution"',
                            tags$head(tags$style(HTML("div.col-sm-12 {padding:1px}; float:up;"))),
                            shinyBS::bsButton(inputId = "TM_Timeline_Reset",label = "reset chart",style = "success",size = "extra-small"),
                            tags$br(),
@@ -469,59 +468,87 @@ output$details_parameter<-renderUI({
                                             knobInput(inputId = "TM_Timeline_Prob",label = "Minimal Probability",value = 0.5,min = 0,max = 1,step = 0.01)
                            ),
                            do.call(tagList,wordcloud_list)
-          ),
-          conditionalPanel(condition = 'input.tabBox_tm=="Extract Dictionaries"',
+          )
+          panelExtractDictionaries <- conditionalPanel(condition = 'input.tabBox_tm=="Extract Dictionaries"',
                            numericInput("TM_dict_number_of_words", "Number of words included in dictionary from each topic", min = 1, max = 5000, value = 25,step=1)
-          ),
-          conditionalPanel(condition = 'input.tabBox_tm=="Detailed Metadata Distribution"',
+          )
+          panelDetailedMetaDataAnalysis <- conditionalPanel(condition = 'input.tabBox_tm=="Detailed Metadata Distribution"',
                            uiOutput(outputId = "Det_meta_select_ui")
-          ),
-          conditionalPanel(condition = 'input.tabBox_tm=="Validation"',
+          )
+          panelValidation <- conditionalPanel(condition = 'input.tabBox_tm=="Validation"',
                            selectizeInput(inputId = "Det_TM_validation_document",label="Document:",choices=NULL,multiple=F),
                            sliderInput(inputId = "Det_TM_validation_topic",label = "Topic:",min = 1,value = 1,max = dim(phi)[1],step = 1),
                            tags$hr(),
                            uiOutput("Det_TM_validation_metadata_UI")%>%withSpinner()
-          ),
+          )
 
           #stm
-          conditionalPanel(condition = 'input.tabBox_tm=="Structural Topic Model"',
-
-                  # stm number of words to label topic
-                  conditionalPanel(condition = 'input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"|| input.stm_visu=="Perspectives"',
-                                   numericInput(inputId = "tm_stm_visu_numberOfWordsToLabelTopic",label="number of words to label topics", value = 10, min = 2, max = 50, step = 1)
-                  ),
-                  #stm labeltype (for sub tabs Topics, Labels and Histogram - but only if selected calculated structural topic model didn't have a content formula set. If a content formula was set, the label type is not selectable)
-                  conditionalPanel(condition = '(input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && output.tm_stm_parameters_contentFormulaIsSet==false',
-                                   selectInput(inputId = "tm_stm_visu_labeltype",label="method to choose most important words",choices=c("prob", "frex", "lift", "score"),multiple=F, selected = "prob")%>%
-                                     shinyInput_label_embed(
-                                       shiny_iconlink() %>%
-                                         bs_embed_popover(
-                                           title = "PROB: words within each topic with the highest probability. FREX: words which are both frequent in and exclusive to a topic of interest identifying words that distinguish topics. SCORE: divides the log frequency of the word in the topic by the log frequency of the word in other topics. For more information on score, see the lda R package. LIFT: words according to the lift metric: Lift is calculated by dividing the topic-word distribution by the empirical word count probability distribution. For more information see R calclift",
-                                           placement = "right"
-                                         )
-                                     )
-                  ),
-                  # stm perspectives topic 1 and 2
-                  conditionalPanel(condition = 'input.stm_visu=="Perspectives"',
-                                   selectInput(inputId = "tm_stm_visu_perspectives_topic1",label="select topic 1",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 1),
-                                   selectInput(inputId = "tm_stm_visu_perspectives_topic2",label="select topic 2",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 2)
-                  ),
-                  # stm frexweight (if labeltype == frex)
-                  conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex" && (input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && output.tm_stm_parameters_contentFormulaIsSet==false', 
-                                   numericInput(inputId = "tm_stm_visu_frexweight",label="frex weight",value = 0.5, min = 0, max = 1, step = 0.1)%>%
-                                     shinyInput_label_embed(
-                                       shiny_iconlink() %>%
-                                         bs_embed_popover(
-                                           title = "the proportion of the weight assigned to frequency",
-                                           placement = "right"
-                                         )
-                                     )
-                  )
-          )
+          if(values$tm_method == "stm"){
+            panelSTM <- conditionalPanel(condition = 'input.tabBox_tm=="Structural Topic Model"',
+                             
+                             # stm number of words to label topic
+                             conditionalPanel(condition = 'input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"|| input.stm_visu=="Perspectives"',
+                                              numericInput(inputId = "tm_stm_visu_numberOfWordsToLabelTopic",label="number of words to label topics", value = 10, min = 2, max = 50, step = 1)
+                             ),
+                             #stm labeltype (for sub tabs Topics, Labels and Histogram - but only if selected calculated structural topic model didn't have a content formula set. If a content formula was set, the label type is not selectable)
+                             conditionalPanel(condition = '(input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && output.tm_stm_parameters_contentFormulaIsSet==false',
+                                              selectInput(inputId = "tm_stm_visu_labeltype",label="method to choose most important words",choices=c("prob", "frex", "lift", "score"),multiple=F, selected = "prob")%>%
+                                                shinyInput_label_embed(
+                                                  shiny_iconlink() %>%
+                                                    bs_embed_popover(
+                                                      title = "PROB: words within each topic with the highest probability. FREX: words which are both frequent in and exclusive to a topic of interest identifying words that distinguish topics. SCORE: divides the log frequency of the word in the topic by the log frequency of the word in other topics. For more information on score, see the lda R package. LIFT: words according to the lift metric: Lift is calculated by dividing the topic-word distribution by the empirical word count probability distribution. For more information see R calclift",
+                                                      placement = "right"
+                                                    )
+                                                )
+                             ),
+                             # stm perspectives topic 1 and 2
+                             conditionalPanel(condition = 'input.stm_visu=="Perspectives"',
+                                              selectInput(inputId = "tm_stm_visu_perspectives_topic1",label="select topic 1",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 1),
+                                              selectInput(inputId = "tm_stm_visu_perspectives_topic2",label="select topic 2",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 2)
+                             ),
+                             # stm frexweight (if labeltype == frex)
+                             conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex" && (input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && output.tm_stm_parameters_contentFormulaIsSet==false', 
+                                              numericInput(inputId = "tm_stm_visu_frexweight",label="frex weight",value = 0.5, min = 0, max = 1, step = 0.1)%>%
+                                                shinyInput_label_embed(
+                                                  shiny_iconlink() %>%
+                                                    bs_embed_popover(
+                                                      title = "the proportion of the weight assigned to frequency",
+                                                      placement = "right"
+                                                    )
+                                                )
+                             )
+            )
+            
+          } # end: if tm_method == stm
           
           
-        )
-      )
+          if(values$tm_method =="stm"){
+            returnValue <-  tagList(
+                   panelLDAVIs,
+                   panelEstWordFrequencies,
+                   panelCoherence,
+                   panelDateDistribution,
+                   panelExtractDictionaries,
+                   panelDetailedMetaDataAnalysis,
+                   panelValidation,
+                   panelSTM
+            )
+          }else{
+            returnValue <-  tagList(
+                   panelLDAVIs,
+                   panelEstWordFrequencies,
+                   panelCoherence,
+                   panelDateDistribution,
+                   panelExtractDictionaries,
+                   panelDetailedMetaDataAnalysis,
+                   panelValidation
+            )
+          }
+    
+    
+    return (returnValue)
+        
+          
     }
   }
 }
