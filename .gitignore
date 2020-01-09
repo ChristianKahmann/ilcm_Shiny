@@ -67,3 +67,6 @@ packrat/lib*/
 !/collections/ecpmf_resources/.gitkeep
 /play/*
 config_file.R
+/global/escape_quotes.R
+/global/task_id_counter.RData
+config_file_local.R
