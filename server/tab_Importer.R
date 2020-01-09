@@ -24,7 +24,8 @@ eval_script <- function(script_text, input_data, script_label, script_nr, import
   result
 }
 
-script_events <- function(name, import_type, script_nr, input_data, split_script = FALSE) {
+script_events <- function(name, import_type, script_nr, split_script = FALSE) {
+  input_label <- sprintf("data_%s", import_type)
   script_event_name <- sprintf("Import_script_%s_%s", name, import_type)
   save_event_name <- sprintf("Import_script_save_%s_%s", name, import_type)
   editor_id <- sprintf("script_%s_%s", name, import_type)
@@ -50,7 +51,7 @@ script_events <- function(name, import_type, script_nr, input_data, split_script
       values[[script_label]] <- input[[editor_id]]
     } else {
       tryCatch({
-        values[[import_name]] <- eval_script(input[[editor_id]], input_data, script_label, script_nr, import_name)
+        values[[import_name]] <- eval_script(input[[editor_id]], values[[input_label]], script_label, script_nr, import_name)
       },
       error=function(e){
         shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
@@ -247,7 +248,7 @@ observeEvent(input$Import_load_csv,{
 })
 
 ### split
-script_events("split", "csv", 1, values$data_mtf, TRUE)
+script_events("split", "csv", 1, TRUE)
 
 observeEvent(input$Import_start_mapping,{
   process_split("csv")
@@ -409,7 +410,7 @@ observe({
 
 
 #title
-script_events("title", "csv", 1, values$data_csv)
+script_events("title", "csv", 1)
 type_events("title", "csv")
 
 observe({
@@ -427,7 +428,7 @@ observe({
 
 
 #id_doc
-script_events("id_doc", "csv", 2, values$data_csv)
+script_events("id_doc", "csv", 2)
 type_events("id_doc", "csv")
 
 observe({
@@ -455,7 +456,7 @@ observe({
 
 
 #body
-script_events("body", "csv", 3, values$data_csv)
+script_events("body", "csv", 3)
 type_events("body", "csv")
 
 observe({
@@ -468,7 +469,7 @@ observe({
 
 
 #date
-script_events("date", "csv", 4, values$data_csv)
+script_events("date", "csv", 4)
 type_events("date", "csv")
 
 observe({
@@ -486,47 +487,47 @@ observe({
 
 
 #mde1
-script_events("mde1", "csv", 5, values$data_csv)
+script_events("mde1", "csv", 5)
 type_events("mde1", "csv")
 observe_mde("mde1", "csv")
 
 #mde2
-script_events("mde2", "csv", 6, values$data_csv)
+script_events("mde2", "csv", 6)
 type_events("mde2", "csv")
 observe_mde("mde2", "csv")
 
 #mde3
-script_events("mde3", "csv", 7, values$data_csv)
+script_events("mde3", "csv", 7)
 type_events("mde3", "csv")
 observe_mde("mde3", "csv")
 
 #mde4
-script_events("mde4", "csv", 8, values$data_csv)
+script_events("mde4", "csv", 8)
 type_events("mde4", "csv")
 observe_mde("mde4", "csv")
 
 #mde5
-script_events("mde5", "csv", 9, values$data_csv)
+script_events("mde5", "csv", 9)
 type_events("mde5", "csv")
 observe_mde("mde5", "csv")
 
 #mde6
-script_events("mde6", "csv", 10, values$data_csv)
+script_events("mde6", "csv", 10)
 type_events("mde6", "csv")
 observe_mde("mde6", "csv")
 
 #mde7
-script_events("mde7", "csv", 11, values$data_csv)
+script_events("mde7", "csv", 11)
 type_events("mde7", "csv")
 observe_mde("mde7", "csv")
 
 #mde8
-script_events("mde8", "csv", 12, values$data_csv)
+script_events("mde8", "csv", 12)
 type_events("mde8", "csv")
 observe_mde("mde8", "csv")
 
 #mde9
-script_events("mde9", "csv", 13, values$data_csv)
+script_events("mde9", "csv", 13)
 type_events("mde9", "csv")
 observe_mde("mde9", "csv")
 
@@ -1077,7 +1078,7 @@ observeEvent(input$Import_mtf_metadata_csv,{
 
 
 ### split
-script_events("split", "mtf", 1, values$data_mtf, TRUE)
+script_events("split", "mtf", 1, TRUE)
 
 observeEvent(input$Import_start_mapping_mtf,{
   process_split("mtf")
@@ -1242,7 +1243,7 @@ observe({
 })
 
 #title
-script_events("title", "mtf", 1, values$data_mtf)
+script_events("title", "mtf", 1)
 type_events("title", "mtf")
 
 observe({
@@ -1260,7 +1261,7 @@ observe({
 
 
 #id_doc
-script_events("id_doc", "mtf", 2, values$data_mtf)
+script_events("id_doc", "mtf", 2)
 type_events("id_doc", "mtf")
 
 observe({
@@ -1288,7 +1289,7 @@ observe({
 
 
 #body
-script_events("body", "mtf", 3, values$data_mtf)
+script_events("body", "mtf", 3)
 type_events("body", "mtf")
 
 observe({
@@ -1301,7 +1302,7 @@ observe({
 
 
 #date
-script_events("date", "mtf", 4, values$data_mtf)
+script_events("date", "mtf", 4)
 type_events("date", "mtf")
 
 observe({
@@ -1319,47 +1320,47 @@ observe({
 
 
 #mde1
-script_events("mde1", "mtf", 5, values$data_mtf)
+script_events("mde1", "mtf", 5)
 type_events("mde1", "mtf")
 observe_mde("mde1", "mtf")
 
 #mde2
-script_events("mde2", "mtf", 6, values$data_mtf)
+script_events("mde2", "mtf", 6)
 type_events("mde2", "mtf")
 observe_mde("mde2", "mtf")
 
 #mde3
-script_events("mde3", "mtf", 7, values$data_mtf)
+script_events("mde3", "mtf", 7)
 type_events("mde3", "mtf")
 observe_mde("mde3", "mtf")
 
 #mde4
-script_events("mde4", "mtf", 8, values$data_mtf)
+script_events("mde4", "mtf", 8)
 type_events("mde4", "mtf")
 observe_mde("mde4", "mtf")
 
 #mde5
-script_events("mde5", "mtf", 9, values$data_mtf)
+script_events("mde5", "mtf", 9)
 type_events("mde5", "mtf")
 observe_mde("mde5", "mtf")
 
 #mde6
-script_events("mde6", "mtf", 10, values$data_mtf)
+script_events("mde6", "mtf", 10)
 type_events("mde6", "mtf")
 observe_mde("mde6", "mtf")
 
 #mde7
-script_events("mde7", "mtf", 11, values$data_mtf)
+script_events("mde7", "mtf", 11)
 type_events("mde7", "mtf")
 observe_mde("mde7", "mtf")
 
 #mde8
-script_events("mde8", "mtf", 12, values$data_mtf)
+script_events("mde8", "mtf", 12)
 type_events("mde8", "mtf")
 observe_mde("mde8", "mtf")
 
 #mde9
-script_events("mde9", "mtf", 13, values$data_mtf)
+script_events("mde9", "mtf", 13)
 type_events("mde9", "mtf")
 observe_mde("mde9", "mtf")
 
