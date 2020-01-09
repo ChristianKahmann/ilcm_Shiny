@@ -2,7 +2,9 @@
 #                                    common                                                              #
 ##########################################################################################################
 
-default_script_decription<-'# The vector `result` must be specified in this script
+### import
+
+default_script_decription_import<-'# The vector `result` must be specified in this script
 # if you want to use data from the imported csv file or mtf, you can use `input_data`
 # example:
 #  result<-paste0("Vortrag Nummer:",as.matrix(input_data[,5]))
@@ -22,12 +24,14 @@ eval_script <- function(script_text, input_data, script_label, script_nr, import
   result
 }
 
-script_events <- function(name, import_type, script_nr, input_data) {
+script_events <- function(name, import_type, script_nr, input_data, split_script = FALSE) {
   script_event_name <- sprintf("Import_script_%s_%s", name, import_type)
   save_event_name <- sprintf("Import_script_save_%s_%s", name, import_type)
   editor_id <- sprintf("script_%s_%s", name, import_type)
   import_name <- sprintf("Import_%s_%s", import_type, name)
-  script_label <- sprintf("Import_%s_scripts", import_type)
+  
+  script_label_add <- if(split_script) "_split" else ""
+  script_label <- sprintf("Import_%s%s_scripts", import_type, script_label_add)
   
   observeEvent(input[[script_event_name]],{
     showModal(
@@ -42,13 +46,16 @@ script_events <- function(name, import_type, script_nr, input_data) {
     )
   })
   observeEvent(input[[save_event_name]],{
-    tryCatch({
-      values[[import_name]] <- eval_script(input[[editor_id]], input_data, script_label, script_nr, import_name)
-    },
-    error=function(e){
-      shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    if (split_script) {
+      values[[script_label]] <- input[[editor_id]]
+    } else {
+      tryCatch({
+        values[[import_name]] <- eval_script(input[[editor_id]], input_data, script_label, script_nr, import_name)
+      },
+      error=function(e){
+        shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+      })
     }
-    )
     removeModal()
   })
 }
@@ -92,6 +99,76 @@ observe_mde <- function(name, import_type) {
   })
 }
 
+### split
+
+default_script_decription_split<-"# You need to specify split_data
+# split_data is a list of vectors where every element of the list represents an imported file.
+# length(split_data) needs to equal length(selected_data)
+# The imported files are in file_data (dataframe).
+# The data of the select column is selected_data (array of strings).
+# Example for split after x words:
+# x <- 1000
+# words <- strsplit(selected_data, '\\\\W+')
+# splits <- floor(lengths(words)/x)
+# for(i in 1:length(words)) {
+#   for(j in 0:splits[i]) {
+#     max <- min((j+1)*x, length(words[[i]]))
+#     split_data[[i]][j+1] <- paste(words[[i]][(j*x+1):max],collapse=' ')
+# }}"
+
+process_split <- function(type, name = "split") {
+  data_label <- sprintf("data_%s", type)
+  column_name <- sprintf("Import_%s_column_name", type)
+  method_label <- sprintf("Import_%s_split_method", type)
+  method_regex_label <- sprintf("Import_%s_split_method_regex", type)
+  method_split_number_label <- sprintf("Import_%s_split_method_split_number", type)
+  editor_id <- sprintf("script_%s_%s", name, type)
+  header_label <- sprintf("header_%s", type)
+  
+  if(input[[method_label]] != 'None') {
+    file_data <- values[[data_label]]
+    selected_col <- input[[column_name]]
+    selected_data <- as.character(file_data[[selected_col]])
+    split_data <- vector("list", length = length(selected_data))
+    if(input[[method_label]] == 'Regular Expression') {
+      split_data <- strsplit(selected_data, input[[method_regex_label]])
+    } else if (input[[method_label]] == 'Hard Split') {
+      x <- input[[method_split_number_label]]
+      splits <- floor(nchar(selected_data)/x)
+      for(i in 1:length(selected_data)) {
+        split_data[[i]] <- substring(selected_data[[i]], ((0:splits[i])*x+1),((1:(splits[i]+1))*x))
+      }
+    } else if (input[[method_label]] == 'Script') {
+      tryCatch({
+        eval(parse(text=input[[editor_id]]))
+        if(!is.list(split_data) || !is.character(unlist(split_data))) {
+          stop("Result needs to be a list of strings.")
+        }
+        if(length(split_data) != length(selected_data)) {
+          stop("Result needs to be a list of strings.")
+        }
+      },
+      error=function(e){
+        shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+      })
+    }
+    
+    main_ids <- rep(1:length(split_data),lengths(split_data))
+    sub_ids <- vector()
+    for(split_length in lengths(split_data)) {
+      sub_ids <- c(sub_ids,1:split_length)
+    }
+    ids <- sprintf("%d-%d", main_ids, sub_ids)
+    
+    file_data[[selected_col]] <- NULL
+    file_data <- file_data[main_ids, 1:ncol(file_data)]
+    file_data[[selected_col]] <- unlist(split_data)
+    file_data$split_id <- ids
+    values[[data_label]] <- file_data
+    values[[header_label]]<-c(colnames(values[[data_label]]))
+  }
+}
+
 ##########################################################################################################
 #                                import csv                                                              #
 ##########################################################################################################
@@ -112,6 +189,7 @@ values$Import_csv_language<-""
 values$Import_csv_token<-""
 values$Import_csv_dataset<-""
 values$Import_csv_scripts<-""
+values$Import_csv_split_scripts<-""
 
 output$UI_Import_csv_file<-renderUI({
   validate(
@@ -154,7 +232,7 @@ observeEvent(input$Import_load_csv,{
   withBusyIndicatorServer("Import_load_csv", {
     values$data_csv<-utils::read.csv(file = paste0("data_import/unprocessed_data/",input$Import_csv_files),header = input$Import_load_csv_header,
                                      sep =input$import_load_csv_seperator ,fileEncoding = input$import_load_csv_encoding)
-    values$Import_csv_scripts<-rep(default_script_decription,13) # 13 for id_doc, title, date, body and 9 mde's
+    values$Import_csv_scripts<-rep(default_script_decription_import,13) # 13 for id_doc, title, date, body and 9 mde's
     if(dim(values$data_csv)[1]<2 | dim(values$data_csv)[2]<2){
       text<-paste0("The resulting input dimesions are: ",dim(values$data_csv)[1]," x ",dim(values$data_csv)[2],". Something went wrong during the input. Make sure to specify the csv input parameters correct.")
       shinyalert::shinyalert(title = "Input failed!",text = text,type = "error")
@@ -163,10 +241,16 @@ observeEvent(input$Import_load_csv,{
       values$header_csv<-c(colnames(values$data_csv))
       values$data_load_csv_success<-TRUE
     }
+    
+    values$Import_csv_split_scripts <- default_script_decription_split
   })
 })
 
+### split
+script_events("split", "csv", 1, values$data_mtf, TRUE)
+
 observeEvent(input$Import_start_mapping,{
+  process_split("csv")
   values$start_mapping<-TRUE
 })
 
@@ -198,6 +282,15 @@ observeEvent(input$Import_check_csv,{
       ) 
     )
   )
+})
+
+output$UI_Import_csv_column_name <- renderUI({
+  select_value <- input$Import_csv_column_name
+  selectInput(inputId = "Import_csv_column_name", "Column:", choices=values$header_csv, selected = select_value)%>%
+    shinyInput_label_embed(
+      icon("info") %>%
+        bs_embed_tooltip(title = "Select a column with the data you want to split.")
+    )
 })
 
 output$UI_Import_csv_id_doc<-renderUI({
@@ -718,7 +811,7 @@ observeEvent(input$Import_load_mtf,{
     )
 
     data<-data.frame(id_doc=1:length(list.files(paste0("data_import/unprocessed_data/",input$Import_mtf_files))))
-    values$Import_mtf_scripts<-rep(default_script_decription,13) # 13 for id_doc, title, date, body and 9 mde's
+    values$Import_mtf_scripts<-rep(default_script_decription_import,13) # 13 for id_doc, title, date, body and 9 mde's
     texte<-list()
     for(i in 1:dim(data)[1]){
       texte[[i]]<-readtext::readtext(file=list.files(paste0("data_import/unprocessed_data/",input$Import_mtf_files),full.names = T)[i])
@@ -730,10 +823,7 @@ observeEvent(input$Import_load_mtf,{
     values$data_mtf<-data
     values$data_load_mtf_success<-TRUE
     
-    values$Import_mtf_split_scripts <- '# You need to specify split_data
-# split_data is a list of vectors where every element of the list represents an imported file.
-# The imported files are in file_data (dataframe).
-# The data of the select column is selected_data (array).'
+    values$Import_mtf_split_scripts <- default_script_decription_split
   })
 })
 ###meta data csv
@@ -751,61 +841,10 @@ observeEvent(input$Import_mtf_metadata_csv,{
 })
 
 ### split
-
-observeEvent(input$Import_mtf_split_method_script,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_split_method",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value=values$Import_mtf_split_scripts),
-                footer = tagList(
-                  actionButton("save_script_split_method", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_script_split_method,{
-  values$Import_mtf_split_scripts <- input$script_split_method
-  removeModal()
-})
+script_events("split", "mtf", 1, values$data_mtf, TRUE)
 
 observeEvent(input$Import_start_mapping_mtf,{
-  if(input$Import_mtf_split_method != 'None') {
-    file_data <- values$data_mtf
-    selected_col <- input$Import_mtf_column_name
-    selected_data <- file_data[[selected_col]]
-    split_data <- list()
-    if(input$Import_mtf_split_method == 'Regular Expression') {
-      split_data <- strsplit(selected_data, input$Import_mtf_split_method_regex)
-    } else if (input$Import_mtf_split_method == 'Separating Number') {
-      x <- input$Import_mtf_split_method_sep_number
-      for(i in 1:length(selected_data)) {
-        splits <- floor(nchar(selected_data[[i]])/x)
-        split_data[[i]] <- substring(selected_data[[i]], ((0:splits)*x+1),((1:(splits+1))*x))
-      }
-    } else if (input$Import_mtf_split_method == 'Script') {
-      tryCatch({
-        eval(parse(text=input$script_split_method))
-        if(!is.list(split_data) || !is.character(unlist(split_data))) {
-          stop("Result needs to be a list of strings.")
-        }
-      },
-      error=function(e){
-        shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
-      })
-    }
-    
-    main_ids <- rep(1:length(split_data),lengths(split_data))
-    sub_ids <- vector()
-    for(split_length in lengths(split_data)) {
-      sub_ids <- c(sub_ids,1:split_length)
-    }
-    ids <- sprintf("%d-%d", main_ids, sub_ids)
-    
-    file_data[[selected_col]] <- NULL
-    file_data <- file_data[main_ids, 1:ncol(file_data)]
-    file_data[[selected_col]] <- unlist(split_data)
-    file_data$id <- ids
-    values$data_mtf <- file_data
-  }
+  process_split("mtf")
   values$start_mapping_mtf<-TRUE
 })
 
@@ -840,9 +879,9 @@ observeEvent(input$Import_check_mtf,{
 })
 
 
-
 output$UI_Import_mtf_column_name <- renderUI({
-  selectInput(inputId = "Import_mtf_column_name", "Column:", choices=values$header_mtf)%>%
+  select_value <- input$Import_mtf_column_name
+  selectInput(inputId = "Import_mtf_column_name", "Column:", choices=values$header_mtf, selected = select_value)%>%
   shinyInput_label_embed(
     icon("info") %>%
       bs_embed_tooltip(title = "Select a column with the data you want to split.")

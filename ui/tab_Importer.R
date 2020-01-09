@@ -24,6 +24,31 @@ tabPanel("Importer",
                                                                          #tags$img(src="success.svg"),
                                                                          #tags$br(),
                                                                          tags$br(),
+                                                                         box(width=2,title = "Split Method",status = "primary",collapsible = T,
+                                                                             selectInput(inputId = "Import_csv_split_method", "Method:",
+                                                                                         choices=c("None", "Regular Expression", "Hard Split", "Script")
+                                                                             )%>%
+                                                                               shinyInput_label_embed(
+                                                                                 icon("info") %>%
+                                                                                   bs_embed_tooltip(title = "This Method will split the text of the imported files.")
+                                                                               ),
+                                                                             conditionalPanel(
+                                                                               condition = "input.Import_csv_split_method != 'None'",
+                                                                               uiOutput("UI_Import_csv_column_name")
+                                                                             ),
+                                                                             conditionalPanel(
+                                                                               condition = "input.Import_csv_split_method == 'Regular Expression'",
+                                                                               textInput(inputId = "Import_csv_split_method_regex",label = "Regular Expression:", value = "\\n\\n")
+                                                                             ),
+                                                                             conditionalPanel(
+                                                                               condition = "input.Import_csv_split_method == 'Hard Split'",
+                                                                               numericInput(inputId = "Import_csv_split_method_split_number",label = "Split after x Characters:", value = 2000, min = 1)
+                                                                             ),
+                                                                             conditionalPanel(
+                                                                               condition = "input.Import_csv_split_method == 'Script'",
+                                                                               shinyBS::bsButton("Import_script_split_csv",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script to split text in imported files")
+                                                                             )
+                                                                         ),
                                                                          fluidRow(style="margin-left:0px;margin-right:0px",
                                                                                   shinyBS::bsButton(inputId = "Import_check_csv",label = "check csv",icon = icon("search"),style = "primary"),
                                                                                   shinyBS::bsButton(inputId = "Import_start_mapping",label = "start mapping",icon = icon("play"),style="info")
@@ -234,24 +259,27 @@ tabPanel("Importer",
                                                                                   ),
                                                                                   box(width=2,title = "Split Method",status = "primary",collapsible = T,
                                                                                       selectInput(inputId = "Import_mtf_split_method", "Method:",
-                                                                                                  choices=c("None", "Regular Expression", "Separating Number", "Script")
+                                                                                                  choices=c("None", "Regular Expression", "Hard Split", "Script")
                                                                                       )%>%
                                                                                       shinyInput_label_embed(
                                                                                         icon("info") %>%
                                                                                           bs_embed_tooltip(title = "This Method will split the text of the imported files.")
                                                                                       ),
-                                                                                      uiOutput("UI_Import_mtf_column_name"),
+                                                                                      conditionalPanel(
+                                                                                        condition = "input.Import_mtf_split_method != 'None'",
+                                                                                        uiOutput("UI_Import_mtf_column_name")
+                                                                                      ),
                                                                                       conditionalPanel(
                                                                                         condition = "input.Import_mtf_split_method == 'Regular Expression'",
                                                                                         textInput(inputId = "Import_mtf_split_method_regex",label = "Regular Expression:", value = "\\n\\n")
                                                                                       ),
                                                                                       conditionalPanel(
-                                                                                        condition = "input.Import_mtf_split_method == 'Separating Number'",
-                                                                                        numericInput(inputId = "Import_mtf_split_method_sep_number",label = "Separating Number:", value = 2000, min = 1)
+                                                                                        condition = "input.Import_mtf_split_method == 'Hard Split'",
+                                                                                        numericInput(inputId = "Import_mtf_split_method_split_number",label = "Split after x Characters:", value = 2000, min = 1)
                                                                                       ),
                                                                                       conditionalPanel(
                                                                                         condition = "input.Import_mtf_split_method == 'Script'",
-                                                                                        shinyBS::bsButton("Import_mtf_split_method_script",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script to split text in imported files")
+                                                                                        shinyBS::bsButton("Import_script_split_mtf",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script to split text in imported files")
                                                                                       )
                                                                                   ),
                                                                                   shinyBS::bsButton(inputId = "Import_check_mtf",label = "check import",icon = icon("search"),style = "primary"),
