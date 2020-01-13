@@ -122,8 +122,6 @@ process_split <- function(type, name = "split") {
   data_label <- sprintf("data_%s", type)
   column_name <- sprintf("Import_%s_column_name", type)
   method_label <- sprintf("Import_%s_split_method", type)
-  method_regex_label <- sprintf("Import_%s_split_method_regex", type)
-  method_split_number_label <- sprintf("Import_%s_split_method_split_number", type)
   editor_id <- sprintf("script_%s_%s", name, type)
   header_label <- sprintf("header_%s", type)
   
@@ -131,29 +129,7 @@ process_split <- function(type, name = "split") {
     file_data <- values[[data_label]]
     selected_col <- input[[column_name]]
     selected_data <- as.character(file_data[[selected_col]])
-    split_data <- vector("list", length = length(selected_data))
-    if(input[[method_label]] == 'Regular Expression') {
-      split_data <- strsplit(selected_data, input[[method_regex_label]])
-    } else if (input[[method_label]] == 'Hard Split') {
-      x <- input[[method_split_number_label]]
-      splits <- floor(nchar(selected_data)/x)
-      for(i in 1:length(selected_data)) {
-        split_data[[i]] <- substring(selected_data[[i]], ((0:splits[i])*x+1),((1:(splits[i]+1))*x))
-      }
-    } else if (input[[method_label]] == 'Script') {
-      tryCatch({
-        eval(parse(text=input[[editor_id]]))
-        if(!is.list(split_data) || !is.character(unlist(split_data))) {
-          stop("Result needs to be a list of strings.")
-        }
-        if(length(split_data) != length(selected_data)) {
-          stop("Result needs to be a list of strings.")
-        }
-      },
-      error=function(e){
-        shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
-      })
-    }
+    split_data <- perform_split(type, selected_data, file_data, name)
     
     main_ids <- rep(1:length(split_data),lengths(split_data))
     sub_ids <- vector()
@@ -169,6 +145,71 @@ process_split <- function(type, name = "split") {
     values[[data_label]] <- file_data
     values[[header_label]]<-c(colnames(values[[data_label]]))
   }
+}
+
+perform_split <- function(type, selected_data, file_data, editor_name = "split") {
+  if (length(selected_data) == 0) {
+    return(NULL)
+  }
+  method_label <- sprintf("Import_%s_split_method", type)
+  method_regex_label <- sprintf("Import_%s_split_method_regex", type)
+  method_split_number_label <- sprintf("Import_%s_split_method_split_number", type)
+  editor_id <- sprintf("script_%s_%s", editor_name, type)
+  
+  split_data <- vector("list", length = length(selected_data))
+  if(input[[method_label]] == 'Regular Expression') {
+    split_data <- strsplit(selected_data, input[[method_regex_label]])
+  } else if (input[[method_label]] == 'Hard Split') {
+    x <- input[[method_split_number_label]]
+    splits <- floor(nchar(selected_data)/x)
+    for(i in 1:length(selected_data)) {
+      split_data[[i]] <- substring(selected_data[[i]], ((0:splits[i])*x+1),((1:(splits[i]+1))*x))
+    }
+  } else if (input[[method_label]] == 'Script') {
+    tryCatch({
+      if (is.null(input[[editor_id]])) {
+        stop("You didn't set up a script.")
+      } else {
+        eval(parse(text=input[[editor_id]]))
+        if(!is.list(split_data) || !is.character(unlist(split_data))) {
+          stop("Result needs to be a list of strings.")
+        }
+        if(length(split_data) != length(selected_data)) {
+          stop("Result needs to be a list of strings.")
+        }
+      }
+    },
+    error=function(e){
+      shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    })
+  }
+  return(split_data)
+}
+
+split_test_view <- function(type) {
+  data_label <- sprintf("data_%s", type)
+  column_name <- sprintf("Import_%s_column_name", type)
+  
+  input_data <- values[[data_label]]
+  selected_col <- input[[column_name]]
+  selected_data <- as.character(input_data[[selected_col]])
+  
+  showModal(modalDialog(
+    title = "Split Test View",
+    size = "l",
+    selectInput(inputId = "Import_row_nr", "Row", choices=1:dim(input_data)[1]),
+    fluidRow(
+      box(title = "Original",status = "primary",width = "6",renderText(selected_data[as.integer(input$Import_row_nr)])),
+      box(
+        title = "Split Result",
+        status = "primary",
+        renderUI({
+          HTML(paste(unlist(perform_split(type, selected_data[as.integer(input$Import_row_nr)])), collapse = "<hr/>"))
+        })
+      )
+    ),
+    easyClose = TRUE
+  ))
 }
 
 ##########################################################################################################
@@ -249,6 +290,10 @@ observeEvent(input$Import_load_csv,{
 
 ### split
 script_events("split", "csv", 1, TRUE)
+
+observeEvent(input$Import_csv_split_test_view, {
+  split_test_view("csv")
+})
 
 observeEvent(input$Import_start_mapping,{
   process_split("csv")
@@ -1079,6 +1124,10 @@ observeEvent(input$Import_mtf_metadata_csv,{
 
 ### split
 script_events("split", "mtf", 1, TRUE)
+
+observeEvent(input$Import_mtf_split_test_view, {
+  split_test_view("mtf")
+})
 
 observeEvent(input$Import_start_mapping_mtf,{
   process_split("mtf")

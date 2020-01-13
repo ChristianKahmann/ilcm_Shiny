@@ -47,6 +47,11 @@ tabPanel("Importer",
                                                                              conditionalPanel(
                                                                                condition = "input.Import_csv_split_method == 'Script'",
                                                                                shinyBS::bsButton("Import_script_split_csv",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script to split text in imported files")
+                                                                             ),
+                                                                             conditionalPanel(
+                                                                               condition = "input.Import_csv_split_method != 'None'",
+                                                                               tags$br(),
+                                                                               actionButton("Import_csv_split_test_view", "Test Split", style = "info", block=T)
                                                                              )
                                                                          ),
                                                                          fluidRow(style="margin-left:0px;margin-right:0px",
@@ -288,6 +293,11 @@ tabPanel("Importer",
                                                                                       conditionalPanel(
                                                                                         condition = "input.Import_mtf_split_method == 'Script'",
                                                                                         shinyBS::bsButton("Import_script_split_mtf",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script to split text in imported files")
+                                                                                      ),
+                                                                                      conditionalPanel(
+                                                                                        condition = "input.Import_mtf_split_method != 'None'",
+                                                                                        tags$br(),
+                                                                                        actionButton("Import_mtf_split_test_view", "Test Split", style = "info", block=T)
                                                                                       )
                                                                                   ),
                                                                                   shinyBS::bsButton(inputId = "Import_check_mtf",label = "check import",icon = icon("search"),style = "primary"),
