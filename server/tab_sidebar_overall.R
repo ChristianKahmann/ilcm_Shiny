@@ -1,6 +1,6 @@
 output$sidebarpanel_UI<-renderUI({
   sidebarmenu<-sidebarMenu(id = "tabs",
-                           menuItem(text = "Explorer",tabName = "Explorer",icon = icon("table"),selected = T),
+                           menuItem(text = "Explorer",tabName = "Explorer",icon = icon("table")),
                            conditionalPanel(condition = "input.tabs == 'Explorer'",
                                             uiOutput("datasets_avaiable")
                            ),

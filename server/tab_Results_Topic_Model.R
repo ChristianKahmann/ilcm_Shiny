@@ -130,8 +130,6 @@ observe({
   s = input$Topic_Results_rows_selected
   if (length(s)) {
     values$Details_Analysis <- "TM"
-    print(s)
-    print(values$Topic_Results_Files)
     isolate(values$Details_Data_TM <-
               values$Topic_Results_Files[s])
     

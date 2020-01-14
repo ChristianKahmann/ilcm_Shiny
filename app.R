@@ -159,6 +159,7 @@ server <- function(input, output, session) {
   
   login = FALSE
   USER <- reactiveValues(login = login)
+  shiny::updateTabsetPanel(session = session,inputId = "tabs",selected = "Explorer")
   
   observeEvent(input$login,{ 
     if (USER$login == FALSE) {
