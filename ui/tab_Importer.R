@@ -14,8 +14,7 @@ tabPanel("Importer",
                                        conditionalPanel(condition='input.Import_csv_files!= null',
                                                         box(width=2,title = tags$div("CSV-Import Parameters",style="color:white;"),status = "primary",collapsible = T,solidHeader = T,
                                                             prettyCheckbox(inputId = "Import_load_csv_header",label = "header?",value = TRUE,status = "primary",shape = "curve"),
-                                                            textInput(inputId = "import_load_csv_seperator",label = "seperator:",value = ","),
-                                                            textInput(inputId = "import_load_csv_encoding",label = "encoding:",value = "UTF-8")
+                                                            textInput(inputId = "import_load_csv_seperator",label = "seperator:",value = ",")
                                                         ),
                                                         withBusyIndicatorUI(
                                                           shinyBS::bsButton(inputId = "Import_load_csv",label = "use selected csv",icon = icon("upload"),style = "info")
