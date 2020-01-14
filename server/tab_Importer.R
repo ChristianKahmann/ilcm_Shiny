@@ -55,8 +55,8 @@ observeEvent(input$Import_csv_new,ignoreInit = T,{
 
 observeEvent(input$Import_load_csv,{
   withBusyIndicatorServer("Import_load_csv", {
-    values$data_csv<-utils::read.csv(file = paste0("data_import/unprocessed_data/",input$Import_csv_files),header = input$Import_load_csv_header,
-                                     sep =input$import_load_csv_seperator ,fileEncoding = input$import_load_csv_encoding)
+    values$data_csv<-readr::read_delim(file = paste0("data_import/unprocessed_data/",input$Import_csv_files),col_names = input$Import_load_csv_header,
+                                     delim = input$import_load_csv_seperator,na = character() )
     colnames(values$data_csv)<-stringr::str_replace_all(string = colnames(values$data_csv),pattern = "\\.",replacement = " ")
     if(dim(values$data_csv)[1]<2 | dim(values$data_csv)[2]<2){
       text<-paste0("The resulting input dimesions are: ",dim(values$data_csv)[1]," x ",dim(values$data_csv)[2],". Something went wrong during the input. Make sure to specify the csv input parameters correct.")
@@ -1400,11 +1400,8 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_csv_db,{
     #save needed parameters
     parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
     #create process ID
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-    RMariaDB::dbBegin(conn = mydb)
-    used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-    RMariaDB::dbDisconnect(mydb)
-    ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+    ID<-get_task_id_counter()+1
+    set_task_id_counter(ID)
     #save metadata for process
     process_info<-list(ID,paste("New Data - ",input$Import_csv_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
     #save logfile path
@@ -2654,11 +2651,8 @@ observeEvent(input$Import_mtf_start_preprocess,{
                 #save needed parameters
                 parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
                 #create process ID
-                mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-                RMariaDB::dbBegin(conn = mydb)
-                used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-                RMariaDB::dbDisconnect(mydb)
-                ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+                ID<-get_task_id_counter()+1
+                set_task_id_counter(ID)
                 #save metadata for process
                 process_info<-list(ID,paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
                 #save logfile path
@@ -2718,11 +2712,8 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_no_db,{
     #save needed parameters
     parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
     #create process ID
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-    RMariaDB::dbBegin(conn = mydb)
-    used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-    RMariaDB::dbDisconnect(mydb)
-    ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+    ID<-get_task_id_counter()+1
+    set_task_id_counter(ID)
     #save metadata for process
     process_info<-list(ID,paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files",as.character(Sys.time()))
     #save logfile path
@@ -2815,11 +2806,8 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
                 #save needed parameters
                 parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
                 #create process ID
-                mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-                RMariaDB::dbBegin(conn = mydb)
-                used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-                RMariaDB::dbDisconnect(mydb)
-                ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+                ID<-get_task_id_counter()+1
+                set_task_id_counter(ID)
                 #save metadata for process
                 process_info<-list(ID,paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files and write to DB and solr",as.character(Sys.time()))
                 #save logfile path
@@ -2879,11 +2867,8 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_db,{
     #save needed parameters
     parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
     #create process ID
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-    RMariaDB::dbBegin(conn = mydb)
-    used_IDs=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT id FROM ilcm.Tasks;")
-    RMariaDB::dbDisconnect(mydb)
-    ID<-sample(x = setdiff(1:1000,used_IDs$id),size = 1)
+    ID<-get_task_id_counter()+1
+    set_task_id_counter(ID)
     #save metadata for process
     process_info<-list(ID,paste("New Data - ",input$Import_mtf_dataset,sep=""),"Create import csv files and write to DB and solr",as.character(Sys.time()))
     #save logfile path
