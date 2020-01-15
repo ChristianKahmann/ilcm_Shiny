@@ -20,13 +20,15 @@ tabPanel("Document View",type="tabs",
              )
              ,
              box(width=10,
-                 
-                 column(11,
-                        tags$h1(textOutput(outputId = "DV_title"))
+                 fluidRow(style="margin-left:0px;margin-right:0px",
+                          column(11,
+                                 tags$h1(textOutput(outputId = "DV_title"))
+                          ),
+                          column(1,
+                                 uiOutput("DV_documentwide_annotations")  
+                          )
                  ),
-                 column(1,
-                        uiOutput("DV_documentwide_annotations")  
-                 ),
+                 tags$hr(),
                  annotateTextComponent()
                  
              )

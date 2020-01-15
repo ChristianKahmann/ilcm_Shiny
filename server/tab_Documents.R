@@ -392,7 +392,7 @@ observeEvent(ignoreNULL = T,input$Documents_reupload_SolrTag,{
       body<-create_body_solr_update_add(ids = values$Doc_ids[,1],field_name = "collections",values = rep(values$Doc_collection_name,length(values$Doc_ids[,1])))
       
       
-      incProgress(1/n, detail = "Uploading Collection Tags uploaded")
+      incProgress(1/n, detail = "Uploading Collection Tags")
       rm(solr_update_working)
       try({
         conn$update_atomic_json(name = "iLCM",body = body)->solr_update_working

@@ -32,23 +32,25 @@ output$document<-renderUI({
     need(
       !is.null(values$token),
       "no document specified"
-    )
+    ),
+    need((!is.null(input$anno_scheme_selected) || length(list.files("collections/annotation_schemes/"))==0),message=F)
   )
+
   input$anno_id
   values$anno_deleted
   #check if document was opened in this session before
   if(isolate(is.null(isolate(values$new)))){
     #get Annotations from db for this document
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
+    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
     rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
     annotations<-RMariaDB::dbGetQuery(mydb, paste("select * from Annotations where id='",(values$token)[1,2],"'",
-                                                  " and trim(dataset)='",isolate(values$token)[1,1],"' and document_annotation='FALSE';",sep = ""))
+                                                  " and trim(dataset)='",(values$token)[1,1],"' and document_annotation='FALSE';",sep = ""))
     
     annotations_documentwide<-RMariaDB::dbGetQuery(mydb, paste("select * from Annotations where id='",(values$token)[1,2],"'",
-                                                               " and trim(dataset)='",isolate(values$token)[1,1],"' and document_annotation='TRUE';",sep = ""))
+                                                               " and trim(dataset)='",(values$token)[1,1],"' and document_annotation='TRUE';",sep = ""))
     RMariaDB::dbDisconnect(mydb)
-    annotations<-annotations[which(annotations[,"Anno_set"]==input$anno_scheme_selected),1:13]
-    annotations_documentwide<-annotations_documentwide[which(annotations_documentwide[,"Anno_set"]==input$anno_scheme_selected),1:13]
+    annotations<-annotations[which(annotations[,"Anno_set"]==input$anno_scheme_selected),setdiff(1:14,13)]
+    annotations_documentwide<-annotations_documentwide[which(annotations_documentwide[,"Anno_set"]==input$anno_scheme_selected),setdiff(1:14,13)]
     values$annos_documentwide<-data.frame(name=annotations_documentwide$Annotation,user=annotations_documentwide$User,color=annotations_documentwide$color,
                                           annotation_scheme=annotations_documentwide$Anno_set,id=annotations_documentwide$anno_id,stringsAsFactors = F)
 
@@ -73,7 +75,7 @@ output$document<-renderUI({
       colnames(db_annotations)<-colnames(isolate(values$annotations_show))
       isolate(values$annotations_show<-rbind(isolate(values$annotations_show),as.matrix(db_annotations)))
       isolate(values$annotations_show<-rbind(isolate(values$annotations_show),as.matrix(annotations_documentwide)))
-      
+
       #add color tags to text
       if(is.null(isolate(values$annos))){
         isolate(values$annos<-matrix(c(0),0,6))

@@ -17,7 +17,8 @@ output$Doc_document<-renderUI({
   validate(
       need(
       !is.null(values$Doc_token),"no document specified"
-    )
+    ),
+    need((!is.null(input$Doc_anno_scheme_selected) || length(list.files("collections/annotation_schemes/"))==0),message=F)
   )
   
   input$Doc_anno_id
@@ -32,8 +33,8 @@ output$Doc_document<-renderUI({
     annotations_documentwide<-RMariaDB::dbGetQuery(mydb, paste("select * from Annotations where id='",(values$Doc_token)[1,2],"'",
                                                                " and trim(dataset)='",isolate(values$Doc_token)[1,1],"' and document_annotation='TRUE';",sep = ""))
     RMariaDB::dbDisconnect(mydb)
-    annotations<-annotations[which(annotations[,"Anno_set"]==input$Doc_anno_scheme_selected),1:13]
-    annotations_documentwide<-annotations_documentwide[which(annotations_documentwide[,"Anno_set"]==input$Doc_anno_scheme_selected),1:13]
+    annotations<-annotations[which(annotations[,"Anno_set"]==input$Doc_anno_scheme_selected),setdiff(1:14,13)]
+    annotations_documentwide<-annotations_documentwide[which(annotations_documentwide[,"Anno_set"]==input$Doc_anno_scheme_selected),setdiff(1:14,13)]
     values$Doc_annos_documentwide<-data.frame(name=annotations_documentwide$Annotation,user=annotations_documentwide$User,color=annotations_documentwide$color,
                                           annotation_scheme=annotations_documentwide$Anno_set,id=annotations_documentwide$anno_id,stringsAsFactors = F)
       #no annotations made so far?

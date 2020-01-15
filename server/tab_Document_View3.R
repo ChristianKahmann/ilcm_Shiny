@@ -21,7 +21,7 @@ output$Anno_document<-renderUI({
     need(
       !is.null(values$Anno_token),"no document specified"
     ),
-    need((input$Anno_anno_scheme_selected==isolate(values$set_Anno_anno_scheme)|| isTRUE(isolate(values$Anno_scheme_changed))),"no scheme"
+    need((input$Anno_anno_scheme_selected==isolate(values$set_Anno_anno_scheme)|| length(list.files("collections/annotation_schemes/"))==0 || isTRUE(isolate(values$Anno_scheme_changed))),"no scheme"
     )
   )
   input$Anno_anno_id
@@ -37,8 +37,8 @@ output$Anno_document<-renderUI({
     annotations_documentwide<-RMariaDB::dbGetQuery(mydb, paste("select * from Annotations where id='",(values$Anno_token)[1,2],"'",
                                                                " and trim(dataset)='",isolate(values$Anno_token)[1,1],"' and document_annotation='TRUE';",sep = ""))
     RMariaDB::dbDisconnect(mydb)
-    annotations<-annotations[which(annotations[,"Anno_set"]==input$Anno_anno_scheme_selected),1:13]
-    annotations_documentwide<-annotations_documentwide[which(annotations_documentwide[,"Anno_set"]==input$Anno_anno_scheme_selected),1:13]
+    annotations<-annotations[which(annotations[,"Anno_set"]==input$Anno_anno_scheme_selected),setdiff(1:14,13)]
+    annotations_documentwide<-annotations_documentwide[which(annotations_documentwide[,"Anno_set"]==input$Anno_anno_scheme_selected),setdiff(1:14,13)]
     values$Anno_annos_documentwide<-data.frame(name=annotations_documentwide$Annotation,user=annotations_documentwide$User,color=annotations_documentwide$color,
                                                annotation_scheme=annotations_documentwide$Anno_set,id=annotations_documentwide$anno_id,stringsAsFactors = F)
     

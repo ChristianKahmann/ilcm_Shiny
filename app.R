@@ -157,7 +157,7 @@ server <- function(input, output, session) {
   values$logged_in<-FALSE
   options(shiny.maxRequestSize=max_upload_file_size*1024^2) 
   
-  login = FALSE
+  login<-TRUE
   USER <- reactiveValues(login = login)
   shiny::updateTabsetPanel(session = session,inputId = "tabs",selected = "Explorer")
   
