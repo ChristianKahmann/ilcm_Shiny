@@ -155,7 +155,8 @@ error<-try(expr = {
       log_to_file(message = "   <b style='color:green'> ✔ </b> Finished saving results",logfile)
     }
 
-
+    parameters<-parameters_original
+    save(parameters,file=paste0(path0,"parameters.RData"))
     log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Vector Space Representation </b>",logfile)
     system(paste("mv ",logfile," collections/logs/finished/",sep=""))
 
