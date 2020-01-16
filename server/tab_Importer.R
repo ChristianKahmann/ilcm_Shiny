@@ -296,9 +296,29 @@ observeEvent(input$Import_csv_split_test_view, {
 })
 
 observeEvent(input$Import_start_mapping,{
+  if(input$Import_csv_split_method != 'None') {
+    showModal(modalDialog(
+      title="Are you sure you want to split",
+      footer = tagList(
+        modalButton("Cancel"),
+        actionButton("confirm_start_mapping_csv", "Continue", styleclass = "info")
+      ),
+      "You can't simply undo this split. You would have to reimport your data to go back."
+    ))
+  } else {
+    start_mapping_csv()
+  }
+})
+
+observeEvent(input$confirm_start_mapping_csv,{
+  start_mapping_csv()
+  removeModal()
+})
+
+start_mapping_csv <- function() {
   process_split("csv")
   values$start_mapping<-TRUE
-})
+}
 
 output$data_load_csv_success<-reactive({
   values$data_load_csv_success
@@ -894,9 +914,29 @@ observeEvent(input$Import_mtf_split_test_view, {
 })
 
 observeEvent(input$Import_start_mapping_mtf,{
+  if(input$Import_mtf_split_method != 'None') {
+    showModal(modalDialog(
+      title="Are you sure you want to split",
+      footer = tagList(
+        modalButton("Cancel"),
+        actionButton("confirm_start_mapping_mtf", "Continue", styleclass = "info")
+      ),
+      "You can't simply undo this split. You would have to reimport your data to go back."
+    ))
+  } else {
+    start_mapping_mtf()
+  }
+})
+
+observeEvent(input$confirm_start_mapping_mtf,{
+  start_mapping_mtf()
+  removeModal()
+})
+
+start_mapping_mtf <- function() {
   process_split("mtf")
   values$start_mapping_mtf<-TRUE
-})
+}
 
 output$data_load_mtf_success<-reactive({
   values$data_load_mtf_success
