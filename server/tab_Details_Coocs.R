@@ -343,17 +343,30 @@ output$cooc_examples_table<-DT::renderDataTable({
   text<-matrix(c(0),number_of_examples,1)
   for(i in 1:number_of_examples){
     tokens<-values$coocs_token[which(values$coocs_token[,1]==avail[i]),]
-    id_targets<-union(which(tolower(tokens[,"token"])%in%input$coocs_examples_words),which(tolower(tokens[,"lemma"])%in%input$coocs_examples_words))[1]
+    id_targets<-NULL
+    id_targets_all<-list()
+    for(j in 1:length(input$coocs_examples_words)){
+      id_targets<-c(id_targets,union(which(tolower(tokens[,"token"])%in%input$coocs_examples_words[j]),which(tolower(tokens[,"lemma"])%in%input$coocs_examples_words[j])))
+      id_targets_all[[j]]<-union(which(tolower(tokens[,"token"])%in%input$coocs_examples_words[j]),which(tolower(tokens[,"lemma"])%in%input$coocs_examples_words[j]))
+      if(length(id_targets)>2){
+        id_targets<-c(min(id_targets),max(id_targets))
+      }
+    }
+    for(h in 1:length(id_targets_all)){
+      for(l in 1:length(id_targets_all[[h]])){
+        tokens[id_targets_all[[h]][l],"token"]<-paste0(' <b style="color:',colors[h],'">',tokens[id_targets_all[[h]][l],"token"],'</b> ')
+      }
+    }
     example<-paste(tokens[max(1,(min(id_targets)-k)):min(dim(tokens)[1],(max(id_targets)+k)),"token"],collapse=" ")
     text[i,1]<-example
   }
   document_ids<-avail[1:number_of_examples]
   values$coocs_examples_document_ids<-document_ids
   values$coocs_examples_texts<-text
-  for(i in 1:length(input$coocs_examples_words)){
-    word<-input$coocs_examples_words[i]
-    text[,1]<-stringr::str_replace_all(string = tolower(text[,1]),pattern = paste(" ",word," ",sep=""),replacement = paste0('<b style="color:',colors[i],'"> ',word,' </b>'))
-  }
+  #for(i in 1:length(input$coocs_examples_words)){
+  #  word<-input$coocs_examples_words[i]
+  #  text[,1]<-stringr::str_replace_all(string = (text[,1]),pattern = stringr::regex(paste(" ",word," ",sep=""),ignore_case = T),replacement = paste0(' <b style="color:',colors[i],'">',word,'</b> '))
+  #}
   
   data<-data.frame(Text=text,
                    SeeDocument = shinyInput(
@@ -380,11 +393,13 @@ observeEvent(input$coocs_kwic_document,{
   dataset<- stringr::str_split(string=values$coocs_examples_document_ids[selected_row],pattern = "_",simplify = T)[1,1]
   doc_id<- stringr::str_split(string=values$coocs_examples_document_ids[selected_row],pattern = "_",simplify = T)[1,2]
   token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,host=values$host,port=values$port)
+  id_targets<-union(which(tolower(token[,"word"])%in%input$coocs_examples_words),which(tolower(token[,"lemma"])%in%input$coocs_examples_words))
   
+  token[id_targets,"word"]<-paste0(' <b style="color:',"black",'">',token[id_targets,"word"],'</b> ')
   text<-paste(token[,"word"],collapse=" ")
   showModal(
     modalDialog(title = paste0("Document: ",dataset,"_",doc_id),easyClose = T,
-                tags$div(text)
+                tags$div(HTML(text))
     ))
   isolate(shinyjs::runjs('Shiny.onInputChange(\"coocs_kwic_document\",  "coocs_kwic_show_doc_button_0")'))
 })

@@ -13,10 +13,10 @@ error<-try(expr = {
   load("collections/tmp/tmp.RData")
   parameters_original<-parameters
   
-
+  
   #load collection 
   log_to_file(message = "<b>Step 1/13: Loading collection</b>",file = logfile)
-
+  
   load(paste("collections/collections/",unlist(parameters[1]),".RData",sep=""))
   log_to_file(message = "  <b style='color:green'> ✔ </b> Finished loading collection",file = logfile)
   
@@ -68,7 +68,7 @@ error<-try(expr = {
   #get metadata
   log_to_file(message = "<b>Step 6/13: Getting metadata for detailed metadata analysis from database</b>",file = logfile)
   if(parameters$tm_detailed_meta==TRUE || parameters$tm_method == "stm"){
-
+    
     meta_data<-get_meta_data_for_detailed_topic_analysis(host = host,port = db_port,ids = info[[3]],datasets = unique(info[[2]]),token = db_data$token)
     meta<-meta_data$meta
     meta_names<-meta_data$meta_names
@@ -107,15 +107,15 @@ error<-try(expr = {
   #   dtm<-dtm[,-remove]
   # }
   # #remove all that contains non asci2
-  # remove<-which(unlist(lapply(colnames(dtm),function(i){max(utf8ToInt(i))}))>256)
-  # if(length(remove)>0){
-  #   dtm<-dtm[,-remove]
-  # }
+  remove<-which(unlist(lapply(colnames(dtm),function(i){max(utf8ToInt(i))}))>256)
+  if(length(remove)>0){
+    dtm<-dtm[,-remove]
+  }
   # #remove all that contains non asci2
-  # remove<-which(unlist(lapply(colnames(dtm),function(i){min(utf8ToInt(i))}))<33)
-  # if(length(remove)>0){
-  #   dtm<-dtm[,-remove]
-  # }
+  remove<-which(unlist(lapply(colnames(dtm),function(i){min(utf8ToInt(i))}))<33)
+  if(length(remove)>0){
+    dtm<-dtm[,-remove]
+  }
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
   
@@ -151,7 +151,7 @@ error<-try(expr = {
     
     # meta data: set names from mde1/mde2 etc to real meta names
     metaDataToUse <- combineMetaDataWithMetaNamesForMDEs(meta, meta_names)
-
+    
     # get all stm parameters from parameters and also set metadata
     parametersNeededForSTM <- t$get_parameters() # work around for missing parameters
     parametersNeededForSTM[["metaData"]] <- metaDataToUse
@@ -171,11 +171,11 @@ error<-try(expr = {
     parametersNeededForSTM[["gamma.prior"]] <- parameters$stm_gamma_prior
     parametersNeededForSTM[["sigma.prior"]] <- parameters$stm_sigma_prior
     parametersNeededForSTM[["kappa.prior"]] <- parameters$stm_kappa_prior
-
+    
     parametersToUse <- copyListButRemoveNullValuesAndEmptyStringValues(parametersNeededForSTM)
     
     t$set_parameters(par_list = parametersToUse)
-
+    
     
   }else{
     t$set_parameters(par_list = list("alpha"=parameters$tm_alpha,"K"=parameters$tm_number_of_topics))
@@ -240,7 +240,7 @@ error<-try(expr = {
   
   
   
-
+  
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Topic Model </b>",logfile)
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))
   
@@ -251,7 +251,7 @@ if(class(error)=="try-error"){
   try(
     expr = {RMariaDB::dbDisconnect(mydb)},
     silent=T
-    )
+  )
   log_to_file(message=error[[1]],file = stringr::str_replace(string = logfile,pattern = "running",replacement = "failed"))
 }
 

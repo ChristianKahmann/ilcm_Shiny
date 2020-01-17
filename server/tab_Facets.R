@@ -1119,7 +1119,7 @@ output$Fac_Entities_abs<-renderUI({
     plot_output_object <- renderPlotly({
       p<-plot_ly(x=rev(as.numeric(isolate(values$Fac_Ent_abs)[,2])),y=rev(isolate(values$Fac_Ent_abs)[,1]),type = "bar",orientation="h",
                  marker = list(color = '#FF9999',line = list(color = '#FF9933', width = 1.5)),
-                 textposition="middle right",text=rev(as.numeric(isolate(values$Fac_Ent_abs)[,2])))
+                 textposition="auto",text=rev(as.numeric(isolate(values$Fac_Ent_abs)[,2])))
       p<-layout(p,title="Entities (absolute)",yaxis=list(type="category",categoryorder="trace",automargin=T),margin=list(t=50),xaxis=list(side="top"))
       p<-plotly::config(p,displayModeBar=FALSE)
       return(p)
