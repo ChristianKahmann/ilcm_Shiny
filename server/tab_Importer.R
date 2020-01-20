@@ -189,15 +189,28 @@ perform_split <- function(type, selected_data, file_data, editor_name = "split")
 split_test_view <- function(type) {
   data_label <- sprintf("data_%s", type)
   column_name <- sprintf("Import_%s_column_name", type)
+  display_condition <- sprintf("input.Import_%s_split_method == 'Regular Expression'", type)
+  method_regex_label <- sprintf("Import_%s_split_method_regex", type)
   
   input_data <- values[[data_label]]
   selected_col <- input[[column_name]]
   selected_data <- as.character(input_data[[selected_col]])
   
+  values$live_method_regex_label <- method_regex_label
+  
   showModal(modalDialog(
     title = "Split Test View",
     size = "l",
-    selectInput(inputId = "Import_row_nr", "Row", choices=1:dim(input_data)[1]),
+    fluidRow(
+      column(6,selectInput(inputId = "Import_row_nr", "Row", choices=1:dim(input_data)[1])),
+      conditionalPanel(
+        condition = display_condition,
+        column(6,
+          column(9,textInput(inputId = paste0(method_regex_label, "2"),label = "Regular Expression:", value = input[[method_regex_label]])),
+          column(3,actionButton("Import_live_split_test", "Test Split", style = "info", block=T))
+        )
+      )
+    ),
     fluidRow(
       box(title = "Original",status = "primary",width = "6",renderText(selected_data[as.integer(input$Import_row_nr)])),
       box(
@@ -211,6 +224,10 @@ split_test_view <- function(type) {
     easyClose = TRUE
   ))
 }
+
+observeEvent(input$Import_live_split_test,{
+  updateTextInput(session, values$live_method_regex_label, value = input[[paste0(values$live_method_regex_label, "2")]])
+})
 
 ##########################################################################################################
 #                                import csv                                                              #
