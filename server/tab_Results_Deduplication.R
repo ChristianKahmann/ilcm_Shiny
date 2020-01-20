@@ -144,7 +144,6 @@ observeEvent(input$delete_deduplication_results, {
     unlink(values$Deduplication_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_deduplication_results\",  "delete_button_deduplication_results_0")'))
-    delete_result_from_datbase(isolate(values$results_deduplication[selectedRow,]))
     values$reload_deduplication_result<-TRUE
   }
 })

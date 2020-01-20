@@ -147,7 +147,6 @@ observeEvent(input$delete_coocs_results, {
     unlink(values$Coocs_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_coocs_results\",  "delete_button_coocs_results_0")'))
-    delete_result_from_datbase(isolate(values$results_coocs[selectedRow,]))
     values$reload_coocs_result<-TRUE
   }
 })

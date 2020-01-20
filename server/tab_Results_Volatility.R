@@ -147,7 +147,6 @@ observeEvent(input$delete_volat_results, {
     unlink(values$Volat_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_volat_results\",  "delete_button_volat_results_0")'))
-    delete_result_from_datbase(isolate(values$results_volat[selectedRow,]))
     values$reload_volat_result<-TRUE
   }
 })

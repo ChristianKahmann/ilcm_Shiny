@@ -151,7 +151,6 @@ observeEvent(input$delete_parsing_results, {
     unlink(values$Parsing_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_parsing_results\",  "delete_button_parsing_results_0")'))
-    delete_result_from_datbase(isolate(values$results_parsing[selectedRow,]))
     values$reload_parsing_result<-TRUE
   }
 })

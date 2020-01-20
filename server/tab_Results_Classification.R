@@ -192,7 +192,6 @@ observeEvent(input$delete_classification_results, {
     unlink(values$Classification_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_classification_results\",  "delete_button_classification_results_0")'))
-    delete_result_from_datbase(isolate(values$results_classification[selectedRow,]))
     values$reload_classification_result<-TRUE
   }
 })

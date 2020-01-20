@@ -146,7 +146,6 @@ observeEvent(input$delete_vector_results, {
     unlink(values$Vector_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_vector_results\",  "delete_button_vector_results_0")'))
-    delete_result_from_datbase(isolate(values$results_vector[selectedRow,]))
     values$reload_vector_result<-TRUE
   }
 })
