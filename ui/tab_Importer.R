@@ -228,7 +228,8 @@ tabPanel("Importer",
                                                                                           ),
                                                                                           
                                                                                           shinyBS::bsButton("Import_csv_start_preprocess",label = "Start Preprocessing and save csv-files",style="info",icon=icon("tags")),
-                                                                                          shinyBS::bsButton("Import_csv_start_preprocess_and_write",label = "Start Preprocessing and directly wirte to DB",style="info",icon=icon("upload"))
+                                                                                          shinyBS::bsButton("Import_csv_start_preprocess_and_write",label = "Start Preprocessing and directly wirte to DB",style="info",icon=icon("upload")),
+                                                                                          shinyBS::bsButton("Import_csv_sanity_check",label = "Sanity Check",style="info",icon=icon("search"))
                                                                          )
                                                         )
                                                         
@@ -475,7 +476,8 @@ tabPanel("Importer",
                                                                                           ),
                                                                                           
                                                                                           shinyBS::bsButton("Import_mtf_start_preprocess",label = "Start Preprocessing and save csv-files",style="info",icon=icon("tags")),
-                                                                                          shinyBS::bsButton("Import_mtf_start_preprocess_and_write",label = "Start Preprocessing and directly wirte to DB",style="info",icon=icon("upload"))
+                                                                                          shinyBS::bsButton("Import_mtf_start_preprocess_and_write",label = "Start Preprocessing and directly wirte to DB",style="info",icon=icon("upload")),
+                                                                                          shinyBS::bsButton("Import_mtf_sanity_check",label = "Sanity Check",style="info",icon=icon("search"))
                                                                          )
                                                         )
                                        )
