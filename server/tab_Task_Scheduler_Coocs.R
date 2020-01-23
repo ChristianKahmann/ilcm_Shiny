@@ -121,10 +121,8 @@ output$Analysis_Parameter_CA<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.CA_use_custom_blacklist==true",
                               uiOutput(outputId = "CA_blacklist_UI")
-             )
-      ),
+                 ),
       column(1,
              checkboxInput(inputId = "CA_use_custom_whitelist",label = "use custom whitelist?",value = F)%>%
                shinyInput_label_embed(
@@ -135,10 +133,8 @@ output$Analysis_Parameter_CA<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.CA_use_custom_whitelist==true",
                               uiOutput(outputId = "CA_whitelist_UI")
-             )
-      )
+                   )
     ),
     fluidRow(
       conditionalPanel(condition = "input.CA_use_custom_whitelist==true || input.CA_keep_custom.length>=1",
@@ -293,31 +289,51 @@ output$Analysis_Parameter_CA<-renderUI({
 })
 
 
+# show whitelists stored in collections/whitelists
 output$CA_whitelist_UI<-renderUI({
-  values$invalidate_whitelists
   if(length(list.files("collections/whitelists/"))==0){
-    return(HTML("No whitelists available. You can create whitelists in the Scripts-Whitelists Tab"))
+    return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
   }
   else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "CA_whitelist",label = "Whitelists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "CA_whitelist",label = "Whitelists",
+                         choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
   }
 })
 
-output$CA_blacklist_UI<-renderUI({
-  values$invalidate_blacklists
-  if(length(list.files("collections/blacklists/"))==0){
-    return(HTML("No blacklists available. You can create blacklists in the Scripts-Blacklist Tab"))
+# show whitelist options when whitelist checkbox is TRUE
+observeEvent(ignoreNULL = T,input$CA_use_custom_whitelist,{
+  if(isTRUE(input$CA_use_custom_whitelist)){
+    shinyjs::show(id = "CA_whitelist")
   }
   else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "CA_blacklist",label = "Blacklists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
+    shinyjs::hide(id = "CA_whitelist")
+  }
+})
+
+# show blacklists stored in collections/blacklists
+output$CA_blacklist_UI<-renderUI({
+  if(length(list.files("collections/blacklists/"))==0){
+    return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
+  }
+  else{
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "CA_blacklist",label = "Blacklists",
+                         choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
+  }
+})
+
+# show blacklist options when blacklist checkbox is TRUE
+observeEvent(ignoreNULL = T,input$CA_use_custom_blacklist,{
+  if(isTRUE(input$CA_use_custom_blacklist)){
+    shinyjs::show(id = "CA_blacklist")
+  }
+  else{
+    shinyjs::hide(id = "CA_blacklist")
   }
 })
 

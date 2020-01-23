@@ -50,5 +50,17 @@ observeEvent(input$Save_Blacklist_confirm,{
   shiny::removeModal()
   path<-paste0("collections/blacklists/",input$Save_Blacklist_name,".txt")
   writeLines(input$remove_textarea,con=path)
-  values$invalidate_blacklists<-runif(1,0,1)
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "CL_blacklist",choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                                         selected=input$CL_blacklist,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "CA_blacklist",choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                                         selected=input$CL_blacklist,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "DE_blacklist",choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                                         selected=input$DE_blacklist,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "FE_blacklist",choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                                         selected=input$FE_blacklist,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "TM_blacklist",choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                                         selected=input$TM_blacklist,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "VA_blacklist",choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                                         selected=input$VA_blacklist,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+
 })

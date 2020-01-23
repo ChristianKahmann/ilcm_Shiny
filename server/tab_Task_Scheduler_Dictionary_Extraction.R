@@ -121,9 +121,7 @@ output$Analysis_Parameter_DE<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.DE_use_custom_blacklist==true",
-                              uiOutput(outputId = "DE_blacklist_UI")
-             )
+             uiOutput(outputId = "DE_blacklist_UI")
       ),
       column(1,
              checkboxInput(inputId = "DE_use_custom_whitelist",label = "use custom whitelist?",value = F)%>%
@@ -135,14 +133,12 @@ output$Analysis_Parameter_DE<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.DE_use_custom_whitelist==true",
-                              uiOutput(outputId = "DE_whitelist_UI")
-             )
+             uiOutput(outputId = "DE_whitelist_UI")
       )
     ),
     fluidRow(
       conditionalPanel(condition = "input.DE_use_custom_whitelist==true || input.DE_keep_custom.length>=1",
-                     
+                       
                        # column(1,
                        #        checkboxInput(inputId = "DE_whitelist_only",label = "Exclude all words apart from the whitelist entries",value = FALSE)%>%
                        #          shinyInput_label_embed(
@@ -152,11 +148,11 @@ output$Analysis_Parameter_DE<-renderUI({
                        #              )
                        #          )
                        # ),
-                     
-                              conditionalPanel(condition = "(input.DE_use_custom_whitelist==true || input.DE_keep_custom.length>=1) && (input.DE_ngram.includes('2') || input.DE_ngram.includes('3'))",
-                                               tags$br(),
-                                               tags$h5("Whitelist Options:"),
-                                               column(1,
+                       
+                       conditionalPanel(condition = "(input.DE_use_custom_whitelist==true || input.DE_keep_custom.length>=1) && (input.DE_ngram.includes('2') || input.DE_ngram.includes('3'))",
+                                        tags$br(),
+                                        tags$h5("Whitelist Options:"),
+                                        column(1,
                                                checkboxInput(inputId = "DE_whitelist_expand",label = "Expand whitelist?",value = FALSE)%>%
                                                  shinyInput_label_embed(
                                                    shiny_iconlink() %>%
@@ -164,8 +160,8 @@ output$Analysis_Parameter_DE<-renderUI({
                                                        title = "Should the words whitelist be expaned using n-grams?", placement = "right"
                                                      )
                                                  )
-                              )  
-                              
+                                        )  
+                                        
                        )
       )
     ),
@@ -283,23 +279,21 @@ output$Analysis_Parameter_DE<-renderUI({
       )
     ),
     fluidRow(
-                 column(6,
-                    conditionalPanel(condition='input.DE_use_reg_exp==false',
-                                     uiOutput("DE_dict_ui")
-                    ),
-                    conditionalPanel(condition='input.DE_use_reg_exp==true',
-                                     textInput(inputId = "DE_regexp_input",label = "regular expression")%>%
-                                       shinyInput_label_embed(
-                                         shiny_iconlink() %>%
-                                           bs_embed_popover(
-                                             title = "Define a regular expression, which matches a set of words, you would like to have aggregated counts for.
+      column(6,
+             uiOutput("DE_dict_ui"),
+             conditionalPanel(condition='input.DE_use_reg_exp==true',
+                              textInput(inputId = "DE_regexp_input",label = "regular expression")%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Define a regular expression, which matches a set of words, you would like to have aggregated counts for.
                             For example the regular expression '.{0,10}sustain.' will match words like: unsustainable, sustainable, sustainability,...",
-                                             placement = "right",
-                                             html="true"
-                                           )
-                                       )
-                    )
-                   )
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                )
+             )
+      )
     ),
     fluidRow(
       column(1,
@@ -353,44 +347,79 @@ output$Analysis_Parameter_DE<-renderUI({
   )
 })
 
+# radio Buttons for dictionaries found in /collections/dictionaries
 output$DE_dict_ui<-renderUI({
-  values$update_dicts
-  shinyWidgets::prettyRadioButtons(inputId = "DE_dict",label = "Dictionaries",
-                                   choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
-                                   fill=T,animation = "tada",selected = NULL,inline = T)%>%
-    bs_embed_popover(
-      title = "Choose one of the existing dictionaries. You can add and modify dictionaries in Scripts - Dictionaries",
-      placement = "right",
-      html="true"
+  if(length(list.files("collections/dictionaries//"))==0){
+    return(HTML("No dictionaries available. You can create dictionaries in the Scripts-Dictionaries Tab"))
+  }
+  else{
+    return((
+      prettyRadioButtons(inputId = "DE_dict",label = "Dictionaries",
+                         choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
     )
+    )
+  }
 })
 
 
+# show dictionaries options when mode = "Produce 50 new active learning examples
+# and use dictionary checkbox is set to TRUE
+observe({
+  if(isFALSE(input$DE_use_reg_exp)){
+    shinyjs::show(id = "DE_dict")
+  }
+  else{
+    shinyjs::hide(id="DE_dict")
+  }
+})
+
+
+# show whitelists stored in collections/whitelists
 output$DE_whitelist_UI<-renderUI({
-  values$invalidate_whitelists
   if(length(list.files("collections/whitelists/"))==0){
     return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
   }
   else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "DE_whitelist",label = "Whitelists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "DE_whitelist",label = "Whitelists",
+                         choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
   }
 })
 
-output$DE_blacklist_UI<-renderUI({
-  values$invalidate_blacklists
-  if(length(list.files("collections/blacklists/"))==0){
-    return(HTML("No blacklists available. You can create blacklists in the Scripts-Blacklist Tab"))
+# show whitelist options when whitelist checkbox is TRUE
+observeEvent(ignoreNULL = T,input$DE_use_custom_whitelist,{
+  if(isTRUE(input$DE_use_custom_whitelist)){
+    shinyjs::show(id = "DE_whitelist")
   }
   else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "DE_blacklist",label = "Blacklists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
+    shinyjs::hide(id = "DE_whitelist")
+  }
+})
+
+# show blacklists stored in collections/blacklists
+output$DE_blacklist_UI<-renderUI({
+  if(length(list.files("collections/blacklists/"))==0){
+    return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
+  }
+  else{
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "DE_blacklist",label = "Blacklists",
+                         choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
+  }
+})
+
+# show blacklist options when blacklist checkbox is TRUE
+observeEvent(ignoreNULL = T,input$DE_use_custom_blacklist,{
+  if(isTRUE(input$DE_use_custom_blacklist)){
+    shinyjs::show(id = "DE_blacklist")
+  }
+  else{
+    shinyjs::hide(id = "DE_blacklist")
   }
 })
 

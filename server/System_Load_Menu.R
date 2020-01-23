@@ -1,23 +1,34 @@
 
+# show select input with the found corpora in the database
 output$datasets_avaiable<-renderUI({
+  # invalidate when values$import_filed_changed changes
+  # @values$import_files_changed reactive variable that invalidates if the number of files in "data_import_processed_data" changes
   values$import_files_changed
+  # connect to database
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
   RMariaDB::dbBegin(conn = mydb)
   RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
   RMariaDB::dbSendStatement(mydb, 'SET SQL_SAFE_UPDATES = 0;')
+  # get datasets from database
   datasets=RMariaDB::dbGetQuery(mydb,"SELECT DISTINCT dataset FROM ilcm.metadata_names;")
   RMariaDB::dbCommit(mydb)
+  # disconnect from database
   RMariaDB::dbDisconnect(mydb)
-  
+  # invalidate when values$update_datasets_avaiable changed
+  # @values$update_datasets_avaiable changes whenever a dataset is successfully imported to the database
   values$update_datasets_avaiable
+  # @values$datasets_available stores the available dataset abbreviations
   values$datasets_available<-datasets[,1]
+  # select input with the available datasets as choices
   tags$div(
     selectizeInput(inputId = "dataset",label = tags$p("which corpus?",style="color:white;"),choices = datasets[,1],width = "100%",multiple=T,selected=datasets[1,1]),
     id="select_sidebar")
 })
 
 
+# show informations icon in header with current user and app version
 output$dropdown_info<-renderMenu({
+  # only show icon when @ values$user is set
   validate(
     need(!is.null(values$user),message=FALSE)
   )

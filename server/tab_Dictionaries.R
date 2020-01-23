@@ -133,7 +133,12 @@ observeEvent(input$dict_save_really,{
           colnames(df)<-values$dict_headers
           dict<-DF_to_Dict(df)
           save(dict,file=paste0("collections/dictionaries/",input$dict_name,".RData"))
-          values$update_dicts<-runif(1,0,1)
+          shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "CL_dict",choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
+                                                 selected=input$CL_dict,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+          shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "DE_dict",choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
+                                                 selected=input$DE_dict,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+          
+          
           shinyWidgets::sendSweetAlert(session=session,title = "Dictionary saved",type = "success")
         }
       }

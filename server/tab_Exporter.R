@@ -73,7 +73,7 @@ output$export_results_extra<-renderUI({
   )
   L<-NULL
   if(input$export_results_analysis=="topic-model"){
-     L<-tagList(
+    L<-tagList(
       downloadButton(outputId = "export_results_special_topic_theta",label = "theta"),
       downloadButton(outputId = "export_results_special_topic_phi",label = "phi")
     )
@@ -83,7 +83,7 @@ output$export_results_extra<-renderUI({
 
 output$export_results_special_topic_theta<-downloadHandler(
   filename = function(){
-      paste0(input$export_results_resultset,"_theta",".csv")
+    paste0(input$export_results_resultset,"_theta",".csv")
   },
   content = function(file){
     load(paste0(input$export_results_resultset,"/data_TM.RData"))
@@ -106,7 +106,7 @@ output$export_results_special_topic_phi<-downloadHandler(
 
 
 #get annotations from database and render them in a datatable
-output$export_annotations<-DT::renderDataTable({
+output$export_annotations<-renderDataTable({
   input$export_update_annotations
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
   rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
@@ -139,7 +139,7 @@ output$export_annotations<-DT::renderDataTable({
                   dom='Bfrtip',
                   buttons = c('copy', 'csv', 'excel', 'print')
                 )
-                )
+  )
 },server = F)
 
 
@@ -159,6 +159,7 @@ volumes <- c('Results'="collections/results",
              'Rest'="."
 )
 shinyFileChoose(input, 'file', roots=volumes, session=session)
+
 output$filepaths <- renderPrint({
   validate(need(dim(parseFilePaths(volumes, input$file))[1]>0,message=F))
   parseFilePaths(volumes, input$file)})
@@ -310,4 +311,3 @@ output$download_export_all <- downloadHandler(
     }
   }
 )
-

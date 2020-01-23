@@ -91,7 +91,7 @@ output$Analysis_Parameter_CL<-renderUI({
                    )
                )),
       column(1,
-             checkboxInput(inputId = "CL_remove_hyphenation",label = "Remove Hyphenation?",value = T)%>%
+             checkboxInput(inputId = "CL_remove_hyphenation",label = "Remove Hyphenation?",value = F)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
@@ -110,9 +110,7 @@ output$Analysis_Parameter_CL<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.CL_use_custom_blacklist==true",
-                              uiOutput(outputId = "CL_blacklist_UI")
-             )
+             uiOutput(outputId = "CL_blacklist_UI")
       ),
       column(1,
              checkboxInput(inputId = "CL_use_custom_whitelist",label = "use custom whitelist?",value = F)%>%
@@ -124,13 +122,12 @@ output$Analysis_Parameter_CL<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.CL_use_custom_whitelist==true",
-                              uiOutput(outputId = "CL_whitelist_UI")
-             )
+             uiOutput(outputId = "CL_whitelist_UI")
+             
       )
     ),
     fluidRow(
-      conditionalPanel(condition = "input.CL_use_custom_whitelist==true || input.CL_keep_custom.length>=1",
+      conditionalPanel(condition = "input.CL_use_custom_whitelist==true || document.getElementById('CL_keep_custom').value.length>=1",
                        tags$br(),
                        tags$h5("Whitelist Options:"),
                        column(1,
@@ -143,7 +140,7 @@ output$Analysis_Parameter_CL<-renderUI({
                                 )
                        ),
                        column(1,
-                              conditionalPanel(condition = "(input.CL_use_custom_whitelist==true || input.CL_keep_custom.length>=1) && (input.CL_ngram.includes('2') || input.CL_ngram.includes('3'))",
+                              conditionalPanel(condition = "(input.CL_use_custom_whitelist==true || document.getElementById('CL_keep_custom').value.length>=1) && (input.CL_ngram.includes('2') || input.CL_ngram.includes('3'))",
                                                checkboxInput(inputId = "CL_whitelist_expand",label = "Expand whitelist?",value = FALSE)%>%
                                                  shinyInput_label_embed(
                                                    shiny_iconlink() %>%
@@ -248,7 +245,7 @@ output$Analysis_Parameter_CL<-renderUI({
       )
       
     ),
-    #specific parameters
+    # specific parameters
     tags$hr(),
     tags$h4("Classification parameters"),
     fluidRow(
@@ -257,7 +254,7 @@ output$Analysis_Parameter_CL<-renderUI({
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
-                     title = "What is the context unit for this classification? Documentwise or sentencewise classification are the available options so far.",
+                     title = "What is the context unit for this classification? Document-wise or sentence-wise classification are the available options so far.",
                      placement = "right",
                      html="true"
                    )
@@ -341,9 +338,7 @@ output$Analysis_Parameter_CL<-renderUI({
              )
       ),
       column(7,
-             conditionalPanel(condition='input.CL_use_dict==true && input.CL_Mode=="Produce 50 new active learning examples"',
-                              uiOutput("CL_dict_ui")
-             )
+             uiOutput("CL_dict_ui")
       )
     ),
     bsButton(inputId = "CL_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
@@ -394,44 +389,81 @@ output$CL_UI_Category<-renderUI({
   }
 })
 
+
+# radio Buttons for dictionaries found in /collections/dictionaries
 output$CL_dict_ui<-renderUI({
-  values$update_dicts
-  shinyWidgets::prettyRadioButtons(inputId = "CL_dict",label = "Dictionaries",
-                                   choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
-                                   fill=T,animation = "tada",selected = NULL,inline = T)  
-  
+  if(length(list.files("collections/dictionaries//"))==0){
+    return(HTML("No dictionaries available. You can create dictionaries in the Scripts-Dictionaries Tab"))
+  }
+  else{
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "CL_dict",label = "Dictionaries",
+                         choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    )
+    )
+  }
 })
 
 
+# show dictionaries options when mode = "Produce 50 new active learning examples
+# and use dictionary checkbox is set to TRUE
+observe({
+  if(isTRUE(input$CL_use_dict) && input$CL_Mode=="Produce 50 new active learning examples"){
+    shinyjs::show(id = "CL_dict")
+  }
+  else{
+    shinyjs::hide(id="CL_dict")
+  }
+})
 
+# show whitelists stored in collections/whitelists
 output$CL_whitelist_UI<-renderUI({
-  values$invalidate_whitelists
   if(length(list.files("collections/whitelists/"))==0){
     return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
   }
   else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "CL_whitelist",label = "Whitelists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "CL_whitelist",label = "Whitelists",
+                         choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
   }
 })
 
-output$CL_blacklist_UI<-renderUI({
-  values$invalidate_blacklists
-  if(length(list.files("collections/blacklists/"))==0){
-    return(HTML("No blacklists available. You can create blacklists in the Scripts-Blacklist Tab"))
+# show whitelist options when whitelist checkbox is TRUE
+observeEvent(ignoreNULL=T,input$CL_use_custom_whitelist,{
+  if(isTRUE(input$CL_use_custom_whitelist)){
+    shinyjs::show(id = "CL_whitelist")
   }
   else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "CL_blacklist",label = "Blacklists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
+    shinyjs::hide(id = "CL_whitelist")
   }
 })
 
+# show blacklists stored in collections/blacklists
+output$CL_blacklist_UI<-renderUI({
+  if(length(list.files("collections/blacklists/"))==0){
+    return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
+  }
+  else{
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "CL_blacklist",label = "Blacklists",
+                         choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
+  }
+})
+
+# show blacklist options when blacklist checkbox is TRUE
+observeEvent(ignoreNULL=T,input$CL_use_custom_blacklist,{
+  if(isTRUE(input$CL_use_custom_blacklist)){
+    shinyjs::show(id = "CL_blacklist")
+  }
+  else{
+    shinyjs::hide(id = "CL_blacklist")
+  }
+})
 
 
 

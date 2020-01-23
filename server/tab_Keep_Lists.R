@@ -50,5 +50,16 @@ observeEvent(input$Save_Whitelist_confirm,{
   shiny::removeModal()
   path<-paste0("collections/whitelists/",input$Save_Whitelist_name,".txt")
   writeLines(input$keep_textarea,con=path)
-  values$invalidate_whitelists<-runif(1,0,1)
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "CL_whitelist",choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                                         selected=input$CL_whitelist,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "CA_whitelist",choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                                         selected=input$CA_whitelist,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "DE_whitelist",choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                                         selected=input$DE_whitelist,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "FE_whitelist",choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                                         selected=input$FE_whitelist,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "TM_whitelist",choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                                         selected=input$TM_whitelist,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
+  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "VA_whitelist",choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                                         selected=input$VA_whitelist,prettyOptions = list(fill=T,animation = "tada",shape="round",plain=T),inline = T)
 })

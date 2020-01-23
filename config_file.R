@@ -3,7 +3,7 @@ url<-'http://0.0.0.0:8983/solr/iLCM/select/'
 update_solr_url<-'0.0.0.0'
 update_solr_port<-'8983'
 host<-'0.0.0.0'
-version<-"0.9.8"
+version<-"0.993"
 db_port='3306'
 max_upload_file_size=35
 #docker##
@@ -35,4 +35,13 @@ credentials = data.frame(
   permission  = c("basic"), 
   stringsAsFactors = F
 )
+
+# show Login Page?!
+# specify output object thats need to rendered before loading page gets hidden
+hide_login=TRUE
+if(hide_login==TRUE){
+  waiter_wait_object<-"datasets_avaiable"
+}else{
+  waiter_wait_object<-"body_UI"
+}
 

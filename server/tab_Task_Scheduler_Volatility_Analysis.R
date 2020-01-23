@@ -8,7 +8,7 @@ output$Analysis_Parameter_VA<-renderUI({
       column(1,
              selectInput(inputId = "VA_baseform",label = "Baseform Reduction",choices = c("lemma","stemming","none"),selected = "none")#,
              #shinyBS::bsPopover(id = "VA_baseform", title = "Specify whether and how to do baseform reduction. The options are stemming, lemmatization or no baseorm reduction.",
-            #                    content = '<a href="https://www.google.com/">Google Homepage</a>',placement = "right",trigger = "hover",list(container = "body"))
+             #                    content = '<a href="https://www.google.com/">Google Homepage</a>',placement = "right",trigger = "hover",list(container = "body"))
              %>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -23,7 +23,7 @@ output$Analysis_Parameter_VA<-renderUI({
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
-                   ,html=T)
+                     ,html=T)
                )),
       column(1,
              selectInput(inputId = "VA_ngram",label = "N-grams",choices = c(1,2,3),selected = 1,multiple = T)%>%
@@ -121,9 +121,7 @@ output$Analysis_Parameter_VA<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.VA_use_custom_blacklist==true",
-                              uiOutput(outputId = "VA_blacklist_UI")
-             )
+             uiOutput(outputId = "VA_blacklist_UI")
       ),
       column(1,
              checkboxInput(inputId = "VA_use_custom_whitelist",label = "use custom whitelist?",value = F)%>%
@@ -135,9 +133,7 @@ output$Analysis_Parameter_VA<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.VA_use_custom_whitelist==true",
-                              uiOutput(outputId = "VA_whitelist_UI")
-             )
+             uiOutput(outputId = "VA_whitelist_UI")
       )
     ),
     fluidRow(
@@ -312,7 +308,7 @@ output$Analysis_Parameter_VA<-renderUI({
                      placement = "right"
                    )
                ))
-      ),
+    ),
     fluidRow(
       column(2,
              conditionalPanel(condition='input.VA_method=="sig_simple" || input.VA_method=="sig_cosine"',
@@ -327,8 +323,8 @@ output$Analysis_Parameter_VA<-renderUI({
                                       placement = "right"
                                     )
                                 )
-                              )
-             ),
+             )
+      ),
       column(2,
              selectInput(inputId = "VA_POS_TYPES",label = "POS-Types",
                          choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X") ,selected = "all",multiple = T)%>%
@@ -359,33 +355,7 @@ output$Analysis_Parameter_VA<-renderUI({
 })
 
 
-output$VA_whitelist_UI<-renderUI({
-  values$invalidate_whitelists
-  if(length(list.files("collections/whitelists/"))==0){
-    return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
-  }
-  else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "VA_whitelist",label = "Whitelists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
-  }
-})
 
-output$VA_blacklist_UI<-renderUI({
-  values$invalidate_blacklists
-  if(length(list.files("collections/blacklists/"))==0){
-    return(HTML("No blacklists available. You can create blacklists in the Scripts-Blacklist Tab"))
-  }
-  else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "VA_blacklist",label = "Blacklists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
-  }
-})
 
 
 #start volatility analysis script, if submit button is clicked
@@ -501,6 +471,56 @@ observeEvent(input$VA_Submit_Script,{
     }
   }
 })
+
+
+# show whitelists stored in collections/whitelists
+output$VA_whitelist_UI<-renderUI({
+  if(length(list.files("collections/whitelists/"))==0){
+    return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
+  }
+  else{
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "VA_whitelist",label = "Whitelists",
+                         choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
+  }
+})
+
+# show whitelist options when whitelist checkbox is TRUE
+observeEvent(ignoreNULL = T,input$VA_use_custom_whitelist,{
+  if(isTRUE(input$VA_use_custom_whitelist)){
+    shinyjs::show(id = "VA_whitelist")
+  }
+  else{
+    shinyjs::hide(id = "VA_whitelist")
+  }
+})
+
+# show blacklists stored in collections/blacklists
+output$VA_blacklist_UI<-renderUI({
+  if(length(list.files("collections/blacklists/"))==0){
+    return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
+  }
+  else{
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "VA_blacklist",label = "Blacklists",
+                         choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
+  }
+})
+
+# show blacklist options when blacklist checkbox is TRUE
+observeEvent(ignoreNULL = T,input$VA_use_custom_blacklist,{
+  if(isTRUE(input$VA_use_custom_blacklist)){
+    shinyjs::show(id = "VA_blacklist")
+  }
+  else{
+    shinyjs::hide(id = "VA_blacklist")
+  }
+})
+
 
 
 #start script after continue anyway is clicked even though pruning settings seem to be wrong

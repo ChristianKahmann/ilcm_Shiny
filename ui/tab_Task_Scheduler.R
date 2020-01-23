@@ -27,13 +27,24 @@ tabPanel("Task Scheduler",
                                                      selected = "Cooccurrence Analysis",multiple = F)
                                       
                                ),
-                               column(1,
-                                      checkboxInput(inputId = "use_custom_script",label = "use custom script?",value = FALSE)
-                               ),
-                               column(3,
-                                      conditionalPanel(condition = 'input.use_custom_script==true',
-                                                       uiOutput(outputId = "custom_script_options_UI")
-                                      )
+                               conditionalPanel(condition="input.analysis_selected!='Download Collection as CSV' && input.analysis_selected!='Save Collection as token object' && 
+                                       input.analysis_selected!='Save Collection as meta object'",
+                                                column(1,
+                                                       checkboxInput(inputId = "use_custom_script",label = "use custom script?",value = FALSE)
+                                                ),
+                                                column(2,
+                                                       conditionalPanel(condition = 'input.use_custom_script==true',
+                                                                        uiOutput(outputId = "custom_script_options_UI")
+                                                       )
+                                                ),
+                                                column(1,
+                                                       checkboxInput(inputId="use_parameter_preset",label="Use a saved parameter setting?",value=F)
+                                                ),
+                                                column(2,
+                                                       conditionalPanel(condition = 'input.use_parameter_preset==true',
+                                                                        uiOutput(outputId = "parameter_preset_UI")
+                                                       )
+                                                )
                                )
                       ),
                       conditionalPanel(condition="input.analysis_selected!='Download Collection as CSV' && input.analysis_selected!='Save Collection as token object' && 

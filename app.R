@@ -1,13 +1,11 @@
+# load required libraries
 library(shiny)
 library(shinyFiles)
 library(data.table)
 library(stringr)
 library(shinydashboard)
-#library(semantic.dashboard)
 library(dashboardthemes)
 library(shinythemes)
-library(shinyTree)
-library(shinyTable)
 library(rhandsontable)
 library(readtext)
 library(tools)
@@ -41,24 +39,12 @@ library(shinyjs)
 library(promises)
 library(future)
 library(shinyjqui)
-#library(Factoshiny)
-#library(FactoMineR)
+library(waiter)
+# tell library future how to handle requests; used when solr updates are started from inside the app in order to be able to continue using the app and not having to wait until the solr update is finished
 plan(multiprocess)
-#killDbConnections <- function () {
-#  
-#  all_cons <- dbListConnections(MySQL())
-#  
-#  print(all_cons)
-#  
-#  for(con in all_cons)
-#    +  dbDisconnect(con)
-#  
-#  print(paste(length(all_cons), " connections killed."))
-#  
-#}
-#killDbConnections()
-options(stringsAsFactors = FALSE)
 
+options(stringsAsFactors = FALSE)
+# load additional functions
 source("global/createWordcloud.R")
 source("global/add color tag.R")
 source("global/number_of_dates.R")
@@ -86,18 +72,21 @@ source("global/get_token_from_db.R")
 source("global/get_metadata_from_db.R")
 source("global/deduplication_decision.R")
 source("global/task_id_functions.R")
+source("global/update-input.R")
+# load the available themes
 source("www/ilcm_dashboard_theme.R")
+# load the current settings
 source("config_file.R")
-
+# load the UI for the login page
 source("ui/tab_loginPage.R")
 
 
-
+# specify the appearance of the app depending on setting in config file
 if(look=="fancy"){
   navbarstyle="spacelab"
-  #navbarstyle="paper"
+  # navbarstyle="paper"
   dashboardstyle=ilcm_dashboard_theme_099
-  #dashboardstyle=NULL
+  # dashboardstyle=NULL
 }
 if(look=="scientific"){
   navbarstyle="cerulean"
@@ -105,49 +94,61 @@ if(look=="scientific"){
 }
 
 
-
+# don't use scientific notation like 1e+11 instead of 100000000000
 options(scipen=999)
 
+# definition of App UI; use of a dashboard layout with header, sidebar and body
 ui <- dashboardPage(
+  # app header
   dashboardHeader(title = "🅸🅻🅲🅼",titleWidth="200px",
+                  # button which opens options modal
                   tags$li(actionLink("openOptionsModal", label = "", icon = icon("cog")),class = "dropdown"),
+                  # button which open informations showing current app version and user
                   tags$li(dropdownMenuOutput(outputId = "dropdown_info"),class = "dropdown"),
+                  # button which lets user log out and send him back to login page
                   tags$li(shinyjs::hidden(actionLink(inputId = "Logout",label = "",icon = icon("sign-out"))),class = "dropdown")
   ),
+  # app sidebar
   dashboardSidebar(width="200px",
+                   # UI for sidebar panel
                    uiOutput("sidebarpanel_UI")
   ),
+  # app main body
   dashboardBody(
+    #show loading screen on startup
+    waiter::use_waiter(),
+    #use specified dashboardstyle
     dashboardstyle,
+    # enable shinyjs
     shinyjs::useShinyjs(),
+    # add extra function to shinyjs to reset the count value of a button
     shinyjs::extendShinyjs(text = "shinyjs.resetClick = function() { Shiny.onInputChange('.clientValue-plotly_click-A', 'null'); }"),
+    # add extra function to shinyjs to get type of input to update this input when using a parameter preset in task scheduler
+    shinyjs::extendShinyjs("www/app-shinyjs.js", functions = c("getInputType")),
+    # use custom css to style certain elements
     tags$head(
       tags$link(rel="stylesheet",type="text/css",href="custom.css")
     ),
-    tags$style(HTML('.popover-title {color:black;}
-                               .popover-content {color:black;}
-                               .content-wrapper {z-index:auto;}')),
-    tags$head(tags$script('
-                        var dimension = [0, 0];
-                        $(document).on("shiny:connected", function(e) {
-                        dimension[0] = window.innerWidth;
-                        dimension[1] = window.innerHeight;
-                        Shiny.onInputChange("dimension", dimension);
-                        });
-                        $(window).resize(function(e) {
-                        dimension[0] = window.innerWidth;
-                        dimension[1] = window.innerHeight;
-                        Shiny.onInputChange("dimension", dimension);
-                        });
-                        ')),
+    # UI for body
     uiOutput("body_UI")
-  )
+  ),
+  # Hide the loading message when datawaiter_wait_object is rendered
+  # @ waiter_wait_object: specified in config_file depending on @ hide_login 
+  waiter::hide_waiter_on_drawn(waiter_wait_object)
 )
-
-
-
 server <- function(input, output, session) {
+  # specify loading page on app startup
+  waiter::show_waiter(
+    color = "#272B30",
+    div(
+      style = "color:#FFFFFF;",
+      waiter::spin_cube_grid(),
+      "Starting your iLCM instance"
+    )
+  )
+  # create main reactive value called values
   values<-reactiveValues()
+  # specify inital reactive values from entries in config file
   values$solr_url<-url
   values$update_solr_url<-update_solr_url
   values$update_solr_port<-update_solr_port
@@ -156,11 +157,12 @@ server <- function(input, output, session) {
   values$user<-"unknown"
   values$logged_in<-FALSE
   options(shiny.maxRequestSize=max_upload_file_size*1024^2) 
-  
-  login<-TRUE
-  USER <- reactiveValues(login = login)
+
+  USER<- reactiveValues(login = hide_login)
+  # when the app load start with the Explorer Tab selected
   shiny::updateTabsetPanel(session = session,inputId = "tabs",selected = "Explorer")
   
+  # if login Button is clicked, start the login mechanism
   observeEvent(input$login,{ 
     if (USER$login == FALSE) {
       if (!is.null(input$login)) {
@@ -189,17 +191,20 @@ server <- function(input, output, session) {
     }    
   })
   
+  # button to log out
   output$logoutbtn <- renderUI({
     req(USER$login)
     actionLink(inputId = "Logout",label = "",icon = icon("sign-out"))
   })
   
+  # if logout button is clicked set login to FALSE
   observeEvent(input$Logout,{
     shinyjs::hide(id = "Logout")
     USER$login<-FALSE
     values$user<-"unknown"
   })
   
+  #source the server parts of the app
   source(file.path("server","tab_body_overall.R"),local = T)$value
   source(file.path("server","tab_sidebar_overall.R"),local = T)$value
   source(file.path("server","System_Load_Menu.R"),local = T)$value
@@ -235,16 +240,12 @@ server <- function(input, output, session) {
   source(file.path("server","tab_Detailed_Sub.R"),local=T)$value
   source(file.path("server","tab_Custom_Sub.R"),local=T)$value
   source(file.path("server","tab_Exporter.R"),local=T)$value
+
   
-  
-  #source(file.path("server","tab_Details_Facto_CA.R"),local=T)$value
-  #source(file.path("server","tab_Details_Facto_FAMD.R"),local=T)$value
-  #source(file.path("server","tab_Details_Facto_HCPC.R"),local=T)$value
-  #source(file.path("server","tab_Details_Facto_PCA.R"),local=T)$value
-  #source(file.path("server","tab_ORC.R"),local=T)$value
+  # allow reconnect to app if connection got disturbed
   session$allowReconnect(TRUE)
-  
 }
 
-shinyApp(ui, server)
+# start the app
+shiny::shinyApp(ui,server)
 
