@@ -152,7 +152,7 @@ prepare_token_object<-function(token,parameters){
   })
   try({
     if(!is.element(el = "all",set = parameters$reduce_NER)){
-      if(consolidate_entities==F){
+      if(parameters$consolidate_entities==F){
         log_to_file(message = "&emsp; Consolidating...due to NER Filter settings",file = logfile)
         spacyr::spacy_initialize()
         token<-spacyr::entity_consolidate(token)
