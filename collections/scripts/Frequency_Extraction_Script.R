@@ -63,7 +63,7 @@ error<-try(expr = {
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
   
-  
+
   #calculating dtm
   log_to_file(message = "<b>Step 6/8: Calculating DTM</b>",file = logfile)
   dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
