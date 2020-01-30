@@ -25,6 +25,18 @@ output$download_phi<-downloadHandler(
 )  
 
 
+#link downloadbutton for lda vis in Topic Models Tab
+output$download_ldavis<-downloadHandler(
+  filename = function() {
+    paste('LDAvis-', Sys.Date(), '.zip', sep='')
+  },
+  content = function(con) {
+    #browser()
+    LDAvis::serVis(json = values$tm_json,open.browser = F,out.dir = "collections/tmp/ldavis/",encoding = "UTF-8")
+    zip::zipr(zipfile = "collections/tmp/ldavis.zip",files = "collections/tmp/ldavis/",recurse = T,include_directories=F)
+    file.copy(from = "collections/tmp/ldavis.zip",to = con)
+  }
+)  
 
 
 
@@ -48,7 +60,6 @@ output$TM_LDAvis <- LDAvis::renderVis({
   }
 })
 
-#render wordclouds and sparklines in topic modeling parameters tab
 observeEvent(values$tm_phi,{
   relevance<-calculate_topic_relevance(lambda=0.3,phi=values$tm_phi,theta=values$tm_theta,doc.length=values$tm_doc.length)
   values$tm_relevance<-relevance
@@ -316,7 +327,7 @@ output$TM_stm_visu_perspectives <- renderPlot({
   )
   selectedTopic1 <- as.integer(input$tm_stm_visu_perspectives_topic1)
   selectedTopic2 <- as.integer(input$tm_stm_visu_perspectives_topic2)
-
+  
   # contentFormula in stm model set
   if(nchar(values$tm_stm_parameters_contentFormula)>0){
     # use additional parameters tm_stm_visu_perspectives_covariateValue1 and tm_stm_visu_perspectives_covariateValue1
@@ -351,7 +362,7 @@ output$TM_stm_visu_hist <- renderPlot({
 # topic correlation
 observeEvent(input$tm_stm_visu_topicCorr_start,{
   values$tm_stm_visu_topicCorr_show <- TRUE
-  })
+})
 
 output$TM_stm_visu_topicCorr_show<-reactive({
   return(values$tm_stm_visu_topicCorr_show)
@@ -367,7 +378,7 @@ outputOptions(output, "TM_stm_visu_topicCorr_show", suspendWhenHidden = FALSE)
 
 #estimateEffect
 observeEvent(input$tm_stm_visu_estimateEffect_calcButton,{
-
+  
   #convert to factors and numeric
   metaVarsToConvertToFactor <- input$tm_stm_visu_estimateEffect_metaVarsToConvertToFactor
   metaVarsToConvertToNumeric <- input$tm_stm_visu_estimateEffect_metaVarsToConvertToNumeric
@@ -380,17 +391,17 @@ observeEvent(input$tm_stm_visu_estimateEffect_calcButton,{
     metaName <- metaVarsToConvertToNumeric[i]
     values$tm_stm_metaDataConverted[[metaName]] <-as.numeric(values$tm_stm_metaData[[metaName]])
   }
-
+  
   # read formula and estimate effect
   values$tm_stm_visu_estimateEffect_calcParam_formula <- NULL
   if(is.null(input$tm_stm_visu_estimateEffect_calcParam_formula) || nchar(input$tm_stm_visu_estimateEffect_calcParam_formula)==0) {
     shinyWidgets::sendSweetAlert(type = "warning",session = session,title = "You have to provide a formula!")
   }
   else{
-      values$tm_stm_visu_estimateEffect_calcParam_formula <- as.formula(input$tm_stm_visu_estimateEffect_calcParam_formula)
-      values$tm_stm_visu_estimateEffectResult  <- estimateEffect(formula = values$tm_stm_visu_estimateEffect_calcParam_formula, stmobj = values$tm_stm_model, metadata = values$tm_stm_metaDataConverted)
-      values$tm_stm_visu_estimateEffect_show <- TRUE
-      values$tm_stm_visu_estimateEffect_plot_show <- FALSE
+    values$tm_stm_visu_estimateEffect_calcParam_formula <- as.formula(input$tm_stm_visu_estimateEffect_calcParam_formula)
+    values$tm_stm_visu_estimateEffectResult  <- estimateEffect(formula = values$tm_stm_visu_estimateEffect_calcParam_formula, stmobj = values$tm_stm_model, metadata = values$tm_stm_metaDataConverted)
+    values$tm_stm_visu_estimateEffect_show <- TRUE
+    values$tm_stm_visu_estimateEffect_plot_show <- FALSE
   }
 })
 
@@ -416,7 +427,7 @@ output$TM_stm_visu_estimateEffect_plot_show<-reactive({
 })
 
 output$TM_stm_visu_estimateEffect_plot <- renderPlot({
-
+  
   plottingMethod <- input$tm_stm_visu_estimateEffect_plot_method
   if(plottingMethod =="difference"){
     validate(
@@ -430,7 +441,7 @@ output$TM_stm_visu_estimateEffect_plot <- renderPlot({
     plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod, 
                         cov.value1 = covValue1, cov.value2 = covValue2,
                         xlab = paste("More ", covValue2, " ... More ", covValue1)
-                        )
+    )
     
   }else if(plottingMethod =="continuous"){
     
@@ -448,16 +459,16 @@ output$TM_stm_visu_estimateEffect_plot <- renderPlot({
       minValueToUse <- format(as.Date(minValueBeforeConversion,"%Y-%m-%d"),"%Y-%m-01") # get first day in given month
       maxValueToUse <- as.Date(format(as.Date(format(as.Date(maxValueBeforeConversion,"%Y-%m-%d"), "%Y-%m-01"), "%Y-%m-%d")+31,"%Y-%m-01"), "%Y-%m-%d")-1 # get the last day of given month
       monthseq <- seq(from = as.Date(minValueToUse), to = as.Date(maxValueToUse), by = "month")
-
+      
       plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod, xaxt = "n")
       axis.Date(1, at=monthseq, format = "%Y-%m")
-            
+      
     }else{
       #TODO: consider using original values as labels for x axes ticks instead of converted numeric ones similar to date above
       plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod)
       
     }
-   
+    
   }else{ # plotting method == pointestimate
     plot.estimateEffect(x = values$tm_stm_visu_estimateEffectResult, covariate = input$tm_stm_visu_estimateEffect_plot_covariate, topics = input$tm_stm_visu_estimateEffect_plot_topics, method = plottingMethod)
     
@@ -935,7 +946,7 @@ observe({
   
   eval_list <- sample(c(top_words_setsize, intruder))
   intruder_true_position <- which(eval_list == intruder)
-
+  
   values$word_intrusion_results<-rbind(isolate(values$word_intrusion_results),c(random_topic_number,intruder_true_position,0))
   values$TM_Coherence_word_intrusion_words<-eval_list
 })
@@ -1992,6 +2003,9 @@ output$TM_validation_UI<-renderUI({
   validate(
     need(
       !is.null(input$Det_TM_validation_document),message=FALSE
+    ),
+    need(
+      input$Det_TM_validation_document!="",message="please choose a document"
     )
   )
   identifier<-stringr::str_split(string = input$Det_TM_validation_document,pattern = "_",simplify = T)
@@ -2015,29 +2029,90 @@ output$TM_validation_UI<-renderUI({
   }
   token<-cbind(token,features)
   token<-cbind(1:dim(token)[1],token)
-  data<-values$tm_phi[input$Det_TM_validation_topic,]
-  max<-log(max(values$tm_phi))
+  phi<-values$tm_phi
   
-  data<-data.frame(features=names(data),weight=data)
+  
+  if(input$Det_TM_validation_relevance_measure=="estimated relative word frequency per topic"){
+    data<-values$tm_rel_counts
+    data<-do.call(cbind,lapply(X = 1:dim(data)[2],FUN = function(x){
+      data[,x]/sum(data[,x])
+    })
+    )
+    data<-round(data,digits = 2)
+    colnames(data)<-colnames(values$tm_rel_counts)
+    data<-data[input$Det_TM_validation_topic,intersect(unique(features),colnames(data))]
+    data<-data.frame(features=names(data),weight=data)
+    min=0
+    max=1
+    
+  }
+  if(input$Det_TM_validation_relevance_measure=="relevance score"){
+    relevance<-calculate_topic_relevance(lambda=input$Det_TM_validation_lambda,phi=values$tm_phi,theta=values$tm_theta,doc.length=values$tm_doc.length)
+    #normalize relevance
+    #relevance<-relevance-apply(relevance,1, FUN=min)
+    #relevance<-t(t(as.matrix(relevance))/rowSums(relevance))
+    #relevance<-relevance/max(relevance)
+    data<-relevance[,input$Det_TM_validation_topic]
+    data<-data.frame(features=names(data),weight=data)
+    if(input$Det_TM_validation_minmax_gobal=="over all topics"){
+      min=min(relevance)
+      max=max(relevance)
+    }
+    if(input$Det_TM_validation_minmax_gobal=="inside chosen topic"){
+      min=min(relevance[,input$Det_TM_validation_topic])
+      max=max(relevance[,input$Det_TM_validation_topic])
+    }
+    if(input$Det_TM_validation_minmax_gobal=="inside chosen document"){
+      max<-max(data[intersect(unique(features),rownames(data)),"weight"])
+      min<-min(data[intersect(unique(features),rownames(data)),"weight"])
+    }
+  }
+  if(input$Det_TM_validation_relevance_measure=="word probability"){
+    data<-values$tm_phi[input$Det_TM_validation_topic,]
+    data<-data.frame(features=names(data),weight=data)
+    if(input$Det_TM_validation_minmax_gobal=="over all topics"){
+      max<-max(values$tm_phi)
+      min<-min(values$tm_phi)
+    }
+    if(input$Det_TM_validation_minmax_gobal=="inside chosen topic"){
+      max<-max(data$weight)
+      min<-min(data$weight)
+    }
+    if(input$Det_TM_validation_minmax_gobal=="inside chosen document"){
+      max<-max(data[intersect(unique(features),rownames(data)),"weight"])
+      min<-min(data[intersect(unique(features),rownames(data)),"weight"])
+    }
+  }
+
+  
+  
   m<-merge(x = token,y=data,by="features",all.x=TRUE)
   m<-m[order(m[,2]),]
   getPalette = colorRampPalette(brewer.pal(12, "Paired"))
   colors<-getPalette(dim(values$tm_phi)[1])
   #colors<-colors[order(values$tm_theta[input$Det_TM_validation_document,],decreasing = F)]
   color<-colors[input$Det_TM_validation_topic]
-  rbPal_pos <- colorRampPalette(c('floralwhite',color))
-  m<-cbind(m,rep("",dim(m)[1]))
-  if(length(intersect(which(!is.na(m$weight)),which(m$weight>0)))>0){
-    m[intersect(which(!is.na(m$weight)),which(m$weight>0)),12]<-  rbPal_pos(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))],breaks = 100))] #Alternative#seq(0,to = max(data$weight),length.out = 100) #original m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))]
+  if(input$Det_TM_validation_color_use_pie_colors==TRUE){
+    rbPal_pos <- colorRampPalette(c('floralwhite',color))
   }
+  else{
+    rbPal_pos <- colorRampPalette(c(input$Det_TM_validation_color_least_important,input$Det_TM_validation_color_most_important))
+  }
+  m<-cbind(m,rep("",dim(m)[1]))
+  print((m[order(m[,"weight"][1:20],decreasing = T),c("word","weight")]))
+  print(min)
+  print(max)
+  if(length(intersect(which(!is.na(m$weight)),which(m$weight!=0)))>0){
+    m[intersect(which(!is.na(m$weight)),which(m$weight!=0)),12]<-  rbPal_pos(100)[as.numeric(cut(c(max,min,m$weight[intersect(which(!is.na(m$weight)),which(m$weight!=0))]),breaks = 100))[-c(1,2)]] #Alternative#seq(0,to = max(data$weight),length.out = 100) #original m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))]
+  }
+  
   strings<-apply(m,MARGIN = 1,FUN = function(x){
     if(is.na(x[11])){
       return(x[7])
     }
     else{
-      return( paste0('<font style="background-color:',x[12],';"','title="feature: ',x[1],' with weight: ',x[11],'">',x[7],'</font>'))
+      return( paste0('<font style="background-color:',x[12],';"','title="feature: ',x[1],' with weight: ',round(as.numeric(x[11]),digits = 5),'">',x[7],'</font>'))
     }
-    
   })
   
   a<-list()
@@ -2072,11 +2147,10 @@ output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
   )
   getPalette = colorRampPalette(brewer.pal(12, "Paired"))
   colors<-getPalette(dim(values$tm_phi)[1])
-  
   data<-values$tm_theta[input$Det_TM_validation_document,]
   data<-data.frame(class=paste("Topic: ",names(data)),likelihood=data)
   
-  p <- plot_ly(data, labels = ~factor(class), values = ~likelihood, textposition = 'inside',marker = list(colors = colors),
+  p <- plot_ly(data, labels = ~factor(class), values = ~likelihood, textposition = 'inside',source="tm_validation_pie",marker = list(colors = colors),
                textinfo = 'label+percent') %>%
     plotly::add_pie(hole = 0.6) %>%
     plotly::layout(title = paste('Distribution of topics for chosen document'),legend=T,
@@ -2085,4 +2159,16 @@ output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
                    legend = list(x = 0.1, y = 0.9)
     )
   return(p)
+})
+
+click_pie_tm_validation<-reactive({
+  currentEcentData<-event_data(event = "plotly_click", source = "tm_validation_pie",session = session)
+})
+
+# change selected topic if user click on a tpic in the pie chart
+observe({
+  validate(
+    need(!is.null(click_pie_tm_validation()),message = F)
+  )
+  updateSliderInput(session = session,inputId = "Det_TM_validation_topic",value = as.numeric(click_pie_tm_validation()$pointNumber+1) )
 })

@@ -31,7 +31,7 @@ output$details_parameter<-renderUI({
           sliderInput(inputId = "Det_KE_min_freq",label = "min frequency",min = 1,max = max(as.numeric(stats$freq)),value = c(3,50)),
           sliderInput(inputId = "Det_KE_ngram",label = "number of words",min = 1,max = max(as.numeric(stats$ngram)),value = c(2,(max(as.numeric(stats$ngram))-1))),
           conditionalPanel(condition = "input.tabBox_keyword_extraction=='Plot'",
-                           numericInput(inputId = "Det_KE_n",label = "number of keyword included in plot",value = 20,min = 1,max = 10000)
+                           numericInput(inputId = "Det_KE_n",label = "number of keywords included in plot",value = 20,min = 1,max = 10000)
           )
         )
       )
@@ -121,12 +121,6 @@ output$details_parameter<-renderUI({
           conditionalPanel(condition = 'input.tabBox_senti=="Document Length"',
                            numericInput(inputId = "Det_SA_max_breaks",label = "Maximal number of breaks",value = 25,min = 2,max = 1000)
           ),
-          # conditionalPanel(condition = 'input.tabBox_senti=="Section"',
-          #                  numericInput(inputId = "Det_SA_min_Section",label = "minimal number of occurrences to be shown in plot",value = 10,min = 2)
-          # ),
-          # conditionalPanel(condition = 'input.tabBox_senti=="Author"',
-          #                  numericInput(inputId = "Det_SA_min_Author",label = "minimal number of occurrences to be shown in plot",value = 10,min = 2)
-          # ),
           conditionalPanel(condition='input.tabBox_senti!="Author" && input.tabBox_senti!="Section"',
                            checkboxInput(inputId = "Det_SA_Lines",label = "Draw Lines",value = FALSE)
           ),
@@ -140,6 +134,8 @@ output$details_parameter<-renderUI({
     if(values$Details_Analysis=="CO"){
       #load data needed for selection on input words
       load(paste0(values$Details_Data_CO,"/data_Coocs.RData"))
+      load(paste0(values$Details_Data_CO,"/dtm.RData"))
+      values$coocs_dtm<-dtm
       values$coocs_terms<-terms
       values$coocs_token<-token
       values$coocs_load_examples<-FALSE
@@ -169,12 +165,6 @@ output$details_parameter<-renderUI({
                                                             fill=T,animation = "tada",selected = "degree",width = "90%"),
                            numericInput(inputId = "Det_CO_Threshold",label = "Significance Threshold",value = 0,min = 0,max = 1,step = 0.01,width="90%")
           ),
-          # conditionalPanel(condition='input.tabBox_coocs=="Keyword and Context"',
-          #                  shinyBS::bsButton(inputId = "coocs_knk_calc",label = "calculate keyword & context",style = "primary"),
-          #                  uiOutput(outputId = "coocs_knk_word_ui"),
-          #                  numericInput(inputId = "coocs_knk_n",label = "number of examples",value = 10,min = 1,max = 50,step = 1),
-          #                  numericInput(inputId = "coocs_knk_k",label = "context size",value = 8,min = 1,max = 20,step = 1)
-          # ),
           conditionalPanel(condition='input.tabBox_coocs=="Co-occurrence Matrix"',
                            downloadButton(outputId = "Det_CO_download_coocs",label = "Download matrix",icon=icon("download"))
           ),
@@ -200,7 +190,6 @@ output$details_parameter<-renderUI({
     }
     if(values$Details_Analysis=="VS"){
       #load data needed for selection on input words
-      #browser()
       try({
         model<-read.vectors(paste0(values$Details_Data_VS,"//vectors.bin"))
       })
@@ -247,13 +236,7 @@ output$details_parameter<-renderUI({
                            selectizeInput(inputId = "Det_VS_linS_words4",label = "word pairs/triples #4",choices =  NULL,multiple = T),
                            selectizeInput(inputId = "Det_VS_linS_words5",label = "word pairs/triples #5",choices =  NULL,multiple = T),
                            radioButtons(inputId = "Det_vs_linS_dimension_reduction",label = "Dimension reduction using:",choices = c("pca","tsne"))
-          )#,
-          #conditionalPanel(condition = 'input.tabBox_vector=="Clustering"',
-          #                 selectInput(inputId = "Det_VS_words",label = "words",choices = c("a","b"))
-          #),
-          #conditionalPanel(condition = 'input.tabBox_vector=="Graph"',
-          #                 selectInput(inputId = "Det_VS_words",label = "words",choices = c("a","b"))
-          #)
+          )
         )
       )
     }
@@ -320,7 +303,7 @@ output$details_parameter<-renderUI({
       #tagList for volatility analysis parameters for visualisation
       return(
         tagList(
-          actionButton(inputId = "Det_VA_Update",label = "Update Plot"),
+          shinyBS::bsButton(inputId = "Det_VA_Update",label = "Update Plot",style = "default",icon = icon("play")),
           tags$br(),
           conditionalPanel(condition = 'input.tabBox_volat=="Multi Words"',
                            selectizeInput(inputId = "Det_VA_Select_Words",label="Word:",choices=NULL,multiple=T)
@@ -386,7 +369,7 @@ output$details_parameter<-renderUI({
         values$tm_stm_visu_estimateEffect_plot_show <- FALSE
         
       }
-
+      
       topic.frequency <- colSums(theta * doc.length)
       topic.proportion <- topic.frequency/sum(topic.frequency)
       o <- order(topic.proportion, decreasing = TRUE)
@@ -394,8 +377,6 @@ output$details_parameter<-renderUI({
       #theta <- theta[, o]
       topic.frequency <- topic.frequency[o]
       topic.proportion <- topic.proportion[o]
-      
-      #values$tm_probability_distribution<-(table(c(apply(X=theta,1,FUN = function(i){return(which.max(i))}),1:dim(theta)[2]))-1)/(dim(theta)[1])
       values$tm_probability_distribution<-topic.proportion
       values$tm_number_of_topics<-dim(phi)[1]
       values$tm_timeline_ids<-NULL
@@ -439,120 +420,135 @@ output$details_parameter<-renderUI({
       }
       #panels for topic modeling parameters for visualisation
       
-          panelLDAVIs <- conditionalPanel(condition = 'input.tabBox_tm=="LDA-Vis"',
-                           sliderInput("nTerms", "Number of terms to display", min = 20, max = 40, value = 30),
-                           tags$br(),
-                           downloadButton(outputId = "download_phi",label = "phi",icon=icon("download")),
-                           downloadButton(outputId = "download_theta",label = "theta",icon=icon("download"))
-                           
-          )
-          panelEstWordFrequencies <- conditionalPanel(condition = 'input.tabBox_tm=="Estimated word frequencies"',
-                           selectizeInput(inputId = "Det_TM_ewf_word",label = "word:",choices =  NULL,multiple = T),
-                           materialSwitch(inputId = "Det_TM_emf_rel",label = "relative distribution over topics?",value = F),
-                           tags$br(),
-                           downloadButton(outputId = "download_rel_counts",label = "estimated frequencies",icon=icon("download"))
-          )
-          panelCoherence <- conditionalPanel(condition = 'input.tabBox_tm=="Coherence"',
-                           sliderInput("TM_Coherence_runs", "Number of runs for interactive coherence measure", min = 5, max = 50, value = 10,step=1),
-                           sliderInput("TM_Coherence_setsize", "set size for interactive coherence measure", min = 3, max = values$tm_number_of_topics, value = 4,step = 1),
-                           checkboxInput("TM_Coherence_chance_correction",label = "chance correction?",value = F)
-          )
-          panelDateDistribution <- conditionalPanel(condition = 'input.tabBox_tm=="Date distribution"',
-                           tags$head(tags$style(HTML("div.col-sm-12 {padding:1px}; float:up;"))),
-                           shinyBS::bsButton(inputId = "TM_Timeline_Reset",label = "reset chart",style = "success",size = "extra-small"),
-                           tags$br(),
-                           sliderTextInput(inputId = "TM_Timeline_Range",label = NULL,choices = c("Day","Month","Year"),force_edges = T,grid = T,selected = "Month"),
-                           sliderTextInput(inputId = "TM_Timeline_Measure",label = NULL,choices = c("Document Count","Document Probability","relative Document Count"),force_edges = T,grid=T),
-                           materialSwitch(inputId = "TM_Timeline_Rank1",label = "Use Rank1 for selecting document membership",value = T,status = "warning"),
-                           conditionalPanel(condition = 'input.TM_Timeline_Rank1==false',
-                                            knobInput(inputId = "TM_Timeline_Prob",label = "Minimal Probability",value = 0.5,min = 0,max = 1,step = 0.01)
-                           ),
-                           do.call(tagList,wordcloud_list)
-          )
-          panelExtractDictionaries <- conditionalPanel(condition = 'input.tabBox_tm=="Extract Dictionaries"',
-                           numericInput("TM_dict_number_of_words", "Number of words included in dictionary from each topic", min = 1, max = 5000, value = 25,step=1)
-          )
-          panelDetailedMetaDataAnalysis <- conditionalPanel(condition = 'input.tabBox_tm=="Detailed Metadata Distribution"',
-                           uiOutput(outputId = "Det_meta_select_ui")
-          )
-          panelValidation <- conditionalPanel(condition = 'input.tabBox_tm=="Validation"',
-                           selectizeInput(inputId = "Det_TM_validation_document",label="Document:",choices=NULL,multiple=F),
-                           sliderInput(inputId = "Det_TM_validation_topic",label = "Topic:",min = 1,value = 1,max = dim(phi)[1],step = 1),
-                           tags$hr(),
-                           uiOutput("Det_TM_validation_metadata_UI")%>%withSpinner()
-          )
-
-          #stm
-          if(values$tm_method == "stm"){
-            panelSTM <- conditionalPanel(condition = 'input.tabBox_tm=="Structural Topic Model"',
-                             
-                             # stm number of words to label topic
-                             conditionalPanel(condition = 'input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"|| input.stm_visu=="Perspectives"',
-                                              numericInput(inputId = "tm_stm_visu_numberOfWordsToLabelTopic",label="number of words to label topics", value = 10, min = 2, max = 50, step = 1)
-                             ),
-                             #stm labeltype (for sub tabs Topics, Labels and Histogram - but only if selected calculated structural topic model didn't have a content formula set. If a content formula was set, the label type is not selectable)
-                             conditionalPanel(condition = '(input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && output.tm_stm_parameters_contentFormulaIsSet==false',
-                                              selectInput(inputId = "tm_stm_visu_labeltype",label="method to choose most important words",choices=c("prob", "frex", "lift", "score"),multiple=F, selected = "prob")%>%
-                                                shinyInput_label_embed(
-                                                  shiny_iconlink() %>%
-                                                    bs_embed_popover(
-                                                      title = "PROB: words within each topic with the highest probability. FREX: words which are both frequent in and exclusive to a topic of interest identifying words that distinguish topics. SCORE: divides the log frequency of the word in the topic by the log frequency of the word in other topics. For more information on score, see the lda R package. LIFT: words according to the lift metric: Lift is calculated by dividing the topic-word distribution by the empirical word count probability distribution. For more information see R calclift",
-                                                      placement = "right"
-                                                    )
-                                                )
-                             ),
-                             # stm perspectives topic 1 and 2
-                             conditionalPanel(condition = 'input.stm_visu=="Perspectives"',
-                                              selectInput(inputId = "tm_stm_visu_perspectives_topic1",label="select topic 1",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 1),
-                                              selectInput(inputId = "tm_stm_visu_perspectives_topic2",label="select topic 2",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 2)
-                             ),
-                             # stm frexweight (if labeltype == frex)
-                             conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex" && (input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && output.tm_stm_parameters_contentFormulaIsSet==false', 
-                                              numericInput(inputId = "tm_stm_visu_frexweight",label="frex weight",value = 0.5, min = 0, max = 1, step = 0.1)%>%
-                                                shinyInput_label_embed(
-                                                  shiny_iconlink() %>%
-                                                    bs_embed_popover(
-                                                      title = "the proportion of the weight assigned to frequency",
-                                                      placement = "right"
-                                                    )
-                                                )
-                             )
-            )
-            
-          } # end: if tm_method == stm
-          
-          
-          if(values$tm_method =="stm"){
-            returnValue <-  tagList(
-                   panelLDAVIs,
-                   panelEstWordFrequencies,
-                   panelCoherence,
-                   panelDateDistribution,
-                   panelExtractDictionaries,
-                   panelDetailedMetaDataAnalysis,
-                   panelValidation,
-                   panelSTM
-            )
-          }else{
-            returnValue <-  tagList(
-                   panelLDAVIs,
-                   panelEstWordFrequencies,
-                   panelCoherence,
-                   panelDateDistribution,
-                   panelExtractDictionaries,
-                   panelDetailedMetaDataAnalysis,
-                   panelValidation
-            )
-          }
-    
-    
-    return (returnValue)
+      panelLDAVIs <- conditionalPanel(condition = 'input.tabBox_tm=="LDA-Vis"',
+                                      sliderInput("nTerms", "Number of terms to display", min = 20, max = 40, value = 30),
+                                      tags$br(),
+                                      downloadButton(outputId = "download_phi",label = "phi",icon=icon("download")),
+                                      downloadButton(outputId = "download_theta",label = "theta",icon=icon("download")),
+                                      downloadButton(outputId = "download_ldavis",label = "lda vis",icon=icon("download"))
+                                      
+      )
+      panelEstWordFrequencies <- conditionalPanel(condition = 'input.tabBox_tm=="Estimated word frequencies"',
+                                                  selectizeInput(inputId = "Det_TM_ewf_word",label = "word:",choices =  NULL,multiple = T),
+                                                  materialSwitch(inputId = "Det_TM_emf_rel",label = "relative distribution over topics?",value = F),
+                                                  tags$br(),
+                                                  downloadButton(outputId = "download_rel_counts",label = "estimated frequencies",icon=icon("download"))
+      )
+      panelCoherence <- conditionalPanel(condition = 'input.tabBox_tm=="Coherence"',
+                                         sliderInput("TM_Coherence_runs", "Number of runs for interactive coherence measure", min = 5, max = 50, value = 10,step=1),
+                                         sliderInput("TM_Coherence_setsize", "set size for interactive coherence measure", min = 3, max = values$tm_number_of_topics, value = 4,step = 1),
+                                         checkboxInput("TM_Coherence_chance_correction",label = "chance correction?",value = F)
+      )
+      panelDateDistribution <- conditionalPanel(condition = 'input.tabBox_tm=="Date distribution"',
+                                                tags$head(tags$style(HTML("div.col-sm-12 {padding:1px}; float:up;"))),
+                                                shinyBS::bsButton(inputId = "TM_Timeline_Reset",label = "reset chart",style = "success",size = "extra-small"),
+                                                tags$br(),
+                                                sliderTextInput(inputId = "TM_Timeline_Range",label = NULL,choices = c("Day","Month","Year"),force_edges = T,grid = T,selected = "Month"),
+                                                sliderTextInput(inputId = "TM_Timeline_Measure",label = NULL,choices = c("Document Count","Document Probability","relative Document Count"),force_edges = T,grid=T),
+                                                materialSwitch(inputId = "TM_Timeline_Rank1",label = "Use Rank1 for selecting document membership",value = T,status = "warning"),
+                                                conditionalPanel(condition = 'input.TM_Timeline_Rank1==false',
+                                                                 knobInput(inputId = "TM_Timeline_Prob",label = "Minimal Probability",value = 0.5,min = 0,max = 1,step = 0.01)
+                                                ),
+                                                do.call(tagList,wordcloud_list)
+      )
+      panelExtractDictionaries <- conditionalPanel(condition = 'input.tabBox_tm=="Extract Dictionaries"',
+                                                   numericInput("TM_dict_number_of_words", "Number of words included in dictionary from each topic", min = 1, max = 5000, value = 25,step=1)
+      )
+      panelDetailedMetaDataAnalysis <- conditionalPanel(condition = 'input.tabBox_tm=="Detailed Metadata Distribution"',
+                                                        uiOutput(outputId = "Det_meta_select_ui")
+      )
+      panelValidation <- conditionalPanel(condition = 'input.tabBox_tm=="Validation"',
+                                          selectizeInput(inputId = "Det_TM_validation_document",label="Document:",choices=NULL,multiple=F),
+                                          sliderInput(inputId = "Det_TM_validation_topic",label = "Topic:",min = 1,value = 1,max = dim(phi)[1],step = 1),
+                                          dropdownButton(status = "info",tooltip = "Options",icon=icon("gear"),
+                                                         tags$h4("Options for validation colour scale"),
+                                                         selectInput(inputId = "Det_TM_validation_relevance_measure",label="Relevance measure",
+                                                                     choices=c("word probability","estimated relative word frequency per topic","relevance score"),selected="word probability",multiple=F),
+                                                         conditionalPanel(condition="input.Det_TM_validation_relevance_measure=='relevance score'",
+                                                                          sliderInput(inputId="Det_TM_validation_lambda",label="Lambda",min=0,max=1,step=0.01,value=0.25)
+                                                         ),
+                                                         conditionalPanel(condition="input.Det_TM_validation_relevance_measure!='estimated relative word frequency per topic'",
+                                                                          selectInput(inputId="Det_TM_validation_minmax_gobal",label="scale colours with min and max value",choices=c("inside chosen document","inside chosen topic","over all topics"))
+                                                         ),
+                                                         checkboxInput(inputId="Det_TM_validation_color_use_pie_colors",value=FALSE,label="Use pie chart colors for words"),
+                                                         conditionalPanel(condition="input.Det_TM_validation_color_use_pie_colors==false",
+                                                                          colourpicker::colourInput(inputId="Det_TM_validation_color_least_important","color for least important words",value="floralwhite"),
+                                                                          colourpicker::colourInput(inputId="Det_TM_validation_color_most_important","color for most important words",value="aquamarine")
+                                                         )
+                                          ),
+                                          tags$hr(),
+                                          uiOutput("Det_TM_validation_metadata_UI")%>%withSpinner()
+      )
+      
+      #stm
+      if(values$tm_method == "stm"){
+        panelSTM <- conditionalPanel(condition = 'input.tabBox_tm=="Structural Topic Model"',
+                                     
+                                     # stm number of words to label topic
+                                     conditionalPanel(condition = 'input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm"|| input.stm_visu=="Perspectives"',
+                                                      numericInput(inputId = "tm_stm_visu_numberOfWordsToLabelTopic",label="number of words to label topics", value = 10, min = 2, max = 50, step = 1)
+                                     ),
+                                     #stm labeltype (for sub tabs Topics, Labels and Histogram - but only if selected calculated structural topic model didn't have a content formula set. If a content formula was set, the label type is not selectable)
+                                     conditionalPanel(condition = '(input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && output.tm_stm_parameters_contentFormulaIsSet==false',
+                                                      selectInput(inputId = "tm_stm_visu_labeltype",label="method to choose most important words",choices=c("prob", "frex", "lift", "score"),multiple=F, selected = "prob")%>%
+                                                        shinyInput_label_embed(
+                                                          shiny_iconlink() %>%
+                                                            bs_embed_popover(
+                                                              title = "PROB: words within each topic with the highest probability. FREX: words which are both frequent in and exclusive to a topic of interest identifying words that distinguish topics. SCORE: divides the log frequency of the word in the topic by the log frequency of the word in other topics. For more information on score, see the lda R package. LIFT: words according to the lift metric: Lift is calculated by dividing the topic-word distribution by the empirical word count probability distribution. For more information see R calclift",
+                                                              placement = "right"
+                                                            )
+                                                        )
+                                     ),
+                                     # stm perspectives topic 1 and 2
+                                     conditionalPanel(condition = 'input.stm_visu=="Perspectives"',
+                                                      selectInput(inputId = "tm_stm_visu_perspectives_topic1",label="select topic 1",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 1),
+                                                      selectInput(inputId = "tm_stm_visu_perspectives_topic2",label="select topic 2",choices=c(1:values$tm_stm_model$settings$dim$K),multiple=F, selected = 2)
+                                     ),
+                                     # stm frexweight (if labeltype == frex)
+                                     conditionalPanel(condition = 'input.tm_stm_visu_labeltype=="frex" && (input.stm_visu=="Topics" || input.stm_visu=="Labels" || input.stm_visu=="Histogramm") && output.tm_stm_parameters_contentFormulaIsSet==false', 
+                                                      numericInput(inputId = "tm_stm_visu_frexweight",label="frex weight",value = 0.5, min = 0, max = 1, step = 0.1)%>%
+                                                        shinyInput_label_embed(
+                                                          shiny_iconlink() %>%
+                                                            bs_embed_popover(
+                                                              title = "the proportion of the weight assigned to frequency",
+                                                              placement = "right"
+                                                            )
+                                                        )
+                                     )
+        )
         
-          
+      } # end: if tm_method == stm
+      
+      
+      if(values$tm_method =="stm"){
+        returnValue <-  tagList(
+          panelLDAVIs,
+          panelEstWordFrequencies,
+          panelCoherence,
+          panelDateDistribution,
+          panelExtractDictionaries,
+          panelDetailedMetaDataAnalysis,
+          panelValidation,
+          panelSTM
+        )
+      }else{
+        returnValue <-  tagList(
+          panelLDAVIs,
+          panelEstWordFrequencies,
+          panelCoherence,
+          panelDateDistribution,
+          panelExtractDictionaries,
+          panelDetailedMetaDataAnalysis,
+          panelValidation
+        )
+      }
+      return (returnValue)
     }
   }
 }
 )
+
+
 
 ##########################################################################################
 #                                details_visu                                            #
@@ -565,11 +561,11 @@ output$details_visu<-renderUI({
       validate(
         need(!is.null(values$tm_theta),message=F)
       )
-
+      
       updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = rownames(values$tm_theta))
       
       #stm
-
+      
       #return visu for topic modeling
       tabPanelLDAVis <- tabPanel("LDA-Vis",
                                  #use the d3.js from ldavis library
@@ -591,36 +587,36 @@ output$details_visu<-renderUI({
                                            uiOutput("TM_subColl_UI")
       )
       tabPanelCoherence <- tabPanel("Coherence",
-               busyIndicator(text = "loading data for calculating coherence",wait = 0),
-               bsButton(inputId = "TM_Coherence_start",label = "start Coherence Calculation",style = "primary",icon=icon("play")),
-               conditionalPanel(condition = "output.TM_Coherence_show==true",
-                                tabsetPanel(type="tabs",
-                                            tabPanel(title = "Topic Coherence",
-                                                     plotlyOutput(outputId = "TM_Coherence_topic_coherence"),
-                                                     valueBoxOutput(outputId = "TM_Coherence_topic_coherence_mean_box")
-                                            ),
-                                            tabPanel(title="Topic Intrusion",
-                                                     uiOutput(outputId = "TM_Coherence_topic_intrusion")
-                                            ),
-                                            tabPanel(title="Word Intrusion",
-                                                     uiOutput(outputId = "TM_Coherence_word_intrusion")
-                                            )
-                                )
-               )
-
+                                    busyIndicator(text = "loading data for calculating coherence",wait = 0),
+                                    bsButton(inputId = "TM_Coherence_start",label = "start Coherence Calculation",style = "primary",icon=icon("play")),
+                                    conditionalPanel(condition = "output.TM_Coherence_show==true",
+                                                     tabsetPanel(type="tabs",
+                                                                 tabPanel(title = "Topic Coherence",
+                                                                          plotlyOutput(outputId = "TM_Coherence_topic_coherence"),
+                                                                          valueBoxOutput(outputId = "TM_Coherence_topic_coherence_mean_box")
+                                                                 ),
+                                                                 tabPanel(title="Topic Intrusion",
+                                                                          uiOutput(outputId = "TM_Coherence_topic_intrusion")
+                                                                 ),
+                                                                 tabPanel(title="Word Intrusion",
+                                                                          uiOutput(outputId = "TM_Coherence_word_intrusion")
+                                                                 )
+                                                     )
+                                    )
+                                    
       )
       tabPanelExtractDictionaries <- tabPanel("Extract Dictionaries",
-               uiOutput("TM_dict_topics_ui"),
-               uiOutput("TM_dict_categories_names"),
-               uiOutput("TM_dict_save_ui")
+                                              uiOutput("TM_dict_topics_ui"),
+                                              uiOutput("TM_dict_categories_names"),
+                                              uiOutput("TM_dict_save_ui")
       )
       tabPanelDetailedMetaData <- tabPanel("Detailed Metadata Distribution",
-               uiOutput("TM_meta_ui")
+                                           uiOutput("TM_meta_ui")
       )
       tabPanelValidation <- tabPanel("Validation",
-               uiOutput("TM_validation_UI")%>%withSpinner()
+                                     uiOutput("TM_validation_UI")%>%withSpinner()
       )
-
+      
       # additional panels specific for stm
       # needs values$tm_parameters and values$tm_method to be set (via load parameters from file). This is currently performed in output$details_parameter above, so doesn't need to be performed again here
       if(values$tm_method == "stm"){
@@ -652,11 +648,11 @@ output$details_visu<-renderUI({
                                                                               placement = "right"
                                                                             )
                                                                         )
-                                                                  
+                                                                      
                                                      ),
                                                      plotOutput(outputId = "TM_stm_visu_perspectives")
                                                      
-                                                     ),
+                                            ),
                                             tabPanel(title = "Histogramm", plotOutput(outputId = "TM_stm_visu_hist")),
                                             tabPanel(title = "Topic Correlation",
                                                      busyIndicator(text = "calculating topic correlation",wait = 0),
@@ -670,13 +666,13 @@ output$details_visu<-renderUI({
                                                      busyIndicator(text = "calculating estimateEffect",wait = 0),
                                                      # formula
                                                      textInput(inputId = "tm_stm_visu_estimateEffect_calcParam_formula",label = "formula")%>%
-                                                                        shinyInput_label_embed(
-                                                                          shiny_iconlink() %>%
-                                                                            bs_embed_popover(
-                                                                              title = "A formula for the regression. It should have an integer or vector of numbers on the left-hand side and an equation with covariates on the right hand side. See Details of STM documentation for more information. Typically, users will pass the same model of topical prevalence used in estimating the STM to the estimateEffect function. The syntax of the estimateEffect function is designed so users specify the set of topics they wish to use for estimation, and then a formula for metadata of interest. Examples: 'c(1) ~ treatment', '1:3 ~ treatment' , c(1,3,5) ~ treatment + s(day)",
-                                                                              placement = "right"
-                                                                            )
-                                                                        ),
+                                                       shinyInput_label_embed(
+                                                         shiny_iconlink() %>%
+                                                           bs_embed_popover(
+                                                             title = "A formula for the regression. It should have an integer or vector of numbers on the left-hand side and an equation with covariates on the right hand side. See Details of STM documentation for more information. Typically, users will pass the same model of topical prevalence used in estimating the STM to the estimateEffect function. The syntax of the estimateEffect function is designed so users specify the set of topics they wish to use for estimation, and then a formula for metadata of interest. Examples: 'c(1) ~ treatment', '1:3 ~ treatment' , c(1,3,5) ~ treatment + s(day)",
+                                                             placement = "right"
+                                                           )
+                                                       ),
                                                      # meta vars to convert to factors 
                                                      selectInput(inputId = "tm_stm_visu_estimateEffect_metaVarsToConvertToFactor", label = "meta variables to convert to factor", choices = names(values$tm_stm_metaData), multiple = T)%>%
                                                        shinyInput_label_embed(
@@ -695,7 +691,7 @@ output$details_visu<-renderUI({
                                                              placement = "right"
                                                            )
                                                        ),
- 
+                                                     
                                                      bsButton(inputId = "tm_stm_visu_estimateEffect_calcButton",label = "start calculation of estimate effect",style = "primary",icon=icon("play")),
                                                      conditionalPanel(condition = "output.TM_stm_visu_estimateEffect_show==true",
                                                                       tabsetPanel(type="tabs",
@@ -704,7 +700,7 @@ output$details_visu<-renderUI({
                                                                                   ),
                                                                                   tabPanel(title="Plot",
                                                                                            textInput(inputId = "tm_stm_visu_estimateEffect_plot_covariate",label = "covariate")%>%
-                                                                                               shinyInput_label_embed(
+                                                                                             shinyInput_label_embed(
                                                                                                shiny_iconlink() %>%
                                                                                                  bs_embed_popover(
                                                                                                    title = "The covariate of interest. Example: 'treatment'. All other covariates within the formula specified in estimateEffect will be kept at their median.",
@@ -747,33 +743,33 @@ output$details_visu<-renderUI({
                                                                                            bsButton(inputId = "tm_stm_visu_estimateEffect_plotupdate",label = "Show plot for given parameters",style = "primary",icon=icon("play")),
                                                                                            conditionalPanel(condition = 'output.TM_stm_visu_estimateEffect_plot_show==true',
                                                                                                             plotOutput(outputId = "TM_stm_visu_estimateEffect_plot")
-                                                                                                            )
+                                                                                           )
                                                                                   )
                                                                       )
                                                      )
                                             )
-
+                                            
                                 )
         )
-
-
-
+        
+        
+        
         returnValue <-  tagList(
-                   tabBox(id="tabBox_tm",width = 12,
-                          tabPanelLDAVis,
-                          tabPanelEstWordFrequencies,
-                          tabPanelDateDistribution,
-                          tabPanelCoherence,
-                          tabPanelExtractDictionaries,
-                          tabPanelDetailedMetaData,
-                          tabPanelValidation,
-                          tabPanelSTM
-                   )
-
+          tabBox(id="tabBox_tm",width = 12,
+                 tabPanelLDAVis,
+                 tabPanelEstWordFrequencies,
+                 tabPanelDateDistribution,
+                 tabPanelCoherence,
+                 tabPanelExtractDictionaries,
+                 tabPanelDetailedMetaData,
+                 tabPanelValidation,
+                 tabPanelSTM
+          )
+          
         )
-
+        
       }else{
-
+        
         returnValue <-  tagList(
           tabBox(id="tabBox_tm",width = 12,
                  tabPanelLDAVis,
@@ -783,10 +779,10 @@ output$details_visu<-renderUI({
                  tabPanelExtractDictionaries,
                  tabPanelDetailedMetaData,
                  tabPanelValidation
-                 )
+          )
         )
       }
-
+      
       return (returnValue)
       
     }
@@ -796,10 +792,18 @@ output$details_visu<-renderUI({
       validate(
         need(!is.null(values$coocs_terms),message=F)
       )
-      updateSelectizeInput(session = session,inputId = "Det_CO_Word",server = T,choices = values$coocs_terms)
-      updateSelectizeInput(session = session,inputId = "coocs_examples_words",server = T,choices = values$coocs_terms)
-      updateSelectizeInput(session = session,inputId = "coocs_top_word1",server = T,choices = values$coocs_terms)
-      updateSelectizeInput(session = session,inputId = "coocs_top_word2",server = T,choices = values$coocs_terms)
+      # sort word by their frequency and add frequency information to choices 
+      vocab <- colnames(values$coocs_dtm)
+      vocab_counts <- Matrix::colSums(values$coocs_dtm)
+      vocab <- vocab[order(vocab_counts,decreasing = T)]
+      vocab_counts <- vocab_counts[order(vocab_counts,decreasing = T)]
+      names <- paste(vocab," (",vocab_counts,")",sep="")
+      names(vocab) <- names
+      
+      updateSelectizeInput(session = session,inputId = "Det_CO_Word",server = T,choices = vocab)
+      updateSelectizeInput(session = session,inputId = "coocs_examples_words",server = T,choices = vocab)
+      updateSelectizeInput(session = session,inputId = "coocs_top_word1",server = T,choices = vocab)
+      updateSelectizeInput(session = session,inputId = "coocs_top_word2",server = T,choices = vocab)
       
       #return cooccurrence graph depending on the chosen Display Type
       return(
@@ -810,10 +814,6 @@ output$details_visu<-renderUI({
                             busyIndicator(text = "loading data",wait = 0),
                             visNetwork::visNetworkOutput(outputId = "visNetwork_cooc_net",height = "70vh")
                    ),
-                   # tabPanel("Keyword and Context",
-                   #          busyIndicator(text = "loading data",wait = 0),
-                   #          DT::dataTableOutput(outputId = "cooc_kwic_table")
-                   # ),
                    tabPanel("Co-occurrence Matrix",
                             busyIndicator(text = "loading data",wait = 0),
                             plotlyOutput(outputId = "cooc_heatmap",height = "70vh") 
@@ -896,15 +896,7 @@ output$details_visu<-renderUI({
                    ),
                    tabPanel("Arithmetics",
                             DT::dataTableOutput(outputId = "vs_arithmetics")%>% withSpinner(type = 1)
-                   )#,
-                   #tabPanel("Clustering",
-                   #          busyIndicator(text = "loading data",wait = 0),
-                   #          plotOutput(outputId = "vs_cluster",height = "70vh") 
-                   # ),
-                   # tabPanel("Graph",
-                   #          busyIndicator(text = "loading data",wait = 0),
-                   #          visNetwork::visNetworkOutput(outputId = "vs_graph")
-                   # )
+                   )
             )
           )
         )
@@ -914,6 +906,7 @@ output$details_visu<-renderUI({
       validate(
         need(!is.null(values$fe_vocab),message=F)
       )
+      # sort word by their frequency and add frequency information to choices 
       choices<-values$fe_vocab[,1]
       names<-paste(values$fe_vocab[,1]," (",values$fe_vocab[,2],")",sep="")
       names(choices)<-names
@@ -936,8 +929,6 @@ output$details_visu<-renderUI({
       values$FE_doc_freqs_week<-doc_freqs_week
       values$FE_doc_freqs_month<-doc_freqs_month
       values$FE_doc_freqs_year<-doc_freqs_year
-      #load(paste0(values$Details_Data_FE,"/dtm.RData"))
-      #values$FE_dtm<-dtm
       #return the Frequency Extraction plot
       return(
         tagList(
@@ -1143,12 +1134,6 @@ output$details_visu<-renderUI({
                  tabPanel("Other meta data",
                           uiOutput("tab_Panels_senti_mde")
                  )
-                 # tabPanel("Section",
-                 #          plotlyOutput(outputId = "Det_Senti_section")
-                 # ),
-                 # tabPanel("Author",
-                 #          plotlyOutput(outputId = "Det_Senti_author")
-                 # )
           )
         )
       )
@@ -1157,8 +1142,15 @@ output$details_visu<-renderUI({
       validate(
         need(!is.null(values$va_words),message=F)
       )
-      updateSelectizeInput(session = session,inputId = "Det_VA_Select_Words",server = T,choices = values$va_words)
-      updateSelectizeInput(session = session,inputId = "Det_VA_Select_Word",server = T,choices = values$va_words)
+      # sort word by their frequency and add frequency information to choices 
+      vocab<-rownames(values$va_freq)
+      vocab_counts <- Matrix::rowSums(values$va_freq)
+      vocab <- vocab[order(vocab_counts,decreasing = T)]
+      vocab_counts <- vocab_counts[order(vocab_counts,decreasing = T)]
+      names <- paste(vocab," (",vocab_counts,")",sep="")
+      names(vocab) <- names
+      updateSelectizeInput(session = session,inputId = "Det_VA_Select_Words",server = T,choices = vocab)
+      updateSelectizeInput(session = session,inputId = "Det_VA_Select_Word",server = T,choices = vocab)
       #return results for volatility analysis
       return(
         tagList(
@@ -1237,7 +1229,7 @@ source(file.path("server","tab_Details_Vector.R"),local = T)$value
 source(file.path("server","tab_Details_Deduplication.R"),local = T)$value
 source(file.path("server","tab_Details_Keyword_Extraction.R"),local = T)$value
 source(file.path("server","tab_Details_Syntactic_Parsing.R"),local = T)$value
-#source(file.path("server","tab_Details_Facto.R"),local = T)$value
+
 
 
 output$Details_FA_selected<-reactive({
