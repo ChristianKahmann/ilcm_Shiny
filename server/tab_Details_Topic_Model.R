@@ -2022,7 +2022,7 @@ output$TM_validation_UI<-renderUI({
     features<-tolower(token[,"word"])  
   }
   if(parameters$baseform_reduction=="lemma"){
-    features<-tolowertoken[,"lemma"]  
+    features<-tolower(token[,"lemma"])  
   }
   if(parameters$baseform_reduction=="stemming"){
     features<-tolower(quanteda::tokens_wordstem(quanteda::tokens(paste(token[,"word"],collapse=" ")),lang)$text1)
