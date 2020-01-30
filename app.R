@@ -79,6 +79,10 @@ source("www/ilcm_dashboard_theme.R")
 source("config_file.R")
 # load the UI for the login page
 source("ui/tab_loginPage.R")
+#set task id counter if its not already set
+if(!file.exists("global/task_id_counter.RData")){
+  set_task_id_counter(1)
+}
 
 
 # specify the appearance of the app depending on setting in config file
