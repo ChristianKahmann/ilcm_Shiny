@@ -144,7 +144,7 @@ prepare_token_object<-function(token,parameters){
   try({
     if(!is.element(el = "all",set = parameters$reduce_POS)){
       #whitelist sercure
-      safe<-which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ","))))
+      safe<-setdiff(which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ",")))),which(token[,4]==""))
       reduce<-which(token[,6]%in%parameters$reduce_POS)
       token<-token[unique(union(reduce,safe)),]
       log_to_file(message = "&emsp; Finished filtering for pos types",file = logfile)
@@ -158,7 +158,7 @@ prepare_token_object<-function(token,parameters){
         token<-spacyr::entity_consolidate(token)
         log_to_file(message = "&emsp; Finished consolidating entities",file = logfile)
       }
-      safe<-which(token[,4]%in%parameters$keep_custom)
+      safe<-setdiff(which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ",")))),which(token[,4]==""))
       reduce<-which(token[,7]%in%parameters$reduce_NER)
       token<-token[unique(union(reduce,safe)),]
     }
