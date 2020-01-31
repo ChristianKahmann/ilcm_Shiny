@@ -140,14 +140,15 @@ prepare_token_object<-function(token,parameters){
       }
     }
   })
-  #filter for pos or ner tags
+  # filter for pos or ner tags
+  # reduce by keeping defined Tags
   try({
     if(!is.element(el = "all",set = parameters$reduce_POS)){
       #whitelist sercure
       safe<-setdiff(which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ",")))),which(token[,4]==""))
       reduce<-which(token[,6]%in%parameters$reduce_POS)
       token<-token[unique(union(reduce,safe)),]
-      log_to_file(message = "&emsp; Finished filtering for pos types",file = logfile)
+      log_to_file(message = "&emsp; Finished filtering POS-Types to keep",file = logfile)
     }
   })
   try({
@@ -161,6 +162,37 @@ prepare_token_object<-function(token,parameters){
       safe<-setdiff(which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ",")))),which(token[,4]==""))
       reduce<-which(token[,7]%in%parameters$reduce_NER)
       token<-token[unique(union(reduce,safe)),]
+      log_to_file(message = "&emsp; Finished filtering NER-Tags to keep",file = logfile)
+    }
+  })
+  # reduce by excluding defined Tags
+  try({
+    if(!is.null(parameters$reduce_POS_exclude)){
+      #whitelist sercure
+      safe<-setdiff(which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ",")))),which(token[,4]==""))
+      reduce<-which(token[,6]%in%parameters$reduce_POS_exclude)
+      remove<-unique(setdiff(reduce,safe))
+      if(length(remove)>0){
+        token<-token[-remove,]
+      }
+      log_to_file(message = "&emsp; Finished filtering for POS-Types to exclude",file = logfile)
+    }
+  })
+  try({
+    if(!is.null(parameters$reduce_NER_exclude)){
+      if(parameters$consolidate_entities==F){
+        log_to_file(message = "&emsp; Consolidating...due to NER Filter settings",file = logfile)
+        spacyr::spacy_initialize()
+        token<-spacyr::entity_consolidate(token)
+        log_to_file(message = "&emsp; Finished consolidating entities",file = logfile)
+      }
+      safe<-setdiff(which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ",")))),which(token[,4]==""))
+      reduce<-which(token[,7]%in%parameters$reduce_NER_exclude)
+      remove<-unique(setdiff(reduce,safe))
+      if(length(remove)>0){
+        token<-token[-remove,]
+      }
+      log_to_file(message = "&emsp; Finished filtering NER-Tags to exclude",file = logfile)
     }
   })
   return(token)
@@ -198,7 +230,7 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
       just_save_custom=parameters$whitelist_only
     )
   )
-  #split token
+  # split token
   splitsize<-ceiling(100000/(dim(token)[1]/length(unique(token[,1]))))
   split<-split(unique(token[,1]), ceiling(seq_along(unique(token[,1]))/splitsize))
   
@@ -975,7 +1007,7 @@ copyListButRemoveNullValuesAndEmptyStringValues = function(inputList){
     if(is.null(listValue)){
       next # skip/do not include this parameter (work around for optional parameters which are not set (set to NULL)) because abstract class stops with error when a parameter is NULL. So this removes these parameters completely which only gives a warning for missing parameters.
     }
-
+    
     resultList[[name]] <- listValue
   }
   return (resultList)

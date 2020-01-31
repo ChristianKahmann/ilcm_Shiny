@@ -32,7 +32,7 @@ output$download_ldavis<-downloadHandler(
   },
   content = function(con) {
     #browser()
-    LDAvis::serVis(json = values$tm_json,open.browser = F,out.dir = "collections/tmp/ldavis/",encoding = "UTF-8")
+    LDAvis::serVis(json = values$tm_json,open.browser = T,out.dir = "collections/tmp/ldavis/",encoding = "UTF-8")
     zip::zipr(zipfile = "collections/tmp/ldavis.zip",files = "collections/tmp/ldavis/",recurse = T,include_directories=F)
     file.copy(from = "collections/tmp/ldavis.zip",to = con)
   }

@@ -424,8 +424,9 @@ output$details_parameter<-renderUI({
                                       sliderInput("nTerms", "Number of terms to display", min = 20, max = 40, value = 30),
                                       tags$br(),
                                       downloadButton(outputId = "download_phi",label = "phi",icon=icon("download")),
-                                      downloadButton(outputId = "download_theta",label = "theta",icon=icon("download")),
-                                      downloadButton(outputId = "download_ldavis",label = "lda vis",icon=icon("download"))
+                                      downloadButton(outputId = "download_theta",label = "theta",icon=icon("download"))#,
+                                      #disbaled download of whole ldavis, because it cannot be opened in browser afterwards due to browser security reasons
+                                      #downloadButton(outputId = "download_ldavis",label = "lda vis",icon=icon("download"))
                                       
       )
       panelEstWordFrequencies <- conditionalPanel(condition = 'input.tabBox_tm=="Estimated word frequencies"',

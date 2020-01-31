@@ -37,7 +37,7 @@ error<-try(expr = {
     log_to_file(message = "&emsp;<b style='color:red'>&#10008; No documents were found in the database for the specified collection.</b>",logfile)
     stop("Token empty")
   }
-  #specified language has quanteda stopwordlist?
+  # specified language has quanteda stopwordlist?
   if(parameters$remove_stopwords==T){
     log_to_file(message = "&emsp; stopwords available for specified language?",logfile)
     if(!(db_data$language%in%stopwords::stopwords_getlanguages(source="stopwords-iso"))){
@@ -52,25 +52,25 @@ error<-try(expr = {
   
   
   
-  #preparing parameters
+  # preparing parameters
   log_to_file(message = "<b>Step 4/8: Preparing input parameters</b>",file = logfile)
   parameters<-prepare_input_parameters(parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
-  #preparing token object
+  # preparing token object
   log_to_file(message = "<b>Step 5/8: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
   
   
-  #calculating dtm
+  # calculating dtm
   log_to_file(message = "<b>Step 6/8: Calculating DTM</b>",file = logfile)
   dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
   
-  #calculating frequencies
+  # calculating frequencies
   log_to_file(message = "<b>Step 7/8: Calculating frequencies</b>",file = logfile)
   frequencies<-calculate_diachron_frequencies(dtm=dtm,meta=db_data$meta)
   doc_freqs_year<-frequencies$doc_freqs_year

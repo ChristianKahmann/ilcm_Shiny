@@ -325,8 +325,8 @@ output$Analysis_Parameter_VA<-renderUI({
                                 )
              )
       ),
-      column(2,
-             selectInput(inputId = "VA_POS_TYPES",label = "POS-Types",
+      column(1,
+             selectInput(inputId = "VA_POS_TYPES",label = "Include POS-Types",
                          choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X") ,selected = "all",multiple = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -336,14 +336,37 @@ output$Analysis_Parameter_VA<-renderUI({
                    )
                )
       ),
-      column(2,
-             selectInput(inputId = "VA_ENTITY_TYPES",label = "NER-Tags",
-                         choices =c("all","PERSON","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+      column(1,
+             selectInput(inputId = "VA_ENTITY_TYPES",label = " Include NER-Tags",
+                         choices =c("all","PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
                                     "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = "all",multiple=T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
-                     title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-tag option causes the consolidation of entities.",
+                     title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-Tag option causes the consolidation of entities.",
+                     placement = "right"
+                   )
+               )
+      ),
+      column(1,
+             selectInput(inputId = "VA_POS_TYPES_exclude",label = "Exclude POS-Types",
+                         choices =c("NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X"), selected=character(0),multiple = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Remove words with a certain POS-Tag from the analysis.",
+                     placement = "right"
+                   )
+               )
+      ),
+      column(1,
+             selectInput(inputId = "VA_ENTITY_TYPES_exclude",label = "Exclude NER-Tags",
+                         choices =c("PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+                                    "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = character(0),multiple=T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Remove words with a certain NER-Tag from the analysis. Using this option causes the consolitation of entities.",
                      placement = "right"
                    )
                )
@@ -432,7 +455,9 @@ observeEvent(input$VA_Submit_Script,{
                      consolidate_entities=input$VA_consolidate_entities,
                      blacklist=input$VA_blacklist,
                      reduce_POS=input$VA_POS_TYPES,
+                     reduce_POS_exclude=input$VA_POS_TYPES_exclude,
                      reduce_NER=input$VA_ENTITY_TYPES,
+                     reduce_NER_exclude=input$VA_ENTITY_TYPES_exclude,
                      termfreq_type=input$VA_termfreq_type,
                      docfreq_type=input$VA_docfreq_type,
                      va_weightfactor=input$VA_weightfactor,
@@ -590,7 +615,9 @@ observeEvent(input$VA_pruning_continue,ignoreInit = T,{
                    consolidate_entities=input$VA_consolidate_entities,
                    blacklist=input$VA_blacklist,
                    reduce_POS=input$VA_POS_TYPES,
+                   reduce_POS_exclude=input$VA_POS_TYPES_exclude,
                    reduce_NER=input$VA_ENTITY_TYPES,
+                   reduce_NER_exclude=input$VA_ENTITY_TYPES_exclude,
                    termfreq_type=input$VA_termfreq_type,
                    docfreq_type=input$VA_docfreq_type,
                    va_weightfactor=input$VA_weightfactor,
