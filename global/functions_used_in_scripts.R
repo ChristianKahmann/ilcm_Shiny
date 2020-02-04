@@ -502,7 +502,6 @@ get_meta_data_for_detailed_topic_analysis<-function(host,port,ids,datasets,token
 
 
 calculate_diachron_frequencies<-function(dtm,meta){
-  
   meta<-meta[which(meta[,1]%in%rownames(dtm)),]
   
   bin_dtm<-tmca.util::make_binary(dtm = dtm)
@@ -940,11 +939,11 @@ calculate_dictioanry_frequencies<-function(meta,dtm,dict_terms,conceptnames,dict
   doc_freqs_year_dict<-Matrix(c(0),length(un_dates_year),length(conceptnames))
   colnames(doc_freqs_year_dict)<-unlist(conceptnames)
   rownames(doc_freqs_year_dict)<-un_dates_year
-  
+
   for(l in 1:length(conceptnames)){
-    try({freqs_day_dict[,l]<-rowSums(freqs_day[,dicts_available[[l]]])})
-    try({freqs_week_dict[,l]<-rowSums(freqs_week[,dicts_available[[l]]])})
-    try({freqs_month_dict[,l]<-rowSums(freqs_month[,dicts_available[[l]]])})
+    try({freqs_day_dict[,l]<-rowSums(freqs_day[,dicts_available[[l]],drop=F])})
+    try({freqs_week_dict[,l]<-rowSums(freqs_week[,dicts_available[[l]],drop=F])})
+    try({freqs_month_dict[,l]<-rowSums(freqs_month[,dicts_available[[l]],drop=F])})
     try({freqs_year_dict[,l]<-rowSums(freqs_year[,dicts_available[[l]],drop=F])})
     
     try({doc_freqs_day_dict[,l]<-unlist(lapply(un_dates_day,FUN = function(x){return(length(which(rowSums(bin_dtm[which(dates_day==x),dicts_available[[l]],drop=F])>0)))}))})
