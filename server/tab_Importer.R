@@ -273,8 +273,10 @@ sanity_check_Modal <- function(type, data_check_choices) {
       footer = tagList(modalButton("Cancel")),
       selectInput("Import_data_id_check", "Check Data", choices=data_check_choices),
       renderPlotly({
-        plot_ly(y = nchar(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]), x = values[[id_doc_label]], type = "bar",
-                marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>% layout(title = "Lenght", xaxis = list(type="array"))
+        ids = paste(values[[id_doc_label]])
+        xlab = list(categoryorder = "array", categoryarray = ids)
+        plot_ly(y = nchar(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]), x = ids, type = "bar",
+                marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>% layout(title = "Lenght", xaxis = xlab)
       }),
       p("NOTE: Use unice 'id_doc' to see character lenght individually - otherwise it gets stacked"),
       hr(),
