@@ -987,15 +987,11 @@ observeEvent(input$Import_load_mtf,{
       need(length(list.dirs("data_import/unprocessed_data/"))>1,message=FALSE)
     )
 
-    data<-data.frame(id_doc=1:length(list.files(paste0("data_import/unprocessed_data/",input$Import_mtf_files))))
+    file_data <- readtext::readtext(file=list.files(paste0("data_import/unprocessed_data/",input$Import_mtf_files),full.names = T))
+    colnames(file_data)[1] <- "file_id"
+    data<-cbind(id = row.names(file_data),file_data)
+    
     values$Import_mtf_scripts<-rep(default_script_decription_import,13) # 13 for id_doc, title, date, body and 9 mde's
-    texte<-list()
-    for(i in 1:dim(data)[1]){
-      texte[[i]]<-readtext::readtext(file=list.files(paste0("data_import/unprocessed_data/",input$Import_mtf_files),full.names = T)[i])
-    }
-    data<-do.call(rbind,texte)
-    data<-cbind(1:dim(data)[1],data)
-    colnames(data)[1:3]<-c("id_doc","title","text")
     values$header_mtf<-colnames(data)
     values$data_mtf<-data
     values$data_load_mtf_success<-TRUE
