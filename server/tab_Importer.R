@@ -1,6 +1,8 @@
 ##########################################################################################################
 #                                    common                                                              #
 ##########################################################################################################
+library(cld2)
+source("config/sanity_check_config.R")
 
 ### import
 
@@ -227,6 +229,67 @@ split_test_view <- function(type) {
 observeEvent(input$Import_live_split_test,{
   updateTextInput(session, values$live_method_regex_label, value = input[[paste0(values$live_method_regex_label, "2")]])
 })
+
+
+### sanity check
+
+sanity_check_Modal <- function(type, data_check_choices) {
+  id_doc_label <- sprintf("Import_%s_id_doc", type)
+  date_label <- sprintf("Import_%s_date", type)
+  date_format_label <- sprintf("Import_%s_date_format", type)
+  
+  output$sanity_check_table = DT::renderDataTable({
+    regarding_data <- values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]
+    
+    valid_encoding <- if (input$Import_data_id_check == "date") {
+      !is.na(as.Date(values[[date_label]],input[[date_format_label]],optional = TRUE))
+    } else if(is.numeric(regarding_data)) {
+      rep(TRUE,length(regarding_data))
+    } else {
+      validEnc(regarding_data)
+    }
+    
+    detected_language <- if (is.numeric(regarding_data)) {rep("-",length(regarding_data))} else {
+      detect_language(regarding_data)
+    }
+    
+    regex_check <- is.na(str_extract(regarding_data,regex(sanity_check_regex)))
+    
+    data.frame(id_doc = values[[id_doc_label]], characters = nchar(regarding_data), valid_encoding, detected_language, regex_check)
+  }, server = FALSE, selection = "single")
+  
+  output$selected_row = renderText({
+    if (is.null(input$sanity_check_table_rows_selected)){
+      return("Select a row above, to see its data")
+    } else {
+      return(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]][input$sanity_check_table_rows_selected])
+    }
+  })
+  
+  showModal(
+    modalDialog(
+      size = "l",easyClose = T,fade = T,
+      title = "Sanity Check",
+      footer = tagList(modalButton("Cancel")),
+      selectInput("Import_data_id_check", "Check Data", choices=data_check_choices),
+      renderPlotly({
+        ids = paste(values[[id_doc_label]])
+        xlab = list(categoryorder = "array", categoryarray = ids)
+        plot_ly(y = nchar(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]), x = ids, type = "bar",
+                marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>% layout(title = "Lenght", xaxis = xlab)
+      }),
+      p("NOTE: Use unice 'id_doc' to see character lenght individually - otherwise it gets stacked"),
+      hr(),
+      DT::dataTableOutput('sanity_check_table'),
+      p(tags$b("valid_encoding")," - returns true is no error is found, checks date format if date is selected"),
+      p(tags$b("regex_check")," - returns true is nothing is found"),
+      p("NOTE: Language detection might fail - especially with short text"),
+      hr(),
+      h5("Content"),
+      textOutput("selected_row")
+    )
+  )
+}
 
 ##########################################################################################################
 #                                import csv                                                              #
@@ -664,7 +727,7 @@ observeEvent(input$Import_csv_start_preprocess,{
           shinyalert::shinyalert(title = "'_' not allowed",text = "Please specify a abbreviation without using '_'",type = "error")
         }
         else{
-          if(any(inherits(try({as.Date(data[,"date"],input$Import_mtf_date_format)}),"Date")==F)){
+          if(any(inherits(try({as.Date(data[,"date"],input$Import_csv_date_format)}),"Date")==F)){
             shinyalert::shinyalert(title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
           }
           else{
@@ -816,6 +879,39 @@ observeEvent(input$Import_csv_start_preprocess_and_write,{
   }
 })
 
+observeEvent(input$Import_csv_sanity_check,{
+  data_check_choices <- c("body", "id_doc", "title", "date")
+  if(input$Import_csv_mde1 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde1")
+  }
+  if(input$Import_csv_mde2 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde2")
+  }
+  if(input$Import_csv_mde3 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde3")
+  }
+  if(input$Import_csv_mde4 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde4")
+  }
+  if(input$Import_csv_mde5 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde5")
+  }
+  if(input$Import_csv_mde6 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde6")
+  }
+  if(input$Import_csv_mde7 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde7")
+  }
+  if(input$Import_csv_mde8!= "not required"){
+    data_check_choices <- c(data_check_choices, "mde8")
+  }
+  if(input$Import_csv_mde9 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde9")
+  }
+  
+  sanity_check_Modal("csv", data_check_choices)
+})
+
 
 ##########################################################################################################
 #                                import multiple text files                                              #
@@ -893,15 +989,11 @@ observeEvent(input$Import_load_mtf,{
       need(length(list.dirs("data_import/unprocessed_data/"))>1,message=FALSE)
     )
 
-    data<-data.frame(id_doc=1:length(list.files(paste0("data_import/unprocessed_data/",input$Import_mtf_files))))
+    file_data <- readtext::readtext(file=list.files(paste0("data_import/unprocessed_data/",input$Import_mtf_files),full.names = T))
+    colnames(file_data)[1] <- "file_id"
+    data<-cbind(id = row.names(file_data),file_data)
+    
     values$Import_mtf_scripts<-rep(default_script_decription_import,13) # 13 for id_doc, title, date, body and 9 mde's
-    texte<-list()
-    for(i in 1:dim(data)[1]){
-      texte[[i]]<-readtext::readtext(file=list.files(paste0("data_import/unprocessed_data/",input$Import_mtf_files),full.names = T)[i])
-    }
-    data<-do.call(rbind,texte)
-    data<-cbind(1:dim(data)[1],data)
-    colnames(data)[1:3]<-c("id_doc","title","text")
     values$header_mtf<-colnames(data)
     values$data_mtf<-data
     values$data_load_mtf_success<-TRUE
@@ -1436,21 +1528,38 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
   }
 })
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+observeEvent(input$Import_mtf_sanity_check,{
+  data_check_choices <- c("body", "id_doc", "title", "date")
+  if(input$Import_mtf_mde1 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde1")
+  }
+  if(input$Import_mtf_mde2 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde2")
+  }
+  if(input$Import_mtf_mde3 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde3")
+  }
+  if(input$Import_mtf_mde4 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde4")
+  }
+  if(input$Import_mtf_mde5 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde5")
+  }
+  if(input$Import_mtf_mde6 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde6")
+  }
+  if(input$Import_mtf_mde7 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde7")
+  }
+  if(input$Import_mtf_mde8!= "not required"){
+    data_check_choices <- c(data_check_choices, "mde8")
+  }
+  if(input$Import_mtf_mde9 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde9")
+  }
+  
+  sanity_check_Modal("mtf", data_check_choices)
+})
 
 ########################################
 #            DB & SOLR                 #
