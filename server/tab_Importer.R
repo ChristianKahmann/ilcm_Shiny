@@ -231,10 +231,41 @@ observeEvent(input$Import_live_split_test,{
   updateTextInput(session, values$live_method_regex_label, value = input[[paste0(values$live_method_regex_label, "2")]])
 })
 
+
+### sanity check
+
 sanity_check_Modal <- function(type, data_check_choices) {
   id_doc_label <- sprintf("Import_%s_id_doc", type)
   date_label <- sprintf("Import_%s_date", type)
   date_format_label <- sprintf("Import_%s_date_format", type)
+  
+  output$sanity_check_table = DT::renderDataTable({
+    regarding_data <- values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]
+    
+    valid_encoding <- if (input$Import_data_id_check == "date") {
+      !is.na(as.Date(values[[date_label]],input[[date_format_label]],optional = TRUE))
+    } else if(is.numeric(regarding_data)) {
+      rep(TRUE,length(regarding_data))
+    } else {
+      validEnc(regarding_data)
+    }
+    
+    detected_language <- if (is.numeric(regarding_data)) {rep("-",length(regarding_data))} else {
+      detect_language(regarding_data)
+    }
+    
+    regex_check <- is.na(str_extract(regarding_data,regex(sanity_check_regex)))
+    
+    data.frame(id_doc = values[[id_doc_label]], characters = nchar(regarding_data), valid_encoding, detected_language, regex_check)
+  }, server = FALSE, selection = "single")
+  
+  output$selected_row = renderText({
+    if (is.null(input$sanity_check_table_rows_selected)){
+      return("Select a row above, to see its data")
+    } else {
+      return(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]][input$sanity_check_table_rows_selected])
+    }
+  })
   
   showModal(
     modalDialog(
@@ -242,35 +273,19 @@ sanity_check_Modal <- function(type, data_check_choices) {
       title = "Sanity Check",
       footer = tagList(modalButton("Cancel")),
       selectInput("Import_data_id_check", "Check Data", choices=data_check_choices),
-      renderPlot({
-        barplot(nchar(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]), las = 3, width =0.5,space = 1.5, ylab="",names.arg=values[[id_doc_label]], cex.lab=1)
-        # add the grid
-        grid(nx=NA, ny=NULL)
-        # redraw the bars
-        barplot(nchar(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]), las = 3, width =0.5,space = 1.5, ylab="", names.arg=values[[id_doc_label]], cex.lab=1, add=T)
+      renderPlotly({
+        plot_ly(y = nchar(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]), x = values[[id_doc_label]], type = "bar",
+                marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>% layout(title = "Lenght", xaxis = list(type="array"))
       }),
-      renderTable({
-        regarding_data <- values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]
-        
-        valid_encoding <- if (input$Import_data_id_check == "date") {
-          !is.na(as.Date(values[[date_label]],input[[date_format_label]],optional = TRUE))
-        } else if(is.numeric(regarding_data)) {
-          rep(TRUE,length(regarding_data))
-        } else {
-          validEnc(regarding_data)
-        }
-        
-        detected_language <- if (is.numeric(regarding_data)) {rep("-",length(regarding_data))} else {
-          detect_language(regarding_data)
-        }
-        
-        regex_check <- is.na(str_extract(regarding_data,regex(sanity_check_regex)))
-        
-        data.frame(id_doc = values[[id_doc_label]], characters = nchar(regarding_data), valid_encoding, detected_language, regex_check)
-      }),
-      p("valid_encoding - returns true is no error is found, checks date format if date is selected"),
-      p("regex_check - returns true is nothing is found"),
-      p("NOTE: language detection might fail - especially with short text")
+      p("NOTE: Use unice 'id_doc' to see character lenght individually - otherwise it gets stacked"),
+      hr(),
+      DT::dataTableOutput('sanity_check_table'),
+      p(tags$b("valid_encoding")," - returns true is no error is found, checks date format if date is selected"),
+      p(tags$b("regex_check")," - returns true is nothing is found"),
+      p("NOTE: Language detection might fail - especially with short text"),
+      hr(),
+      h5("Content"),
+      textOutput("selected_row")
     )
   )
 }
