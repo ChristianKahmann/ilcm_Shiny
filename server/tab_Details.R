@@ -338,6 +338,7 @@ output$details_parameter<-renderUI({
     if(values$Details_Analysis=="TM"){
       #load tm resultset and make it available
       load(paste0(values$Details_Data_TM,"/data_TM.RData"))
+      load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
       updateSelectizeInput(session = session,inputId = "Det_TM_ewf_word",server = T,choices = colnames(phi))
       values$TM_Coherence_show<-FALSE
       values$TM_Intrusion_show<-FALSE
@@ -355,7 +356,7 @@ output$details_parameter<-renderUI({
       values$tm_vocab<-vocab
       values$tm_json<-json
       values$tm_term.frequency<-term.frequency
-      
+      values$tm_meta<-meta
       
       # #stm
       load(paste0(values$Details_Data_TM,"/parameters.RData"))
@@ -464,7 +465,7 @@ output$details_parameter<-renderUI({
                                           dropdownButton(status = "info",tooltip = "Options",icon=icon("gear"),
                                                          tags$h4("Options for validation colour scale"),
                                                          selectInput(inputId = "Det_TM_validation_relevance_measure",label="Relevance measure",
-                                                                     choices=c("word probability","estimated relative word frequency per topic","relevance score"),selected="word probability",multiple=F),
+                                                                     choices=c("word probability","estimated relative word frequency per topic","relevance score"),selected="estimated relative word frequency per topic",multiple=F),
                                                          conditionalPanel(condition="input.Det_TM_validation_relevance_measure=='relevance score'",
                                                                           sliderInput(inputId="Det_TM_validation_lambda",label="Lambda",min=0,max=1,step=0.01,value=0.25)
                                                          ),
@@ -480,7 +481,11 @@ output$details_parameter<-renderUI({
                                           tags$hr(),
                                           uiOutput("Det_TM_validation_metadata_UI")%>%withSpinner()
       )
-      
+      panelTopicDispersion <- conditionalPanel(condition = 'input.tabBox_tm=="Topic Dispersion"',
+                                               selectizeInput(inputId="Det_TM_dispersion_topic",label="Topic",choices=1:values$tm_number_of_topics,multiple=T,selected=character(0)),
+                                               knobInput(inputId = "Det_TM_dispersion_probability_threshold",label = "Minimal Probability",value = 0.2,min = 0,max = 1,step = 0.01)
+                                               
+      )
       #stm
       if(values$tm_method == "stm"){
         panelSTM <- conditionalPanel(condition = 'input.tabBox_tm=="Structural Topic Model"',
@@ -530,6 +535,7 @@ output$details_parameter<-renderUI({
           panelExtractDictionaries,
           panelDetailedMetaDataAnalysis,
           panelValidation,
+          panelTopicDispersion,
           panelSTM
         )
       }else{
@@ -540,7 +546,8 @@ output$details_parameter<-renderUI({
           panelDateDistribution,
           panelExtractDictionaries,
           panelDetailedMetaDataAnalysis,
-          panelValidation
+          panelValidation,
+          panelTopicDispersion
         )
       }
       return (returnValue)
@@ -562,8 +569,11 @@ output$details_visu<-renderUI({
       validate(
         need(!is.null(values$tm_theta),message=F)
       )
-      
-      updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = rownames(values$tm_theta))
+      title_data<-values$tm_meta[,c("title","id_doc")]
+      title_data<-title_data[which(title_data[,"id_doc"]%in%rownames(values$tm_theta)),]
+      choices<-title_data$id_doc
+      names(choices)<-paste0(title_data$title," (",title_data$id_doc,")")
+      updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = choices)
       
       #stm
       
@@ -613,6 +623,9 @@ output$details_visu<-renderUI({
       )
       tabPanelDetailedMetaData <- tabPanel("Detailed Metadata Distribution",
                                            uiOutput("TM_meta_ui")
+      )
+      tabPanelDispersion <- tabPanel("Topic Dispersion",
+                                           uiOutput("TM_dispersion_ui")
       )
       tabPanelValidation <- tabPanel("Validation",
                                      uiOutput("TM_validation_UI")%>%withSpinner()
@@ -763,6 +776,7 @@ output$details_visu<-renderUI({
                  tabPanelCoherence,
                  tabPanelExtractDictionaries,
                  tabPanelDetailedMetaData,
+                 tabPanelDispersion,
                  tabPanelValidation,
                  tabPanelSTM
           )
@@ -779,6 +793,7 @@ output$details_visu<-renderUI({
                  tabPanelCoherence,
                  tabPanelExtractDictionaries,
                  tabPanelDetailedMetaData,
+                 tabPanelDispersion,
                  tabPanelValidation
           )
         )
