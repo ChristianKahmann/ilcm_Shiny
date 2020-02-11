@@ -71,4 +71,4 @@ config_file.R
 /global/task_id_counter.RData
 config_file_local.R
 /stm-visualization/*
-
+/collections/geolocations/*
