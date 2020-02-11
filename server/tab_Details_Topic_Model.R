@@ -2035,6 +2035,9 @@ output$Det_TM_validation_metadata_UI<-renderUI({
   validate(
     need(
       !is.null(input$Det_TM_validation_document),message=F
+    ),
+    need(
+      input$Det_TM_validation_document!="",message=F
     )
   )
   identifier<-stringr::str_split(string = input$Det_TM_validation_document,pattern = "_",simplify = T)
@@ -2154,9 +2157,6 @@ output$TM_validation_UI<-renderUI({
     rbPal_pos <- colorRampPalette(c(input$Det_TM_validation_color_least_important,input$Det_TM_validation_color_most_important))
   }
   m<-cbind(m,rep("",dim(m)[1]))
-  print((m[order(m[,"weight"][1:20],decreasing = T),c("word","weight")]))
-  print(min)
-  print(max)
   if(length(intersect(which(!is.na(m$weight)),which(m$weight!=0)))>0){
     m[intersect(which(!is.na(m$weight)),which(m$weight!=0)),12]<-  rbPal_pos(100)[as.numeric(cut(c(max,min,m$weight[intersect(which(!is.na(m$weight)),which(m$weight!=0))]),breaks = 100))[-c(1,2)]] #Alternative#seq(0,to = max(data$weight),length.out = 100) #original m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))]
   }
@@ -2170,12 +2170,12 @@ output$TM_validation_UI<-renderUI({
     }
   })
   
-  a<-list()
+  document<-list()
   for(i in 1:dim(m)[1]){
-    a[[i]]<-paste0("<span span_nr='",i,"'>",strings[i],"</span>")
+    document[[i]]<-paste0("<span span_nr='",i,"'>",strings[i],"</span>")
   }
-  a<-do.call(rbind,a)
-  a<-HTML(a)
+  document<-do.call(rbind,document)
+  document<-HTML(document)
   return(
     tagList(
       fluidRow(style="margin-left:0px;margin-right:0px",
@@ -2185,7 +2185,7 @@ output$TM_validation_UI<-renderUI({
                ),
                column(8,
                       tags$br(),
-                      tags$p(a)
+                      tags$p(document)
                )
       )
       
@@ -2201,13 +2201,16 @@ output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
   validate(
     need(
       !is.null(input$Det_TM_validation_document),message=FALSE
+    ),
+    need(
+      input$Det_TM_validation_document!="",message=F
     )
   )
   getPalette = colorRampPalette(brewer.pal(12, "Paired"))
   colors<-getPalette(dim(values$tm_phi)[1])
   data<-values$tm_theta[input$Det_TM_validation_document,]
   data<-data.frame(class=paste("Topic: ",names(data)),likelihood=data)
-  
+
   p <- plot_ly(data, labels = ~factor(class), values = ~likelihood, textposition = 'inside',source="tm_validation_pie",marker = list(colors = colors),
                textinfo = 'label+percent') %>%
     plotly::add_pie(hole = 0.6) %>%
@@ -2254,8 +2257,11 @@ output$TM_dispersion_ui<-renderUI({
 
 # summary table for topic dispersion
 output$Det_TM_dispersion_summary_table<-DT::renderDataTable({
+  validate(
+    need(!is.null(values$tm_theta),message=F)
+  )
+  values$tm_random
   theta<-values$tm_theta
-  
   topic_importance<-round(Matrix::colSums(theta),digits = 2)
   greater010<-apply(theta,MARGIN = 2,function(x){
     length(which(x>0.1))
