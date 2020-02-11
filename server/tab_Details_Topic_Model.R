@@ -10,8 +10,7 @@ output$download_theta<-downloadHandler(
     data<-as.matrix(values$tm_theta)
     write.csv(data, con)
   }
-)  
-
+)
 
 #link downloadbutton for phi in Topic Models Tab
 output$download_phi<-downloadHandler(
@@ -1332,6 +1331,12 @@ output$Det_TM_meta_wordcloud11<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
 })
+
+
+#################################################
+#           Detailed Metadata for selected Topic#
+#################################################
+
 output$Det_TM_Meta1<-renderUI({
   if("token"%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -1341,6 +1346,10 @@ output$Det_TM_Meta1<-renderUI({
     else{
       ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
     }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
     #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),"token"]
@@ -1389,6 +1398,10 @@ output$Det_TM_Meta2<-renderUI({
     else{
       ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
     }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
     #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[5]]
@@ -1438,6 +1451,10 @@ output$Det_TM_Meta3<-renderUI({
     else{
       ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
     }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
     #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[6]]
@@ -1487,6 +1504,10 @@ output$Det_TM_Meta4<-renderUI({
     else{
       ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
     }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
     #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[7]]
@@ -1534,6 +1555,10 @@ output$Det_TM_Meta5<-renderUI({
     else{
       ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
     }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
     #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[8]]
@@ -1583,6 +1608,10 @@ output$Det_TM_Meta6<-renderUI({
     else{
       ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
     }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
     #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[9]]
@@ -1632,6 +1661,10 @@ output$Det_TM_Meta7<-renderUI({
     else{
       ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
     }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
     #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[10]]
@@ -1681,6 +1714,10 @@ output$Det_TM_Meta8<-renderUI({
     else{
       ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
     }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
     #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[11]]
@@ -1730,6 +1767,10 @@ output$Det_TM_Meta9<-renderUI({
     else{
       ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
     }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
     #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[12]]
@@ -1780,6 +1821,10 @@ output$Det_TM_Meta10<-renderUI({
     else{
       ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
     }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
     #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[13]]
@@ -1828,6 +1873,10 @@ output$Det_TM_Meta11<-renderUI({
     else{
       ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
     }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
     #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[14]]
@@ -1877,6 +1926,10 @@ output$Det_TM_Meta12<-renderUI({
     else{
       ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
     }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
     #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[15]]
@@ -1999,6 +2052,8 @@ output$Det_TM_validation_metadata_UI<-renderUI({
   ))
 })
 
+
+# plot for topic validation tab showing the document with the words highlighted, which are relevant in the chosen topic
 output$TM_validation_UI<-renderUI({
   validate(
     need(
@@ -2083,7 +2138,7 @@ output$TM_validation_UI<-renderUI({
       min<-min(data[intersect(unique(features),rownames(data)),"weight"])
     }
   }
-
+  
   
   
   m<-merge(x = token,y=data,by="features",all.x=TRUE)
@@ -2139,6 +2194,9 @@ output$TM_validation_UI<-renderUI({
 })
 
 
+
+# pie chart showing the topic distribution of a selected topic 
+# @input$Det_TM_validation_document: chosen document using doc_id as identifier
 output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
   validate(
     need(
@@ -2172,3 +2230,129 @@ observe({
   )
   updateSliderInput(session = session,inputId = "Det_TM_validation_topic",value = as.numeric(click_pie_tm_validation()$pointNumber+1) )
 })
+
+
+
+# output object for topic dispersion 
+output$TM_dispersion_ui<-renderUI({
+  return(tagList(
+    tabsetPanel(type="tabs",
+                tabPanel(title = "Summary",
+                         DT::dataTableOutput(outputId = "Det_TM_dispersion_summary_table")%>% withSpinner()
+                ),
+                tabPanel(title = "Details",
+                         tags$h4("Topic Probability Distributions"),
+                         plotly::plotlyOutput(outputId = "Det_TM_dispersion_detailed_single_hist"),
+                         plotly::plotlyOutput(outputId = "Det_TM_dispersion_detailed_plot")
+                )
+    )
+  ))
+})
+
+
+
+
+# summary table for topic dispersion
+output$Det_TM_dispersion_summary_table<-DT::renderDataTable({
+  theta<-values$tm_theta
+  
+  topic_importance<-round(Matrix::colSums(theta),digits = 2)
+  greater010<-apply(theta,MARGIN = 2,function(x){
+    length(which(x>0.1))
+  })
+  greater025<-apply(theta,MARGIN = 2,function(x){
+    length(which(x>0.25))
+  })
+  greater050<-apply(theta,MARGIN = 2,function(x){
+    length(which(x>0.5))
+  })
+  greater075<-apply(theta,MARGIN = 2,function(x){
+    length(which(x>0.75))
+  })
+  greater090<-apply(theta,MARGIN = 2,function(x){
+    length(which(x>0.9))
+  })
+  data<-data.frame(Topic_Importnace=topic_importance, Greater010=greater010,Greater025=greater025,Greater050=greater050,Greater075=greater075,Greater090=greater090)
+  rownames(data)<-paste("Topic:",1:nrow(data))
+  colnames(data)<-c("topic importance",">0.1", ">0.25", ">0.5", ">0.75", ">0.9")
+  datatable(data = data,options = list(dom="T",pageLength = nrow(data), info = FALSE,
+                                       lengthMenu = list(c(15, -1), c("15", "All"))))%>%
+    formatStyle(columns = 1,
+                background = styleColorBar(range(data[,1]), 'lightblue'),
+                backgroundSize = '98% 88%',
+                backgroundRepeat = 'no-repeat',
+                backgroundPosition = 'center')%>%
+    formatStyle(columns = 2,
+                background = styleColorBar(range(data[,2]), 'lightblue'),
+                backgroundSize = '98% 88%',
+                backgroundRepeat = 'no-repeat',
+                backgroundPosition = 'center')%>%
+    formatStyle(columns = 3,
+                background = styleColorBar(range(data[,3]), 'lightblue'),
+                backgroundSize = '98% 88%',
+                backgroundRepeat = 'no-repeat',
+                backgroundPosition = 'center')%>%
+    formatStyle(columns = 4,
+                background = styleColorBar(range(data[,4]), 'lightblue'),
+                backgroundSize = '98% 88%',
+                backgroundRepeat = 'no-repeat',
+                backgroundPosition = 'center')%>%
+    formatStyle(columns = 5,
+                background = styleColorBar(range(data[,5]), 'lightblue'),
+                backgroundSize = '98% 88%',
+                backgroundRepeat = 'no-repeat',
+                backgroundPosition = 'center')%>%
+    formatStyle(columns = 6,
+                background = styleColorBar(range(data[,6]), 'lightblue'),
+                backgroundSize = '98% 88%',
+                backgroundRepeat = 'no-repeat',
+                backgroundPosition = 'center')
+})
+
+
+# detailed dispersion plot; multiple histograms
+output$Det_TM_dispersion_detailed_plot<-plotly::renderPlotly({
+  validate(
+    need(length(input$Det_TM_dispersion_topic)>0,message="Please choose at least one topic")
+  )
+  data<-values$tm_theta[,input$Det_TM_dispersion_topic,drop=F]
+  data[which(data<input$Det_TM_dispersion_probability_threshold,arr.ind = T)]<-NA
+  plot_list<-list()
+  plot_list[[1]]<-plot_ly(x = data[,input$Det_TM_dispersion_topic[1]]) %>%
+    add_histogram(name=paste("Topic:",input$Det_TM_dispersion_topic[1]))
+  if(length(input$Det_TM_dispersion_topic)>1){
+    for(i in 2:length(input$Det_TM_dispersion_topic)){
+      plot_list[[i]]<-plot_ly(x = data[,input$Det_TM_dispersion_topic[i]]) %>%
+        add_histogram(name=paste("Topic:",input$Det_TM_dispersion_topic[i]))
+    }
+  }
+  return(
+    subplot(plot_list)
+  )
+})
+
+
+# detailed dispersion plot with a single histogram
+output$Det_TM_dispersion_detailed_single_hist<-plotly::renderPlotly({
+  validate(
+    need(length(input$Det_TM_dispersion_topic)>0,message="Please choose at least one topic")
+  )
+  data<-values$tm_theta[,input$Det_TM_dispersion_topic,drop=F]
+  data[which(data<input$Det_TM_dispersion_probability_threshold,arr.ind = T)]<-NA
+  hist<-plot_ly(x = data[,input$Det_TM_dispersion_topic[1]],alpha = 0.7) %>%
+    add_histogram(name=paste("Topic:",input$Det_TM_dispersion_topic[1]))
+  if(length(input$Det_TM_dispersion_topic)>1){
+    for(i in 2:length(input$Det_TM_dispersion_topic)){
+      hist<-add_histogram(p=hist,x = data[,input$Det_TM_dispersion_topic[i]],name=paste("Topic:",input$Det_TM_dispersion_topic[i]))
+    }
+  }
+  hist<-layout(p=hist,barmode = "overlay",
+               xaxis = list(title = "Topic Probability",
+                            zeroline = FALSE),
+               yaxis = list(title = "Count",
+                            zeroline = FALSE))
+  return(
+    hist
+  )
+}
+)
