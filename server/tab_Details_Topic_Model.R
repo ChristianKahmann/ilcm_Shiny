@@ -50,11 +50,16 @@ output$TM_LDAvis <- LDAvis::renderVis({
   }
   else{
     if(!is.null(input$nTerms)){
-      #vocab<-stringr::str_replace_all(string = values$tm_vocab,pattern = "\\\\",replacement="")
-      #tm<-LDAvis::createJSON(values$tm_phi, values$tm_theta, values$tm_doc.length, values$tm_vocab, values$tm_term.frequency, 
-      #                       R = input$nTerms,reorder.topics = F)#mds.method = svd_tsne )
-      
-      return(values$tm_json)
+      # default number of words in lda vis is 30; if user uses other number --> need to create newjson object 
+      if(input$nTerms!=30){
+        #vocab<-stringr::str_replace_all(string = values$tm_vocab,pattern = "\\\\",replacement="")
+        tm<-LDAvis::createJSON(values$tm_phi, values$tm_theta, values$tm_doc.length, values$tm_vocab, values$tm_term.frequency, 
+                               R = input$nTerms,reorder.topics = F)#mds.method = svd_tsne )
+        return(tm)
+      }
+      else{
+        return(values$tm_json)
+      }
     }
   }
 })
@@ -2047,11 +2052,11 @@ output$Det_TM_validation_metadata_UI<-renderUI({
   return(tagList(
     tags$h4("Metadata"),
     tags$b("title:"),
-    tags$div(metadata["title"]),
+    tags$div(metadata[1,"title"]),
     tags$b("date:"),
-    tags$div(metadata["date"]),
+    tags$div(metadata[1,"date"]),
     tags$b("number of token:"),
-    tags$div(metadata["token"])
+    tags$div(metadata[1,"token"])
   ))
 })
 
@@ -2210,7 +2215,7 @@ output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
   colors<-getPalette(dim(values$tm_phi)[1])
   data<-values$tm_theta[input$Det_TM_validation_document,]
   data<-data.frame(class=paste("Topic: ",names(data)),likelihood=data)
-
+  
   p <- plot_ly(data, labels = ~factor(class), values = ~likelihood, textposition = 'inside',source="tm_validation_pie",marker = list(colors = colors),
                textinfo = 'label+percent') %>%
     plotly::add_pie(hole = 0.6) %>%

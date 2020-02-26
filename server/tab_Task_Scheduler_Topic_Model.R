@@ -764,7 +764,7 @@ observeEvent(input$TM_pruning_continue,ignoreInit = T,{
                    tm_detailed_meta=input$TM_detailed_meta_dist
   )
   
-  if(input$tm_method == "stm"){
+  if(input$TM_method == "stm"){
     #add stm parameters
     stm_parameters <- list(
       stm_prevalenceFormula = input$stm_prevalenceFormula,

@@ -422,7 +422,7 @@ output$details_parameter<-renderUI({
       #panels for topic modeling parameters for visualisation
       
       panelLDAVIs <- conditionalPanel(condition = 'input.tabBox_tm=="LDA-Vis"',
-                                      sliderInput("nTerms", "Number of terms to display", min = 20, max = 40, value = 30),
+                                      sliderInput("nTerms", "Number of terms to display", min = 10, max = 60, value = 30),
                                       tags$br(),
                                       downloadButton(outputId = "download_phi",label = "phi",icon=icon("download")),
                                       downloadButton(outputId = "download_theta",label = "theta",icon=icon("download"))#,

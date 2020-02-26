@@ -368,7 +368,12 @@ output$cooc_examples_table<-DT::renderDataTable({
   #  text[,1]<-stringr::str_replace_all(string = (text[,1]),pattern = stringr::regex(paste(" ",word," ",sep=""),ignore_case = T),replacement = paste0(' <b style="color:',colors[i],'">',word,'</b> '))
   #}
   
+  #add document titles
+  document_titles<-get_metadata_from_db(dataset = stringr::str_split(string = document_ids,pattern = "_",simplify = T)[,1],
+                                        doc_ids = stringr::str_split(string = document_ids,pattern = "_",simplify = T)[,2],
+                                        host = values$host, port = values$port)
   data<-data.frame(Text=text,
+                   Title = document_titles$title,
                    SeeDocument = shinyInput(
                      shinyBS::bsButton,
                      length(document_ids),
@@ -378,7 +383,7 @@ output$cooc_examples_table<-DT::renderDataTable({
                      icon=icon("search"),
                      onclick = 'Shiny.onInputChange(\"coocs_kwic_document\",  this.id)'
                    ),stringsAsFactors = FALSE)
-  
+  colnames(data)<-c("Text","Document Title", "See Document?")
   
   return(datatable(data = data,escape=F,selection="none"))
 })

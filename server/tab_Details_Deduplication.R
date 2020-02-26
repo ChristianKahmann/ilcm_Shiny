@@ -477,6 +477,10 @@ output$Det_DD_Network<-visNetwork::renderVisNetwork({
     title=t[,"similarity"],
     color=fifer::number.to.colors(value = t[,"similarity"],colors = c("gold","orange1","orangered1","red2"))
   )
+  
+  # get document titles from db
+  titles <- values$Det_DD_meta[,"title"]
+  nodes$label<-titles[as.numeric(nodes$id)]
   if(input$Det_DD_use_igraph_layout==TRUE){
     network<-visNetwork::visNetwork(nodes = nodes,edges = edges) %>%
       visNetwork::visIgraphLayout(randomSeed = 1)%>%

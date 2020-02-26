@@ -43,15 +43,22 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format){
   #  token<-token[-which(token[,6]=="SPACE"),]
   #}
   token[which(token[,6]=="SPACE"),4:5]<-""
- 
+  
   token<-cbind(rep(metadata[1,"dataset"],dim(token)[1]),token)
   
   
   log_to_file(message = "data preprocessed",logfile)
-
+  
   print("converting dates")
-  metadata[,"date"]<-as.character(as.Date(as.matrix(metadata[,"date"]),format =date_format ))
-
+  formatted_dates<-as.character(as.Date(as.matrix(metadata[,"date"]),format =date_format ))
+  if(all(is.na(formatted_dates))){
+    # if dates only consist of 4 characters, assume only year is given
+    if(nchar(metadata[1,"date"])==4){
+      formatted_dates<-as.character(as.Date(as.matrix(metadata[,"date"]),format ="%Y" ))
+    }
+  }
+  metadata[,"date"] <- formatted_dates
+  
   log_to_file(message = "extracting entities",logfile)
   metadata<-cbind(metadata,rep(0,dim(metadata)[1]))
   count=0
