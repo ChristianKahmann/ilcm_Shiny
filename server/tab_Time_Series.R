@@ -81,10 +81,9 @@ output$TS_plot<-renderPlotly({
         dates<-matrix(dates,ncol = 2)
         results[[j]]<-dates
       }
-      print("dates ready")
       #get abs number of documents from solr facets
       if(input$TS_rel_abs=="relative"){
-        fq<-stringr::str_extract(string = isolate(values$fq),pattern = "(dataset_s:[A-Za-z0-9]+)")
+        fq<-stringr::str_extract(string = isolate(values$fq),pattern = 'dataset_s:\\(?[A-Za-z0-9 \\\"]+\\)?')
         glob_data<-facet_date(base = isolate(values$url),q ="*:*",facet.field="date_dt",fq=fq,fl="facet",facet.limit = -1,facet.range.gap = "%2B1MONTH")
         date<-unlist(glob_data$facet_fields$date_dt$X1)
         counts<-unlist(glob_data$facet_fields$date_dt$X2)
@@ -121,7 +120,7 @@ output$TS_plot<-renderPlotly({
         dates<-dates[order(dates[,1]),]
         dates<-matrix(dates,ncol = 2)
         #divide counts for query by glob counts
-        for(l in 1:length(results)){
+         for(l in 1:length(results)){
           ids<-which(results[[l]][,1]%in%dates[,1])
           ids2<-which(dates[,1]%in%results[[l]][,1])
           results[[l]][ids,2]<-as.numeric(results[[l]][ids,2])/as.numeric(dates[ids2,2])

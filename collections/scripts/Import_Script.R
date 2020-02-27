@@ -32,9 +32,9 @@ error<-try(expr = {
   spacy_initialize(model = language)
   log_to_file(message = "spacy initialized",logfile)
   
-  #write import csv for meta and token information
+  # write import csv for meta and token information
   preprocess_data(text = metadata[,"body"],metadata = metadata,process_id = process_info[[1]],offset = (min(as.numeric(metadata[,"id_doc"]))-1),logfile = logfile,date_format = date_format)
-  #write meta metadata csv
+  # write meta metadata csv
   write.csv(x = parameters[[5]],file=paste0("data_import/processed_data/metameta_",metadata[1,"dataset"],"_",process_info[[1]],".csv"),row.names = F)
   
   log_to_file(message = "finished writing results metadata to database",logfile)

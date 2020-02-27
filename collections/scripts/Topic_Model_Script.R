@@ -80,6 +80,9 @@ error<-try(expr = {
   
   
   
+ # #remove locations for transnorms project
+#  db_data$token<-remove_locations(token=db_data$token)
+  
   
   
   #preparing token object

@@ -187,7 +187,11 @@ prepare_token_object<-function(token,parameters){
         log_to_file(message = "&emsp; Finished consolidating entities",file = logfile)
       }
       safe<-setdiff(which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ",")))),which(token[,4]==""))
+      # Spacy uses Tags PER and PERSON for person named entities --> check for both options
       reduce<-which(token[,7]%in%parameters$reduce_NER_exclude)
+      reduce<-c(reduce,which(token[,7]%in%stringr::str_replace_all(parameters$reduce_NER_exclude,
+                                                                   pattern = "PER","PERSON"))
+      )
       remove<-unique(setdiff(reduce,safe))
       if(length(remove)>0){
         token<-token[-remove,]
@@ -230,6 +234,7 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
       just_save_custom=parameters$whitelist_only
     )
   )
+
   # split token
   splitsize<-ceiling(100000/(dim(token)[1]/length(unique(token[,1]))))
   split<-split(unique(token[,1]), ceiling(seq_along(unique(token[,1]))/splitsize))
@@ -939,7 +944,7 @@ calculate_dictioanry_frequencies<-function(meta,dtm,dict_terms,conceptnames,dict
   doc_freqs_year_dict<-Matrix(c(0),length(un_dates_year),length(conceptnames))
   colnames(doc_freqs_year_dict)<-unlist(conceptnames)
   rownames(doc_freqs_year_dict)<-un_dates_year
-
+  
   for(l in 1:length(conceptnames)){
     try({freqs_day_dict[,l]<-rowSums(freqs_day[,dicts_available[[l]],drop=F])})
     try({freqs_week_dict[,l]<-rowSums(freqs_week[,dicts_available[[l]],drop=F])})
@@ -1047,3 +1052,32 @@ getSpecificResultFolderNameFromSelectedTopic <- function(data){
   
   return(specificResultFolderName)
 }
+
+
+
+
+
+
+
+remove_locations<-function(token){
+  locations<-readtext::readtext(file = "officialnamesofcountries.pdf")$text
+  locations<-substr(x = locations,start=58,stop = nchar(locations))
+  locations<-stringr::str_split(string = locations,pattern = "\n",simplify = T)[1,]
+  locations<-locations[-which(nchar(locations)<3)]
+  
+  for( loc in locations){
+    l<-length(stringr::str_split())
+    for(i in 1:(nrow(token)-5)){
+      string<-token[i]
+      
+    }
+  }
+  
+  
+  
+}
+
+
+
+
+
