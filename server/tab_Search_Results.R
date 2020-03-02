@@ -88,7 +88,7 @@ output$search_results_datatable<-DT::renderDataTable({
   meta<-colnames(ind_new)[which(!colnames(ind_new)%in%c("id_doc","dataset","title","date","language","token","id","score","keyword and context"))]
   if(length(meta)>0){
     ind_new<-ind_new[,intersect(colnames(ind_new),c("id_doc","id","dataset","score","title","date","token","language",meta,"keyword and context"))]
-    }
+  }
   
   ind<-ind_new
   
@@ -124,11 +124,12 @@ output$search_results_datatable<-DT::renderDataTable({
       if(nchar(isolate(input$sort))>0){
         remove_existing_checkboxes(1:10)
         data<-datatable(data.frame(data,keep=shinyInput_checkbox(checkboxInput,dim(data)[1],"cbox_",values=!(data[,"id"]%in%isolate(values$delete_documents)),label=NULL))
-                        ,selection = "single",rownames = FALSE,escape = F,class = "row-border compact",options = list(
+                        ,selection = "single",rownames = FALSE,escape = F,class = "row-border compact",extensions = "Buttons",
+                        options = list(
                           preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
                           drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
-                          dom="t",
-                          columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=c(4,7:(dim(data)[2])))),
+                          dom="tB", buttons = I('colvis'),
+                          columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=c(2,4,8:(dim(data)[2])))),
                           order=list((which(colnames(data)==stringr::str_replace_all(string = stringr::str_replace_all(isolate(input$sort)," .+",""),pattern = "_[a-z]+$",replacement = ""))-1),str_split(isolate(input$sort),pattern = " ")[[1]][2])
                         ),
                         callback = JS(
@@ -232,15 +233,16 @@ $(".sorting_asc").on("click",function() {
       }
     }
     else{
-      data<-datatable(data.frame(data,keep=shinyInput_checkbox(checkboxInput,dim(data)[1],"cbox_",values=!(data[,"id"]%in%isolate(values$delete_documents)),label=NULL)),selection = "single",rownames = FALSE,class = "row-border compact",escape = F,options = list(
-        preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
-        drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
-        dom="t",
-        order=list(3,"desc"),
-        columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=c(4,7:(dim(data)[2]))))
-      ),
-      callback = JS(
-        '$(".sorting").on("click",function() {
+      data<-datatable(data.frame(data,keep=shinyInput_checkbox(checkboxInput,dim(data)[1],"cbox_",values=!(data[,"id"]%in%isolate(values$delete_documents)),label=NULL)),selection = "single",
+                      rownames = FALSE,class = "row-border compact",escape = F, extensions = "Buttons", options = list(
+                        preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
+                        drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
+                        dom="Bt", buttons = I('colvis'),
+                        order=list(7,"desc"),
+                        columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=c(2,4,8:(dim(data)[2]))))
+                      ),
+                      callback = JS(
+                        '$(".sorting").on("click",function() {
       i = this.innerHTML;
       o = this.outerHTML;
       if (o.includes("column ascending")){
@@ -310,7 +312,7 @@ $(".sorting_desc").on("click",function() {
       e.stopPropagation()
       });
       '
-      )
+                      )
       )
     }
   }

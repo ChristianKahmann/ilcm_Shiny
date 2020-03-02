@@ -67,21 +67,15 @@ error<-try(expr = {
   
   #get metadata
   log_to_file(message = "<b>Step 6/13: Getting metadata for detailed metadata analysis from database</b>",file = logfile)
-  if(parameters$tm_detailed_meta==TRUE || parameters$tm_method == "stm"){
-    
-    meta_data<-get_meta_data_for_detailed_topic_analysis(host = host,port = db_port,ids = info[[3]],datasets = unique(info[[2]]),token = db_data$token)
-    meta<-meta_data$meta
-    meta_names<-meta_data$meta_names
-  }
-  else{
-    log_to_file(message = " &emsp; Detailed metadata analysis not selected ",file = logfile)
-  }
+  meta_data<-get_meta_data_for_detailed_topic_analysis(host = host,port = db_port,ids = info[[3]],datasets = unique(info[[2]]),token = db_data$token)
+  meta<-meta_data$meta
+  meta_names<-meta_data$meta_names
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
   
   
- # #remove locations for transnorms project
-#  db_data$token<-remove_locations(token=db_data$token)
+  # #remove locations for transnorms project
+  #  db_data$token<-remove_locations(token=db_data$token)
   
   
   
@@ -233,9 +227,7 @@ error<-try(expr = {
   save(dtm,file=paste0(path0,"dtm_TM.RData"))
   save(documents_original,file=paste0(path0,"documents_TM.RData"))
   #save(rel_counts,freqs,file=paste0(path0,"est_counts_TM.RData"))
-  if(parameters$tm_detailed_meta==TRUE || parameters$tm_method == "stm"){
-    save(meta,meta_names,file=paste0(path0,"meta_TM.RData"))
-  }
+  save(meta,meta_names,file=paste0(path0,"meta_TM.RData"))
   save(info,file=paste0(path0,"info.RData"))
   parameters<-parameters_original
   save(parameters,lang,file=paste0(path0,"parameters.RData"))

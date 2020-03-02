@@ -164,10 +164,10 @@ output$collection_documents<-DT::renderDataTable({
     if(!is.null(isolate(input$sort))){
       if(nchar(isolate(input$sort))>0){
         data<-datatable(tabledata
-                        ,selection = "single",rownames = FALSE,escape = F,class = "row-border compact",options = list(
+                        ,selection = "single",rownames = FALSE,escape = F,class = "row-border compact", extensions =  "Buttons",options = list(
                           preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
                           drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
-                          dom="t",
+                          dom="Bt",buttons = I('colvis'),
                           columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=c(4,7:(dim(data)[2])))),
                           order=list((which(colnames(data)==stringr::str_replace_all(string = stringr::str_replace_all(isolate(input$sort)," .+",""),pattern = "_[a-z]+$",replacement = ""))-1),str_split(isolate(input$sort),pattern = " ")[[1]][2])
                         ),
@@ -272,11 +272,11 @@ output$collection_documents<-DT::renderDataTable({
       }
     }
     else{
-      data<-datatable(tabledata,selection = "single",rownames = FALSE,class = "row-border compact",escape = F,options = list(
+      data<-datatable(tabledata,selection = "single",rownames = FALSE,class = "row-border compact",escape = F,extensions = "Buttons",options = list(
         preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
         drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
-        dom="t",
-        order=list(2,"desc"),
+        dom="Bt",buttons = I('colvis'),
+        order=list(3,"desc"),
         columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=c(4,7:(dim(data)[2]))))
       ),
       callback = JS(
