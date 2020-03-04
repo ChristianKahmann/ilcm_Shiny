@@ -105,7 +105,7 @@ collectargs <- function(x){
   for(i in seq_along(x)){
     outlist[[i]] <- makemultiargs(x[[i]])
   }
-  as.list(unlist(compact(outlist)))
+  as.list(unlist(plyr::compact(outlist)))
 }
 
 
