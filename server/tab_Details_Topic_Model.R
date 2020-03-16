@@ -380,10 +380,9 @@ output$TM_stm_visu_topicCorr_calc <- renderPlot({
 outputOptions(output, "TM_stm_visu_topicCorr_show", suspendWhenHidden = FALSE)
 
 
-#estimateEffect
+# estimateEffect
 observeEvent(input$tm_stm_visu_estimateEffect_calcButton,{
-  
-  #convert to factors and numeric
+  # convert to factors and numeric
   metaVarsToConvertToFactor <- input$tm_stm_visu_estimateEffect_metaVarsToConvertToFactor
   metaVarsToConvertToNumeric <- input$tm_stm_visu_estimateEffect_metaVarsToConvertToNumeric
   values$tm_stm_metaDataConverted <- values$tm_stm_metaData
@@ -1160,11 +1159,17 @@ output$Det_meta_select_ui<-renderUI({
   )
   tagList(
     selectInput(inputId = "Det_meta_select",label = "Choose a Meta Category",choices = colnames(values$TM_meta)[4:length(colnames(values$TM_meta))]),
+    checkboxInput(inputId ="Det_TM_meta_multi_valued", label = "Metadata field multi valued?", FALSE),
+    conditionalPanel(condition="input.Det_TM_meta_multi_valued==true",
+                   textInput(inputId = "Det_TM_meta_multi_valued_seperator", label = "value seperator", value = ",")
+                   ),
     numericInput(inputId = "Det_meta_topic",label="Which topic should be analyzed?",value = 1,min = 1,max = dim(values$tm_theta)[2],step = 1),
     materialSwitch(inputId = "TM_meta_Rank1",label = "Use Rank1 for selecting document memebership",value = T,status = "warning"),
     conditionalPanel(condition = 'input.TM_meta_Rank1==false',
                      knobInput(inputId = "TM_meta_Prob",label = "Minimal Probability",value = 0.5,min = 0,max = 1,step = 0.01)
-    )
+    ),
+    sliderInput(inputId = "Det_TM_meta_min_occurrences_for_pie", label = "minimal occurrences to include in pie chart",
+                min = 1, max = 30, value = 1)
   )
 })
 
@@ -1356,18 +1361,23 @@ output$Det_TM_Meta1<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),"token"]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
-    
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     output$Det_TM_meta_plot_token<-renderPlotly({
-      p <- plot_ly(counts, labels = ~meta, values = ~Freq, type = 'pie') %>%
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
         layout(title = 'Meta distribution for meta category: "token"',legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_1<-DT::renderDataTable({
       counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
       colnames(counts)<-c(colnames(values$TM_meta)[5],"absolute","relative")
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
@@ -1408,17 +1418,28 @@ output$Det_TM_Meta2<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[5]]
+    # check if > min occurrences
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+    }
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     output$Det_TM_meta_plot_2<-renderPlotly({
-      p <- plot_ly(counts, labels = ~meta, values = ~Freq, type = 'pie') %>%
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
         layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[5],'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_2<-DT::renderDataTable({
       counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
       colnames(counts)<-c(colnames(values$TM_meta)[5],"absolute","relative")
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
@@ -1461,17 +1482,28 @@ output$Det_TM_Meta3<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[6]]
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+    }
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     output$Det_TM_meta_plot_3<-renderPlotly({
-      p <- plot_ly(counts, labels = ~meta, values = ~Freq, type = 'pie') %>%
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
         layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[6],'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_3<-DT::renderDataTable({
       counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
       colnames(counts)<-c(colnames(values$TM_meta)[6],"absolute","relative")
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
@@ -1514,17 +1546,28 @@ output$Det_TM_Meta4<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[7]]
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+    }
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     output$Det_TM_meta_plot_4<-renderPlotly({
-      p <- plot_ly(counts, labels = ~meta, values = ~Freq, type = 'pie') %>%
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
         layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[7],'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_4<-DT::renderDataTable({
       counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
       colnames(counts)<-c(colnames(values$TM_meta)[7],"absolute","relative")
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
@@ -1565,17 +1608,28 @@ output$Det_TM_Meta5<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[8]]
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+     meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+    }
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     output$Det_TM_meta_plot_5<-renderPlotly({
-      p <- plot_ly(counts, labels = ~meta, values = ~Freq, type = 'pie') %>%
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
         layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[8],'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_5<-DT::renderDataTable({
       counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
       colnames(counts)<-c(colnames(values$TM_meta)[8],"absolute","relative")
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
@@ -1618,17 +1672,28 @@ output$Det_TM_Meta6<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[9]]
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+    }
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     output$Det_TM_meta_plot_6<-renderPlotly({
-      p <- plot_ly(counts, labels = ~meta, values = ~Freq, type = 'pie') %>%
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
         layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[9],'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_6<-DT::renderDataTable({
       counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
       colnames(counts)<-c(colnames(values$TM_meta)[9],"absolute","relative")
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
@@ -1671,17 +1736,28 @@ output$Det_TM_Meta7<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[10]]
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+    }
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     output$Det_TM_meta_plot_7<-renderPlotly({
-      p <- plot_ly(counts, labels = ~meta, values = ~Freq, type = 'pie') %>%
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
         layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[10],'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_7<-DT::renderDataTable({
       counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
       colnames(counts)<-c(colnames(values$TM_meta)[10],"absolute","relative")
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
@@ -1724,17 +1800,28 @@ output$Det_TM_Meta8<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[11]]
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+    }
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     output$Det_TM_meta_plot_8<-renderPlotly({
-      p <- plot_ly(counts, labels = ~meta, values = ~Freq, type = 'pie') %>%
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
         layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[11],'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_8<-DT::renderDataTable({
       counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
       colnames(counts)<-c(colnames(values$TM_meta)[11],"absolute","relative")
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
@@ -1777,17 +1864,28 @@ output$Det_TM_Meta9<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[12]]
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+    }
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     output$Det_TM_meta_plot_8<-renderPlotly({
-      p <- plot_ly(counts, labels = ~meta, values = ~Freq, type = 'pie') %>%
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
         layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[12],'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_8<-DT::renderDataTable({
       counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
       colnames(counts)<-c(colnames(values$TM_meta)[12],"absolute","relative")
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
@@ -1831,17 +1929,28 @@ output$Det_TM_Meta10<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[13]]
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+    }
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     output$Det_TM_meta_plot_9<-renderPlotly({
-      p <- plot_ly(counts, labels = ~meta, values = ~Freq, type = 'pie') %>%
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
         layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[13],'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_9<-DT::renderDataTable({
       counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
       colnames(counts)<-c(colnames(values$TM_meta)[13],"absolute","relative")
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
@@ -1883,17 +1992,28 @@ output$Det_TM_Meta11<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[14]]
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+    }
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     output$Det_TM_meta_plot_10<-renderPlotly({
-      p <- plot_ly(counts, labels = ~meta, values = ~Freq, type = 'pie') %>%
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
         layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[14],'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_10<-DT::renderDataTable({
       counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
       colnames(counts)<-c(colnames(values$TM_meta)[14],"absolute","relative")
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
@@ -1936,17 +2056,28 @@ output$Det_TM_Meta12<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    #relevant_words<-
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[15]]
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+    }
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     output$Det_TM_meta_plot_11<-renderPlotly({
-      p <- plot_ly(counts, labels = ~meta, values = ~Freq, type = 'pie') %>%
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
         layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[15],'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_11<-DT::renderDataTable({
       counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
       colnames(counts)<-c(colnames(values$TM_meta)[15],"absolute","relative")
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })

@@ -234,7 +234,6 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
       just_save_custom=parameters$whitelist_only
     )
   )
-
   # split token
   splitsize<-ceiling(100000/(dim(token)[1]/length(unique(token[,1]))))
   split<-split(unique(token[,1]), ceiling(seq_along(unique(token[,1]))/splitsize))
@@ -253,7 +252,9 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
       dtm_local<-tow$process(control = control,backend = "quanteda")%>%
         tow$output(format = "sparseMatrix")
       if(dim(dtm_local)[2]>0){
+        rownames_dtm_glob <- c(rownames(dtm_glob),rownames(dtm_local)) 
         dtm_glob<-rBind_huge(dtm_glob,dtm_local)
+        rownames(dtm_glob) <- rownames_dtm_glob
       }
     }
     if(i %in% loghelper){
