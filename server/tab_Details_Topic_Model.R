@@ -66,7 +66,7 @@ output$TM_LDAvis <- LDAvis::renderVis({
 
 observeEvent(values$tm_phi,{
   relevance<-calculate_topic_relevance(lambda=0.3,phi=values$tm_phi,theta=values$tm_theta,doc.length=values$tm_doc.length)
-  values$tm_relevance<-relevance
+  values$tm_relevance <- relevance
   for( i in 1:dim((values$tm_phi))[1]){
     local({
       data<-sort(relevance[,i],decreasing = T)[1:20]  
@@ -1132,23 +1132,22 @@ output$TM_meta_ui<-renderUI({
     need(file.exists(paste0(values$Details_Data_TM,"/meta_TM.RData")),message="no detailed metadata analyis selected in task scheduler")
   )
   load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
-  #browser()
   mde_use<-colnames(meta_names[1,2:dim(meta_names)[2]])[which(!is.na(meta_names[1,2:dim(meta_names)[2]]))]
   meta<-meta[,c("id","dataset","id_doc","token","language",mde_use)]
   colnames(meta)<-c("id","dataset","id_doc","token","language",meta_names[,mde_use])
   values$TM_meta<-meta
   return(tagList(
-    uiOutput(outputId = "Det_TM_Meta1"),
-    uiOutput(outputId = "Det_TM_Meta2"),
-    uiOutput(outputId = "Det_TM_Meta3"),
-    uiOutput(outputId = "Det_TM_Meta4"),
-    uiOutput(outputId = "Det_TM_Meta5"),
-    uiOutput(outputId = "Det_TM_Meta6"),
-    uiOutput(outputId = "Det_TM_Meta7"),
-    uiOutput(outputId = "Det_TM_Meta8"),
-    uiOutput(outputId = "Det_TM_Meta9"),
-    uiOutput(outputId = "Det_TM_Meta10"),
-    uiOutput(outputId = "Det_TM_Meta11")
+    uiOutput(outputId = "Det_TM_Meta1")%>%withSpinner(),
+    uiOutput(outputId = "Det_TM_Meta2")%>%withSpinner(),
+    uiOutput(outputId = "Det_TM_Meta3")%>%withSpinner(),
+    uiOutput(outputId = "Det_TM_Meta4")%>%withSpinner(),
+    uiOutput(outputId = "Det_TM_Meta5")%>%withSpinner(),
+    uiOutput(outputId = "Det_TM_Meta6")%>%withSpinner(),
+    uiOutput(outputId = "Det_TM_Meta7")%>%withSpinner(),
+    uiOutput(outputId = "Det_TM_Meta8")%>%withSpinner(),
+    uiOutput(outputId = "Det_TM_Meta9")%>%withSpinner(),
+    uiOutput(outputId = "Det_TM_Meta10")%>%withSpinner(),
+    uiOutput(outputId = "Det_TM_Meta11")%>%withSpinner()
   ))
 })
 
@@ -2317,7 +2316,9 @@ output$TM_validation_UI<-renderUI({
       fluidRow(style="margin-left:0px;margin-right:0px",
                column(4,
                       tags$br(),
-                      plotly::plotlyOutput("Det_TM_validation_document_topic_pie")
+                      plotly::plotlyOutput("Det_TM_validation_document_topic_pie"),
+                      tags$h4("Most relevant words for chosen topic"),
+                      wordcloud2Output(outputId = "Det_TM_validation_wordcloud")
                ),
                column(8,
                       tags$br(),
@@ -2327,6 +2328,20 @@ output$TM_validation_UI<-renderUI({
       
     ) 
   )
+})
+
+
+# wordcloud showing the relevant words for the chosen topic
+output$Det_TM_validation_wordcloud <- wordcloud2::renderWordcloud2({
+  # @values$tm_relevance calculated with lamda= 0.3
+  data <- values$tm_relevance[,input$Det_TM_validation_topic]
+  data <- data[order(data,decreasing=T)][1:50]
+  data <- data.frame(cbind(names(data),data),stringsAsFactors = FALSE)
+  class(data$data) <- "numeric"
+  # normalize weights for wordcloud
+  data$data <- data$data-min(data$data)
+  data$data <- data$data/max(data$data)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
 })
 
 
