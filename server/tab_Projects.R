@@ -1,5 +1,6 @@
 output$projects<-renderUI({
  values$update_projects
+  values$newscheme
   validate(
     need(length(list.files("collections/annotation_schemes/"))>0,message="no projects found")
            )

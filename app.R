@@ -40,6 +40,13 @@ library(promises)
 library(future)
 library(shinyjqui)
 library(waiter)
+library(glue)
+library(uuid)
+library(xml2)
+library(zip)
+library(stringi)
+library(readr)
+library(refi)
 # tell library future how to handle requests; used when solr updates are started from inside the app in order to be able to continue using the app and not having to wait until the solr update is finished
 plan(multiprocess)
 
@@ -73,13 +80,25 @@ source("global/get_metadata_from_db.R")
 source("global/deduplication_decision.R")
 source("global/task_id_functions.R")
 source("global/update-input.R")
+source("global/refi/db.R")
+source("global/refi/df.R")
+source("global/refi/export.R")
+source("global/refi/html.R")
+source("global/refi/import.R")
+source("global/refi/io.R")
+source("global/refi/plaintext_selection.R")
+source("global/refi/xml.R")
+source("global/refi/modals.R")
+source("global/change_annotation_offset_methods.R")
 # load the available themes
 source("www/ilcm_dashboard_theme.R")
 # load the current settings
 source("config_file.R")
+# apply settings to REFI Vaiables
+source("global/refi/interface.R")
 # load the UI for the login page
 source("ui/tab_loginPage.R")
-#set task id counter if its not already set
+#set task id counter if its not already set 
 if(!file.exists("global/task_id_counter.RData")){
   set_task_id_counter(1)
 }
@@ -131,10 +150,11 @@ ui <- dashboardPage(
     shinyjs::extendShinyjs("www/app-shinyjs.js", functions = c("getInputType")),
     # use custom css to style certain elements
     tags$head(
-      tags$link(rel="stylesheet",type="text/css",href="custom.css")
+      tags$link(rel="stylesheet",type="text/css",href="custom.css"),
+      tags$script(src="refi.js", type="text/javascript")
     ),
     # UI for body
-    uiOutput("body_UI")
+    uiOutput("body_UI") # defined in server/tab_body_overall.R
   ),
   # Hide the loading message when datawaiter_wait_object is rendered
   # @ waiter_wait_object: specified in config_file depending on @ hide_login 
@@ -161,7 +181,6 @@ server <- function(input, output, session) {
   values$user<-"unknown"
   values$logged_in<-FALSE
   options(shiny.maxRequestSize=max_upload_file_size*1024^2) 
-
   USER<- reactiveValues(login = hide_login)
   # when the app load start with the Explorer Tab selected
   shiny::updateTabsetPanel(session = session,inputId = "tabs",selected = "Explorer")
@@ -244,8 +263,8 @@ server <- function(input, output, session) {
   source(file.path("server","tab_Detailed_Sub.R"),local=T)$value
   source(file.path("server","tab_Custom_Sub.R"),local=T)$value
   source(file.path("server","tab_Exporter.R"),local=T)$value
-
-  
+  source(file.path("server","tab_Refi_Export.R"),local=T)$value  
+  source(file.path("server","tab_Refi_Import.R"),local=T)$value
   # allow reconnect to app if connection got disturbed
   session$allowReconnect(TRUE)
 }

@@ -455,5 +455,62 @@ tabPanel("Importer",
                icon = icon("remove"),
                style = "danger"
              )
+           ),
+           tabPanel(
+             "REFI-Import",
+             tags$br(),
+             tags$br(),
+             box(
+               id = "refi_import_box1"
+               , width = 4
+               , tags$div(
+                 style=""
+                 , textInput(
+                   inputId = "refi_import_dataset_name"
+                   , label = "Choose a name for the dataset or annotation scheme"
+                   , value = "REFI"
+                   , placeholder = "refi-import"
+                 )
+                 , verbatimTextOutput(
+                   outputId = "refi_import_validate_dataset"
+                 )
+                 , fileInput(
+                   inputId = "refi_import_fileInput"
+                   , label = "Choose a REFI-QDA Project file (.qdpx) or a REFI-QDA Codebook file (.qdc)."
+                   , accept = c(".xml", ".qdpx", ".qdc", ".qde")
+                   , buttonLabel = "Start import"
+                 )
+                 # , infoBox(
+                 #   title = "Naming convention"
+                 #   , value = "New text sources are saved as a dataset and as a collection.\nIn case of an CodeBook the dataset, collection and the annotation system will have the same name."
+                 # )
+               )
+             ),
+             box(
+               id = "refi_import_box2"
+               , width = 4
+               , tags$div(
+                 style=""
+                 , DT::dataTableOutput(outputId = "refi_import_table_datasets")
+               )
+             ),
+             box(
+               id = "refi_import_box3"
+               , width = 4
+               , panel(
+                 tags$div(
+                   DT::dataTableOutput(outputId = "refi_import_table_annotation_scheme")
+                 )
+               )
+               , panel(
+                 tags$div(
+                   conditionalPanel(
+                     condition = "input.selectedAnnotationSchemeImport != ''"
+                     , uiOutput("annotation_scheme_list_import")
+                   )
+                 )
+               )
+             )
            )
-         ))
+         )
+)

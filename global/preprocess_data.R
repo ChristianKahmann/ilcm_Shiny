@@ -20,9 +20,6 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format){
   if(mean_doc_length>75000){
     split_size=1
   }
-  
-  
-  
   split<-split(1:length(text), ceiling(seq_along(1:length(text))/min(length(text),split_size)))
   token<-NULL
   count=0
@@ -30,14 +27,14 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format){
   for(i in split){
     count=count+1
     print(count)
-    toks<-spacyr::spacy_parse(iconv(text[i], "UTF-8", "UTF-8",sub=''),pos = T,tag = F,lemma = T,entity = T,dependency = F)
+    toks<-spacyr::spacy_parse(iconv(text[i], "UTF-8", "UTF-8",sub=''),pos = T,tag = F,lemma = T,entity = T,dependency = F,additional_attributes = "idx")
     toks[,1]<-stringr::str_replace_all(string = toks[,1],pattern = "text",replacement = "")
     toks[,1]<-metadata[((as.numeric(toks[,1])+(count-1)*min(length(text),split_size))),"id_doc"]
     token<-rbind(token,toks)
     log_to_file(paste(count,"of:",length(split)),logfile)
     if(count%%10==0)gc()
   }  
-  token<-token[,c("doc_id","sentence_id","token_id","token","lemma","pos","entity")]
+  token<-token[,c("doc_id","sentence_id","token_id","token","lemma","pos","entity","idx")]
   #toDelete<-which(token[,6]=="SPACE")
   #if(length(toDelete)>0){
   #  token<-token[-which(token[,6]=="SPACE"),]
@@ -64,7 +61,7 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format){
   count=0
   for(j in unique(token[,2])){
     count=count+1
-    toks<-token[which(token[,2]==j),c("doc_id"  ,    "sentence_id", "token_id"  ,  "token"    ,   "lemma"     ,  "pos"    ,     "entity")]
+    toks<-token[which(token[,2]==j),c("doc_id"  ,    "sentence_id", "token_id"  ,  "token"    ,   "lemma"     ,  "pos"    ,     "entity",  "idx")]
     class(toks)<-c("spacyr_parsed","data.frame")
     entities<-unique(spacyr::entity_extract(toks,type = "named")[,3])
     entities<-stringr::str_replace_all(string = entities,pattern = " ",replacement = "_")
@@ -72,9 +69,7 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format){
     metadata[count,dim(metadata)[2]]<-entities
   }
   
-  # log_to_file(message = "Escaping single and double quotes",logfile)
   # metadata<-escape_quotes(metadata)
-  
   log_to_file(message = "Writing data",logfile)
   write.table(x = metadata,file = paste("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_id,".csv",sep=""),row.names = F,col.names = F,sep = ",")
   write.table(x = token,file = paste("data_import/processed_data/token_",metadata[1,"dataset"],"_",process_id,".csv",sep=""),row.names = F,col.names = F,sep = ",")
