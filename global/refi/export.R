@@ -186,7 +186,7 @@ export_codebook <- function(projectname, annotation_scheme, output_directory,ses
     }, error=function(cond){
       shinyWidgets::sendSweetAlert(session=session,title = "REFI-QDA Codebook Export", text = paste0("Error while exporting annotation scheme '", annotation_scheme, "' to ", output_directory, "."), type = "error")
       message(cond)
-      refi_export_codebook_success
+      return(refi_export_codebook_success)
     }
   )
   return(out)

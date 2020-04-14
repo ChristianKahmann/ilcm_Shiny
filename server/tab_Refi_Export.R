@@ -38,7 +38,7 @@ observeEvent(input$export_collection_modal_ok, {
     collection_name <- input$collection
     projectname <- input$modal_export_collection_project_name
     output_directory<-paste0(output_directory,"/",projectname)
-    unlink(paste0(output_directorym,"/*"))
+    unlink(paste0(output_directory,"/*"))
     refi_export_collection_success <- F
     refi_export_collection_success<-export_collection(output_directory = output_directory, projectname = projectname, collection_name = collection_name,session = session)
     removeModal(session)
@@ -90,7 +90,7 @@ observeEvent(input$export_collection_with_annotation_scheme_modal_ok, {
     collection_name <- input$refi_export_select_collection
     projectname <- input$modal_export_collection_with_annotation_scheme_project_name
     output_directory<-paste0(output_directory,"/",projectname)
-    unlink(paste0(output_directorym,"/*"))
+    unlink(paste0(output_directory,"/*"))
     refi_export_collection_success <- F
     refi_export_collection_success<-export_collection(output_directory = output_directory,projectname = projectname, collection_name = collection_name, annotation_scheme = input$collectionAnnoScheme, session = session)
     removeModal(session)
@@ -135,19 +135,30 @@ get_classifications <- reactive({
   IO_get_classifications(input$refi_export_select_collection)
 })
 
+#update collections and results if button is clicked
+observeEvent(input$refi_export_reset,{
+  values$refi_export_update<-runif(1,0,1)
+})
+
+
+
 observe({
+  values$refi_export_update
   updateSelectInput(session, inputId = "refi_export_select_collection", choices = DB_get_collection_names())
 })
 
 observe({
+  values$refi_export_update
   updateSelectInput(session, inputId = "refi_export_classification_select_input", choices = IO_get_classification_projects())
 })
 
 observe({
+  values$refi_export_update
   updateSelectInput(session, inputId = "refi_export_select_analysis", label = paste0("Analysis of collection '", input$refi_export_select_collection, "'"))
 })
 
 output$refi_export_detected_annotation_schemes_label <- renderText({
+  values$refi_export_update
   schemes <- get_used_annotation_schemes()
   if (nrow(schemes) > 0) {
     label_text <- paste0("Export collection '", input$refi_export_select_collection, "' with annotation scheme")
@@ -158,6 +169,7 @@ output$refi_export_detected_annotation_schemes_label <- renderText({
 })
 
 output$refi_export_detected_annotation_schemes_table <- DT::renderDataTable({
+  values$refi_export_update
   schemes <- get_used_annotation_schemes()
   if (nrow(schemes) > 0){
     num_schemes <- seq(length(schemes$Anno_set))
@@ -300,7 +312,7 @@ observeEvent(input$export_annotation_scheme_modal_ok, {
     output_directory <- "collections/tmp/refi"
     projectname <- input$modal_export_annotation_scheme_project_name
     output_directory<-paste0(output_directory,"/",projectname)
-    unlink(paste0(output_directorym,"/*"))
+    unlink(paste0(output_directory,"/*"))
     refi_export_codebook_success <- F
     refi_export_codebook_success <- export_codebook(projectname, input$annotationScheme, output_directory, session = session)
     removeModal(session)
@@ -356,7 +368,7 @@ observeEvent(input$export_classification_modal_ok, {
     collection_name <- input$refi_export_select_collection
     classification <- input$classification
     output_directory<-paste0(output_directory,"/",projectname)
-    unlink(paste0(output_directorym,"/*"))
+    unlink(paste0(output_directory,"/*"))
     refi_export_collection_success <- F
     refi_export_collection_success <- export_classification(output_directory, projectname, collection_name, classification,session=session)
     removeModal(session)
@@ -381,7 +393,7 @@ observeEvent(input$export_topic_model_modal_ok, {
     collection_name <- input$refi_export_select_collection
     projectname <- input$modal_export_topic_model_project_name
     output_directory<-paste0(output_directory,"/",projectname)
-    unlink(paste0(output_directorym,"/*"))
+    unlink(paste0(output_directory,"/*"))
     refi_export_collection_success <- F
     refi_export_collection_success <- export_topic_model(output_directory, projectname, collection_name, topic_model_file, selected_topics = input$selectedTopics,session=session)
     removeModal(session)

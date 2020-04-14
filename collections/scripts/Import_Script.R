@@ -340,6 +340,8 @@ error<-try(expr = {
         }
         
       }
+      # limit text field to max 10000 chars
+      annotations[which(nchar(annotations$text)>10000),"text"]<-paste0(substr(annotations[which(nchar(annotations$text)>10000),"text"],0,9997),"...")
       DB_import_annotations(annotations)
       log_to_file(message = paste0("Succesfully imported ",nrow(annotations)," annotations to the database"),logfile)
     }

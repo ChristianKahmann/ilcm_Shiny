@@ -89,7 +89,7 @@ observeEvent(input$refi_import_fileInput,{
   } else {
     tryCatch({
       process_import(dataset, data, xml_document, import_directory)
-      shinyWidgets::sendSweetAlert(session=session,title = "REFI-QDA Project", text = paste0("Successfully imported project '", dataset,  "."), type = "success")
+      shinyWidgets::sendSweetAlert(session=session,title = "REFI-QDA Project", text = paste0("Successfully started project import '", dataset,  "."), type = "success")
     }, error=function(cond){
       print(cond)
       shinyWidgets::sendSweetAlert(session=session,title = "REFI-QDA Project", text = paste0("Error while importing project '", dataset,  "."),type = "error")
@@ -118,8 +118,5 @@ process_import <- function(dataset, data, xml_document, import_directory){
   save(dataset, xml_document, import_directory,file="collections/tmp/tmp_annotations.RData")
   #start script
   system(paste('Rscript collections/scripts/Import_Script.R','&'))
-  #show modal when process is started
-  shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
-  
   
 }

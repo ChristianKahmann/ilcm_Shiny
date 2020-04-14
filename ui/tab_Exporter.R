@@ -57,6 +57,7 @@ tabPanel("Exporter",
            ),
            tabPanel(
              "REFI-Export",
+             shinyBS::bsButton(inputId = "refi_export_reset",label = "reload",style = "success",size = "extra-small",icon=icon("refresh")),
              tags$div(style="height:75vh; overflow-y:auto;",
                       box(
                         title = "Export REFI-QDA Project",
