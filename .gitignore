@@ -61,6 +61,9 @@ packrat/lib*/
 !/collections/results/volatility-analysis/.gitkeep
 /collections/results/syntactic-parsing/*
 !/collections/results/syntactic-parsing/.gitkeep
+/collections/results/geocoding/*
+!/collections/results/geocoding/.gitkeep
+
 /collections/tmp/*
 !/collections/tmp/.gitkeep
 /collections/ecpmf_resources/*
