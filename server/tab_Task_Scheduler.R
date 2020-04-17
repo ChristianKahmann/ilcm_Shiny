@@ -39,6 +39,7 @@ source(file.path("server","tab_Task_Scheduler_Vector_Space_Representation.R"),lo
 source(file.path("server","tab_Task_Scheduler_Document_Deduplication.R"),local = T)$value
 source(file.path("server","tab_Task_Scheduler_Keyword_Extraction.R"),local = T)$value
 source(file.path("server","tab_Task_Scheduler_Syntactic_Parsing.R"),local = T)$value
+source(file.path("server","tab_Task_Scheduler_Geocoding.R"),local = T)$value
 
 #check if analysis help button was clicked, if yes,open modal with rmd.files
 observeEvent(input$analysis_help,ignoreInit = T,{
