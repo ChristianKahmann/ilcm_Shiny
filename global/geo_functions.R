@@ -1,6 +1,7 @@
 library("geonames")
 library("tmaptools")
 library("geosphere")
+library("stringr")
 
 #' Returns country infos for given lat lon coordinates
 #' Uses the given hashtable as cached reference by first querying the hashtable or if not yet existent there directly via geonames service. The result is stored in hashtable as well 
@@ -68,12 +69,14 @@ getGeolocationForString <- function(inputString, hashtableCachedGeoInformation, 
   # already in cache?
   if(!is.null(hashtableCachedGeoInformation[[searchKey]])){
    # print("already in cache")
+    log_to_file(message = paste("<b>Geododing string \"", searchKey, "\": already in cache</b>"),file = logfile)
+    
     result <- hashtableCachedGeoInformation[[searchKey]]
     return(result)
   }
   
   #print("not in cache. needs to be queried")
-  
+  log_to_file(message = paste("<b>Geododing string \"", searchKey, "\": not in cache. needs to be queried</b>"),file = logfile)
   result <- geocodingFunction(searchKey)
   if(result$successType == "success"){
     hashtableCachedGeoInformation[[searchKey]] <- result
@@ -102,6 +105,7 @@ getGeolocationForString <- function(inputString, hashtableCachedGeoInformation, 
 #' 
 getGeolocationForStringUsingOSMDefault <- function(inputString, hashtableCachedGeoInformation){
   
+  log_to_file(message = paste("<b>Geocoding: get OSM geolocation for \"", inputString,"\"</b>"),file = logfile)
   result <- list()
   result <- getGeolocationForString(inputString, hashtableCachedGeoInformation, 
                                       geocodingFunction = function(x){ 
@@ -238,8 +242,10 @@ performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistan
                                                                                                                 functionToUpdateGeoCodingCacheForGeoLocationString,
                                                                                                                 functionToFilterOrSelectGeoResult
                                                                                                                 ){
+  log_to_file(message = "<b>Geocoding: get unique location strings</b>",file = logfile)
   allDistinctLocationStrings <- functionToGetUniqueLocationStrings(inputDataForLocationStringsAndOptionalClusterAreaIds)
   
+  log_to_file(message = "<b>Geocoding: update cache</b>",file = logfile)
   # update cache so all entities are in cache afterwards
   # check all distinct entities if already in cache, if not query them via geo service and store in cache
   x <- lapply(allDistinctLocationStrings, 
@@ -253,12 +259,13 @@ performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistan
   
   # assign locations and calculate clusters for areas
   
-  
+  log_to_file(message = "<b>Geocoding: get area ids</b>",file = logfile)
   if(applyClusteringToWholeDataInsteadOfPerDefinedArea){
     areaIds <- c("all")
   }else{
     areaIds <- functionToRetrieveUniqueAreaIdsToConsiderForClustering(inputDataForLocationStringsAndOptionalClusterAreaIds)
   }
+  log_to_file(message = paste("<b>Geocoding: number of area ids retrieved:", length(areaIds)," </b>"),file = logfile)
   
   initialDataFrameForGeoData <- data.frame(
     areaId=character(),
@@ -274,6 +281,9 @@ performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistan
   for(areaId in areaIds){ # for each area (document/paragraph/collection,...). If selected "all" the whole data is regarded as same area
     
     print(areaId)
+
+    log_to_file(message = paste("<b>Geocoding: perform geocoding calculation for area id", areaId,"</b>"),file = logfile)
+    
     # get location tokens for area
     entitydistributionsInArea <- functionToGetLocationsAndFrequencyForGivenAreaId(inputDataForLocationStringsAndOptionalClusterAreaIds, areaId)
     
@@ -284,6 +294,7 @@ performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistan
 
     # get geo info (lat/lon for location entities in area)
     geoDataForArea <- as.data.frame(entitydistributionsInArea)
+    geoDataForAreaWithDetails <- NA
     for(j in 1:length(geoDataForArea$entityName)){
       entityName <- str_trim(str_replace(geoDataForArea$entityName[j], "_", " "),side = "both")
       geoResult <- functionToGetGeolocationsFromString(entityName, cacheForGeocodingData) # since all are in cache, querying cache would be sufficient as well
@@ -294,11 +305,18 @@ performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistan
           # skip current entity name
           geoDataForArea$lon[j] <- NA
           geoDataForArea$lat[j] <- NA
+          geoDataForAreaWithDetails[j,] <- NA
+          
           next
         }else{
           # if still multiple available take the first
           geoDataForArea$lon[j] <- filteredGeoResults[1,]$lon
           geoDataForArea$lat[j] <- filteredGeoResults[1,]$lat
+          if(is.na(geoDataForAreaWithDetails)){
+            geoDataForAreaWithDetails <- filteredGeoResults[1,]
+          }else{
+            geoDataForAreaWithDetails[j,] <- filteredGeoResults[1,]
+          }
         }
         
         
@@ -308,10 +326,15 @@ performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistan
       }
     }
     
+    
     # only use those tokens having coordinates (no NAs), meaning only those tokens to which lat/lon coordinates could be assigned
     indicesWithoutNA <- which(!is.na(geoDataForArea$lat))
     geoDataForArea <-  geoDataForArea[indicesWithoutNA,]
+    geoDataForAreaWithDetails <-  geoDataForAreaWithDetails[indicesWithoutNA,]
     
+    ## TODO: include filterfunction (also apply to geoDataForArea and With Details)
+    
+
     numberOfDistinctEntitiesInArea <- length(geoDataForArea$entityName)
     if (numberOfDistinctEntitiesInArea == 0){
       # skip current area and go to next
@@ -334,15 +357,18 @@ performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistan
       
       #clustering
       bestClusterResult <- kmeans(distances, 1)
-      for (k in 2:min(5,(dim(geoDataForArea)[1]-1))) {
-        clusterResult <- kmeans(distances, k)
-        if (clusterResult$betweenss < (1.15 * bestClusterResult$betweenss)) {
-          break
-        }
-        else{
-          bestClusterResult <- clusterResult
+      if(dim(geoDataForArea)[1]-1 >=2){
+        for (k in 2:min(5,(dim(geoDataForArea)[1]-1))) {
+          clusterResult <- kmeans(distances, k)
+          if (clusterResult$betweenss < (1.15 * bestClusterResult$betweenss)) {
+            break
+          }
+          else{
+            bestClusterResult <- clusterResult
+          }
         }
       }
+      
       
       # find cluster with minimum distance to center of gravity (distance of cluster to center of gravity is calculated by average distance of entities in cluster to center of gravity)
       clusters <- bestClusterResult$cluster
@@ -372,10 +398,13 @@ performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistan
       
     }
     
+    log_to_file(message = paste("<b>Geocoding: finished performing geocoding calculation for area id", areaId,"</b>"),file = logfile)
+    
     
     geoDataAllAreas <- rbind(geoDataAllAreas, geoDataForArea)
   }# end for each areaID
   
+  log_to_file(message = "<b>Geocoding: finished performing geocoding calculation for all area ids </b>",file = logfile)
   return (geoDataAllAreas)
   
 }
