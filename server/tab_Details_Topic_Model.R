@@ -723,6 +723,7 @@ observe({
   doc_id<-stringr::str_split(string = document_identifier,pattern = "_",simplify = T)[2]
   
   token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
+
   document<-paste(token[,"word"],collapse=" ")
   
   topic_names <- apply(isolate(values$tm_relevance), 2, FUN = function(x) {
@@ -2205,6 +2206,9 @@ output$TM_validation_UI<-renderUI({
   dataset<-identifier[1]
   doc_id<-identifier[2]
   token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
+  # remove idx column from token
+  token<-token[,-ncol(token)]
+  
   load(paste0(values$Details_Data_TM,"/parameters.RData"))
   space_ids<-which(token[,"pos"]=="SPACE")
   if(length(space_ids)>0){

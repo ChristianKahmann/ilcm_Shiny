@@ -146,7 +146,6 @@ output$Det_CL_feature_UI<-renderUI({
     need(!is.null(input$Det_CL_feature_class),message=F
     )
   )
-  #browser()
   data<-values$Det_CL_feature_matrix[input$Det_CL_feature_class,]
   data_pos<-sort(data,decreasing = T)[1:(input$Det_CL_number_of_features/2)]
   data_neg<-sort(data,decreasing = F)[1:(input$Det_CL_number_of_features/2)]
@@ -231,6 +230,8 @@ output$Det_CL_validation<-renderUI({
     sentence_id<-identifier[3]
   }
   token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = sentence_id,host=values$host,port=values$port)
+  # remove idx column from token
+  token<-token[,-ncol(token)]
   load(paste0(values$Details_Data_CL,"/parameters.RData"))
   space_ids<-which(token[,"pos"]=="SPACE")
   if(length(space_ids)>0){
@@ -257,11 +258,11 @@ output$Det_CL_validation<-renderUI({
   rbPal_neg <- colorRampPalette(c('red','white'))
   m<-cbind(m,rep("",dim(m)[1]))
 
-  if(length(intersect(which(!is.na(m$weight)),which(m$weight>0)))>0){
-    m[intersect(which(!is.na(m$weight)),which(m$weight>0)),12]<-  rbPal_pos(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))],breaks = 100))]
+  if(length(intersect(which(!is.na(m$weight)),which(as.numeric(m$weight)>0)))>0){
+    m[intersect(which(!is.na(m$weight)),which(as.numeric(m$weight)>0)),12]<-  rbPal_pos(100)[as.numeric(cut(as.numeric(m$weight[intersect(which(!is.na(m$weight)),which(as.numeric(m$weight)>0))]),breaks = 100))]
   }
-  if(length(intersect(which(!is.na(m$weight)),which(m$weight<0)))>0){
-    m[intersect(which(!is.na(m$weight)),which(m$weight<0)),12]<-  rbPal_neg(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight<0))],breaks = 100))]       
+  if(length(intersect(which(!is.na(m$weight)),which(as.numeric(m$weight)<0)))>0){
+    m[intersect(which(!is.na(m$weight)),which(as.numeric(m$weight)<0)),12]<-  rbPal_neg(100)[as.numeric(cut(as.numeric(m$weight[intersect(which(!is.na(m$weight)),which(as.numeric(m$weight)<0))]),breaks = 100))]       
   }
   strings<-apply(m,MARGIN = 1,FUN = function(x){
     if(is.na(x[12])){

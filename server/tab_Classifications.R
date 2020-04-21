@@ -706,6 +706,8 @@ output$Class_eval_examples<-renderUI({
     
     examples<-lapply(X = 1:dim(values$Class_eval_data)[1],FUN = function(x){
       radio_id<-paste0("Class_eval_radio_buttons_",isolate(values$class_eval_id_selected),"_",rownames(values$Class_eval_data)[x])
+      #replace whitespaces in order to get javascript condition to work
+      radio_id<-stringr::str_replace_all(string = radio_id,pattern = " ",replacement = "")
       condition<-paste0('input.',radio_id,'=="deny"')
       selected<-values$Class_eval_data[x,6]
       if(selected==" "){
@@ -735,6 +737,8 @@ output$Class_eval_examples<-renderUI({
   else{
     examples<-lapply(X = 1:dim(values$Class_eval_data)[1],FUN = function(x){
       radio_id<-paste0("Class_eval_radio_buttons_",isolate(values$class_eval_id_selected),"_",rownames(values$Class_eval_data)[x])
+      #replace whitespaces in order to get javascript condition to work
+      radio_id<-stringr::str_replace_all(string = radio_id,pattern = " ",replacement = "")
       condition<-paste0('input.',radio_id,'=="deny"')
       selected<-values$Class_eval_data[x,6]
       if(selected==" "){
@@ -788,6 +792,8 @@ observe({
   )
   
   x<-unlist(lapply(rownames(values$Class_eval_data),function(i){
+    #replace whitespaces in dataset name
+    i<-stringr::str_replace_all(string = i,pattern = " ",replacement = "")
     if(is.null(input[[paste0("Class_eval_radio_buttons_",isolate(values$class_eval_id_selected),"_",i)]])){
       return(" ")
     }
@@ -796,6 +802,8 @@ observe({
     }
   }))
   y<- unlist(lapply(rownames(values$Class_eval_data),function(i){
+    #replace whitespaces in dataset name
+    i<-stringr::str_replace_all(string = i,pattern = " ",replacement = "")
     if(is.null(input[[paste0("Class_eval_radio_buttons_",isolate(values$class_eval_id_selected),"_",i,"_deny")]])){
       return(" ")
     }
