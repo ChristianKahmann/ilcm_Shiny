@@ -53,7 +53,12 @@ output$details_parameter<-renderUI({
           conditionalPanel(condition = 'input.tabBox_deduplication=="Graph"',
                            checkboxInput(inputId = "Det_DD_use_igraph_layout",label = "use iGraph-layout?",value = T),
                            bsButton("DD_help", label = "Help", icon = icon("question"), style = "info", size = "small")
-          )
+          ),
+          tags$br(),
+          tags$br(),
+          tags$hr(),
+          downloadButton(outputId = "Det_DD_download_clean",label = "duplicate free data",icon=icon("download")), 
+          downloadButton(outputId = "Det_DD_download_duplicates",label = "list of duplicates",icon=icon("download"))
         )
       )
     }
@@ -352,11 +357,17 @@ output$details_parameter<-renderUI({
       values$tm_phi<-phi
       values$tm_info<-info
       values$tm_theta<-theta
+      color = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)]
+      values$colors<-sample(x = color,size = ncol(theta))
       values$tm_doc.length<-doc.length
       values$tm_vocab<-vocab
       values$tm_json<-json
       values$tm_term.frequency<-term.frequency
       values$tm_meta<-meta
+      mde_use<-colnames(meta_names[1,2:dim(meta_names)[2]])[which(!is.na(meta_names[1,2:dim(meta_names)[2]]))]
+      meta<-meta[,c("id","dataset","id_doc","token","language",mde_use)]
+      colnames(meta)<-c("id","dataset","id_doc","token","language",meta_names[,mde_use])
+      values$TM_meta<-meta
       
       # #stm
       load(paste0(values$Details_Data_TM,"/parameters.RData"))
@@ -481,6 +492,29 @@ output$details_parameter<-renderUI({
                                           tags$hr(),
                                           uiOutput("Det_TM_validation_metadata_UI")%>%withSpinner()
       )
+      panelDocumentComparison <- conditionalPanel(condition='input.tabBox_tm=="Document Comparison"',
+                                                  selectizeInput(inputId = "Det_TM_document_comparison_document",label="Documents:",choices=NULL,multiple=T),
+                                                  conditionalPanel(condition='input.tabBox_TM_document_comparison=="Correlation"',
+                                                                   selectInput(inputId="Det_TM_document_comparison_correlation_method",label="Correlation method",choices=c("pearson","kendall","spearman")),
+                                                                   colourpicker::colourInput(inputId="Det_TM_document_comparison_color_low","color 1",value="firebrick"),
+                                                                   colourpicker::colourInput(inputId="Det_TM_document_comparison_color_high","color 2",value="cyan")
+                                                  )
+      )
+      panelDocumentOutlier <- conditionalPanel(condition='input.tabBox_tm=="Document Outlier"',
+                                               selectInput(inputId="Det_TM_document_outlier_measure",label="Comparison measure",choices=c("Correlation","Cosine Similarity","Euclidean Distance"),multiple=F),
+                                               conditionalPanel(condition='input.Det_TM_document_outlier_measure=="Correlation"',
+                                                                selectInput(inputId="Det_TM_document_outlier_correlation_method",label="Correlation method",choices=c("pearson","kendall","spearman")),
+                                               ),
+                                               colourpicker::colourInput(inputId="Det_TM_document_outlier_color_low","color 1",value="firebrick"),
+                                               colourpicker::colourInput(inputId="Det_TM_document_outlier_color_high","color 2",value="cyan")
+      )
+      panelDocumentClustering <- conditionalPanel(condition='input.tabBox_tm=="Document Clustering"',
+                                                  numericInput(inputId = "Det_TM_document_clustering_k","number of clusters for k-means clustering",value = 3,min = 1,max = 10),
+                                                  numericInput(inputId = "Det_TM_document_clustering_max_iterations","maximum number of iterations",value = 5,min = 10,max = 50),
+                                                  numericInput(inputId = "Det_TM_document_clustering_n_start","number of random sets",value = 25,min = 1,max = 50),
+                                                  numericInput(inputId = "Det_TM_document_clustering_marker_size","size of markers",value = 8,min = 1,max = 25),
+                                                  downloadButton(outputId = "Det_TM_document_clustering_download_clustering_result",label = "current clustering result",icon=icon("download"))
+      )
       panelTopicDispersion <- conditionalPanel(condition = 'input.tabBox_tm=="Topic Dispersion"',
                                                selectizeInput(inputId="Det_TM_dispersion_topic",label="Topic",choices=1:values$tm_number_of_topics,multiple=T,selected=character(0)),
                                                knobInput(inputId = "Det_TM_dispersion_probability_threshold",label = "Minimal Probability",value = 0.2,min = 0,max = 1,step = 0.01)
@@ -536,6 +570,9 @@ output$details_parameter<-renderUI({
           panelDetailedMetaDataAnalysis,
           panelValidation,
           panelTopicDispersion,
+          panelDocumentComparison,
+          panelDocumentOutlier,
+          panelDocumentClustering,
           panelSTM
         )
       }else{
@@ -547,7 +584,10 @@ output$details_parameter<-renderUI({
           panelExtractDictionaries,
           panelDetailedMetaDataAnalysis,
           panelValidation,
-          panelTopicDispersion
+          panelTopicDispersion,
+          panelDocumentComparison,
+          panelDocumentOutlier,
+          panelDocumentClustering
         )
       }
       return (returnValue)
@@ -574,6 +614,7 @@ output$details_visu<-renderUI({
       choices<-title_data$id_doc
       names(choices)<-paste0(title_data$title," (",title_data$id_doc,")")
       updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = choices)
+      updateSelectizeInput(session = session,inputId = "Det_TM_document_comparison_document",server = T,choices = choices)
       
       #stm
       
@@ -625,10 +666,19 @@ output$details_visu<-renderUI({
                                            uiOutput("TM_meta_ui")
       )
       tabPanelDispersion <- tabPanel("Topic Dispersion",
-                                           uiOutput("TM_dispersion_ui")
+                                     uiOutput("TM_dispersion_ui")
       )
       tabPanelValidation <- tabPanel("Validation",
-                                     uiOutput("TM_validation_UI")%>%withSpinner()
+                                     uiOutput("TM_validation_UI")
+      )
+      tabPanelDocumentComparison <- tabPanel("Document Comparison",
+                                             uiOutput("TM_document_comparison_UI")
+      )
+      tabPanelDocumentOutlier <- tabPanel("Document Outlier",
+                                          uiOutput("TM_document_outlier_UI")
+      )
+      tabPanelClustering <- tabPanel("Document Clustering",
+                                     uiOutput("TM_document_clustering_UI")
       )
       
       # additional panels specific for stm
@@ -778,6 +828,9 @@ output$details_visu<-renderUI({
                  tabPanelDetailedMetaData,
                  tabPanelDispersion,
                  tabPanelValidation,
+                 tabPanelDocumentComparison,
+                 tabPanelDocumentOutlier,
+                 tabPanelClustering,
                  tabPanelSTM
           )
           
@@ -794,7 +847,10 @@ output$details_visu<-renderUI({
                  tabPanelExtractDictionaries,
                  tabPanelDetailedMetaData,
                  tabPanelDispersion,
-                 tabPanelValidation
+                 tabPanelValidation,
+                 tabPanelDocumentComparison,
+                 tabPanelDocumentOutlier,
+                 tabPanelClustering
           )
         )
       }

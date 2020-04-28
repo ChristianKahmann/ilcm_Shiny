@@ -47,6 +47,7 @@ library(zip)
 library(stringi)
 library(readr)
 library(refi)
+library(factoextra)
 # tell library future how to handle requests; used when solr updates are started from inside the app in order to be able to continue using the app and not having to wait until the solr update is finished
 plan(multiprocess)
 

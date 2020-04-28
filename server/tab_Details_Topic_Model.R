@@ -723,7 +723,7 @@ observe({
   doc_id<-stringr::str_split(string = document_identifier,pattern = "_",simplify = T)[2]
   
   token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
-
+  
   document<-paste(token[,"word"],collapse=" ")
   
   topic_names <- apply(isolate(values$tm_relevance), 2, FUN = function(x) {
@@ -1132,11 +1132,6 @@ output$TM_meta_ui<-renderUI({
   validate(
     need(file.exists(paste0(values$Details_Data_TM,"/meta_TM.RData")),message="no detailed metadata analyis selected in task scheduler")
   )
-  load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
-  mde_use<-colnames(meta_names[1,2:dim(meta_names)[2]])[which(!is.na(meta_names[1,2:dim(meta_names)[2]]))]
-  meta<-meta[,c("id","dataset","id_doc","token","language",mde_use)]
-  colnames(meta)<-c("id","dataset","id_doc","token","language",meta_names[,mde_use])
-  values$TM_meta<-meta
   return(tagList(
     uiOutput(outputId = "Det_TM_Meta1")%>%withSpinner(),
     uiOutput(outputId = "Det_TM_Meta2")%>%withSpinner(),
@@ -1161,8 +1156,8 @@ output$Det_meta_select_ui<-renderUI({
     selectInput(inputId = "Det_meta_select",label = "Choose a Meta Category",choices = colnames(values$TM_meta)[4:length(colnames(values$TM_meta))]),
     checkboxInput(inputId ="Det_TM_meta_multi_valued", label = "Metadata field multi valued?", FALSE),
     conditionalPanel(condition="input.Det_TM_meta_multi_valued==true",
-                   textInput(inputId = "Det_TM_meta_multi_valued_seperator", label = "value seperator", value = ",")
-                   ),
+                     textInput(inputId = "Det_TM_meta_multi_valued_seperator", label = "value seperator", value = ",")
+    ),
     numericInput(inputId = "Det_meta_topic",label="Which topic should be analyzed?",value = 1,min = 1,max = dim(values$tm_theta)[2],step = 1),
     materialSwitch(inputId = "TM_meta_Rank1",label = "Use Rank1 for selecting document memebership",value = T,status = "warning"),
     conditionalPanel(condition = 'input.TM_meta_Rank1==false',
@@ -1611,7 +1606,7 @@ output$Det_TM_Meta5<-renderUI({
     meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[8]]
     # multi valued?
     if(input$Det_TM_meta_multi_valued==TRUE){
-     meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
     }
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     # check if > min occurrences
@@ -2517,3 +2512,333 @@ output$Det_TM_dispersion_detailed_single_hist<-plotly::renderPlotly({
   )
 }
 )
+
+
+
+########################################
+##       Document Comparison           #
+########################################
+
+#UI for document compariosn tab in visualisation of topic models
+output$TM_document_comparison_UI<-renderUI({
+  tabsetPanel(type="tabs",id = "tabBox_TM_document_comparison",
+              tabPanel(title = "Table",
+                       tags$div(style="overflow-x:auto;overflow-y:auto;",
+                                DT::dataTableOutput(outputId = "Det_TM_document_comparison_table")
+                       )
+              ),
+              tabPanel(title = "Pie Charts",
+                       plotly::plotlyOutput(outputId = "Det_TM_document_comparison_pie"),
+              ),
+              tabPanel(title="Correlation",
+                       tags$br(),
+                       tags$h3("Correlation"),
+                       plotly::plotlyOutput(outputId = "Det_TM_document_comparison_correlation_heatmap_correlation"),
+                       tags$hr(),
+                       tags$h3("Cosine Similarity"),
+                       plotly::plotlyOutput(outputId = "Det_TM_document_comparison_correlation_heatmap_cosine_similarity"),
+                       tags$hr(),
+                       tags$h3("Euclidean Distance"),
+                       plotly::plotlyOutput(outputId = "Det_TM_document_comparison_correlation_heatmap_euclidean_distance")
+              )
+  )
+})
+
+
+# table showing the topic distributions for chosen words
+output$Det_TM_document_comparison_table<-DT::renderDataTable({
+  validate(
+    need(length(input$Det_TM_document_comparison_document)>0,message = "Choose at least one document!")
+  )
+  data<-t(values$tm_theta[input$Det_TM_document_comparison_document,,drop=F])
+  data<-round(data,digits = 3)
+  titles<-values$tm_meta[which(values$tm_meta[,"id_doc"]%in%input$Det_TM_document_comparison_document),c("id_doc","title"),drop=F]
+  rownames(titles)<-titles$id_doc
+  titles<-titles[colnames(data),]
+  titles<-paste0(titles$title," (",titles$id_doc,")")
+  rownames(data) <- paste0("<b>Topic ",1:ncol(values$tm_theta),"</b>")
+  colnames(data) <- titles
+  return(DT::datatable(data = data, selection = "none",escape=F,class = 'cell-border stripe',options = list(paging=F,dom="t"))%>%
+           formatStyle(colnames(data),
+                       background = styleColorBar(range(data), 'lightblue'),
+                       backgroundSize = '98% 88%',
+                       backgroundRepeat = 'no-repeat',
+                       backgroundPosition = 'center')
+  )
+})
+
+
+output$Det_TM_document_comparison_pie<-plotly::renderPlotly({
+  validate(
+    need(length(input$Det_TM_document_comparison_document)>0,message = "Choose at least one document!")
+  )
+  theta<-values$tm_theta
+  row=0
+  column=0
+  subplots<-plotly::plot_ly()
+  data<-t(values$tm_theta[input$Det_TM_document_comparison_document,,drop=F])
+  titles<-values$tm_meta[which(values$tm_meta[,"id_doc"]%in%input$Det_TM_document_comparison_document),c("id_doc","title"),drop=F]
+  rownames(titles)<-titles$id_doc
+  titles<-titles[colnames(data),]
+  titles<-paste0(titles$title," (",titles$id_doc,")")
+  data<-t(data)
+  data<-round(data,digits = 3)
+  for(k in 1:length(input$Det_TM_document_comparison_document)){
+    data_pie<-data.frame(prob=data[k,], names=paste0("Topic: ",colnames(theta)))
+    subplots<-plotly::add_pie(subplots,data = data_pie,values=~prob, labels=~names,
+                              name=  titles[k],
+                              textposition="inside",
+                              marker = list(colors = values$tm_colors,
+                                            line = list(color = '#FFFFFF', width = 1)),
+                              #The 'pull' attribute can also be used to create space between the sectors
+                              domain = list(row = row, column = column)
+    )
+    if(k%%2==0){
+      row=row+1
+    }
+    column<-(k%%2)
+  }
+  subplots <- plotly::layout(subplots,title = "Topic Distributions for chosen documents", showlegend = T,
+                             grid=list(rows=(length(input$Det_TM_document_comparison_document)+1)%/%2, columns=2),
+                             xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                             yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)
+  )
+  subplots
+})
+
+
+
+output$Det_TM_document_comparison_correlation_heatmap_correlation<-plotly::renderPlotly({
+  validate(
+    need(length(input$Det_TM_document_comparison_document)>1,message = "Choose at least two documents!")
+  )
+  data<-t(values$tm_theta[input$Det_TM_document_comparison_document,,drop=F])
+  titles<-values$tm_meta[which(values$tm_meta[,"id_doc"]%in%input$Det_TM_document_comparison_document),c("id_doc","title"),drop=F]
+  rownames(titles)<-titles$id_doc
+  titles<-titles[colnames(data),]
+  titles<-paste0(titles$title," (",titles$id_doc,")")
+  
+  correlation<-cor((data),method = input$Det_TM_document_comparison_correlation_method)
+  heatmap<-plotly::plot_ly(z=correlation,type="heatmap",x=titles,y=titles,
+                           colors= colorRamp(c(input$Det_TM_document_comparison_color_low, input$Det_TM_document_comparison_color_high))
+  )
+  return(heatmap)
+})
+
+
+output$Det_TM_document_comparison_correlation_heatmap_cosine_similarity<-plotly::renderPlotly({
+  validate(
+    need(length(input$Det_TM_document_comparison_document)>1,message = "Choose at least two documents!")
+  )
+  data<-t(values$tm_theta[input$Det_TM_document_comparison_document,,drop=F])
+  titles<-values$tm_meta[which(values$tm_meta[,"id_doc"]%in%input$Det_TM_document_comparison_document),c("id_doc","title"),drop=F]
+  rownames(titles)<-titles$id_doc
+  titles<-titles[colnames(data),]
+  titles<-paste0(titles$title," (",titles$id_doc,")")
+  
+  data<-t(data)
+  cosine_similarity<-wordVectors::cosineSimilarity(x = data,y = data)
+  heatmap<-plotly::plot_ly(z=cosine_similarity,type="heatmap",x=titles,y=titles,
+                           colors= colorRamp(c(input$Det_TM_document_comparison_color_low, input$Det_TM_document_comparison_color_high))
+  )
+  return(heatmap)
+})
+
+
+output$Det_TM_document_comparison_correlation_heatmap_euclidean_distance<-plotly::renderPlotly({
+  validate(
+    need(length(input$Det_TM_document_comparison_document)>1,message = "Choose at least two documents!")
+  )
+  data<-t(values$tm_theta[input$Det_TM_document_comparison_document,,drop=F])
+  titles<-values$tm_meta[which(values$tm_meta[,"id_doc"]%in%input$Det_TM_document_comparison_document),c("id_doc","title"),drop=F]
+  rownames(titles)<-titles$id_doc
+  titles<-titles[colnames(data),]
+  titles<-paste0(titles$title," (",titles$id_doc,")")
+  
+  data<-t(data)
+  euclidean_distance<-as.matrix(dist(x = data,method = "euclidean",diag = T,upper = T))
+  heatmap<-plotly::plot_ly(z=euclidean_distance,type="heatmap",x=titles,y=titles,
+                           colors= colorRamp(c(input$Det_TM_document_comparison_color_low, input$Det_TM_document_comparison_color_high))
+  )
+  return(heatmap)
+})
+
+
+
+
+#############################
+###    document outlier   ###
+#############################
+
+output$TM_document_outlier_UI<-renderUI({
+  return(tagList(
+    tags$h4("Average document differentness"),
+    DT::dataTableOutput(outputId = "Det_TM_document_outlier_table"),
+    plotly::plotlyOutput(outputId = "Det_TM_document_outlier_heatmap")
+    
+  )
+  )
+})
+
+
+output$Det_TM_document_outlier_heatmap<-plotly::renderPlotly({
+  
+  selected_ids<-values$TM_document_outlier_tabledata[input$Det_TM_document_outlier_table_rows_selected,"id_doc"]
+  validate(
+    need(length(selected_ids)>0,message=F)
+  )
+  comparison_matrix <- values$Det_TM_document_outlier_comparison_matrix[selected_ids,]
+  
+  heatmap<-plotly::plot_ly(z=comparison_matrix,type="heatmap",
+                           colors= colorRamp(c(input$Det_TM_document_outlier_color_low, input$Det_TM_document_outlier_color_high))
+  )
+  
+  return(heatmap)
+  
+})
+
+
+output$Det_TM_document_outlier_table<-DT::renderDataTable({
+  data<-t(values$tm_theta)
+  titles<-values$tm_meta[,c("id_doc","title"),drop=F]
+  rownames(titles)<-titles$id_doc
+  titles<-titles[colnames(data),]
+  titles<-paste0(titles$title," (",titles$id_doc,")")
+  
+  data<-t(data)
+  if(input$Det_TM_document_outlier_measure=="Cosine Similarity"){
+    comparison_matrix<-wordVectors::cosineSimilarity(x = data,y = data)
+  }
+  if(input$Det_TM_document_outlier_measure=="Correlation"){
+    comparison_matrix<-cor(t(data),method = input$Det_TM_document_outlier_correlation_method)
+  }
+  if(input$Det_TM_document_outlier_measure=="Euclidean Distance"){
+    comparison_matrix<-as.matrix(dist(x = data,method = "euclidean",diag = T,upper = T))
+  }
+  values$Det_TM_document_outlier_comparison_matrix<-comparison_matrix
+  
+  avg_comparison<-colSums(comparison_matrix)/ncol(comparison_matrix)
+  
+  if(input$Det_TM_document_outlier_measure=="Euclidean Distance"){
+    avg_comparison<-avg_comparison[order(avg_comparison,decreasing=T)]
+  }
+  else{
+    avg_comparison<-avg_comparison[order(avg_comparison,decreasing=F)]
+  }
+  avg_comparison<-data.frame(id_doc=names(avg_comparison),avg_similarity=avg_comparison)
+  meta<-values$tm_meta
+  data<-merge(meta,avg_comparison,by = "id_doc")[,c("id_doc","title","date","avg_similarity")]
+  if(input$Det_TM_document_outlier_measure=="Euclidean Distance"){
+    data<-data[order(data$avg_similarity,decreasing=T),]
+  }
+  else{
+    data<-data[order(data$avg_similarity,decreasing=F),]
+  }
+  values$TM_document_outlier_tabledata<-data
+  data$avg_similarity<-paste0("<b>",data$avg_similarity,"</b")
+  datatable(data=data,escape = F,rownames = F)
+})
+
+
+
+
+
+
+
+
+#############################
+#        Clustering         #
+#############################
+output$TM_document_clustering_UI<-renderUI({
+  data<-t(values$tm_theta)
+  titles<-values$tm_meta[,c("id_doc","title"),drop=F]
+  rownames(titles)<-titles$id_doc
+  titles<-titles[colnames(data),]
+  titles<-paste0(titles$title," (",titles$id_doc,")")
+  data<-t(data)
+  # do kmeans clustering
+  km.res <- kmeans(data, centers = input$Det_TM_document_clustering_k, iter.max = input$Det_TM_document_clustering_max_iterations,nstart = input$Det_TM_document_clustering_n_start)
+  # apply dimension reduction using pca from factoextra package
+  cluster_data<-fviz_cluster(data = data,object = km.res)
+  values$Det_TM_document_clustering_cluster_data<-cluster_data
+  values$Det_TM_document_clustering_titles<-titles
+  return(
+    tagList(
+      #plotOutput(outputId = "Det_TM_document_clustering_best_number_of_k")  
+      plotly::plotlyOutput(outputId = "Det_TM_document_clustering_kmeans"),
+      tags$br(),
+      tags$hr(),
+      uiOutput(outputId = "Det_TM_document_clustering_metadata_UI")
+    )
+  )
+})
+
+output$Det_TM_document_clustering_kmeans<-plotly::renderPlotly({
+  validate(
+    need(!is.null(values$Det_TM_document_clustering_cluster_data),message=F)
+  )
+  cluster_data<-values$Det_TM_document_clustering_cluster_data
+  plot_data<-data.frame(cbind(cluster_data$data$name,cluster_data$data$x,cluster_data$data$y,cluster_data$data$coord,cluster_data$data$cluster),stringsAsFactors = F)
+  values$Det_TM_document_clustering_cluster_summary<-plot_data
+  x_lab<-cluster_data$labels$x
+  y_lab<-cluster_data$labels$y
+  colnames(plot_data)<-c("name","x","y","coord","cluster")
+  plot_data$x<-round(as.numeric(plot_data$x),digits = 3)
+  plot_data$y<-round(as.numeric(plot_data$y),digits = 3)
+  
+  fig<-plot_ly(source = "Det_TM_document_clustering_kmeans", data=plot_data,x=~x,y=~y,type="scatter",mode="markers",color=~cluster,symbol=~cluster,marker=list(size=input$Det_TM_document_clustering_marker_size),
+               text=values$Det_TM_document_clustering_titles, key=~name)
+  fig<-layout(fig,xaxis=list(title=x_lab),yaxis=list(title=y_lab))
+  fig
+})
+
+
+
+output$Det_TM_document_clustering_download_clustering_result<-downloadHandler(
+  filename = function() {
+    paste('cluster_result', Sys.Date(), '.csv', sep='')
+  },
+  content = function(con) {
+    data<-as.matrix(values$Det_TM_document_clustering_cluster_summary)
+    write.csv(data, con)
+  }
+)
+
+
+output$Det_TM_document_clustering_metadata_UI<-renderUI({
+  eventdata<-event_data("plotly_click",source = "Det_TM_document_clustering_kmeans")
+  validate(
+    need(!is.null(eventdata), "Click on a marker to get more information for the corresponding document")
+  )
+  doc_id<-eventdata$key
+  meta<-values$tm_meta[which(values$tm_meta[,"id_doc"]==doc_id),,drop=F]
+  meta_extra<-values$TM_meta[which(values$tm_meta[,"id_doc"]==doc_id),,drop=F]
+  return(
+    tagList(
+      tags$h5(tags$b("Document ID")),
+      tags$div(doc_id),
+      tags$h5(tags$b("Title")),
+      tags$div(meta$title),
+      tags$h5(tags$b("Date")),
+      tags$div(meta$date),
+      tags$h5(tags$b("Number of Token")),
+      tags$div(meta$token),
+      shinyWidgets::materialSwitch(inputId = "Det_TM_document_clustering_show_body",label = "show whole document",value = F,status = "default"),
+      conditionalPanel(condition='input.Det_TM_document_clustering_show_body==true',
+                       tags$h5(tags$b("Text")),
+                       tags$div(meta$body)
+      ),
+      tags$hr(),
+      shinyWidgets::materialSwitch(inputId = "Det_TM_document_clustering_show_metadata",label = "show all metadata",value = F,status = "default"),
+      conditionalPanel(condition='input.Det_TM_document_clustering_show_metadata==true',
+                       lapply(X = setdiff(colnames(meta_extra),c("id_doc","token")),FUN = function(x){
+                         return(tagList(
+                           tags$h5(tags$b(x)),
+                           tags$div(meta_extra[1,x])
+                         ))
+                       })        
+                       
+      )
+    )
+  )
+})

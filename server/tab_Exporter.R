@@ -182,7 +182,7 @@ output$Export_Analysis_Parameter_DL<-renderUI({
   #browser()
   load(paste0("collections/collections/",input$export_collection,".RData"))
   ids<-as.numeric(as.character(info[[3]]$x....id..))
-  number_of_buttons<-ceiling(length(ids)/input$download_batch_size)
+  number_of_buttons<-ceiling(length(ids)/input$export_download_batch_size)
   values$export_number_of_buttons<-number_of_buttons
   dl_button_ids<-paste(input$export_collection,"export_NR",1:number_of_buttons,sep="")
   actionbutton_list<-lapply(X =1:number_of_buttons,FUN = function(x){
@@ -248,7 +248,9 @@ observe({
           shinyWidgets::sendSweetAlert(session=session,title = "no documents found.",text = "Have you clicked 'Prepare Documents'?",type = "warning")
         }
         else{
-          write.table(values$token_tmp[((floor((dim(values$token_tmp)[1]/values$export_number_of_buttons)*(i-1))+1):floor((dim(values$token_tmp)[1]/values$export_number_of_buttons)*(i))),], con,col.names = F,row.names = F,sep=",")
+          export_data<-values$meta_tmp[((floor((dim(values$meta_tmp)[1]/values$export_number_of_buttons)*(i-1))+1):floor((dim(values$meta_tmp)[1]/values$export_number_of_buttons)*(i))),]
+          export_data<-apply(X = export_data,MARGIN = 2,FUN = function(x){stringr::str_replace_all(string = x,pattern = '"',replacement = "'")})
+          write.table(export_data, con,col.names = F,row.names = F,sep=",",quote = T)   
         }
       }
     )

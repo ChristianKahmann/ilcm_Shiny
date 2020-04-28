@@ -19,7 +19,7 @@ tabPanel("Exporter",
                              ),
                              conditionalPanel(condition = "input.export_coll_format=='csv'",
                                               column(2,
-                                                     numericInput(inputId = "download_batch_size",label = "Batch size (number of documents per csv-file)",value = 1000,min = 1,max = 100000)
+                                                     numericInput(inputId = "export_download_batch_size",label = "Batch size (number of documents per csv-file)",value = 1000,min = 1,max = 100000)
                                               ),
                                               tags$br(),
                                               uiOutput(outputId = "Export_Analysis_Parameter_DL")   

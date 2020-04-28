@@ -641,3 +641,27 @@ observeEvent(ignoreInit = T,input$Det_DD_save_collection,{
   }
 })
 
+
+
+output$Det_DD_download_clean<-downloadHandler(
+  filename = function() {
+    paste('duplicate_free_collection', Sys.Date(), '.csv', sep='')
+  },
+  content = function(con) {
+    export_data<-as.matrix(values$Det_DD_meta[-as.numeric(values$blacklist),])
+    export_data<-apply(X = export_data,MARGIN = 2,FUN = function(x){stringr::str_replace_all(string = x,pattern = '"',replacement = "'")})
+    write.table(export_data, con,col.names = F,row.names = F,sep=",",quote = T)
+  }
+)
+
+
+output$Det_DD_download_duplicates<-downloadHandler(
+  filename = function() {
+    paste('duplicates', Sys.Date(), '.csv', sep='')
+  },
+  content = function(con) {
+    export_data<-as.matrix(values$Det_DD_meta[as.numeric(values$blacklist),])
+    export_data<-apply(X = export_data,MARGIN = 2,FUN = function(x){stringr::str_replace_all(string = x,pattern = '"',replacement = "'")})
+    write.table(export_data, con,col.names = F,row.names = F,sep=",",quote = T)
+  }
+)
