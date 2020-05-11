@@ -175,7 +175,7 @@ error<-try(expr = {
     
     
   }else{
-    t$set_parameters(par_list = list("alpha"=parameters$tm_alpha,"K"=parameters$tm_number_of_topics))
+    t$set_parameters(par_list = list("alpha"=as.numeric(parameters$tm_alpha),"K"=parameters$tm_number_of_topics))
   }
   
   t$create_tm()

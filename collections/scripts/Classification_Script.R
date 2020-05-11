@@ -18,7 +18,7 @@ error<-try(expr = {
   #load parameters
   load("collections/tmp/tmp.RData")
   parameters_original<-parameters
-
+  
   
   
   #load collection 
@@ -480,7 +480,7 @@ error<-try(expr = {
     colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
     #delete bias term from feature matrix
     feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-    
+
     word_counts<-colSums(dtm) 
     log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
     
@@ -660,9 +660,13 @@ error<-try(expr = {
     
     feature_matrix<-model$W
     colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
-    #delete bias term from feature matrix
+    #d elete bias term from feature matrix
     feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-    
+    # if only 2 categories were used, transform feature matrix
+    if(nrow(feature_matrix)==1){
+      feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))
+      rownames(feature_matrix)<-unique(gold_table[,2])
+    }
     word_counts<-colSums(dtm)  
     
     testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))

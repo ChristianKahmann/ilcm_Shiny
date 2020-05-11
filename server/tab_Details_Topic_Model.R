@@ -558,6 +558,8 @@ observeEvent(input$TM_Subcollection_save,{
           solrium::commit(conn = conn,name="iLCM")
         }) %...>% future:::ClusterRegistry("stop")
         })
+        values$coll_saved<-runif(1,min = 0,max = 1)
+        values$num_collections<-length(list.files("collections/collections/"))
         shinyWidgets::sendSweetAlert(type = "success",session = session,title =  paste0("Created Subcollection '",input$TM_Subcollection_Name,"' with ",dim(ids_subcoll)[1]," documents!"))
       }
     }
@@ -2682,19 +2684,24 @@ output$TM_document_outlier_UI<-renderUI({
 
 
 output$Det_TM_document_outlier_heatmap<-plotly::renderPlotly({
-  
   selected_ids<-values$TM_document_outlier_tabledata[input$Det_TM_document_outlier_table_rows_selected,"id_doc"]
+  titles<-values$TM_document_outlier_tabledata[input$Det_TM_document_outlier_table_rows_selected,"title"]
+
   validate(
     need(length(selected_ids)>0,message=F)
   )
-  comparison_matrix <- values$Det_TM_document_outlier_comparison_matrix[selected_ids,]
-  
-  heatmap<-plotly::plot_ly(z=comparison_matrix,type="heatmap",
+
+  comparison_matrix <- values$Det_TM_document_outlier_comparison_matrix[selected_ids,,drop=F]
+  ids_rest<-data.frame(id_doc=colnames(values$Det_TM_document_outlier_comparison_matrix),stringsAsFactors = F)
+  all_titles<-plyr::join(y=values$TM_document_outlier_tabledata,x=ids_rest,by="id_doc")[,"title"]
+  rownames(comparison_matrix)<-titles
+  colnames(comparison_matrix)<-all_titles
+  heatmap<-plotly::plot_ly(z=comparison_matrix,type="heatmap",x=all_titles,y=titles,
                            colors= colorRamp(c(input$Det_TM_document_outlier_color_low, input$Det_TM_document_outlier_color_high))
-  )
+  )%>%
+    plotly::layout(xaxis=list(type="category"),yaxis=list(type="category"))
   
   return(heatmap)
-  
 })
 
 

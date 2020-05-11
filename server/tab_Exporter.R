@@ -166,7 +166,7 @@ output$filepaths <- renderPrint({
 
 
 
-output$download_export_coll_RData <- downloadHandler(
+output$download_button_coll_ilcm <- downloadHandler(
   filename = function(){
     paste0(input$export_collection,".RData")
   },
@@ -177,20 +177,33 @@ output$download_export_coll_RData <- downloadHandler(
 
 
 
+
 #render parameters for downloading a collection
 output$Export_Analysis_Parameter_DL<-renderUI({
-  #browser()
+  validate(
+    need(input$export_download_batch_size>0,"Please specify a batch size greater than 0"),
+    need(input$export_coll_format%in%c("DataFrame"),message=F)
+  )
   load(paste0("collections/collections/",input$export_collection,".RData"))
-  ids<-as.numeric(as.character(info[[3]]$x....id..))
+  ids<-as.numeric(as.character(info[[3]][,1]))
   number_of_buttons<-ceiling(length(ids)/input$export_download_batch_size)
   values$export_number_of_buttons<-number_of_buttons
-  dl_button_ids<-paste(input$export_collection,"export_NR",1:number_of_buttons,sep="")
-  actionbutton_list<-lapply(X =1:number_of_buttons,FUN = function(x){
+  chosen_collection<-input$export_collection
+  # replace punctuation in collection name if present
+  chosen_collection<-gsub(pattern = "[:]",replacement = "",x = chosen_collection)
+  values$export_chosen_collection<-chosen_collection
+  dl_button_ids<-paste(chosen_collection,"export_NR",1:number_of_buttons,sep="")
+  actionbutton_list_csv<-lapply(X =1:number_of_buttons,FUN = function(x){
     return(tagList(downloadButton(outputId = dl_button_ids[x],label = paste0("Token Part ",x),icon = icon("download"),class = "dl1"),
                    downloadButton(outputId = paste0(dl_button_ids[x],"meta"),label = paste0("Meta Part ",x),icon = icon("download"),class = "dl2"),
                    tags$br()
     ))
   })
+  actionbutton_list_RData<-tagList(
+    downloadButton(outputId = "download_export_RData_token",label = "Token",icon = icon("download"),class = "dl1"),
+    downloadButton(outputId = "download_export_RData_meta",label = "Meta",icon = icon("download"),class = "dl2"),
+    tags$br()
+  )
   tagList(
     tags$div(paste(length(ids)," documents were found. They were split into ",number_of_buttons,"parts.")), 
     busyIndicator(text = "Retrieving documents from database",wait = 0),
@@ -198,11 +211,16 @@ output$Export_Analysis_Parameter_DL<-renderUI({
     tags$br(),
     tags$br(),
     hidden(tags$div(id="export_csv",
-                    do.call(tagList,actionbutton_list)
+                    tags$h4("CSV"),
+                    do.call(tagList,actionbutton_list_csv),
+                    tags$h4("RData"),
+                    do.call(tagList,actionbutton_list_RData)
     )
     )
   )
 })
+
+
 
 
 
@@ -225,8 +243,9 @@ observeEvent(input$Export_Prepare_Documents,{
   ids<-paste(d[,1],collapse = ", ")
   meta<-rbind(meta,RMariaDB::dbGetQuery(mydb, paste("select * from documents where id in (",ids,");",sep="")))
   RMariaDB::dbDisconnect(mydb)
-  values$token_tmp<-token
-  values$meta_tmp<-meta[,2:13]
+  values$export_token_tmp<-token
+  not_all_na<-which(!sapply(meta, function(x)all(is.na(x))))
+  values$export_meta_tmp<-meta[,not_all_na]
   shinyWidgets::sendSweetAlert(session=session,title = "Data ready for Download",text=paste0(dim(meta)[1]," Documents could be retrieved from database"),type = "success")
   shinyjs::show(id = "export_csv")
 })
@@ -239,16 +258,17 @@ observe({
     need(!is.null(values$export_number_of_buttons),message=FALSE)
   )
   lapply(1:values$export_number_of_buttons,FUN = function(i){
-    output[[paste(input$export_collection,"export_NR",i,sep="")]]<-downloadHandler(
+    output[[paste(values$export_chosen_collection,"export_NR",i,sep="")]]<-downloadHandler(
       filename = function(con){
-        paste("token_",input$export_collection,"_",i,".csv",sep="")
+        paste("token_",values$export_chosen_collection,"_",i,".csv",sep="")
       },
       content = function(con) {
-        if(dim(values$token_tmp)[1]==0){
+        if(dim(values$export_token_tmp)[1]==0){
           shinyWidgets::sendSweetAlert(session=session,title = "no documents found.",text = "Have you clicked 'Prepare Documents'?",type = "warning")
         }
         else{
-          export_data<-values$meta_tmp[((floor((dim(values$meta_tmp)[1]/values$export_number_of_buttons)*(i-1))+1):floor((dim(values$meta_tmp)[1]/values$export_number_of_buttons)*(i))),]
+          browser()
+          export_data<-values$export_meta_tmp[((floor((dim(values$export_meta_tmp)[1]/values$export_number_of_buttons)*(i-1))+1):floor((dim(values$export_meta_tmp)[1]/values$export_number_of_buttons)*(i))),]
           export_data<-apply(X = export_data,MARGIN = 2,FUN = function(x){stringr::str_replace_all(string = x,pattern = '"',replacement = "'")})
           write.table(export_data, con,col.names = F,row.names = F,sep=",",quote = T)   
         }
@@ -264,27 +284,53 @@ observe({
     need(!is.null(values$export_number_of_buttons),message=FALSE)
   )
   lapply(1:values$export_number_of_buttons,FUN = function(i){
-    output[[paste(input$export_collection,"export_NR",i,"meta",sep="")]]<-downloadHandler(
+    output[[paste(values$export_chosen_collection,"export_NR",i,"meta",sep="")]]<-downloadHandler(
       filename = function(con){
-        paste("meta_",input$export_collection,"_",i,".csv",sep="")
+        paste("meta_",values$export_chosen_collection,"_",i,".csv",sep="")
       },
       content = function(con) {
-        if(dim(values$meta_tmp)[1]==0){
+        if(dim(values$export_meta_tmp)[1]==0){
           shinyWidgets::sendSweetAlert(session=session,title = "no documents found.",text = "Have you clicked 'Prepare Documents'?",type = "warning")
         }
         else{
-          write.table(values$meta_tmp[((floor((dim(values$meta_tmp)[1]/values$export_number_of_buttons)*(i-1))+1):floor((dim(values$meta_tmp)[1]/values$export_number_of_buttons)*(i))),], con,col.names = F,row.names = F,sep=",")
+          export_data<-values$export_meta_tmp[((floor((dim(values$export_meta_tmp)[1]/values$export_number_of_buttons)*(i-1))+1):floor((dim(values$export_meta_tmp)[1]/values$export_number_of_buttons)*(i))),]
+          export_data<-apply(X = export_data,MARGIN = 2,FUN = function(x){stringr::str_replace_all(string = x,pattern = '"',replacement = "'")})
+          write.table(export_data, con,col.names = T,row.names = F,sep=",",quote = T) 
         }
       }
     )
   })
 })
 
+# download functionality for downloading collection meta objects as RData
+output$download_export_RData_meta <- downloadHandler(
+  filename = function(){
+    paste0(input$export_collection,"_meta.RData")
+  },
+  content = function(file){
+    token<-values$export_meta_tmp
+    save(token,file=file)
+  }
+)
+
+# download functionality for downloading collection token objects as RData
+output$download_export_RData_token <- downloadHandler(
+  filename = function(){
+    paste0(input$export_collection,"_token.RData")
+  },
+  content = function(file){
+    meta<-values$export_token_tmp
+    save(meta,file=file)
+  }
+)
 
 
 
-
-
+# update select input for collections (input$export_collection), when a new collection is created
+observe({
+  values$coll_saved
+  updateSelectInput(session = session,inputId = "export_collection", choices = stringr::str_remove(string = list.files("collections/collections/"),pattern = ".RData"))
+})
 
 
 

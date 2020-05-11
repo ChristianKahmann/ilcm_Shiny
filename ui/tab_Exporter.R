@@ -6,7 +6,7 @@ tabPanel("Exporter",
                     tags$div(style="height:75vh; overflow-y:auto;",
                              selectInput(inputId = "export_collection",label = "Collections:",choices = stringr::str_remove(string = list.files("collections/collections/"),
                                                                                                                             pattern = ".RData"),multiple = F,width = "25%"),
-                             radioGroupButtons(inputId = "export_coll_format",label = "Download as:",choices = c("RData","csv"),selected = "RData",checkIcon = list(
+                             radioGroupButtons(inputId = "export_coll_format",label = "Download as:",choices = c("DataFrame","iLCM Collection Format RData"),selected = "RData",checkIcon = list(
                                yes = tags$i(class = "fa fa-check-square", 
                                             style = "color: steelblue"),
                                no = tags$i(class = "fa fa-square-o", 
@@ -14,10 +14,10 @@ tabPanel("Exporter",
                              ),
                              tags$br(),
                              tags$hr(),
-                             conditionalPanel(condition = "input.export_coll_format=='RData'",
-                                              downloadButton("download_export_coll_RData","Download as RData")
+                             conditionalPanel(condition = "input.export_coll_format=='iLCM Collection Format RData'",
+                                              shiny::downloadButton(outputId = "download_button_coll_ilcm",label = "Download iLCM Collection Format")
                              ),
-                             conditionalPanel(condition = "input.export_coll_format=='csv'",
+                             conditionalPanel(condition = "input.export_coll_format=='DataFrame' ",
                                               column(2,
                                                      numericInput(inputId = "export_download_batch_size",label = "Batch size (number of documents per csv-file)",value = 1000,min = 1,max = 100000)
                                               ),

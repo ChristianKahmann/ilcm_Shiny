@@ -46,7 +46,8 @@ observeEvent(input$Prepare_Documents,{
   meta<-rbind(meta,RMariaDB::dbGetQuery(mydb, paste("select * from documents where id in (",ids,");",sep="")))
   RMariaDB::dbDisconnect(mydb)
   values$token_tmp<-token
-  values$meta_tmp<-meta[,2:13]
+  not_all_na<-which(!sapply(meta, function(x)all(is.na(x))))
+  values$meta_tmp<-meta[,not_all_na]
   shinyWidgets::sendSweetAlert(session=session,title = "Data ready for Download",text=paste0(dim(meta)[1]," Documents could be retrieved from database"),type = "success")
 })
 

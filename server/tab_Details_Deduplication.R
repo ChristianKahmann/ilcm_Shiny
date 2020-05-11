@@ -634,6 +634,8 @@ observeEvent(ignoreInit = T,input$Det_DD_save_collection,{
     
     save(info,file=paste("collections/collections/",info[[5]],".RData",sep = ""))
     save_collection_to_db(info)
+    values$coll_saved<-runif(1,min = 0,max = 1)
+    values$num_collections<-length(list.files("collections/collections/"))
     shinyWidgets::sendSweetAlert(session=session,title = "Collection created",text = paste0("new collection with name:",paste0(info[[5]])," has been created"),type = "success")
   }
   else{

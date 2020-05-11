@@ -3,6 +3,7 @@
 
 #reload avaiable collections
 observe({
+  values$coll_saved
   input$collections_Reset
   values$num_collections <-
     length(list.files("collections/collections/"))

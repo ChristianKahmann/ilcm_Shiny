@@ -79,7 +79,7 @@ observeEvent(input$save_Collection,{
             if(length(indices)>=1){
               save(info,file=paste("collections/collections/",isolate(input$Collection_Name),".RData",sep = ""))
               shinyWidgets::sendSweetAlert(type = "success",session = session,title = "Collection saved")
-              values$coll_saved<-runif(1)
+              values$coll_saved<-runif(1,min = 0,max = 1)
               values$num_collections<-length(list.files("collections/collections/"))
             }
             else{
