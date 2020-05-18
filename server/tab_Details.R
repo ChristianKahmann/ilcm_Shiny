@@ -503,7 +503,7 @@ output$details_parameter<-renderUI({
       panelDocumentOutlier <- conditionalPanel(condition='input.tabBox_tm=="Document Outlier"',
                                                selectInput(inputId="Det_TM_document_outlier_measure",label="Comparison measure",choices=c("Correlation","Cosine Similarity","Euclidean Distance"),multiple=F),
                                                conditionalPanel(condition='input.Det_TM_document_outlier_measure=="Correlation"',
-                                                                selectInput(inputId="Det_TM_document_outlier_correlation_method",label="Correlation method",choices=c("pearson","kendall","spearman")),
+                                                                selectInput(inputId="Det_TM_document_outlier_correlation_method",label="Correlation method",choices=c("pearson","kendall","spearman"))
                                                ),
                                                colourpicker::colourInput(inputId="Det_TM_document_outlier_color_low","color 1",value="firebrick"),
                                                colourpicker::colourInput(inputId="Det_TM_document_outlier_color_high","color 2",value="cyan")

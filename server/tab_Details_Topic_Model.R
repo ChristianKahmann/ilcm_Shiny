@@ -2530,7 +2530,7 @@ output$TM_document_comparison_UI<-renderUI({
                        )
               ),
               tabPanel(title = "Pie Charts",
-                       plotly::plotlyOutput(outputId = "Det_TM_document_comparison_pie"),
+                       plotly::plotlyOutput(outputId = "Det_TM_document_comparison_pie")
               ),
               tabPanel(title="Correlation",
                        tags$br(),

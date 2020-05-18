@@ -14,7 +14,6 @@ observe({
   input$Det_DD_strategy
   input$Det_DD_threshold
   
-  
   data<-data.frame(a=values$Det_DD_results[,1],token_a=0,date_a=0,b=values$Det_DD_results[,2],token_b=0,date_b=0,similarity=values$Det_DD_results[,3],keep_a=0,keep_b=0,stringsAsFactors = F)
   data<-data[which(data$similarity>input$Det_DD_threshold),]
   data<-data[order(data$similarity,decreasing = T),]
@@ -27,53 +26,112 @@ observe({
     data<-data[,c("a","token_a","date_a","b","token_b","date_b","similarity","keep_a","keep_b","Freq.x","Freq.y")]
     final_remove<-matrix(c(0),dim(data)[1],2)
     #browser()
-    for(i in 1:dim(data)[1]){
-      if(input$Det_DD_strategy=="longest"){
-        try({
-          remove<-which.max(c(values$Det_DD_meta[data[i,1],"token"],values$Det_DD_meta[data[i,4],"token"]))
-        })
-        if(length(remove)==0){
-          remove<-sample(x = c(1,2),size = 1)
-        }
-      }  
-      if(input$Det_DD_strategy=="shortest"){
-        try({
-          remove<-which.min(c(values$Det_DD_meta[data[i,1],"token"],values$Det_DD_meta[data[i,4],"token"]))
-        })
-        if(length(remove)==0){
-          remove<-sample(x = c(1,2),size = 1)
-        }
-      }
-      if(input$Det_DD_strategy=="latest"){
-        try({
-          remove<-which.max(c(values$Det_DD_meta[data[i,1],"date"],values$Det_DD_meta[data[i,4],"date"]))
-        })
-        if(length(remove)==0){
-          remove<-sample(x = c(1,2),size = 1)
-        }
-      }
-      if(input$Det_DD_strategy=="earliest"){
-        try({
-          remove<-which.min(c(values$Det_DD_meta[data[i,1],"date"],values$Det_DD_meta[data[i,4],"date"]))
-        })
-        if(length(remove)==0){
-          remove<-sample(x = c(1,2),size = 1)
-        }
-      }
-      if(input$Det_DD_strategy=="maximum node degree"){
-        #browser()
-        try({
-          remove<-which.max(c(data[i,"Freq.x"],data[i,"Freq.y"]))
-        })
-        if(length(remove)==0){
-          remove<-sample(x = c(1,2),size = 1)
-        }
-      }
-      if(input$Det_DD_strategy=="random"){
+    
+    ############
+    if(input$Det_DD_strategy=="longest"){
+      try({
+        relevant_data<-cbind(values$Det_DD_meta[data[,1],"token"],values$Det_DD_meta[data[,4],"token"])
+        remove<-apply(relevant_data,MARGIN = 1,FUN = which.max)
+        final_remove<-matrix(c(0),dim(data)[1],2)
+        final_remove[which(remove==1),1]<-1
+        final_remove[which(remove==2),2]<-1
+      })
+    } 
+    if(input$Det_DD_strategy=="shortest"){
+      try({
+        relevant_data<-cbind(values$Det_DD_meta[data[,1],"token"],values$Det_DD_meta[data[,4],"token"])
+        remove<-apply(relevant_data,MARGIN = 1,FUN = which.min)
+        final_remove<-matrix(c(0),dim(data)[1],2)
+        final_remove[which(remove==1),1]<-1
+        final_remove[which(remove==2),2]<-1
+      })
+    }
+    if(input$Det_DD_strategy=="latest"){
+      try({
+        relevant_data<-cbind(values$Det_DD_meta[data[,1],"date"],values$Det_DD_meta[data[,4],"date"])
+        remove<-apply(relevant_data,MARGIN = 1,FUN = which.max)
+        final_remove<-matrix(c(0),dim(data)[1],2)
+        final_remove[which(remove==1),1]<-1
+        final_remove[which(remove==2),2]<-1
+      })
+    } 
+    if(input$Det_DD_strategy=="earliest"){
+      try({
+        relevant_data<-cbind(values$Det_DD_meta[data[,1],"date"],values$Det_DD_meta[data[,4],"date"])
+        remove<-apply(relevant_data,MARGIN = 1,FUN = which.min)
+        final_remove<-matrix(c(0),dim(data)[1],2)
+        final_remove[which(remove==1),1]<-1
+        final_remove[which(remove==2),2]<-1
+      })
+    }
+    if(input$Det_DD_strategy=="maximum node degree"){
+      #browser()
+      try({
+        relevant_data<-cbind(values$Det_DD_meta[data[,1],"Freq.x"],values$Det_DD_meta[data[,4],"Freq.y"])
+        remove<-apply(relevant_data,MARGIN = 1,FUN = which.max)
+        final_remove<-matrix(c(0),dim(data)[1],2)
+        final_remove[which(remove==1),1]<-1
+        final_remove[which(remove==2),2]<-1
+      })
+      if(length(remove)==0){
         remove<-sample(x = c(1,2),size = 1)
       }
-      final_remove[i,remove]<-1
     }
+    if(input$Det_DD_strategy=="random"){
+      remove<-sample(x = c(1,2),size = dim(data)[1],replace = T)
+      final_remove<-matrix(c(0),dim(data)[1],2)
+      final_remove[which(remove==1),1]<-1
+      final_remove[which(remove==2),2]<-1
+    }
+    ############
+    # for(i in 1:dim(data)[1]){
+    #   print(i)
+    #   if(input$Det_DD_strategy=="longest"){
+    #     try({
+    #       remove<-which.max(c(values$Det_DD_meta[data[i,1],"token"],values$Det_DD_meta[data[i,4],"token"]))
+    #     })
+    #     if(length(remove)==0){
+    #       remove<-sample(x = c(1,2),size = 1)
+    #     }
+    #   }  
+    #   if(input$Det_DD_strategy=="shortest"){
+    #     try({
+    #       remove<-which.min(c(values$Det_DD_meta[data[i,1],"token"],values$Det_DD_meta[data[i,4],"token"]))
+    #     })
+    #     if(length(remove)==0){
+    #       remove<-sample(x = c(1,2),size = 1)
+    #     }
+    #   }
+    #   if(input$Det_DD_strategy=="latest"){
+    #     try({
+    #       remove<-which.max(c(values$Det_DD_meta[data[i,1],"date"],values$Det_DD_meta[data[i,4],"date"]))
+    #     })
+    #     if(length(remove)==0){
+    #       remove<-sample(x = c(1,2),size = 1)
+    #     }
+    #   }
+    #   if(input$Det_DD_strategy=="earliest"){
+    #     try({
+    #       remove<-which.min(c(values$Det_DD_meta[data[i,1],"date"],values$Det_DD_meta[data[i,4],"date"]))
+    #     })
+    #     if(length(remove)==0){
+    #       remove<-sample(x = c(1,2),size = 1)
+    #     }
+    #   }
+    #   if(input$Det_DD_strategy=="maximum node degree"){
+    #     #browser()
+    #     try({
+    #       remove<-which.max(c(data[i,"Freq.x"],data[i,"Freq.y"]))
+    #     })
+    #     if(length(remove)==0){
+    #       remove<-sample(x = c(1,2),size = 1)
+    #     }
+    #   }
+    #   if(input$Det_DD_strategy=="random"){
+    #     remove<-sample(x = c(1,2),size = 1)
+    #   }
+    #   final_remove[i,remove]<-1
+    # }
     data[,8:9]<-final_remove
     data[,2]<-values$Det_DD_meta[data[,1],"token"]
     data[,3]<-values$Det_DD_meta[data[,1],"date"]
@@ -122,7 +180,7 @@ observe({
   validate(
     need(dim(values$Det_DD_data_display)[1]>0,message=F)
   )
-
+  #browser()
   d_tmp<-values$Det_DD_data_display
   documents<-unique(union(d_tmp[,"a"],d_tmp[,"b"]))
   
@@ -138,15 +196,18 @@ observe({
   if(length(blacklist)>0){
     d_tmp<-d_tmp[-union(which(d_tmp[,"a"]%in%blacklist),which(d_tmp[,"b"]%in%blacklist)),,drop=F]
   }
+  count=0
   if(dim(d_tmp)[1]>0){
-      repeat({
+    repeat({
+      count=count+1
+      print(count)
       top_pair<-d_tmp[1,,drop=F]
       id_del<-decide_which_document_to_delete(pair=top_pair,strategy = input$Det_DD_strategy)
       blacklist<-c(blacklist,id_del)
       d_tmp<-d_tmp[-union(which(d_tmp[,"a"]%in%blacklist),which(d_tmp[,"b"]%in%blacklist)),,drop=F]
       if(dim(d_tmp)[1]==0){
         break
-        }
+      }
     })
   }
   
@@ -435,7 +496,9 @@ observeEvent(input$DD_Remove_White,ignoreInit = T,{
 
 output$Det_DD_Network<-visNetwork::renderVisNetwork({
   validate(
-    need(!is.null(values$Det_DD_current_table),message=F),
+    need(!is.null(values$Det_DD_current_table),message="Calculating...")
+  )
+  validate(
     need(dim(values$Det_DD_current_table)[1]>0,message="No duplicates found.")
   )
   t<-values$Det_DD_current_table
@@ -491,9 +554,7 @@ output$Det_DD_Network<-visNetwork::renderVisNetwork({
       visNetwork::visEdges(scaling=list(min=2,max=8))%>%
       visNetwork::visLegend(position = "right")%>%
       visNetwork::visEvents(type = "on",doubleClick = "function(properties) {
-                 Shiny.onInputChange(\"DD_graph_node_selected\",  properties.nodes)
-            }"
-      )
+                 Shiny.onInputChange(\"DD_graph_node_selected\",  properties.nodes)            }")
   }
   else{
     network<-visNetwork::visNetwork(nodes = nodes,edges = edges) %>%
@@ -543,7 +604,7 @@ observeEvent(input$DD_graph_node_selected,ignoreNULL = T,{
                 ),footer=actionButton("deduplication_dissmiss_modal",label="Dismiss")
     )
   )
-
+  
 })
 
 observeEvent(ignoreNULL = T,input$deduplication_dissmiss_modal,{
@@ -642,8 +703,6 @@ observeEvent(ignoreInit = T,input$Det_DD_save_collection,{
     shinyWidgets::sendSweetAlert(session=session,title = "No new collection created",text = "There was no duplicate found.",type = "warning")
   }
 })
-
-
 
 output$Det_DD_download_clean<-downloadHandler(
   filename = function() {
