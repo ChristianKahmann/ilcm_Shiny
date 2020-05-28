@@ -78,19 +78,20 @@ error<-try(expr = {
 
   # set some parameters (some might be changed to be selectable via GUI)
   filepathHashtableGeocodingCache <- "collections/geolocations/hashtableGeocodingCacheOSM"
-  applyClusteringToWholeDataInsteadOfPerDefinedArea <- F 
+  useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter <- F 
   
   # define geocoding functions needed using predefined functions for convenience
   functionToGetGeolocationsFromString <- function(inputString, cache){getGeolocationForStringUsingOSMDefault(inputString, cache)}
   functionToUpdateCacheForGeoLocationString <- functionToGetGeolocationsFromString
-  functionToFilterOrSelectGeoResult <- function(x){selectOSMGeoResultBasedOn(osmResult = x, selectionType = "importance")} # should return a data frame with at least lat/lon as columns and several rows for multiple results
+  functionToFilterOrSelectGeoResultForALocationString <- function(x){selectOSMGeoResultBasedOn(osmResult = x$result, selectionType = "importance")} # should return a data frame with at least lat/lon as columns and several rows for multiple results
   
   # define functions to retrieve needed data from inputData containing dtm
   inputDataDTM <- list(dtm = dtm)
-  functionToGetDistinctLocationStrings <- dtm_getUniqueFeaturesFromDTM
-  functionToRetrieveUniqueAreaIdsToConsiderForClustering <- dtm_getUniqueDocIDs
-  functionToGetLocationsAndFrequencyForGivenAreaId <- dtm_getTokensAndFrequencyForGivenDocId
-  inputDataForLocationStringsAndOptionalClusterAreaIds <- inputDataDTM
+  functionToGetDistinctLocationStrings <- dtm_getUniqueFeaturesFromDTM # see global/geo_functions.R
+  functionToRetrieveUniqueAreaIds <- dtm_getUniqueDocIDs # see global/geo_functions.R
+  functionToGetLocationsAndFrequencyForGivenAreaId <- dtm_getTokensAndFrequencyForGivenDocId # see global/geo_functions.R
+  inputDataForLocationStringsAndOptionalAreaIds <- inputDataDTM
+  functionToFilterGeoResultsPerArea <- function(x){}
   
   log_to_file(message = "<b>Step 7/8: load cached geo information</b>",file = logfile)
   # load cached geo information
@@ -107,15 +108,16 @@ error<-try(expr = {
   
   tryCatch(
     {
-      geocodingResult <- performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistanceToCenterOfGravity(
-        inputDataForLocationStringsAndOptionalClusterAreaIds, 
+      geocodingResult <- performGeoCodingWithCacheAndFiltering(
+        inputDataForLocationStringsAndOptionalAreaIds, 
         functionToGetDistinctLocationStrings,
-        applyClusteringToWholeDataInsteadOfPerDefinedArea,
-        functionToRetrieveUniqueAreaIdsToConsiderForClustering,
+        useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter,
+        functionToRetrieveUniqueAreaIds,
         functionToGetLocationsAndFrequencyForGivenAreaId,
         cacheForGeocodingData,
         functionToUpdateCacheForGeoLocationString,
-        functionToFilterOrSelectGeoResult
+        functionToFilterOrSelectGeoResultForALocationString,
+        functionToFilterGeoResultsPerArea
       )
     },
     finally={

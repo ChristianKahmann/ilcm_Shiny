@@ -163,91 +163,70 @@ getGeolocationForStringUsingOSMDefault <- function(inputString, hashtableCachedG
 
 
 
-#' Performs geocoding and clustering for given location strings.
-#' Details: 
-#' - Uses cache and @getGeolocationForStringUsingOSMDefault to retrieve lat/lon info. location strings for which no location could be retrieved are skipped and not contained in result 
-#' - calculates center of gravity for each area based on (frequency weighted) locations
-#' - calcualtes distance of each location entity to the center of gravity
-#' - performs clustering on these distances
-#' - find cluster with minimum distance to center of gravity (distance of cluster to center of gravity is calculated by average distance of entities in cluster to center of gravity)
-#' - set belongsToClusterWithMinDistanceToCenterOfGravity=TRUE for all entities/ location strings which belong to the cluster identified above 
-#' @param dataframeWithLocationTokens a data frame containing the string of the location entities (tokens) and an (optional) area id (see columnNameOfAreaIdToApplyClustering for details) The entities should be already filtered just for locations. The number of entities (types & frequencies) is calculated in subsequent steps internally so the data should include all entities (=tokens, not types) 
-#' @param columnNameOfLocationString The column name where to find the location string (e.g. token or lemma)
-#' @param columnNameOfAreaIdToApplyClustering The column name where to find the area id to be used for clustering. Clustering can be performed either on whole data (use "all" here) or separately on distinct "areas" (e.g. per document/paragraph/collection,..etc.) Provide the column name where to find the area id (e.g. "doc_id") in the data frame
-#' @param hashtableCachedGeoInformation A hashtable with cached information for faster querying of location strings queried before
 
-#' @return A dataframe containing the distinct location entities per defined area with their frequency, lon value, lat value, info if entity belongsToClusterWithMinDistanceToCenterOfGravity and the areaID. Contains only location strings for which a lat/lon value was found
-#'
-#' @examples
-#' locationTokens <- c("New York", "Leipzig", "strangeStringBeingNoLocation", "Berlin", "Berlin", "Leipzig", "Bangkok" )
-#' docIds <- c(1,1,1,2,2,2,2)
-#' myDataFrame <- data.frame(locationTokens,docIds)
-#' hashtableCachedGeoInformation <- new.env(hash=TRUE)
-#' x <- performGeoCodingWithClusteringAndRetrivealIfLocationBelongsToClusterWithMinDistanceToCenterOfGravity(myDataFrame, "locationTokens", "docIds", hashtableCachedGeoInformation)
-
-
-###############
-#
 #################
-#' Performs geocoding and clustering for given location strings.
+#' Performs geocoding (using cache if possible) and additional filtering for given location strings.
 #' @Details 
-#' - Uses a geoCoding cache and and a function to retrieve lat/lon info for location strings not yet in cache. location strings for which no location could be retrieved are skipped and not contained in result 
-#' - You can select if you want to perform the clustering on the whole data or on certain defined "areas" (being per document, paragraph, collection, etc.)
-#' - calculates center of gravity for each area based on (frequency weighted) locations
-#' - calcualtes distance of each location entity to the center of gravity
-#' - performs clustering on these distances
-#' - find cluster with minimum distance to center of gravity (distance of cluster to center of gravity is calculated by average distance of entities in cluster to center of gravity)
-#' - set belongsToClusterWithMinDistanceToCenterOfGravity=TRUE for all entities/ location strings which belong to the cluster identified above 
-#' @param inputDataForLocationStringsAndOptionalClusterAreaIds 
+#' - Uses a geoCoding cache and a function to retrieve lat/lon info for location strings not yet in cache. location strings for which no location could be retrieved are skipped and not contained in result 
+#' - a first filter can be applied to the geo result for each location sting. Those filter might only allow locations of certain types (e.g. just cities) but might also sort & filter among multiple results for a given string, e.g. when multiple lat/lon values "Leipzig" found, the filter might go for the most important based on importance value provided by the geoResult.  If after this filter mutliple values exist for the given string, the first one is taken.
+#' - a second filter can be applied to further filter a collection of location strings and their geo results (e.g filter just certain types like cities, only include the most specific ones (e.g. keep just Leipzig, but not Germany), only those with certain/top frequency, perform clustering and include only those entities belonging to the cluster closest to center of gravity)
+#' - this second filter can be applied to the whole data or to on certain defined "areas" (defined by area ids, which might define a document, paragraph, collection, etc.)
+#' @param inputDataForLocationStringsAndOptionalAreaIds 
 #' @param functionToGetUniqueLocationStrings the function to get unique location strings from the input data
-#' @param applyClusteringToWholeDataInsteadOfPerDefinedArea if set to true the clustering is performed on whole data, if false (default) the clustering is performed on the areaIds provided by the function @functionToRetrieveUniqueAreaIdsToConsiderForClustering (e.g. doc_ids, collection_ids, etc)
-#' @param functionToRetrieveUniqueAreaIdsToConsiderForClustering a function to return unique area ids from the input data (convenience functions for dataframe and dtm are available). This function is only used if @applyClusteringToWholeDataInsteadOfPerDefinedArea == F
-#' @param functionToGetLocationsAndFrequencyForGivenAreaId a function returning unique location strings and their frequency for the given area id. In case of @applyClusteringToWholeDataInsteadOfPerDefinedArea == T, "all" is used as areaId input. So make sure the function returns location strings and frequencies for whole data for areaId == "all". For convenience functions for data frame and dtm are availbale.
+#' @param useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter if set to true the frequency calcualtion and the second filter is performed on whole data, if false (default) the frequency calcualtion and the second filter is performed separately on the data of each areaId provided by the function @functionToRetrieveUniqueAreaIds (e.g. doc_ids, collection_ids, etc)
+#' @param functionToRetrieveUniqueAreaIds a function to return unique area ids from the input data (convenience functions for dataframe and dtm are available). This function is only used if @useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter == F
+#' @param functionToGetLocationsAndFrequencyForGivenAreaId a function returning unique location strings and their frequency for the given area id. Should return a list or data frame with variables "entityName" and "frequencyInArea". In case of @useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter == T, "all" is used as areaId input. So make sure the function returns location strings and frequencies for whole data for areaId == "all". For convenience, functions for data frame and dtm are availbale. See further below. 
 #' @param cacheForGeocodingData The cache where the existing geoCoding data can be found, i.e. a hashtable with cached information for faster querying of location strings queried before
 #' @param functionToUpdateGeoCodingCacheForGeoLocationString function to update geocoding cache with given location (check if already in cache if not query geocoding service). For convenience OSM function available
-#' @param functionToFilterOrSelectGeoResult function to further filter or select results from potential multiple results (e.g. select the one with max importance, filter for cities, exclude ways, etc.)
-#' @return data frame with all locations per areaId and assigned geo info (columns per location entry: entityName, areaId, frequencyInArea, lat, lon, belongsToClusterWithMinDistanceToCenterOfGravity)
+#' @param functionToFilterOrSelectGeoResultForALocationString function to filter or select results from potential multiple lat/lon results resulting from a string (e.g. select the one with max importance, filter for cities, exclude ways, etc.). Should deal with the geo result returned by the cache. If after this filtering still multiple exist, the first one is taken. This function will also be applied if just one lat/lon result is there to allow filtering for certain entities like cities etc.
+#' @param functionToFilterGeoResultsPerArea further filtering of geo results for the given area (potential possibilities e.g. select just the most frequent, the most specific ones, perform clustering and select from these, etc)
+#' @return data frame with all locations and detailed geo info (columns per location entry: entityName, areaId, frequencyInArea, lat, lon, [columnsOfGeoResultReturnByCache])
 #' @export
 #'
 #' @examples
 #' # define general params
 #' cacheForGeocodingData <- new.env(hash=TRUE)
-#' applyClusteringTo <- "doc_id" # "all" to apply clustering to whole data, "doc_id" or alternatively the column name columnNameOfAreaIdToApplyClustering in data frame to aplly clustering per document etc, if dtm ist selected clustering is performed to whole data if set to "all", else to doc_ids
+#' useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter <- T 
 #' functionToGetGeolocationsFromString <- function(inputString, cache){getGeolocationForStringUsingOSMDefault(inputString, cache)}
 #' functionToUpdateCacheForGeoLocationString <- functionToGetGeolocationsFromString
-#' functionToFilterOrSelectGeoResult <- function(x){selectOSMGeoResultBasedOn(osmResult = x, selectionType = "importance")} # should return a data frame with at least lat/lon as columns and several rows for multiple results
+#' functionToFilterOrSelectGeoResultForALocationString <- function(x){selectOSMGeoResultBasedOn(osmResult = x, selectionType = "importance")} # should return a data frame with at least lat/lon as columns and several rows for multiple results
 #' 
-#' # define data and functions for data frame input (use convenience functions already defined at geo_util.R)
+#' # depending on having a data frame or dtm as input you can set the following convenience functions
+#' # A) define data and functions for data frame input (use convenience functions already defined for data frame - see end of this file))
 #' inputData_dataFrame <- list(tokenData <- db_data$token, columnNameOfLocationString <- "lemma", columnNameOfAreaId <- "doc_id")
 #' functionToGetDistinctLocationStrings <- dataframe_getUniqueTokens
-#' functionToRetrieveUniqueAreaIdsToConsiderForClustering <- dataframe_getUniqueAreaIDs
+#' functionToRetrieveUniqueAreaIdsTo <- dataframe_getUniqueAreaIDs
 #' functionToGetLocationsAndFrequencyForGivenAreaId <- dataframe_getTokensAndFrequenciesForGivenAreaId
 #' 
-#' # define data and functions for dtm input (use convenience functions already defined at geo_util.R)
+#' # B) define data and functions for dtm input (use convenience functions already defined at geo_util.R)
 #' inputDataDTM <- list(dtm = dtm)
-#' inputDataForLocationStringsAndOptionalClusterAreaIds <- inputDataDTM
+#' inputDataForLocationStringsAndOptionalAreaIds <- inputDataDTM
 #' functionToGetDistinctLocationStrings <- dtm_getUniqueFeaturesFromDTM
-#' functionToRetrieveUniqueAreaIdsToConsiderForClustering <- dtm_getUniqueDocIDs
+#' functionToRetrieveUniqueAreaIds <- dtm_getUniqueDocIDs
 #' functionToGetLocationsAndFrequencyForGivenAreaId <- dtm_getTokensAndFrequencyForGivenDocId
 #' 
-#' # call function
-#' x <- performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistanceToCenterOfGravity(inputDataForLocationStringsAndOptionalClusterAreaIds, functionToGetDistinctLocationStrings, applyClusteringToWholeDataInsteadOfPerDefinedArea = T, functionToRetrieveUniqueAreaIdsToConsiderForClustering, functionToGetLocationsAndFrequencyForGivenAreaId, cacheForGeocodingData, functionToUpdateCacheForGeoLocationString, functionToFilterOrSelectGeoResult)
+#' # define second filter
+#' functionToFilterGeoResultsPerArea <- filterForEntitiesInClusterWithMinDistanceToCenterOfGravity
 #' 
-performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistanceToCenterOfGravity <- function(inputDataForLocationStringsAndOptionalClusterAreaIds, 
+#' # call function
+#' x <- performGeoCodingWithCacheAndFiltering(inputDataForLocationStringsAndOptionalAreaIds, functionToGetDistinctLocationStrings, useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter = T, functionToRetrieveUniqueAreaIds, functionToGetLocationsAndFrequencyForGivenAreaId, cacheForGeocodingData, functionToUpdateCacheForGeoLocationString, functionToFilterOrSelectGeoResultForALocationString)
+#' 
+performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAndOptionalAreaIds, 
                                                                                                                 functionToGetUniqueLocationStrings,
-                                                                                                                applyClusteringToWholeDataInsteadOfPerDefinedArea = F,
-                                                                                                                functionToRetrieveUniqueAreaIdsToConsiderForClustering,
+                                                                                                                useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter = F,
+                                                                                                                functionToRetrieveUniqueAreaIds,
                                                                                                                 functionToGetLocationsAndFrequencyForGivenAreaId,
                                                                                                                 cacheForGeocodingData,
                                                                                                                 functionToUpdateGeoCodingCacheForGeoLocationString,
-                                                                                                                functionToFilterOrSelectGeoResult
-                                                                                                                ){
+                                                                                                                functionToFilterOrSelectGeoResultForALocationString,
+                                                                                                                functionToFilterGeoResultsPerArea
+){
   log_to_file(message = "<b>Geocoding: get unique location strings</b>",file = logfile)
-  allDistinctLocationStrings <- functionToGetUniqueLocationStrings(inputDataForLocationStringsAndOptionalClusterAreaIds)
+  allDistinctLocationStrings <- functionToGetUniqueLocationStrings(inputDataForLocationStringsAndOptionalAreaIds)
   
   log_to_file(message = "<b>Geocoding: update cache</b>",file = logfile)
   # update cache so all entities are in cache afterwards
-  # check all distinct entities if already in cache, if not query them via geo service and store in cache
+  # check all distinct entities if already in cache, if not query them via geo service and store in cache, result x not needed as chache is used afterwards
   x <- lapply(allDistinctLocationStrings, 
               FUN = function(x){
                 entityName <- str_trim(str_replace(x, "_", " "),side = "both")
@@ -260,10 +239,10 @@ performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistan
   # assign locations and calculate clusters for areas
   
   log_to_file(message = "<b>Geocoding: get area ids</b>",file = logfile)
-  if(applyClusteringToWholeDataInsteadOfPerDefinedArea){
+  if(useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter){
     areaIds <- c("all")
   }else{
-    areaIds <- functionToRetrieveUniqueAreaIdsToConsiderForClustering(inputDataForLocationStringsAndOptionalClusterAreaIds)
+    areaIds <- functionToRetrieveUniqueAreaIds(inputDataForLocationStringsAndOptionalAreaIds)
   }
   log_to_file(message = paste("<b>Geocoding: number of area ids retrieved:", length(areaIds)," </b>"),file = logfile)
   
@@ -281,48 +260,54 @@ performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistan
   for(areaId in areaIds){ # for each area (document/paragraph/collection,...). If selected "all" the whole data is regarded as same area
     
     print(areaId)
-
+    
     log_to_file(message = paste("<b>Geocoding: perform geocoding calculation for area id", areaId,"</b>"),file = logfile)
     
     # get location tokens for area
-    entitydistributionsInArea <- functionToGetLocationsAndFrequencyForGivenAreaId(inputDataForLocationStringsAndOptionalClusterAreaIds, areaId)
+    entitydistributionsInArea <- functionToGetLocationsAndFrequencyForGivenAreaId(inputDataForLocationStringsAndOptionalAreaIds, areaId)
     
     if(is.null(entitydistributionsInArea)){
       # skip current area
       next
     }
-
+    
     # get geo info (lat/lon for location entities in area)
     geoDataForArea <- as.data.frame(entitydistributionsInArea)
-    geoDataForAreaWithDetails <- NA
+    geoResultDetailsForArea <- NULL
     for(j in 1:length(geoDataForArea$entityName)){
       entityName <- str_trim(str_replace(geoDataForArea$entityName[j], "_", " "),side = "both")
-      geoResult <- functionToGetGeolocationsFromString(entityName, cacheForGeocodingData) # since all are in cache, querying cache would be sufficient as well
+      geoResult <- functionToGetGeolocationsFromString(entityName, cacheForGeocodingData) # since all are in cache, querying cache would be sufficient as well, but using this function makes the code better readable and internally just the cache is queried inside function as all are in cache already because of the step above
+      
       if(geoResult$successType == "success"){
-        # further select/filter if multiple locations found
-        filteredGeoResults <- functionToFilterOrSelectGeoResult(geoResult$result)
-        if(is.null(filteredGeoResults) ||dim(filteredGeoResults)[1]==0){
+        
+        # further select/filter (e.g. if multiple locations found or to allow e.g. only cities)
+        filteredGeoResults <- functionToFilterOrSelectGeoResultForALocationString(geoResult)
+        if(is.null(filteredGeoResults) || dim(filteredGeoResults)[1]==0){
           # skip current entity name
           geoDataForArea$lon[j] <- NA
           geoDataForArea$lat[j] <- NA
-          geoDataForAreaWithDetails[j,] <- NA
+          geoResultDetailsForArea[j,] <- NA
           
           next
         }else{
-          # if still multiple available take the first
+          # take first result, meaning if still multiple available take the first
           geoDataForArea$lon[j] <- filteredGeoResults[1,]$lon
           geoDataForArea$lat[j] <- filteredGeoResults[1,]$lat
-          if(is.na(geoDataForAreaWithDetails)){
-            geoDataForAreaWithDetails <- filteredGeoResults[1,]
-          }else{
-            geoDataForAreaWithDetails[j,] <- filteredGeoResults[1,]
+          
+          if(is.null(geoResultDetailsForArea)){
+            columnNames <- names(filteredGeoResults)
+            geoResultDetailsForArea <- data.frame(matrix(ncol = length(columnNames), nrow = length(entitydistributionsInArea)))
+            colnames(geoResultDetailsForArea) <- columnNames
           }
+          geoResultDetailsForArea[j,] <- filteredGeoResults[1,]
+          
         }
         
         
       }else{# successType != success
         geoDataForArea$lon[j] <- NA
         geoDataForArea$lat[j] <- NA
+        geoResultDetailsForArea[j,] <- NA
       }
     }
     
@@ -330,84 +315,116 @@ performGeoCodingWithClusteringAndRetrieveIfLocationBelongsToClusterWithMinDistan
     # only use those tokens having coordinates (no NAs), meaning only those tokens to which lat/lon coordinates could be assigned
     indicesWithoutNA <- which(!is.na(geoDataForArea$lat))
     geoDataForArea <-  geoDataForArea[indicesWithoutNA,]
-    geoDataForAreaWithDetails <-  geoDataForAreaWithDetails[indicesWithoutNA,]
+    geoResultDetailsForArea <-  geoResultDetailsForArea[indicesWithoutNA,]
     
-    ## TODO: include filterfunction (also apply to geoDataForArea and With Details)
+    # combine both data and assign areaId
+    geoDataForAreaInclGeoResultDetails <- cbind(geoDataForArea, geoResultDetailsForArea)
+    geoDataForAreaInclGeoResultDetails$areaId <- areaId
     
+    ## apply further filter for this area
+    geoDataForAreaInclGeoResultDetails <- functionToFilterGeoResultsPerArea(geoDataForAreaInclGeoResultDetails)
 
-    numberOfDistinctEntitiesInArea <- length(geoDataForArea$entityName)
-    if (numberOfDistinctEntitiesInArea == 0){
-      # skip current area and go to next
-      next
-      
-    }else if(numberOfDistinctEntitiesInArea > 1){
-      
-      # center of gravity
-      centerOfGravity <-
-        c(
-          weighted.mean(x = as.numeric(geoDataForArea$lon), w = as.numeric(geoDataForArea$frequencyInArea)), # weight dependent on frequency 
-          weighted.mean(x = as.numeric(geoDataForArea$lat), w = as.numeric(geoDataForArea$frequencyInArea)) # weight dependent on frequency 
-        )
-      
-      # distance of each location entity to the center of gravity
-      distances <- matrix(c(0), dim(geoDataForArea)[1], 1)
-      for(j in 1:length(geoDataForArea$entityName)){
-        distances[j, 1] <- distm(c(as.numeric(geoDataForArea[j, c("lon", "lat")])), centerOfGravity, fun = distHaversine) / 1000
-      }
-      
-      #clustering
-      bestClusterResult <- kmeans(distances, 1)
-      if(dim(geoDataForArea)[1]-1 >=2){
-        for (k in 2:min(5,(dim(geoDataForArea)[1]-1))) {
-          clusterResult <- kmeans(distances, k)
-          if (clusterResult$betweenss < (1.15 * bestClusterResult$betweenss)) {
-            break
-          }
-          else{
-            bestClusterResult <- clusterResult
-          }
-        }
-      }
-      
-      
-      # find cluster with minimum distance to center of gravity (distance of cluster to center of gravity is calculated by average distance of entities in cluster to center of gravity)
-      clusters <- bestClusterResult$cluster
-      numberOfClusters <- length(unique(clusters))
-      clusterWithMinDistanceToCenterOfGravity <- 1
-      if(numberOfClusters>1){
-        minAvgDistanceOfEntitiesToCenterOfGravity <- mean(distances[which(clusters == 1)])
-        for (k in 2:numberOfClusters) {
-          avgDistanceOfEntitiesToCenterOfGravity <- mean(distances[which(clusters == k)])
-          if (avgDistanceOfEntitiesToCenterOfGravity < minAvgDistanceOfEntitiesToCenterOfGravity) {
-            clusterWithMinDistanceToCenterOfGravity = k
-            minAvgDistanceOfEntitiesToCenterOfGravity <- avgDistanceOfEntitiesToCenterOfGravity
-          }
-        }
-      }
-      
-      geoDataForArea$belongsToClusterWithMinDistanceToCenterOfGravity <- FALSE
-      indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity <- which(clusters==clusterWithMinDistanceToCenterOfGravity)
-      geoDataForArea$belongsToClusterWithMinDistanceToCenterOfGravity[indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity] <- TRUE
-      geoDataForArea$areaId <- areaId
-      
-    }else if (numberOfDistinctEntitiesInArea ==1){
-      geoDataForArea$belongsToClusterWithMinDistanceToCenterOfGravity <- TRUE
-      geoDataForArea$areaId <- areaId
-      
-    }else{# numberOfDistinctEntitiesInArea < 0, this shouldn't happen
-      
-    }
+    # TODO: renmae functions above and exclude name "clustering"
+
     
     log_to_file(message = paste("<b>Geocoding: finished performing geocoding calculation for area id", areaId,"</b>"),file = logfile)
     
     
-    geoDataAllAreas <- rbind(geoDataAllAreas, geoDataForArea)
+    geoDataAllAreas <- rbind(geoDataAllAreas, geoDataForAreaInclGeoResultDetails)
   }# end for each areaID
   
   log_to_file(message = "<b>Geocoding: finished performing geocoding calculation for all area ids </b>",file = logfile)
   return (geoDataAllAreas)
   
 }
+
+
+filterForEntitiesInClusterWithMinDistanceToCenterOfGravity <- function(inputData){
+  result <- NULL
+  indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity <- performClustering_returnIndicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity(inputData)
+  if(!is.null(indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity) && length(indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity) >=1){
+    result <- inputData[indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity,]
+  }
+  return (result)
+}
+
+#' - calculates center of gravity for each area based on (frequency weighted) locations
+#' - calcualtes distance of each location entity to the center of gravity
+#' - performs clustering on these distances
+#' - find cluster with minimum distance to center of gravity (distance of cluster to center of gravity is calculated by average distance of entities in cluster to center of gravity)
+#' - set belongsToClusterWithMinDistanceToCenterOfGravity=TRUE for all entities/ location strings which belong to the cluster identified above 
+# inputData = data frame containing at least columns lat, lon and frequencyInArea
+performClustering_returnIndicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity <- function(inputData){
+  
+  numberOfEntries <- dim(inputData)[1]
+  
+  if (numberOfEntries == 0){
+    
+    indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity <- NULL
+    return (indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity)
+    
+  }else if(numberOfEntries > 1){
+    
+    
+    # center of gravity
+    longitudeValues <- inputData$lon
+    latitudeValues <- inputData$lat
+    freqencyValues <- inputData$frequencyInArea
+    centerOfGravity <-
+      c(
+        weighted.mean(x = as.numeric(longitudeValues), w = as.numeric(freqencyValues)), # weight dependent on frequency 
+        weighted.mean(x = as.numeric(latitudeValues), w = as.numeric(freqencyValues)) # weight dependent on frequency 
+      )
+    
+    # distance of each location entity to the center of gravity
+    distances <- matrix(c(0), numberOfEntries, 1)
+    for(j in 1:numberOfEntries){
+      distances[j, 1] <- distm(c(as.numeric(longitudeValues[j],latitudeValues[j] )), centerOfGravity, fun = distHaversine) / 1000
+    }
+    
+    #clustering
+    bestClusterResult <- kmeans(distances, 1)
+    if(numberOfEntries-1 >=2){
+      for (k in 2:min(5,(numberOfEntries-1))) {
+        clusterResult <- kmeans(distances, k)
+        if (clusterResult$betweenss < (1.15 * bestClusterResult$betweenss)) {
+          break
+        }
+        else{
+          bestClusterResult <- clusterResult
+        }
+      }
+    }
+    
+    
+    # find cluster with minimum distance to center of gravity (distance of cluster to center of gravity is calculated by average distance of entities in cluster to center of gravity)
+    clusters <- bestClusterResult$cluster
+    numberOfClusters <- length(unique(clusters))
+    clusterWithMinDistanceToCenterOfGravity <- 1
+    if(numberOfClusters>1){
+      minAvgDistanceOfEntitiesToCenterOfGravity <- mean(distances[which(clusters == 1)])
+      for (k in 2:numberOfClusters) {
+        avgDistanceOfEntitiesToCenterOfGravity <- mean(distances[which(clusters == k)])
+        if (avgDistanceOfEntitiesToCenterOfGravity < minAvgDistanceOfEntitiesToCenterOfGravity) {
+          clusterWithMinDistanceToCenterOfGravity = k
+          minAvgDistanceOfEntitiesToCenterOfGravity <- avgDistanceOfEntitiesToCenterOfGravity
+        }
+      }
+    }
+    
+    indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity <- which(clusters==clusterWithMinDistanceToCenterOfGravity)
+
+  }else if (numberOfDistinctEntitiesInArea ==1){
+    
+    indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity <- c(1)
+    
+  }else{# numberOfDistinctEntitiesInArea < 0, this shouldn't happen
+    
+  }
+  return (indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity)
+}
+
+
 
 selectOSMGeoResultBasedOn <- function(osmResult, selectionType){
   if(selectionType == "importance"){
@@ -423,7 +440,7 @@ selectOSMGeoResultBasedOn <- function(osmResult, selectionType){
 #
 # util functions to get specific data from data frame or dtm via similar functions
 # TODO: make this an abstract class e.g. R6 for more convenience
-# these functions can be used for clustering in geo coding processing to have similar functions regardless if inputData is data_frame or dtm for location strings  
+# these functions can be used for geo coding processing to have similar functions regardless if inputData is data_frame or dtm for location strings  
 #
 ##################
 
@@ -502,3 +519,7 @@ dtm_getTokensAndFrequencyForGivenDocId <- function(inputDataDTM, docId){
     entitydistributionsInArea <- list(entityName = tokens, frequencyInArea = frequencies)
   }
 }
+
+###################
+# filtering function with clustering 
+##############################
