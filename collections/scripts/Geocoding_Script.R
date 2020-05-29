@@ -91,7 +91,7 @@ error<-try(expr = {
   functionToRetrieveUniqueAreaIds <- dtm_getUniqueDocIDs # see global/geo_functions.R
   functionToGetLocationsAndFrequencyForGivenAreaId <- dtm_getTokensAndFrequencyForGivenDocId # see global/geo_functions.R
   inputDataForLocationStringsAndOptionalAreaIds <- inputDataDTM
-  functionToFilterGeoResultsPerArea <- function(x){}
+  functionToFilterGeoResultsPerArea <- function(x){x}
   
   log_to_file(message = "<b>Step 7/8: load cached geo information</b>",file = logfile)
   # load cached geo information

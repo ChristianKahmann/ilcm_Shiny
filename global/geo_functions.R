@@ -520,6 +520,3 @@ dtm_getTokensAndFrequencyForGivenDocId <- function(inputDataDTM, docId){
   }
 }
 
-###################
-# filtering function with clustering 
-##############################
