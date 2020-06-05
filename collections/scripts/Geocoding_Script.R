@@ -161,6 +161,7 @@ error<-try(expr = {
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Geocoding </b>",logfile)
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))
   
+  print("Process of geocoding finished successfully")
 })
 
 # if(class(error)=="try-error"){

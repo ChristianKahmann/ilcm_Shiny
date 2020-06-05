@@ -112,8 +112,7 @@ getGeolocationForStringUsingOSMDefault <- function(inputString, hashtableCachedG
                                         result <- NULL
                                         tryCatch({
                                           osmResult <- geocode_OSM(q=inputString, return.first.only = F,details = T, as.data.frame = T)
-                                          
-                                          
+
                                           if(!is.null(osmResult$message)){
                                             if(grepl(x = osmResult$message, pattern = "No results found", fixed = TRUE)){
                                               #no results found
@@ -180,8 +179,8 @@ getGeolocationForStringUsingOSMDefault <- function(inputString, hashtableCachedG
 #' @param functionToUpdateGeoCodingCacheForGeoLocationString function to update geocoding cache with given location (check if already in cache if not query geocoding service). For convenience OSM function available
 #' @param functionToFilterOrSelectGeoResultForALocationString filter 1:function to filter or select results from potential multiple lat/lon results resulting from a string (e.g. select the one with max importance, filter for cities, exclude ways, etc.). Should deal with the geo result returned by the cache. If after this filtering still multiple exist, the first one is taken. This function will also be applied if just one lat/lon result is there to allow filtering for certain entities like cities etc.
 #' @param functionToFilterGeoResultsPerArea filter 2: further filtering of geo results for the given area (potential possibilities e.g. select just the most frequent, the most specific ones, perform clustering and select from these, etc)
-#' @param functionToFilterGeoResultsForWholeData filter 3: apllied to all geo results (input is a dataframe with the following fields: entitiyName, areaID, frequencyInArea, lat, lon, plus all fields of the geoResult retrieved for a string via @functionToUpdateGeoCodingCacheForGeoLocationString / @cacheForGeocodingData ) 
-#' @return data frame with all locations and detailed geo info (columns per location entry: entityName, areaId, frequencyInArea, lat, lon, [columnsOfGeoResultReturnByCache])
+#' @param functionToFilterGeoResultsForWholeData filter 3: apllied to all geo results (input is a dataframe with the following fields: entitiyName, areaID, frequencyInArea, latitude, longitude, plus all fields of the geoResult retrieved for a string via @functionToUpdateGeoCodingCacheForGeoLocationString / @cacheForGeocodingData ) 
+#' @return data frame with all locations and detailed geo info (columns per location entry: entityName, areaId, frequencyInArea, latitude, longitude, [columnsOfGeoResultReturnByCache])
 #' @export
 #'
 #' @examples
@@ -261,7 +260,7 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
   
   for(areaId in areaIds){ # for each area (document/paragraph/collection,...). If selected "all" the whole data is regarded as same area
     
-    print(areaId)
+    #print(areaId)
     
     log_to_file(message = paste("<b>Geocoding: perform geocoding calculation for area id", areaId,"</b>"),file = logfile)
     
@@ -275,30 +274,30 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
     
     # get geo info (lat/lon for location entities in area)
     geoDataForArea <- as.data.frame(entitydistributionsInArea)
+    geoDataForArea$latitude <- numeric(length = dim(geoDataForArea)[1])
+    geoDataForArea$longitude <- numeric(length = dim(geoDataForArea)[1])
     geoResultDetailsForArea <- NULL
     numberOfEntities <- length(geoDataForArea$entityName)
     for(j in 1:numberOfEntities){
-      print(paste0("entityIndex: ",j))
+      #print(paste0("entityIndex: ",j))
       entityName <- str_trim(str_replace(geoDataForArea$entityName[j], "_", " "),side = "both")
       geoResult <- functionToGetGeolocationsFromString(entityName, cacheForGeocodingData) # since all are in cache, querying cache would be sufficient as well, but using this function makes the code better readable and internally just the cache is queried inside function as all are in cache already because of the step above
       
-      print(entityName)
-      geoDataForArea$lon[j] <- ""
-      geoDataForArea$lat[j] <- ""
+      #print(entityName)
       if(geoResult$successType == "success"){
         
         # further select/filter (e.g. if multiple locations found or to allow e.g. only cities)
         filteredGeoResults <- functionToFilterOrSelectGeoResultForALocationString(geoResult$result)
         if(is.null(filteredGeoResults) || dim(filteredGeoResults)[1]==0){
           # skip current entity name
-          geoDataForArea$lon[j] <- NA
-          geoDataForArea$lat[j] <- NA
+          geoDataForArea$longitude[j] <- NA
+          geoDataForArea$latitude[j] <- NA
           #geoResultDetailsForArea[j,] <- NA
           
         }else{
           # take first result, meaning if still multiple available take the first
-          geoDataForArea$lon[j] <- filteredGeoResults[1,]$lon
-          geoDataForArea$lat[j] <- filteredGeoResults[1,]$lat
+          geoDataForArea$longitude[j] <- filteredGeoResults[1,]$lon
+          geoDataForArea$latitude[j] <- filteredGeoResults[1,]$lat
           
           if(is.null(geoResultDetailsForArea)){
             columnNames <- names(filteredGeoResults)
