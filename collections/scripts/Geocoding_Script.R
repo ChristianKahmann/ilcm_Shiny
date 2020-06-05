@@ -98,9 +98,11 @@ error<-try(expr = {
   
   # define filter 2 (to filter among all locations within one areaID (e.g. within document, paragraph, collection))
   functionToFilterGeoResultsPerArea <- function(x){x} # or e.g. use filterForEntitiesInClusterWithMinDistanceToCenterOfGravity
+  functionToFilterGeoResultsPerArea <- filterForEntitiesInClusterWithMinDistanceToCenterOfGravity
   
   # define filter 3
-  functionToFilterGeoResultsForWholeData <- filterForEntitiesInClusterWithMinDistanceToCenterOfGravity
+  functionToFilterGeoResultsForWholeData <- function(x){x}
+  #functionToFilterGeoResultsForWholeData <- filterForEntitiesInClusterWithMinDistanceToCenterOfGravity
   
   log_to_file(message = "<b>Step 7/8: load cached geo information</b>",file = logfile)
   

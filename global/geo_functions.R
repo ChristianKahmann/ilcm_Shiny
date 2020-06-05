@@ -330,7 +330,7 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
       geoDataForAreaInclGeoResultDetails <- cbind(geoDataForArea, geoResultDetailsForArea)
       geoDataForAreaInclGeoResultDetails$areaId <- areaId
       
-      ## apply further filter for this area
+      # apply filter 2 for this area
       geoDataForAreaInclGeoResultDetails <- functionToFilterGeoResultsPerArea(geoDataForAreaInclGeoResultDetails)
       
       
@@ -397,7 +397,7 @@ performClustering_returnIndicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravi
     # distance of each location entity to the center of gravity
     distances <- matrix(c(0), numberOfEntries, 1)
     for(j in 1:numberOfEntries){
-      distances[j, 1] <- distm(c(as.numeric(longitudeValues[j],latitudeValues[j] )), centerOfGravity, fun = distHaversine) / 1000
+      distances[j, 1] <- distm(c(as.numeric(longitudeValues[j]), as.numeric(latitudeValues[j])), centerOfGravity, fun = distHaversine) / 1000
     }
     
     #clustering
@@ -432,11 +432,11 @@ performClustering_returnIndicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravi
     
     indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity <- which(clusters==clusterWithMinDistanceToCenterOfGravity)
 
-  }else if (numberOfDistinctEntitiesInArea ==1){
+  }else if (numberOfEntries ==1){
     
     indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity <- c(1)
     
-  }else{# numberOfDistinctEntitiesInArea < 0, this shouldn't happen
+  }else{# numberOfEntries < 0, this shouldn't happen
     
   }
   return (indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity)
