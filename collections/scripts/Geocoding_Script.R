@@ -34,8 +34,7 @@ error<-try(expr = {
   log_to_file(message = "&emsp; token object not empty?",logfile)
   if(dim(db_data$token)[1]>1){
     log_to_file(message = "&emsp; ✔",logfile)
-  }
-  else{
+  }else{
     log_to_file(message = "&emsp;<b style='color:red'>&#10008; No documents were found in the database for the specified collection.</b>",logfile)
     stop("Token empty")
   }
@@ -80,20 +79,28 @@ error<-try(expr = {
   filepathHashtableGeocodingCache <- "collections/geolocations/hashtableGeocodingCacheOSM"
   useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter <- F 
   
-  # define geocoding functions needed using predefined functions for convenience
-  functionToGetGeolocationsFromString <- function(inputString, cache){getGeolocationForStringUsingOSMDefault(inputString, cache)}
-  functionToUpdateCacheForGeoLocationString <- functionToGetGeolocationsFromString
-  functionToFilterOrSelectGeoResultForALocationString <- function(x){selectOSMGeoResultBasedOn(osmResult = x$result, selectionType = "importance")} # should return a data frame with at least lat/lon as columns and several rows for multiple results
-  
   # define functions to retrieve needed data from inputData containing dtm
   inputDataDTM <- list(dtm = dtm)
   functionToGetDistinctLocationStrings <- dtm_getUniqueFeaturesFromDTM # see global/geo_functions.R
   functionToRetrieveUniqueAreaIds <- dtm_getUniqueDocIDs # see global/geo_functions.R
   functionToGetLocationsAndFrequencyForGivenAreaId <- dtm_getTokensAndFrequencyForGivenDocId # see global/geo_functions.R
   inputDataForLocationStringsAndOptionalAreaIds <- inputDataDTM
-  functionToFilterGeoResultsPerArea <- function(x){x}
+  
+  # define geocoding functions needed using predefined functions for convenience
+  functionToGetGeolocationsFromString <- function(inputString, cache){getGeolocationForStringUsingOSMDefault(inputString, cache)}
+  functionToUpdateCacheForGeoLocationString <- functionToGetGeolocationsFromString
+  
+  # define filter 1 (to filter on geoResult(s) for a single String)
+  functionToFilterOrSelectGeoResultForALocationString <- function(x){# should return a data frame with at least lat/lon as columns and several rows for multiple results
+      result <- selectBasedOnMaxValue(inputData = x, fieldName = "importance")
+      result <- selectBasedOnGivenMinMaxValue(inputData = result, fieldName = "importance", minValue = 0.5)
+    } 
+  
+  # define filter 2 (to filter among all locations within one areaID (e.g. within document, paragraph, collection))
+  functionToFilterGeoResultsPerArea <- function(x){x} # or e.g. use filterForEntitiesInClusterWithMinDistanceToCenterOfGravity
   
   log_to_file(message = "<b>Step 7/8: load cached geo information</b>",file = logfile)
+  
   # load cached geo information
   if(!file.exists(filepathHashtableGeocodingCache)){
     cacheForGeocodingData <- new.env(hash=TRUE)
