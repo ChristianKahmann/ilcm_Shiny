@@ -178,8 +178,9 @@ getGeolocationForStringUsingOSMDefault <- function(inputString, hashtableCachedG
 #' @param functionToGetLocationStringsAndFrequencyForGivenAreaId a function returning unique location strings and their frequency for the given area id. Should return a list or data frame with variables "entityName" and "frequencyInArea". In case of @useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter == T, "all" is used as areaId input. So make sure the function returns location strings and frequencies for whole data for areaId == "all". For convenience, functions for data frame and dtm are availbale. See further below. 
 #' @param cacheForGeocodingData The cache where the existing geoCoding data can be found, i.e. a hashtable with cached information for faster querying of location strings queried before
 #' @param functionToUpdateGeoCodingCacheForGeoLocationString function to update geocoding cache with given location (check if already in cache if not query geocoding service). For convenience OSM function available
-#' @param functionToFilterOrSelectGeoResultForALocationString function to filter or select results from potential multiple lat/lon results resulting from a string (e.g. select the one with max importance, filter for cities, exclude ways, etc.). Should deal with the geo result returned by the cache. If after this filtering still multiple exist, the first one is taken. This function will also be applied if just one lat/lon result is there to allow filtering for certain entities like cities etc.
-#' @param functionToFilterGeoResultsPerArea further filtering of geo results for the given area (potential possibilities e.g. select just the most frequent, the most specific ones, perform clustering and select from these, etc)
+#' @param functionToFilterOrSelectGeoResultForALocationString filter 1:function to filter or select results from potential multiple lat/lon results resulting from a string (e.g. select the one with max importance, filter for cities, exclude ways, etc.). Should deal with the geo result returned by the cache. If after this filtering still multiple exist, the first one is taken. This function will also be applied if just one lat/lon result is there to allow filtering for certain entities like cities etc.
+#' @param functionToFilterGeoResultsPerArea filter 2: further filtering of geo results for the given area (potential possibilities e.g. select just the most frequent, the most specific ones, perform clustering and select from these, etc)
+#' @param functionToFilterGeoResultsForWholeData filter 3: apllied to all geo results (input is a dataframe with the following fields: entitiyName, areaID, frequencyInArea, lat, lon, plus all fields of the geoResult retrieved for a string via @functionToUpdateGeoCodingCacheForGeoLocationString / @cacheForGeocodingData ) 
 #' @return data frame with all locations and detailed geo info (columns per location entry: entityName, areaId, frequencyInArea, lat, lon, [columnsOfGeoResultReturnByCache])
 #' @export
 #'
@@ -213,14 +214,15 @@ getGeolocationForStringUsingOSMDefault <- function(inputString, hashtableCachedG
 #' x <- performGeoCodingWithCacheAndFiltering(inputDataForLocationStringsAndOptionalAreaIds, functionToGetDistinctLocationStrings, useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter = T, functionToRetrieveUniqueAreaIds, functionToGetLocationsAndFrequencyForGivenAreaId, cacheForGeocodingData, functionToUpdateCacheForGeoLocationString, functionToFilterOrSelectGeoResultForALocationString)
 #' 
 performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAndOptionalAreaIds, 
-                                                                                                                functionToGetUniqueLocationStrings,
-                                                                                                                useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter = F,
-                                                                                                                functionToRetrieveUniqueAreaIds,
-                                                                                                                functionToGetLocationStringssAndFrequencyForGivenAreaId,
-                                                                                                                cacheForGeocodingData,
-                                                                                                                functionToUpdateGeoCodingCacheForGeoLocationString,
-                                                                                                                functionToFilterOrSelectGeoResultForALocationString,
-                                                                                                                functionToFilterGeoResultsPerArea
+                                                  functionToGetUniqueLocationStrings,
+                                                  useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter = F,
+                                                  functionToRetrieveUniqueAreaIds,
+                                                  functionToGetLocationStringssAndFrequencyForGivenAreaId,
+                                                  cacheForGeocodingData,
+                                                  functionToUpdateGeoCodingCacheForGeoLocationString,
+                                                  functionToFilterOrSelectGeoResultForALocationString,
+                                                  functionToFilterGeoResultsPerArea,
+                                                  functionToFilterGeoResultsForWholeData
 ){
   log_to_file(message = "<b>Geocoding: get unique location strings</b>",file = logfile)
   allDistinctLocationStrings <- functionToGetUniqueLocationStrings(inputDataForLocationStringsAndOptionalAreaIds)
@@ -338,6 +340,9 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
     log_to_file(message = paste("<b>Geocoding: finished performing geocoding calculation for area id", areaId,"</b>"),file = logfile)
     
   }# end for each areaID
+  
+  # filter 3
+  geoDataAllAreas <- functionToFilterGeoResultsForWholeData(geoDataAllAreas)
   
   log_to_file(message = "<b>Geocoding: finished performing geocoding calculation for all area ids </b>",file = logfile)
   return (geoDataAllAreas)
