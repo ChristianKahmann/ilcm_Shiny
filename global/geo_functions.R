@@ -175,7 +175,7 @@ getGeolocationForStringUsingOSMDefault <- function(inputString, hashtableCachedG
 #' @param functionToGetUniqueLocationStrings the function to get unique location strings from the input data
 #' @param useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter if set to true the frequency calcualtion and the second filter is performed on whole data, if false (default) the frequency calcualtion and the second filter is performed separately on the data of each areaId provided by the function @functionToRetrieveUniqueAreaIds (e.g. doc_ids, collection_ids, etc)
 #' @param functionToRetrieveUniqueAreaIds a function to return unique area ids from the input data (convenience functions for dataframe and dtm are available). This function is only used if @useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter == F
-#' @param functionToGetLocationsAndFrequencyForGivenAreaId a function returning unique location strings and their frequency for the given area id. Should return a list or data frame with variables "entityName" and "frequencyInArea". In case of @useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter == T, "all" is used as areaId input. So make sure the function returns location strings and frequencies for whole data for areaId == "all". For convenience, functions for data frame and dtm are availbale. See further below. 
+#' @param functionToGetLocationStringsAndFrequencyForGivenAreaId a function returning unique location strings and their frequency for the given area id. Should return a list or data frame with variables "entityName" and "frequencyInArea". In case of @useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter == T, "all" is used as areaId input. So make sure the function returns location strings and frequencies for whole data for areaId == "all". For convenience, functions for data frame and dtm are availbale. See further below. 
 #' @param cacheForGeocodingData The cache where the existing geoCoding data can be found, i.e. a hashtable with cached information for faster querying of location strings queried before
 #' @param functionToUpdateGeoCodingCacheForGeoLocationString function to update geocoding cache with given location (check if already in cache if not query geocoding service). For convenience OSM function available
 #' @param functionToFilterOrSelectGeoResultForALocationString function to filter or select results from potential multiple lat/lon results resulting from a string (e.g. select the one with max importance, filter for cities, exclude ways, etc.). Should deal with the geo result returned by the cache. If after this filtering still multiple exist, the first one is taken. This function will also be applied if just one lat/lon result is there to allow filtering for certain entities like cities etc.
@@ -186,24 +186,25 @@ getGeolocationForStringUsingOSMDefault <- function(inputString, hashtableCachedG
 #' @examples
 #' # define general params
 #' cacheForGeocodingData <- new.env(hash=TRUE)
-#' useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter <- T 
+#' useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter <- T
+#'  
 #' functionToGetGeolocationsFromString <- function(inputString, cache){getGeolocationForStringUsingOSMDefault(inputString, cache)}
 #' functionToUpdateCacheForGeoLocationString <- functionToGetGeolocationsFromString
 #' functionToFilterOrSelectGeoResultForALocationString <- function(x){selectOSMGeoResultBasedOn(osmResult = x, selectionType = "importance")} # should return a data frame with at least lat/lon as columns and several rows for multiple results
 #' 
-#' # depending on having a data frame or dtm as input you can set the following convenience functions
-#' # A) define data and functions for data frame input (use convenience functions already defined for data frame - see end of this file))
+#' # depending on having a data frame (A) or dtm (B) as input you can set the following convenience functions
+#' # A) define data and functions for data frame input (use convenience functions already defined for data frame - see further below))
 #' inputData_dataFrame <- list(tokenData <- db_data$token, columnNameOfLocationString <- "lemma", columnNameOfAreaId <- "doc_id")
 #' functionToGetDistinctLocationStrings <- dataframe_getUniqueTokens
 #' functionToRetrieveUniqueAreaIdsTo <- dataframe_getUniqueAreaIDs
-#' functionToGetLocationsAndFrequencyForGivenAreaId <- dataframe_getTokensAndFrequenciesForGivenAreaId
+#' functionToGetLocationStringsAndFrequencyForGivenAreaId <- dataframe_getTokensAndFrequenciesForGivenAreaId
 #' 
-#' # B) define data and functions for dtm input (use convenience functions already defined at geo_util.R)
+#' # B) define data and functions for dtm input (use convenience functions already defined - see further below )
 #' inputDataDTM <- list(dtm = dtm)
 #' inputDataForLocationStringsAndOptionalAreaIds <- inputDataDTM
 #' functionToGetDistinctLocationStrings <- dtm_getUniqueFeaturesFromDTM
 #' functionToRetrieveUniqueAreaIds <- dtm_getUniqueDocIDs
-#' functionToGetLocationsAndFrequencyForGivenAreaId <- dtm_getTokensAndFrequencyForGivenDocId
+#' functionToGetLocationStringsAndFrequencyForGivenAreaId <- dtm_getTokensAndFrequencyForGivenDocId
 #' 
 #' # define second filter
 #' functionToFilterGeoResultsPerArea <- filterForEntitiesInClusterWithMinDistanceToCenterOfGravity
@@ -215,7 +216,7 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
                                                                                                                 functionToGetUniqueLocationStrings,
                                                                                                                 useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter = F,
                                                                                                                 functionToRetrieveUniqueAreaIds,
-                                                                                                                functionToGetLocationsAndFrequencyForGivenAreaId,
+                                                                                                                functionToGetLocationStringssAndFrequencyForGivenAreaId,
                                                                                                                 cacheForGeocodingData,
                                                                                                                 functionToUpdateGeoCodingCacheForGeoLocationString,
                                                                                                                 functionToFilterOrSelectGeoResultForALocationString,
@@ -236,8 +237,7 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
   # now all entities are in cache and can be queried from there
   
   
-  # assign locations and calculate clusters for areas
-  
+
   log_to_file(message = "<b>Geocoding: get area ids</b>",file = logfile)
   if(useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter){
     areaIds <- c("all")
@@ -274,21 +274,25 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
     # get geo info (lat/lon for location entities in area)
     geoDataForArea <- as.data.frame(entitydistributionsInArea)
     geoResultDetailsForArea <- NULL
-    for(j in 1:length(geoDataForArea$entityName)){
+    numberOfEntities <- length(geoDataForArea$entityName)
+    for(j in 1:numberOfEntities){
+      print(paste0("entityIndex: ",j))
       entityName <- str_trim(str_replace(geoDataForArea$entityName[j], "_", " "),side = "both")
       geoResult <- functionToGetGeolocationsFromString(entityName, cacheForGeocodingData) # since all are in cache, querying cache would be sufficient as well, but using this function makes the code better readable and internally just the cache is queried inside function as all are in cache already because of the step above
       
+      print(entityName)
+      geoDataForArea$lon[j] <- ""
+      geoDataForArea$lat[j] <- ""
       if(geoResult$successType == "success"){
         
         # further select/filter (e.g. if multiple locations found or to allow e.g. only cities)
-        filteredGeoResults <- functionToFilterOrSelectGeoResultForALocationString(geoResult)
+        filteredGeoResults <- functionToFilterOrSelectGeoResultForALocationString(geoResult$result)
         if(is.null(filteredGeoResults) || dim(filteredGeoResults)[1]==0){
           # skip current entity name
           geoDataForArea$lon[j] <- NA
           geoDataForArea$lat[j] <- NA
-          geoResultDetailsForArea[j,] <- NA
+          #geoResultDetailsForArea[j,] <- NA
           
-          next
         }else{
           # take first result, meaning if still multiple available take the first
           geoDataForArea$lon[j] <- filteredGeoResults[1,]$lon
@@ -307,30 +311,32 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
       }else{# successType != success
         geoDataForArea$lon[j] <- NA
         geoDataForArea$lat[j] <- NA
-        geoResultDetailsForArea[j,] <- NA
+        #geoResultDetailsForArea[j,] <- NA
       }
+      
     }
     
     
     # only use those tokens having coordinates (no NAs), meaning only those tokens to which lat/lon coordinates could be assigned
     indicesWithoutNA <- which(!is.na(geoDataForArea$lat))
     geoDataForArea <-  geoDataForArea[indicesWithoutNA,]
-    geoResultDetailsForArea <-  geoResultDetailsForArea[indicesWithoutNA,]
-    
-    # combine both data and assign areaId
-    geoDataForAreaInclGeoResultDetails <- cbind(geoDataForArea, geoResultDetailsForArea)
-    geoDataForAreaInclGeoResultDetails$areaId <- areaId
-    
-    ## apply further filter for this area
-    geoDataForAreaInclGeoResultDetails <- functionToFilterGeoResultsPerArea(geoDataForAreaInclGeoResultDetails)
 
-    # TODO: renmae functions above and exclude name "clustering"
+    if(dim(geoDataForArea)[1]>0){
+      geoResultDetailsForArea <-  geoResultDetailsForArea[indicesWithoutNA,]
+      
+      # combine both data and assign areaId
+      geoDataForAreaInclGeoResultDetails <- cbind(geoDataForArea, geoResultDetailsForArea)
+      geoDataForAreaInclGeoResultDetails$areaId <- areaId
+      
+      ## apply further filter for this area
+      geoDataForAreaInclGeoResultDetails <- functionToFilterGeoResultsPerArea(geoDataForAreaInclGeoResultDetails)
+      
+      
+      geoDataAllAreas <- rbind(geoDataAllAreas, geoDataForAreaInclGeoResultDetails)
 
-    
+    }
     log_to_file(message = paste("<b>Geocoding: finished performing geocoding calculation for area id", areaId,"</b>"),file = logfile)
     
-    
-    geoDataAllAreas <- rbind(geoDataAllAreas, geoDataForAreaInclGeoResultDetails)
   }# end for each areaID
   
   log_to_file(message = "<b>Geocoding: finished performing geocoding calculation for all area ids </b>",file = logfile)
@@ -338,6 +344,13 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
   
 }
 
+########################################
+# convenience function for filtering
+########################################
+
+filterLocationEntitiesForTopXFrequencies <- function(inputData, numberOfResultsToReturn){
+  
+}
 
 filterForEntitiesInClusterWithMinDistanceToCenterOfGravity <- function(inputData){
   result <- NULL
@@ -426,16 +439,28 @@ performClustering_returnIndicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravi
 
 
 
-selectOSMGeoResultBasedOn <- function(osmResult, selectionType){
-  if(selectionType == "importance"){
-    indexOfGeoResultToReturn <- which(osmResult$importance == max(osmResult$importance), arr.ind = T)[1] 
-    result <- osmResult[indexOfGeoResultToReturn,]
-  }
-  else{
-    stop("selectionType not supported!")
-  }
+selectBasedOnMaxValue <- function(inputData, fieldName){
+  indexOfGeoResultToReturn <- which(inputData[[fieldName]] == max(inputData[[fieldName]]), arr.ind = T)[1] 
+  result <- inputData[indexOfGeoResultToReturn,]
 }
 
+selectBasedOnMinValue <- function(inputData, fieldName){
+  indexOfGeoResultToReturn <- which(inputData[[fieldName]] == min(inputData[[fieldName]]), arr.ind = T)[1] 
+  result <- inputData[indexOfGeoResultToReturn,]
+}
+
+selectBasedOnGivenMinMaxValue <- function(inputData, fieldName, minValue = NULL, maxValue = NULL){
+  result <- inputData
+  if(!is.null(minValue)){
+    indicesToReturn <- which(result[[fieldName]] >= minValue, arr.ind = T) 
+    result <- result[indicesToReturn,]
+  }
+  if(!is.null(maxValue)){
+    indicesToReturn <- which(result[[fieldName]] <= maxValue, arr.ind = T)
+    result <- result[indicesToReturn,]
+  }
+  return (result)
+}
 ################
 #
 # util functions to get specific data from data frame or dtm via similar functions
