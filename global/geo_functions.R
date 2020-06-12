@@ -46,6 +46,31 @@ getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos){
   }
 }
 
+# convenience function
+applyCountryInfosForLatLonForDataframe <- function(filenpathHashtableCoordLatLonCountryInfos, inputDataframe, columnForLat, columnForLon, targetColumnnameForCountryName, targetColumnNameForCountryCode){
+  
+  if(!exists("hashtableLatLonCountryInfos")){
+    print(paste("load hashtable with country infos from ", filenpathHashtableCoordLatLonCountryInfos))
+    load(file = filenpathHashtableCoordLatLonCountryInfos)
+    
+  }
+  for(i in 1:nrow(inputDataframe)) 
+  {
+    foundCountryInfo <- getCountryInfosForLatLon(lat = inputDataframe[[columnForLat]][i] , lon = inputDataframe[[columnForLon]][i], hashtableLatLonCountryInfos = hashtableLatLonCountryInfos)
+    if(is.data.frame(foundCountryInfo) & nrow(foundCountryInfo)>0){
+      inputDataframe[[targetColumnnameForCountryName]][i] <- foundCountryInfo$countryCode
+      inputDataframe[[targetColumnNameForCountryCode]][i] <- foundCountryInfo$countryName
+    }
+    else{
+      #print(paste (i, " nothing found for " , ecpmfDataFromCSV$Location.lat[i], " ", ecpmfDataFromCSV$Location.lon[i], ": " , indexesOfFoundCountry, sep = " ", collapse = NULL))
+      inputDataframe[[targetColumnnameForCountryName]][i] <- "UNKNOWN"
+      inputDataframe[[targetColumnNameForCountryCode]][i] <- "UNKNOWN"
+
+    }
+  }
+  save(hashtableLatLonCountryInfos, file = filenpathHashtableCoordLatLonCountryInfos)
+  
+}
 
 #' Geocoding function. Returns geolocation coordinates (lat,lon, and other data) for a given location String
 #' First, the location is queried from the cache (hashtable) and if not found there queried by the specified geocodingFunction and stored in cache afterwards
@@ -548,4 +573,5 @@ dtm_getTokensAndFrequencyForGivenDocId <- function(inputDataDTM, docId){
     entitydistributionsInArea <- list(entityName = tokens, frequencyInArea = frequencies)
   }
 }
+
 

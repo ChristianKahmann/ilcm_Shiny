@@ -10,9 +10,12 @@ error<-try(expr = {
   library(Matrix)
   library(dplyr)
   library(spacyr)
+  
   #load parameters
   load("collections/tmp/tmp.RData")
   parameters_original<-parameters
+  
+
   
   #load collection 
   log_to_file(message = "<b>Step 1/8: Loading collection</b>",file = logfile)
@@ -77,6 +80,12 @@ error<-try(expr = {
 
   # set some parameters (some might be changed to be selectable via GUI)
   filepathHashtableGeocodingCache <- "collections/geolocations/hashtableGeocodingCacheOSM"
+  assignCountryInfoForEachEntry <- T
+  if(assignCountryInfoForEachEntry){
+    options(geonamesUsername=geonamesUsername) # contained in config_file.R sourced at the beginning
+  }
+  filenpathHashtableCoordLatLonCountryInfos <- "collections/geolocations/hashtableCoordLatLonCountryInfos.RData"
+  
   useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter <- F 
   
   # define functions to retrieve needed data from inputData containing dtm
@@ -120,6 +129,7 @@ error<-try(expr = {
   
   tryCatch(
     {
+      # perform geocoding
       geocodingResult <- performGeoCodingWithCacheAndFiltering(
         inputDataForLocationStringsAndOptionalAreaIds, 
         functionToGetDistinctLocationStrings,
@@ -132,6 +142,12 @@ error<-try(expr = {
         functionToFilterGeoResultsPerArea,
         functionToFilterGeoResultsForWholeData
       )
+      
+      if(assignCountryInfoForEachEntry){
+        applyCountryInfosForLatLonForDataframe(inputDataframe = geocodingResult, filenpathHashtableCoordLatLonCountryInfos = filenpathHashtableCoordLatLonCountryInfos, columnForLat = "latitude", columnForLon = "longitude",targetColumnnameForCountryName = "countryName", targetColumnNameForCountryCode = "countryCode")
+      }
+      
+            
     },
     finally={
       save(cacheForGeocodingData, file = filepathHashtableGeocodingCache)
