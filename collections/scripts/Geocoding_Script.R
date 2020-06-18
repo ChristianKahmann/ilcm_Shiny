@@ -26,7 +26,7 @@ error<-try(expr = {
   #load data from database
   log_to_file(message = "<b>Step 2/8: Loading data from database now</b>",file = logfile)
   #db_data<-get_token_meta_and_language_from_db(host=host,port=db_port,id=info[[1]],dataset=info[[2]])
-  db_data<-get_token_meta_and_language_from_db(get_meta = F,get_language = T,get_global_doc_ids = F,host=host,port=db_port,id=info[[1]],dataset=info[[2]])
+  db_data<-get_token_meta_and_language_from_db(get_meta = T,get_language = T,get_global_doc_ids = F,host=host,port=db_port,id=info[[1]],dataset=info[[2]])
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished loading data from database",file = logfile)
   
   
@@ -81,10 +81,22 @@ error<-try(expr = {
   # set some parameters (some might be changed to be selectable via GUI)
   filepathHashtableGeocodingCache <- "collections/geolocations/hashtableGeocodingCacheOSM"
   assignCountryInfoForEachEntry <- T
+  filenpathHashtableCoordLatLonCountryInfos <- "collections/geolocations/hashtableCoordLatLonCountryInfos_new.RData"
+  
   if(assignCountryInfoForEachEntry){
     options(geonamesUsername=geonamesUsername) # contained in config_file.R sourced at the beginning
+    assignCountryInfoForLatLon_defaultRadius <- 20
+    assignCountryInfoForLatLon_maxRadiusIfDefaultRadiusLeadsToNoResults <- 100
+    if(!exists("hashtableLatLonCountryInfos")){
+      if(!file.exists(filenpathHashtableCoordLatLonCountryInfos)){
+        hashtableLatLonCountryInfos <- new.env(hash=TRUE)
+        save(hashtableLatLonCountryInfos, file = filenpathHashtableCoordLatLonCountryInfos)
+      }
+      print(paste("load hashtable with country infos from ", filenpathHashtableCoordLatLonCountryInfos))
+      load(file = filenpathHashtableCoordLatLonCountryInfos)
+      
+    }
   }
-  filenpathHashtableCoordLatLonCountryInfos <- "collections/geolocations/hashtableCoordLatLonCountryInfos.RData"
   
   useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter <- F 
   
@@ -144,14 +156,17 @@ error<-try(expr = {
       )
       
       if(assignCountryInfoForEachEntry){
-        applyCountryInfosForLatLonForDataframe(inputDataframe = geocodingResult, filenpathHashtableCoordLatLonCountryInfos = filenpathHashtableCoordLatLonCountryInfos, columnForLat = "latitude", columnForLon = "longitude",targetColumnnameForCountryName = "countryName", targetColumnNameForCountryCode = "countryCode")
+
+        geocodingResult <- applyCountryInfosForLatLonForDataframe(inputDataframe = geocodingResult, hashtableLatLonCountryInfos = hashtableLatLonCountryInfos, columnForLat = "latitude", columnForLon = "longitude",targetColumnnameForCountryName = "countryName", targetColumnNameForCountryCode = "countryCode", assignCountryInfoForLatLon_defaultRadius, assignCountryInfoForLatLon_maxRadiusIfDefaultRadiusLeadsToNoResults)
+        
       }
-      
             
     },
     finally={
       save(cacheForGeocodingData, file = filepathHashtableGeocodingCache)
-      
+      if(assignCountryInfoForEachEntry){
+        save(hashtableLatLonCountryInfos, file = filenpathHashtableCoordLatLonCountryInfos)
+      }
     }
   )
   
