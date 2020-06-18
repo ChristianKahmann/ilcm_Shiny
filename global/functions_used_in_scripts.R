@@ -1,3 +1,30 @@
+getMetaData <- function(collectionIDs, collectionDataSet, host, port){
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+  rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+  
+  uniqueCollectionDataSets <- unique(collectionDataSet)
+  d<-data.frame(id=collectionIDs,dataset=collectionDataSet)
+  meta=NULL
+  for(i in 1:length(uniqueCollectionDataSets)){
+    ids<-paste(d[which(d[,2]==unique(d[,2])[i]),1],collapse = " ")
+    ids<-stringr::str_replace_all(string = as.character(ids),pattern = " ",",")
+    
+    statement <-  paste("select id, dataset, id_doc, title, date, mde1, mde2, mde3, mde4, mde5, mde6, mde7, mde8, mde9, last_modified from documents where dataset='",unique(uniqueCollectionDataSets[i]),"' and id_doc in (",ids,");",sep="")
+    dbResult <- RMariaDB::dbGetQuery(mydb,statement = statement)
+    
+    meta_names<-RMariaDB::dbGetQuery(conn = mydb,statement = paste0("Select * from metadata_names where dataset in ('",uniqueCollectionDataSets[i],"');"))
+    resultWithMetaNames <- combineMetaDataWithMetaNamesForMDEs(meta = dbResult, meta_names = meta_names)
+    
+    meta<-rbind(meta,resultWithMetaNames)
+    
+  }
+  
+  
+  RMariaDB::dbDisconnect(mydb)
+  
+  return(list(meta = meta, meta_names = meta_names))
+}
+
 get_token_meta_and_language_from_db<-function(get_meta=T,get_language=T,get_global_doc_ids=F,host=NULL,port=NULL,id,dataset){
   token<-NULL
   meta=NULL
@@ -37,7 +64,6 @@ get_token_meta_and_language_from_db<-function(get_meta=T,get_language=T,get_glob
   }
   return(list(token=token,meta=meta,language=language,global_doc_ids=global_doc_ids))
 }
-
 
 
 prepare_input_parameters<-function(param){
@@ -467,6 +493,7 @@ get_meta_data_for_detailed_topic_analysis<-function(host,port,ids,datasets,token
     meta_names=meta_names
   ))
 }
+
 
 
 calculate_diachron_frequencies<-function(dtm,meta){
