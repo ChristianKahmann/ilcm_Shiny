@@ -36,4 +36,4 @@ credentials = data.frame(
   stringsAsFactors = F
 )
 
-geonamesUserName <- "AntjeSchlaf"
+geonamesUsername <- "AntjeSchlaf"

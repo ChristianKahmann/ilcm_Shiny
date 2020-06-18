@@ -2,18 +2,30 @@ library("geonames")
 library("tmaptools")
 library("geosphere")
 library("stringr")
+source("global/log_to_file.R")
+
 
 #' Returns country infos for given lat lon coordinates
 #' Uses the given hashtable as cached reference by first querying the hashtable or if not yet existent there directly via geonames service. The result is stored in hashtable as well 
-#' Attention! Before executing this function, first a registration at geonames is required as well as setting/executing the following: options(geonamesUsername=geonames.username)
-#'
+#' Attention! Before executing this function, first a registration at geonames is required as well as setting/executing the following: options(geonamesUsername=geonames.username) In geocodingScript this is done by using the credientials in config_file.R
+#' behaviour of querying the geonames API:
+#' - A) success: a country was found, the result is also stored in hashtable for future
+#' - B) error no country found for given radius: try again by increasing radius in steps of 10 until maxRadiusIfDefaultRadiusLeadsToNoResults
+#' - C) other error: This is usally a timeout because of to many requests at a time, wait 10 seconds and try again (just once)
+#' return values and hashtable update based on result. If the final result is 
+#' - A) success: countryCode, countryName, countryLanguages are returned, and also stored in hashtable
+#' - B) no country found even by increasing until maxRadiusIfDefaultRadiusLeadsToNoResults. All values of countryCode, countryName, countryLanguages are set to the string "UNKNOWN_because_of_noCountryFoundInGivenRadius". This is not stored in hash, since increasing maxRadiusIfDefaultRadiusLeadsToNoResults might lead to a result in the future
+#' - C) other error: All values of countryCode, countryName, countryLanguages are set to the string == paste0("UNKNOWN_because_of Error: ", error$message). This is not stored in hash, since the error is unknown at it might not happen in the future
 #' @param lat The latitude value
 #' @param lon The longitude value
 #' @param hashtableLatLonCountryInfos The cached info as hashtable containing "latValue lonValue" (separated by space) as key and the countryInfo data provided by geonames as value
+#' @param defaultRadius The radius to use to query a country for given lat lon
+#' @param maxRadiusIfDefaultRadiusLeadsToNoResults if the radius in defaultRadius doesn't result in a country, further attempts are made (by increasing steps of 10) until maxRadiusIfDefaultRadiusLeadsToNoResults
+#' @return a data frame containing lat, lon, countryCode, countryName, countryLanguages
 #' 
-#' @return a data frame containing lat, lon, countryCode, countryName, countryLanguages 
-#' 
-getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos){
+getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defaultRadius, maxRadiusIfDefaultRadiusLeadsToNoResults){
+  
+  #print(paste("LAT LON: ", lat,lon))
   
   # check if lat lon are in stored data
   searchKey <- paste(lat, lon, sep=" ")
@@ -22,44 +34,115 @@ getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos){
     return(hashtableLatLonCountryInfos[[searchKey]])
   }
   else{# else query geonames
-    print(paste("latlon not yet saved in hashtable,  need to query geonames for ", lat, lon, sep =" "))
-    tryCatch({
-      geonamesCountryCode <- GNcountryCode(lat = lat, lng = lon, lang = "en", radius = 20)
-    },
-    error = function(e){
-      print(paste ("For the input ", i, lat, lon, " the follwoing Error happended: ", e, sep = " ", collapse = NULL))
-      print("Since errors are mostly timeouts wait a bit and try again")
-      Sys.sleep(10)
-      tryCatch({
-        geonamesCountryCode <- GNcountryCode(lat = lat, lng = lon, lang = "en", radius = 20 )
-      },
-      error = function(e){
-        print(paste (" Also for the second attempt for the input ", i, lat, lon, " the follwoing Error happended: ", e, sep = " ", collapse = NULL))
-        return (e)
-      })      
-    }
-    )
     
-    createdValue <- data.frame(lat = lat, lon = lon, countryCode = geonamesCountryCode$countryCode, countryName = geonamesCountryCode$countryName, countryLanguages = geonamesCountryCode$languages)
-    hashtableLatLonCountryInfos[[searchKey]] <- createdValue
+    countryInfoEnvironment <- new.env() # needed because inside error-function values of variables ouside of function are not accessible
+    
+    # create needed variables in environment. necessary because catch block is interpreted as function, which means variables from outside catch block can't be changed. They can be assessed and changed by using environment.
+    assign("successType", NULL, env=countryInfoEnvironment)
+    assign("radiusToUse", defaultRadius, env=countryInfoEnvironment)
+    assign("maxRadiusToUse", maxRadiusIfDefaultRadiusLeadsToNoResults, env=countryInfoEnvironment)
+    assign("timeoutAttempts", 0, env=countryInfoEnvironment)
+    assign("maxTimeOutAttempts", 1, env=countryInfoEnvironment)
+    assign("stepSize", 10, env=countryInfoEnvironment)
+    assign("geonamesCountryCode", NULL, env=countryInfoEnvironment)
+    
+    print(paste("latlon not yet saved in hashtable,  need to query geonames for ", lat, lon, sep =" "))
+ 
+    tryCatch({
+      geonamesCountryCode <- GNcountryCode(lat = lat, lng = lon, lang = "en", radius = defaultRadius)
+      assign("geonamesCountryCode", geonamesCountryCode, env = countryInfoEnvironment)
+      assign("successType", "success", env=countryInfoEnvironment)
+
+    },
+    
+    error = function(e){
+
+      if(grepl(x = e$message, pattern = "no country code found", fixed = T)){
+        assign("successType", "noCountryFoundInGivenRadius", env=countryInfoEnvironment)
+        assign("radiusToUse", get("radiusToUse", env=countryInfoEnvironment)+get("stepSize", env=countryInfoEnvironment), env=countryInfoEnvironment)
+        
+        #print(paste0("- Warning: for lat lon ", lat, ", ", lon, " no country could be found within radius ",get("radiusToUse", env=countryInfoEnvironment), "."))
+      
+      }else{
+        assign("successType", e$message, env=countryInfoEnvironment)
+        assign("timeoutAttempts", get("timeoutAttempts", env=countryInfoEnvironment)+1, env=countryInfoEnvironment)
+        
+        #print(paste0("- Warning: for lat lon ", lat, ", ", lon, " no country could be found based on error: ", e$message))
+      }
+      
+      #while(radiusToUse <= maxRadiusIfDefaultRadiusLeadsToNoResults && timeoutAttempts <= maxTimeOutAttempts){
+      while(get("radiusToUse", env=countryInfoEnvironment) <= get("maxRadiusToUse", env=countryInfoEnvironment) && get("timeoutAttempts",env=countryInfoEnvironment) <= get("maxTimeOutAttempts",env=countryInfoEnvironment)){
+        tryCatch({
+            geonamesCountryCode <- GNcountryCode(lat = lat, lng = lon, lang = "en", radius = get("radiusToUse", env=countryInfoEnvironment))
+            assign("geonamesCountryCode", geonamesCountryCode, env=countryInfoEnvironment)
+            assign("successType", "success", env=countryInfoEnvironment) #successType <- "success"
+            #print(paste0("- Success for lat lon ", lat, lon, " finally found with radius ", get("radiusToUse", env=countryInfoEnvironment),": ",geonamesCountryCode$countryName))
+            
+            break
+            },
+            error = function(e){
+
+              if(grepl(x = e$message, pattern = "no country code found", fixed = T)){
+
+                assign("successType", "noCountryFoundInGivenRadius", env=countryInfoEnvironment) # #successType <- "noCountryFoundInGivenRadius"
+                assign("radiusToUse", get("radiusToUse", env=countryInfoEnvironment)+get("stepSize", env=countryInfoEnvironment), env=countryInfoEnvironment) #  #radiusToUse <- radiusToUse + stepSize
+                #print(paste0("- Warning: for lat lon ", lat, ", ", lon, " no country could be found within radius ",get("radiusToUse", env=countryInfoEnvironment), "."))
+                
+              }else{
+                assign("successType", e$message, env=countryInfoEnvironment) #successType <- e$message
+                assign("timeoutAttempts", get("timeoutAttempts", env=countryInfoEnvironment)+1, env=countryInfoEnvironment)  #timeoutAttempts <- timeoutAttempts+1
+                #print(paste0("- Warning: for lat lon ", lat, ", ", lon, " no country could be found based on error: ", e$message))
+                
+              }
+            }# end of error function 2
+          )
+        
+      } # end of while loop
+      } # end of error function 1
+    )# end of try catch
+    
+    # either success or nothing found because of noCountryFoundInGivenRadius or other error
+    successType <- get("successType", env=countryInfoEnvironment)
+    if(successType == "success"){
+      geonamesCountryCode <- get("geonamesCountryCode", NULL, env=countryInfoEnvironment)
+      
+      createdValue <- data.frame(lat = lat, lon = lon, countryCode = geonamesCountryCode$countryCode, countryName = geonamesCountryCode$countryName, countryLanguages = geonamesCountryCode$languages)
+      hashtableLatLonCountryInfos[[searchKey]] <- createdValue
+      
+    }else if(successType == "noCountryFoundInGivenRadius"){
+      entryToWrite <- "UNKNOWN_because_of_noCountryFoundInGivenRadius"
+      createdValue <- data.frame(lat = lat, lon = lon, countryCode = entryToWrite, countryName = entryToWrite, countryLanguages = entryToWrite)
+      
+      warningMessage <- paste0("WARNING: for lat lon ", lat, ", ", lon, " no country could be found within radius",get("radiusToUse", env=countryInfoEnvironment), ". Result will be: ", entryToWrite)
+      #print(warningMessage)
+      log_to_file(message = warningMessage,file = logfile)
+      
+    }else{
+      entryToWrite <- paste0("UNKNOWN_because_of Error: ", successType)
+      createdValue <- data.frame(lat = lat, lon = lon, countryCode = entryToWrite, countryName = entryToWrite, countryLanguages = entryToWrite)
+
+      warningMessage <- paste0("WARNING: for lat lon ", lat, ", ", lon, " no country could be found within radius ",get("radiusToUse", env=countryInfoEnvironment), ". Result will be: ", entryToWrite)
+      #print(warningMessage)
+      log_to_file(message = warningMessage,file = logfile)
+     }
+    
     return(createdValue)
-  }
+    
+
+  } # end of else query geonames
+  
 }
 
 # convenience function
-applyCountryInfosForLatLonForDataframe <- function(filenpathHashtableCoordLatLonCountryInfos, inputDataframe, columnForLat, columnForLon, targetColumnnameForCountryName, targetColumnNameForCountryCode){
+applyCountryInfosForLatLonForDataframe <- function(hashtableLatLonCountryInfos, inputDataframe, columnForLat, columnForLon, targetColumnnameForCountryName, targetColumnNameForCountryCode, defaultRadius, maxRadiusIfDefaultRadiusLeadsToNoResults){
   
-  if(!exists("hashtableLatLonCountryInfos")){
-    print(paste("load hashtable with country infos from ", filenpathHashtableCoordLatLonCountryInfos))
-    load(file = filenpathHashtableCoordLatLonCountryInfos)
-    
-  }
+
   for(i in 1:nrow(inputDataframe)) 
   {
-    foundCountryInfo <- getCountryInfosForLatLon(lat = inputDataframe[[columnForLat]][i] , lon = inputDataframe[[columnForLon]][i], hashtableLatLonCountryInfos = hashtableLatLonCountryInfos)
+    foundCountryInfo <- getCountryInfosForLatLon(lat = inputDataframe[[columnForLat]][i] , lon = inputDataframe[[columnForLon]][i], hashtableLatLonCountryInfos = hashtableLatLonCountryInfos, defaultRadius, maxRadiusIfDefaultRadiusLeadsToNoResults)
     if(is.data.frame(foundCountryInfo) & nrow(foundCountryInfo)>0){
-      inputDataframe[[targetColumnnameForCountryName]][i] <- foundCountryInfo$countryCode
-      inputDataframe[[targetColumnNameForCountryCode]][i] <- foundCountryInfo$countryName
+      inputDataframe[[targetColumnnameForCountryName]][i] <- foundCountryInfo$countryName
+      inputDataframe[[targetColumnNameForCountryCode]][i] <- foundCountryInfo$countryCode
     }
     else{
       #print(paste (i, " nothing found for " , ecpmfDataFromCSV$Location.lat[i], " ", ecpmfDataFromCSV$Location.lon[i], ": " , indexesOfFoundCountry, sep = " ", collapse = NULL))
@@ -69,6 +152,7 @@ applyCountryInfosForLatLonForDataframe <- function(filenpathHashtableCoordLatLon
     }
   }
   save(hashtableLatLonCountryInfos, file = filenpathHashtableCoordLatLonCountryInfos)
+  return(inputDataframe)
   
 }
 
@@ -155,7 +239,7 @@ getGeolocationForStringUsingOSMDefault <- function(inputString, hashtableCachedG
                                             return (result)
                                           }
                                         }, error = function(e) {
-                                          browser()
+                                          #browser()
                                           
                                             print(paste("A problem (error) occured when trying to retrieve geolocation for ", inputString, "This is the Error:" , message(e), sep =" " ))
                                             result$successType <- "problemOccured"
@@ -335,8 +419,8 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
         
         
       }else{# successType != success
-        geoDataForArea$lon[j] <- NA
-        geoDataForArea$lat[j] <- NA
+        geoDataForArea$longitude[j] <- NA
+        geoDataForArea$latitude[j] <- NA
         #geoResultDetailsForArea[j,] <- NA
       }
       
