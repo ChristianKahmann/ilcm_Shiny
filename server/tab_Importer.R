@@ -1,4 +1,298 @@
 ##########################################################################################################
+#                                    common                                                              #
+##########################################################################################################
+library(cld2)
+source("config/sanity_check_config.R")
+
+### import
+
+default_script_decription_import<-'# The vector `result` must be specified in this script
+# if you want to use data from the imported csv file or mtf, you can use `input_data`
+# example:
+#  result<-paste0("Vortrag Nummer:",as.matrix(input_data[,5]))
+# or for RegEx
+#  result<-str_extract(input_data[,9],regex("(3[01]|[12][0-9]|0?[1-9])\\.(1[012]|0?[1-9])\\.((?:19|20)\\d{2})"))'
+
+eval_script <- function(script_text, input_data, script_label, script_nr, import_name) {
+  result<-""
+  values[[script_label]][script_nr]<-script_text
+  eval(parse(text=script_text))
+  if(!is.character(result)) {
+    stop("Result needs to be of type string.")
+  }
+  if(length(result) != length(values[[import_name]])) {
+    stop(sprintf("Result not big enough for all %d rows.", length(values[[import_name]])))
+  }
+  result
+}
+
+script_events <- function(name, import_type, script_nr, split_script = FALSE) {
+  input_label <- sprintf("data_%s", import_type)
+  script_event_name <- sprintf("Import_script_%s_%s", name, import_type)
+  save_event_name <- sprintf("Import_script_save_%s_%s", name, import_type)
+  editor_id <- sprintf("script_%s_%s", name, import_type)
+  import_name <- sprintf("Import_%s_%s", import_type, name)
+  
+  script_label_add <- if(split_script) "_split" else ""
+  script_label <- sprintf("Import_%s%s_scripts", import_type, script_label_add)
+  
+  observeEvent(input[[script_event_name]],{
+    showModal(
+      modalDialog(size = "l",easyClose = T,fade = T,
+                  aceEditor(editor_id,theme ="chrome"  ,mode="r", fontSize = "15",
+                            showLineNumbers = T, highlightActiveLine = T, autoComplete = "live",
+                            value=values[[script_label]][script_nr]),
+                  footer = tagList(
+                    actionButton(save_event_name, "save")
+                  )
+      )
+    )
+  })
+  observeEvent(input[[save_event_name]],{
+    if (split_script) {
+      values[[script_label]] <- input[[editor_id]]
+    } else {
+      tryCatch({
+        values[[import_name]] <- eval_script(input[[editor_id]], values[[input_label]], script_label, script_nr, import_name)
+      },
+      error=function(e){
+        shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
+      })
+    }
+    removeModal()
+  })
+}
+
+type_events <- function(name, import_type) {
+  type_event_name <- sprintf("Import_type_%s_%s", name, import_type)
+  save_event_name <- sprintf("Import_type_save_%s_%s", name, import_type)
+  input_id <- sprintf("Import_type_input_%s_%s", name, import_type)
+  import_name <- sprintf("Import_%s_%s", import_type, name)
+  data_name <- sprintf("data_%s", import_type)
+  
+  observeEvent(input[[type_event_name]],{
+    showModal(
+      modalDialog(size = "l", easyClose = T, fade = T,
+                  textInput(inputId = input_id, label = sprintf("%s (one for all)", stringr::str_to_title(name)), placeholder = sprintf("Please type in the %s", name)),
+                  actionButton(save_event_name, "save")
+      )
+    )
+  })
+  
+  observeEvent(input[[save_event_name]],{
+    values[[import_name]] <- rep(input[[input_id]],dim(values[[data_name]])[1])
+    removeModal()
+  })
+}
+
+observe_mde <- function(name, import_type) {
+  import_name <- sprintf("Import_%s_%s", import_type, name)
+  data_name <- sprintf("data_%s", import_type)
+  
+  observe({
+    validate(
+      need(!is.null(input[[import_name]]), message=FALSE),
+      need(input[[import_name]]%in%c(colnames(values[[data_name]]),"not required"),message=FALSE)
+    )
+    if(input[[import_name]] == "not required"){
+      values[[import_name]] <- NULL
+    }
+    else{
+      values[[import_name]]<-as.vector(as.matrix(values[[data_name]][,input[[import_name]]]))
+    }
+  })
+}
+
+### split
+
+default_script_decription_split<-"# You need to specify split_data
+# split_data is a list of vectors where every element of the list represents an imported file.
+# length(split_data) needs to equal length(selected_data)
+# The imported files are in file_data (dataframe).
+# The data of the select column is selected_data (array of strings).
+# Example for split after x words:
+# x <- 1000
+# words <- strsplit(selected_data, '\\\\W+')
+# splits <- floor(lengths(words)/x)
+# for(i in 1:length(words)) {
+#   for(j in 0:splits[i]) {
+#     max <- min((j+1)*x, length(words[[i]]))
+#     split_data[[i]][j+1] <- paste(words[[i]][(j*x+1):max],collapse=' ')
+# }}"
+
+process_split <- function(type, name = "split") {
+  data_label <- sprintf("data_%s", type)
+  column_name <- sprintf("Import_%s_column_name", type)
+  method_label <- sprintf("Import_%s_split_method", type)
+  editor_id <- sprintf("script_%s_%s", name, type)
+  header_label <- sprintf("header_%s", type)
+  
+  if(input[[method_label]] != 'None') {
+    file_data <- values[[data_label]]
+    selected_col <- input[[column_name]]
+    selected_data <- as.character(file_data[[selected_col]])
+    split_data <- perform_split(type, selected_data, file_data, name)
+    
+    main_ids <- rep(1:length(split_data),lengths(split_data))
+    sub_ids <- vector()
+    for(split_length in lengths(split_data)) {
+      sub_ids <- c(sub_ids,1:split_length)
+    }
+    ids <- sprintf("%d-%d", main_ids, sub_ids)
+    
+    file_data[[selected_col]] <- NULL
+    file_data <- file_data[main_ids, 1:ncol(file_data)]
+    file_data[[selected_col]] <- unlist(split_data)
+    file_data$split_id <- ids
+    values[[data_label]] <- file_data
+    values[[header_label]]<-c(colnames(values[[data_label]]))
+  }
+}
+
+perform_split <- function(type, selected_data, file_data, editor_name = "split") {
+  if (length(selected_data) == 0) {
+    return(NULL)
+  }
+  method_label <- sprintf("Import_%s_split_method", type)
+  method_regex_label <- sprintf("Import_%s_split_method_regex", type)
+  method_split_number_label <- sprintf("Import_%s_split_method_split_number", type)
+  editor_id <- sprintf("script_%s_%s", editor_name, type)
+  
+  split_data <- vector("list", length = length(selected_data))
+  if(input[[method_label]] == 'Regular Expression') {
+    split_data <- strsplit(selected_data, input[[method_regex_label]])
+  } else if (input[[method_label]] == 'Hard Split') {
+    x <- input[[method_split_number_label]]
+    splits <- floor(nchar(selected_data)/x)
+    for(i in 1:length(selected_data)) {
+      split_data[[i]] <- substring(selected_data[[i]], ((0:splits[i])*x+1),((1:(splits[i]+1))*x))
+    }
+  } else if (input[[method_label]] == 'Script') {
+    tryCatch({
+      if (is.null(input[[editor_id]])) {
+        stop("You didn't set up a script.")
+      } else {
+        eval(parse(text=input[[editor_id]]))
+        if(!is.list(split_data) || !is.character(unlist(split_data))) {
+          stop("Result needs to be a list of strings.")
+        }
+        if(length(split_data) != length(selected_data)) {
+          stop("Result needs to be a list of strings.")
+        }
+      }
+    },
+    error=function(e){
+      shinyalert::shinyalert(title = "error in code",text = as.character(e),type = "error")
+    })
+  }
+  return(split_data)
+}
+
+split_test_view <- function(type) {
+  data_label <- sprintf("data_%s", type)
+  column_name <- sprintf("Import_%s_column_name", type)
+  display_condition <- sprintf("input.Import_%s_split_method == 'Regular Expression'", type)
+  method_regex_label <- sprintf("Import_%s_split_method_regex", type)
+  
+  input_data <- values[[data_label]]
+  selected_col <- input[[column_name]]
+  selected_data <- as.character(input_data[[selected_col]])
+  
+  values$live_method_regex_label <- method_regex_label
+  
+  showModal(modalDialog(
+    title = "Split Test View",
+    size = "l",
+    fluidRow(
+      column(6,selectInput(inputId = "Import_row_nr", "Row", choices=1:dim(input_data)[1])),
+      conditionalPanel(
+        condition = display_condition,
+        column(6,
+          column(9,textInput(inputId = paste0(method_regex_label, "2"),label = "Regular Expression:", value = input[[method_regex_label]])),
+          column(3,actionButton("Import_live_split_test", "Test Split", style = "info", block=T))
+        )
+      )
+    ),
+    fluidRow(
+      box(title = "Original",status = "primary",width = "6",renderText(selected_data[as.integer(input$Import_row_nr)])),
+      box(
+        title = "Split Result",
+        status = "primary",
+        renderUI({
+          HTML(paste(unlist(perform_split(type, selected_data[as.integer(input$Import_row_nr)])), collapse = "<hr/>"))
+        })
+      )
+    ),
+    easyClose = TRUE
+  ))
+}
+
+observeEvent(input$Import_live_split_test,{
+  updateTextInput(session, values$live_method_regex_label, value = input[[paste0(values$live_method_regex_label, "2")]])
+})
+
+
+### sanity check
+
+sanity_check_Modal <- function(type, data_check_choices) {
+  id_doc_label <- sprintf("Import_%s_id_doc", type)
+  date_label <- sprintf("Import_%s_date", type)
+  date_format_label <- sprintf("Import_%s_date_format", type)
+  
+  output$sanity_check_table = DT::renderDataTable({
+    regarding_data <- values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]
+    
+    valid_encoding <- if (input$Import_data_id_check == "date") {
+      !is.na(as.Date(values[[date_label]],input[[date_format_label]],optional = TRUE))
+    } else if(is.numeric(regarding_data)) {
+      rep(TRUE,length(regarding_data))
+    } else {
+      validEnc(regarding_data)
+    }
+    
+    detected_language <- if (is.numeric(regarding_data)) {rep("-",length(regarding_data))} else {
+      detect_language(regarding_data)
+    }
+    
+    regex_check <- is.na(str_extract(regarding_data,regex(sanity_check_regex)))
+    
+    data.frame(id_doc = values[[id_doc_label]], characters = nchar(regarding_data), valid_encoding, detected_language, regex_check)
+  }, server = FALSE, selection = "single")
+  
+  output$selected_row = renderText({
+    if (is.null(input$sanity_check_table_rows_selected)){
+      return("Select a row above, to see its data")
+    } else {
+      return(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]][input$sanity_check_table_rows_selected])
+    }
+  })
+  
+  showModal(
+    modalDialog(
+      size = "l",easyClose = T,fade = T,
+      title = "Sanity Check",
+      footer = tagList(modalButton("Cancel")),
+      selectInput("Import_data_id_check", "Check Data", choices=data_check_choices),
+      renderPlotly({
+        ids = paste(values[[id_doc_label]])
+        xlab = list(categoryorder = "array", categoryarray = ids)
+        plot_ly(y = nchar(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]), x = ids, type = "bar",
+                marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>% layout(title = "Lenght", xaxis = xlab)
+      }),
+      p("NOTE: Use unice 'id_doc' to see character lenght individually - otherwise it gets stacked"),
+      hr(),
+      DT::dataTableOutput('sanity_check_table'),
+      p(tags$b("valid_encoding")," - returns true is no error is found, checks date format if date is selected"),
+      p(tags$b("regex_check")," - returns true is nothing is found"),
+      p("NOTE: Language detection might fail - especially with short text"),
+      hr(),
+      h5("Content"),
+      textOutput("selected_row")
+    )
+  )
+}
+
+##########################################################################################################
 #                                import csv                                                              #
 ##########################################################################################################
 values$Import_csv_id_doc<-""
@@ -17,6 +311,8 @@ values$Import_csv_mde9<-""
 values$Import_csv_language<-""
 values$Import_csv_token<-""
 values$Import_csv_dataset<-""
+values$Import_csv_scripts<-""
+values$Import_csv_split_scripts<-""
 
 output$UI_Import_csv_file<-renderUI({
   values$invalidate_csv_files
@@ -58,6 +354,7 @@ observeEvent(input$Import_load_csv,{
     values$data_csv<-readr::read_delim(file = paste0("data_import/unprocessed_data/",input$Import_csv_files),col_names = input$Import_load_csv_header,
                                      delim = input$import_load_csv_seperator,na = character() )
     colnames(values$data_csv)<-stringr::str_replace_all(string = colnames(values$data_csv),pattern = "\\.",replacement = " ")
+    values$Import_csv_scripts<-rep(default_script_decription_import,13) # 13 for id_doc, title, date, body and 9 mde's
     if(dim(values$data_csv)[1]<2 | dim(values$data_csv)[2]<2){
       text<-paste0("The resulting input dimesions are: ",dim(values$data_csv)[1]," x ",dim(values$data_csv)[2],". Something went wrong during the input. Make sure to specify the csv input parameters correct.")
       shinyWidgets::sendSweetAlert(session=session,title = "Input failed!",text = text,type = "error")
@@ -66,12 +363,42 @@ observeEvent(input$Import_load_csv,{
       values$header_csv<-c(colnames(values$data_csv))
       values$data_load_csv_success<-TRUE
     }
+    
+    values$Import_csv_split_scripts <- default_script_decription_split
   })
 })
 
-observeEvent(input$Import_start_mapping,{
-  values$start_mapping<-TRUE
+### split
+script_events("split", "csv", 1, TRUE)
+
+observeEvent(input$Import_csv_split_test_view, {
+  split_test_view("csv")
 })
+
+observeEvent(input$Import_start_mapping,{
+  if(input$Import_csv_split_method != 'None') {
+    showModal(modalDialog(
+      title="Are you sure you want to split",
+      footer = tagList(
+        modalButton("Cancel"),
+        actionButton("confirm_start_mapping_csv", "Continue", styleclass = "info")
+      ),
+      "You can't simply undo this split. You would have to reimport your data to go back."
+    ))
+  } else {
+    start_mapping_csv()
+  }
+})
+
+observeEvent(input$confirm_start_mapping_csv,{
+  start_mapping_csv()
+  removeModal()
+})
+
+start_mapping_csv <- function() {
+  process_split("csv")
+  values$start_mapping<-TRUE
+}
 
 output$data_load_csv_success<-reactive({
   values$data_load_csv_success
@@ -101,6 +428,15 @@ observeEvent(input$Import_check_csv,{
       ) 
     )
   )
+})
+
+output$UI_Import_csv_column_name <- renderUI({
+  select_value <- input$Import_csv_column_name
+  selectInput(inputId = "Import_csv_column_name", "Column:", choices=values$header_csv, selected = select_value)%>%
+    shinyInput_label_embed(
+      icon("info") %>%
+        bs_embed_tooltip(title = "Select a column with the data you want to split.")
+    )
 })
 
 output$UI_Import_csv_id_doc<-renderUI({
@@ -218,50 +554,9 @@ observe({
 })
 
 
-
 #title
-observeEvent(input$Import_script_title,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_title",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_title can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_title<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_title<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_title", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_title,{
-  tryCatch({
-    eval(parse(text=input$script_title))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_title,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_title",label = "Titles (one for all)",placeholder = "Please type in the title"),
-                actionButton("Import_csv_save_man_save_title", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_csv_save_man_save_title,{
-  values$Import_csv_title<-rep(input$Import_csv_save_man_title,dim(values$data_csv)[1])
-  removeModal()
-})
+script_events("title", "csv", 1)
+type_events("title", "csv")
 
 observe({
   validate(
@@ -278,48 +573,8 @@ observe({
 
 
 #id_doc
-observeEvent(input$Import_script_id_doc,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_id_doc",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_id_doc can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_id_doc<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_id_doc<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_id_doc", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_id_doc,{
-  tryCatch({
-    eval(parse(text=input$script_id_doc))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_id_doc,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_id_doc",label = "id_doc (one for all)",placeholder = "Please type in the id_doc"),
-                actionButton("Import_csv_save_man_save_id_doc", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_csv_save_man_save_id_doc,{
-  values$Import_csv_id_doc<-rep(input$Import_csv_save_man_id_doc,dim(values$data_csv)[1])
-  removeModal()
-})
+script_events("id_doc", "csv", 2)
+type_events("id_doc", "csv")
 
 observe({
   validate(
@@ -344,44 +599,10 @@ observe({
   }
 })
 
-#body
-observeEvent(input$Import_script_body,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_body",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_body can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_body<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_body<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_body", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_body,{
-  tryCatch({
-    eval(parse(text=input$script_body))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
 
-observeEvent(input$Import_type_body,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_body",label = "bodys (one for all)",placeholder = "Please type in the body"),
-                actionButton("Import_csv_save_man_save_body", "save")
-    )
-  )
-}
-)
+#body
+script_events("body", "csv", 3)
+type_events("body", "csv")
 
 observe({
   validate(
@@ -392,170 +613,9 @@ observe({
 })
 
 
-observeEvent(input$Import_csv_save_man_save_body,{
-  values$Import_csv_body<-rep(input$Import_csv_save_man_body,dim(values$data_csv)[1])
-  removeModal()
-})
-
-
-#mde3
-observeEvent(input$Import_script_mde3,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde3",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_mde3 can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_mde3<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_mde3<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde3", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde3,{
-  tryCatch({
-    eval(parse(text=input$script_mde3))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde3,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_mde3",label = "mde3s (one for all)",placeholder = "Please type in the mde3"),
-                actionButton("Import_csv_save_man_save_mde3", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_csv_save_man_save_mde3,{
-  values$Import_csv_mde3<-rep(input$Import_csv_save_man_mde3,dim(values$data_csv)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_csv_mde3),message=FALSE),
-    need(input$Import_csv_mde3%in%c(colnames(values$data_csv),"not required"),message=FALSE)
-  )
-  if(input$Import_csv_mde3=="not required"){
-    values$Import_csv_mde3<-NULL
-  }
-  else{
-    values$Import_csv_mde3<-as.vector(as.matrix(values$data_csv[,input$Import_csv_mde3]))
-  }
-})
-
-
-#mde1
-observeEvent(input$Import_script_mde1,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde1",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_mde1 can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_mde1<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_mde1<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde1", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde1,{
-  tryCatch({
-    eval(parse(text=input$script_mde1))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde1,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_mde1",label = "mde1s (one for all)",placeholder = "Please type in the mde1"),
-                actionButton("Import_csv_save_man_save_mde1", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_csv_save_man_save_mde1,{
-  values$Import_csv_mde1<-rep(input$Import_csv_save_man_mde1,dim(values$data_csv)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_csv_mde1),message=FALSE),
-    need(input$Import_csv_mde1%in%c(colnames(values$data_csv),"not required"),message=FALSE)
-  )
-  if(input$Import_csv_mde1=="not required"){
-    values$Import_csv_mde1<-NULL
-  }
-  else{
-    values$Import_csv_mde1<-as.vector(as.matrix(values$data_csv[,input$Import_csv_mde1]))
-  }
-})
-
 #date
-observeEvent(input$Import_script_date,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_date",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_date can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_date<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_date<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_date", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_date,{
-  tryCatch({
-    eval(parse(text=input$script_date))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_date,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_date",label = "dates (one for all)",placeholder = "Please type in the date"),
-                actionButton("Import_csv_save_man_save_date", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_csv_save_man_save_date,{
-  values$Import_csv_date<-rep(input$Import_csv_save_man_date,dim(values$data_csv)[1])
-  removeModal()
-})
+script_events("date", "csv", 4)
+type_events("date", "csv")
 
 observe({
   validate(
@@ -570,407 +630,51 @@ observe({
   }
 })
 
-#mde4
-observeEvent(input$Import_script_mde4,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde4",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_mde4 can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_mde4<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_mde4<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde4", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde4,{
-  tryCatch({
-    eval(parse(text=input$script_mde4))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
 
-observeEvent(input$Import_type_mde4,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_mde4",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_csv_save_man_save_mde4", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_csv_save_man_save_mde4,{
-  values$Import_csv_mde4<-rep(input$Import_csv_save_man_mde4,dim(values$data_csv)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_csv_mde4),message=FALSE),
-    need(input$Import_csv_mde4%in%c(colnames(values$data_csv),"not required"),message=FALSE)
-  )
-  if(input$Import_csv_mde4=="not required"){
-    values$Import_csv_mde4<-NULL
-  }
-  else{
-    values$Import_csv_mde4<-as.vector(as.matrix(values$data_csv[,input$Import_csv_mde4]))
-  }
-})
-
-#mde5
-observeEvent(input$Import_script_mde5,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde5",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_mde5 can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_mde5<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_mde5<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde5", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde5,{
-  tryCatch({
-    eval(parse(text=input$script_mde5))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde5,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_mde5",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_csv_save_man_save_mde5", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_csv_save_man_save_mde5,{
-  values$Import_csv_mde5<-rep(input$Import_csv_save_man_mde5,dim(values$data_csv)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_csv_mde5),message=FALSE),
-    need(input$Import_csv_mde5%in%c(colnames(values$data_csv),"not required"),message=FALSE)
-  )
-  if(input$Import_csv_mde5=="not required"){
-    values$Import_csv_mde5<-NULL
-  }
-  else{
-    values$Import_csv_mde5<-as.vector(as.matrix(values$data_csv[,input$Import_csv_mde5]))
-  }
-})
-
-#mde6
-observeEvent(input$Import_script_mde6,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde6",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_mde6 can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_mde6<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_mde6<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde6", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde6,{
-  tryCatch({
-    eval(parse(text=input$script_mde6))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde6,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_mde6",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_csv_save_man_save_mde6", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_csv_save_man_save_mde6,{
-  values$Import_csv_mde6<-rep(input$Import_csv_save_man_mde6,dim(values$data_csv)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_csv_mde6),message=FALSE),
-    need(input$Import_csv_mde6%in%c(colnames(values$data_csv),"not required"),message=FALSE)
-  )
-  if(input$Import_csv_mde6=="not required"){
-    values$Import_csv_mde6<-NULL
-  }
-  else{
-    values$Import_csv_mde6<-as.vector(as.matrix(values$data_csv[,input$Import_csv_mde6]))
-  }
-})
-
-#mde7
-observeEvent(input$Import_script_mde7,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde7",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_mde7 can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_mde7<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_mde7<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde7", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde7,{
-  tryCatch({
-    eval(parse(text=input$script_mde7))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde7,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_mde7",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_csv_save_man_save_mde7", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_csv_save_man_save_mde7,{
-  values$Import_csv_mde7<-rep(input$Import_csv_save_man_mde7,dim(values$data_csv)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_csv_mde7),message=FALSE),
-    need(input$Import_csv_mde7%in%c(colnames(values$data_csv),"not required"),message=FALSE)
-  )
-  if(input$Import_csv_mde7=="not required"){
-    values$Import_csv_mde7<-NULL
-  }
-  else{
-    values$Import_csv_mde7<-as.vector(as.matrix(values$data_csv[,input$Import_csv_mde7]))
-  }
-})
-
-#mde8
-observeEvent(input$Import_script_mde8,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde8",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_mde8 can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_mde8<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_mde8<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde8", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde8,{
-  tryCatch({
-    eval(parse(text=input$script_mde8))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde8,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_mde8",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_csv_save_man_save_mde8", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_csv_save_man_save_mde8,{
-  values$Import_csv_mde8<-rep(input$Import_csv_save_man_mde8,dim(values$data_csv)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_csv_mde8),message=FALSE),
-    need(input$Import_csv_mde8%in%c(colnames(values$data_csv),"not required"),message=FALSE)
-  )
-  if(input$Import_csv_mde8=="not required"){
-    values$Import_csv_mde8<-NULL
-  }
-  else{
-    values$Import_csv_mde8<-as.vector(as.matrix(values$data_csv[,input$Import_csv_mde8]))
-  }
-})
-
-#mde9
-observeEvent(input$Import_script_mde9,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde9",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_mde9 can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_mde9<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_mde9<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde9", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde9,{
-  tryCatch({
-    eval(parse(text=input$script_mde9))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde9,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_mde9",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_csv_save_man_save_mde9", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_csv_save_man_save_mde9,{
-  values$Import_csv_mde9<-rep(input$Import_csv_save_man_mde9,dim(values$data_csv)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_csv_mde9),message=FALSE),
-    need(input$Import_csv_mde9%in%c(colnames(values$data_csv),"not required"),message=FALSE)
-  )
-  if(input$Import_csv_mde9=="not required"){
-    values$Import_csv_mde9<-NULL
-  }
-  else{
-    values$Import_csv_mde9<-as.vector(as.matrix(values$data_csv[,input$Import_csv_mde9]))
-  }
-})
-
-
-
+#mde1
+script_events("mde1", "csv", 5)
+type_events("mde1", "csv")
+observe_mde("mde1", "csv")
 
 #mde2
-observeEvent(input$Import_script_mde2,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde2",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_csv_mde2 can be specified in this script
-                          #if you want to use data from the imported csv file, you can use values$data_csv
-                          #example:
-                          # values$Import_csv_mde2<-paste0("Vortrag Nummer:",as.matrix(values$data_csv[,5]))
-                          #or
-                          # values$Import_csv_mde2<-rep("unbekannter Titel",dim(values$data_csv)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde2", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde2,{
-  tryCatch({
-    eval(parse(text=input$script_mde2))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
+script_events("mde2", "csv", 6)
+type_events("mde2", "csv")
+observe_mde("mde2", "csv")
 
-observeEvent(input$Import_type_mde2,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_csv_save_man_mde2",label = "mde2s (one for all)",placeholder = "Please mde2 in the mde2"),
-                actionButton("Import_csv_save_man_save_mde2", "save")
-    )
-  )
-}
-)
+#mde3
+script_events("mde3", "csv", 7)
+type_events("mde3", "csv")
+observe_mde("mde3", "csv")
 
-observeEvent(input$Import_csv_save_man_save_mde2,{
-  values$Import_csv_mde2<-rep(input$Import_csv_save_man_mde2,dim(values$data_csv)[1])
-  removeModal()
-})
+#mde4
+script_events("mde4", "csv", 8)
+type_events("mde4", "csv")
+observe_mde("mde4", "csv")
 
-observe({
-  validate(
-    need(!is.null(input$Import_csv_mde2),message=FALSE),
-    need(input$Import_csv_mde2%in%c(colnames(values$data_csv),"not required"),message=FALSE)
-  )
-  if(input$Import_csv_mde2=="not required"){
-    values$Import_csv_mde2<-NULL
-  }
-  else{
-    values$Import_csv_mde2<-as.vector(as.matrix(values$data_csv[,input$Import_csv_mde2]))
-  } 
-})
+#mde5
+script_events("mde5", "csv", 9)
+type_events("mde5", "csv")
+observe_mde("mde5", "csv")
+
+#mde6
+script_events("mde6", "csv", 10)
+type_events("mde6", "csv")
+observe_mde("mde6", "csv")
+
+#mde7
+script_events("mde7", "csv", 11)
+type_events("mde7", "csv")
+observe_mde("mde7", "csv")
+
+#mde8
+script_events("mde8", "csv", 12)
+type_events("mde8", "csv")
+observe_mde("mde8", "csv")
+
+#mde9
+script_events("mde9", "csv", 13)
+type_events("mde9", "csv")
+observe_mde("mde9", "csv")
 
 
 
@@ -1032,6 +736,7 @@ output$Import_csv_metadata<-DT::renderDataTable({
     return(NULL)
   }
 })
+
 
 observe({
   body<-values$Import_csv_body
@@ -1137,7 +842,7 @@ observeEvent(input$Import_csv_start_preprocess,{
           shinyWidgets::sendSweetAlert(session=session,title = "'_' not allowed",text = "Please specify a abbreviation without using '_'",type = "error")
         }
         else{
-          if(any(inherits(try({as.Date(data[,"date"],input$Import_mtf_date_format)}),"Date")==F)){
+          if(any(inherits(try({as.Date(data[,"date"],input$Import_csv_date_format)}),"Date")==F)){
             shinyWidgets::sendSweetAlert(session=session,title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
           }
           else{
@@ -1417,13 +1122,38 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_csv_db,{
   }
 })
 
-
-
-
-
-
-
-
+observeEvent(input$Import_csv_sanity_check,{
+  data_check_choices <- c("body", "id_doc", "title", "date")
+  if(input$Import_csv_mde1 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde1")
+  }
+  if(input$Import_csv_mde2 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde2")
+  }
+  if(input$Import_csv_mde3 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde3")
+  }
+  if(input$Import_csv_mde4 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde4")
+  }
+  if(input$Import_csv_mde5 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde5")
+  }
+  if(input$Import_csv_mde6 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde6")
+  }
+  if(input$Import_csv_mde7 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde7")
+  }
+  if(input$Import_csv_mde8!= "not required"){
+    data_check_choices <- c(data_check_choices, "mde8")
+  }
+  if(input$Import_csv_mde9 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde9")
+  }
+  
+  sanity_check_Modal("csv", data_check_choices)
+})
 
 
 ##########################################################################################################
@@ -1445,6 +1175,8 @@ values$Import_mtf_mde9<-""
 values$Import_mtf_language<-""
 values$Import_mtf_token<-""
 values$Import_mtf_dataset<-""
+values$Import_mtf_scripts<-""
+values$Import_mtf_split_scripts<-""
 
 
 output$UI_Import_mtf_file<-renderUI({
@@ -1496,17 +1228,16 @@ observeEvent(input$Import_load_mtf,{
     validate(
       need(length(list.dirs("data_import/unprocessed_data/"))>1,message=FALSE)
     )
-    data<-data.frame(id_doc=1:length(list.files(paste0("data_import/unprocessed_data/",input$Import_mtf_files))))
-    texte<-list()
-    for(i in 1:dim(data)[1]){
-      texte[[i]]<-readtext::readtext(file=list.files(paste0("data_import/unprocessed_data/",input$Import_mtf_files),full.names = T)[i])
-    }
-    data<-do.call(rbind,texte)
-    data<-cbind(1:dim(data)[1],data)
-    colnames(data)[1:3]<-c("id_doc","title","text")
+    file_data <- readtext::readtext(file=list.files(paste0("data_import/unprocessed_data/",input$Import_mtf_files),full.names = T))
+    colnames(file_data)[1] <- "file_id"
+    data<-cbind(id = row.names(file_data),file_data)
+    values$Import_mtf_scripts<-rep(default_script_decription_import,13) # 13 for id_doc, title, date, body and 9 mde's
+
     values$header_mtf<-colnames(data)
     values$data_mtf<-data
     values$data_load_mtf_success<-TRUE
+    
+    values$Import_mtf_split_scripts <- default_script_decription_split
   })
 })
 ###meta data csv
@@ -1524,10 +1255,37 @@ observeEvent(input$Import_mtf_metadata_csv,{
 })
 
 
+### split
+script_events("split", "mtf", 1, TRUE)
+
+observeEvent(input$Import_mtf_split_test_view, {
+  split_test_view("mtf")
+})
 
 observeEvent(input$Import_start_mapping_mtf,{
-  values$start_mapping_mtf<-TRUE
+  if(input$Import_mtf_split_method != 'None') {
+    showModal(modalDialog(
+      title="Are you sure you want to split",
+      footer = tagList(
+        modalButton("Cancel"),
+        actionButton("confirm_start_mapping_mtf", "Continue", styleclass = "info")
+      ),
+      "You can't simply undo this split. You would have to reimport your data to go back."
+    ))
+  } else {
+    start_mapping_mtf()
+  }
 })
+
+observeEvent(input$confirm_start_mapping_mtf,{
+  start_mapping_mtf()
+  removeModal()
+})
+
+start_mapping_mtf <- function() {
+  process_split("mtf")
+  values$start_mapping_mtf<-TRUE
+}
 
 output$data_load_mtf_success<-reactive({
   values$data_load_mtf_success
@@ -1560,6 +1318,14 @@ observeEvent(input$Import_check_mtf,{
 })
 
 
+output$UI_Import_mtf_column_name <- renderUI({
+  select_value <- input$Import_mtf_column_name
+  selectInput(inputId = "Import_mtf_column_name", "Column:", choices=values$header_mtf, selected = select_value)%>%
+  shinyInput_label_embed(
+    icon("info") %>%
+      bs_embed_tooltip(title = "Select a column with the data you want to split.")
+  )
+})
 
 output$UI_Import_mtf_id_doc<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_id_doc",label = "Map id_doc",
@@ -1679,49 +1445,8 @@ observe({
 })
 
 #title
-observeEvent(input$Import_script_title_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_title_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-#the vector values$Import_mtf_title can be specified in this script
-#if you want to use data from the imported mtf file, you can use values$data_mtf
-#example:
-# values$Import_mtf_title<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-#or
-# values$Import_mtf_title<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_title_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_title_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_title_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_title_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_title",label = "Titles (one for all)",placeholder = "Please type in the title"),
-                actionButton("Import_mtf_save_man_save_title", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_title,{
-  values$Import_mtf_title<-rep(input$Import_mtf_save_man_title,dim(values$data_mtf)[1])
-  removeModal()
-})
-
+script_events("title", "mtf", 1)
+type_events("title", "mtf")
 
 observe({
   validate(
@@ -1737,50 +1462,9 @@ observe({
 })
 
 
-
 #id_doc
-observeEvent(input$Import_script_id_doc_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_id_doc_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-#the vector values$Import_mtf_id_doc can be specified in this script
-#if you want to use data from the imported mtf file, you can use values$data_mtf
-#example:
-# values$Import_mtf_id_doc<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-#or
-# values$Import_mtf_id_doc<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_id_doc_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_id_doc_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_id_doc_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_id_doc_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_id_doc",label = "id_doc (one for all)",placeholder = "Please type in the id_doc"),
-                actionButton("Import_mtf_save_man_save_id_doc", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_id_doc,{
-  values$Import_mtf_id_doc<-rep(input$Import_mtf_save_man_id_doc,dim(values$data_mtf)[1])
-  removeModal()
-})
+script_events("id_doc", "mtf", 2)
+type_events("id_doc", "mtf")
 
 observe({
   validate(
@@ -1805,49 +1489,10 @@ observe({
   }
 })
 
+
 #body
-observeEvent(input$Import_script_body_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_body_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-#the vector values$Import_mtf_body can be specified in this script
-#if you want to use data from the imported mtf file, you can use values$data_mtf
-#example:
-# values$Import_mtf_body<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-#or
-# values$Import_mtf_body<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_body_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_body_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_body_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_body_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_body",label = "bodys (one for all)",placeholder = "Please type in the body"),
-                actionButton("Import_mtf_save_man_save_body", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_body,{
-  values$Import_mtf_body<-rep(input$Import_mtf_save_man_body,dim(values$data_mtf)[1])
-  removeModal()
-})
+script_events("body", "mtf", 3)
+type_events("body", "mtf")
 
 observe({
   validate(
@@ -1857,49 +1502,10 @@ observe({
   values$Import_mtf_body<-as.vector(as.matrix(values$data_mtf[,input$Import_mtf_body]))
 })
 
+
 #date
-observeEvent(input$Import_script_date_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_date_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-#the vector values$Import_mtf_date can be specified in this script
-#if you want to use data from the imported mtf file, you can use values$data_mtf
-#example:
-# values$Import_mtf_date<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-#or
-# values$Import_mtf_date<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_date_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_date_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_date_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_date_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_date",label = "dates (one for all)",placeholder = "Please type in the date"),
-                actionButton("Import_mtf_save_man_save_date", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_date,{
-  values$Import_mtf_date<-rep(input$Import_mtf_save_man_date,dim(values$data_mtf)[1])
-  removeModal()
-})
+script_events("date", "mtf", 4)
+type_events("date", "mtf")
 
 observe({
   validate(
@@ -1914,519 +1520,51 @@ observe({
   }
 })
 
+
 #mde1
-observeEvent(input$Import_script_mde1_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde1_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_mde1 can be specified in this script
-                          #if you want to use data from the imported mtf file, you can use values$data_mtf
-                          #example:
-                          # values$Import_mtf_mde1<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-                          #or
-                          # values$Import_mtf_mde1<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde1_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde1_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_mde1_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde1_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_mde1",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_mtf_save_man_save_mde1", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_mde1,{
-  values$Import_mtf_mde1<-rep(input$Import_mtf_save_man_mde1,dim(values$data_mtf)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_mtf_mde1),message=FALSE),
-    need(input$Import_mtf_mde1%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
-  )
-  if(input$Import_mtf_mde1=="not required"){
-    values$Import_mtf_mde1<-NULL
-  }
-  else{
-    values$Import_mtf_mde1<-as.vector(as.matrix(values$data_mtf[,input$Import_mtf_mde1]))
-  }
-})
+script_events("mde1", "mtf", 5)
+type_events("mde1", "mtf")
+observe_mde("mde1", "mtf")
 
 #mde2
-observeEvent(input$Import_script_mde2_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde2_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_mde2 can be specified in this script
-                          #if you want to use data from the imported mtf file, you can use values$data_mtf
-                          #example:
-                          # values$Import_mtf_mde2<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-                          #or
-                          # values$Import_mtf_mde2<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde2_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde2_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_mde2_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde2_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_mde2",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_mtf_save_man_save_mde2", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_mde2,{
-  values$Import_mtf_mde2<-rep(input$Import_mtf_save_man_mde2,dim(values$data_mtf)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_mtf_mde2),message=FALSE),
-    need(input$Import_mtf_mde2%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
-  )
-  if(input$Import_mtf_mde2=="not required"){
-    values$Import_mtf_mde2<-NULL
-  }
-  else{
-    values$Import_mtf_mde2<-as.vector(as.matrix(values$data_mtf[,input$Import_mtf_mde2]))
-  }
-})
+script_events("mde2", "mtf", 6)
+type_events("mde2", "mtf")
+observe_mde("mde2", "mtf")
 
 #mde3
-observeEvent(input$Import_script_mde3_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde3_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_mde3 can be specified in this script
-                          #if you want to use data from the imported mtf file, you can use values$data_mtf
-                          #example:
-                          # values$Import_mtf_mde3<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-                          #or
-                          # values$Import_mtf_mde3<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde3_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde3_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_mde3_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde3_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_mde3",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_mtf_save_man_save_mde3", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_mde3,{
-  values$Import_mtf_mde3<-rep(input$Import_mtf_save_man_mde3,dim(values$data_mtf)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_mtf_mde3),message=FALSE),
-    need(input$Import_mtf_mde3%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
-  )
-  if(input$Import_mtf_mde3=="not required"){
-    values$Import_mtf_mde3<-NULL
-  }
-  else{
-    values$Import_mtf_mde3<-as.vector(as.matrix(values$data_mtf[,input$Import_mtf_mde3]))
-  }
-})
+script_events("mde3", "mtf", 7)
+type_events("mde3", "mtf")
+observe_mde("mde3", "mtf")
 
 #mde4
-observeEvent(input$Import_script_mde4_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde4_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_mde4 can be specified in this script
-                          #if you want to use data from the imported mtf file, you can use values$data_mtf
-                          #example:
-                          # values$Import_mtf_mde4<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-                          #or
-                          # values$Import_mtf_mde4<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde4_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde4_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_mde4_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde4_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_mde4",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_mtf_save_man_save_mde4", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_mde4,{
-  values$Import_mtf_mde4<-rep(input$Import_mtf_save_man_mde4,dim(values$data_mtf)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_mtf_mde4),message=FALSE),
-    need(input$Import_mtf_mde4%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
-  )
-  if(input$Import_mtf_mde4=="not required"){
-    values$Import_mtf_mde4<-NULL
-  }
-  else{
-    values$Import_mtf_mde4<-as.vector(as.matrix(values$data_mtf[,input$Import_mtf_mde4]))
-  }
-})
+script_events("mde4", "mtf", 8)
+type_events("mde4", "mtf")
+observe_mde("mde4", "mtf")
 
 #mde5
-observeEvent(input$Import_script_mde5_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde5_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_mde5 can be specified in this script
-                          #if you want to use data from the imported mtf file, you can use values$data_mtf
-                          #example:
-                          # values$Import_mtf_mde5<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-                          #or
-                          # values$Import_mtf_mde5<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde5_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde5_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_mde5_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde5_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_mde5",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_mtf_save_man_save_mde5", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_mde5,{
-  values$Import_mtf_mde5<-rep(input$Import_mtf_save_man_mde5,dim(values$data_mtf)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_mtf_mde5),message=FALSE),
-    need(input$Import_mtf_mde5%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
-  )
-  if(input$Import_mtf_mde5=="not required"){
-    values$Import_mtf_mde5<-NULL
-  }
-  else{
-    values$Import_mtf_mde5<-as.vector(as.matrix(values$data_mtf[,input$Import_mtf_mde5]))
-  }
-})
+script_events("mde5", "mtf", 9)
+type_events("mde5", "mtf")
+observe_mde("mde5", "mtf")
 
 #mde6
-observeEvent(input$Import_script_mde6_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde6_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_mde6 can be specified in this script
-                          #if you want to use data from the imported mtf file, you can use values$data_mtf
-                          #example:
-                          # values$Import_mtf_mde6<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-                          #or
-                          # values$Import_mtf_mde6<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde6_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde6_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_mde6_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde6_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_mde6",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_mtf_save_man_save_mde6", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_mde6,{
-  values$Import_mtf_mde6<-rep(input$Import_mtf_save_man_mde6,dim(values$data_mtf)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_mtf_mde6),message=FALSE),
-    need(input$Import_mtf_mde6%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
-  )
-  if(input$Import_mtf_mde6=="not required"){
-    values$Import_mtf_mde6<-NULL
-  }
-  else{
-    values$Import_mtf_mde6<-as.vector(as.matrix(values$data_mtf[,input$Import_mtf_mde6]))
-  }
-})
+script_events("mde6", "mtf", 10)
+type_events("mde6", "mtf")
+observe_mde("mde6", "mtf")
 
 #mde7
-observeEvent(input$Import_script_mde7_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde7_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_mde7 can be specified in this script
-                          #if you want to use data from the imported mtf file, you can use values$data_mtf
-                          #example:
-                          # values$Import_mtf_mde7<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-                          #or
-                          # values$Import_mtf_mde7<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde7_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde7_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_mde7_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde7_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_mde7",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_mtf_save_man_save_mde7", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_mde7,{
-  values$Import_mtf_mde7<-rep(input$Import_mtf_save_man_mde7,dim(values$data_mtf)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_mtf_mde7),message=FALSE),
-    need(input$Import_mtf_mde7%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
-  )
-  if(input$Import_mtf_mde7=="not required"){
-    values$Import_mtf_mde7<-NULL
-  }
-  else{
-    values$Import_mtf_mde7<-as.vector(as.matrix(values$data_mtf[,input$Import_mtf_mde7]))
-  }
-})
+script_events("mde7", "mtf", 11)
+type_events("mde7", "mtf")
+observe_mde("mde7", "mtf")
 
 #mde8
-observeEvent(input$Import_script_mde8_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde8_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_mde8 can be specified in this script
-                          #if you want to use data from the imported mtf file, you can use values$data_mtf
-                          #example:
-                          # values$Import_mtf_mde8<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-                          #or
-                          # values$Import_mtf_mde8<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde8_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde8_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_mde8_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde8_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_mde8",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_mtf_save_man_save_mde8", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_mde8,{
-  values$Import_mtf_mde8<-rep(input$Import_mtf_save_man_mde8,dim(values$data_mtf)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_mtf_mde8),message=FALSE),
-    need(input$Import_mtf_mde8%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
-  )
-  if(input$Import_mtf_mde8=="not required"){
-    values$Import_mtf_mde8<-NULL
-  }
-  else{
-    values$Import_mtf_mde8<-as.vector(as.matrix(values$data_mtf[,input$Import_mtf_mde8]))
-  }
-})
+script_events("mde8", "mtf", 12)
+type_events("mde8", "mtf")
+observe_mde("mde8", "mtf")
 
 #mde9
-observeEvent(input$Import_script_mde9_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                aceEditor("script_mde9_mtf",theme ="chrome"  ,mode="r", fontSize = "15",showLineNumbers = T,highlightActiveLine = T,autoComplete = "live",value='
-                          #the vector values$Import_mtf_mde9 can be specified in this script
-                          #if you want to use data from the imported mtf file, you can use values$data_mtf
-                          #example:
-                          # values$Import_mtf_mde9<-paste0("Vortrag Nummer:",as.matrix(values$data_mtf[,5]))
-                          #or
-                          # values$Import_mtf_mde9<-rep("unbekannter Titel",dim(values$data_mtf)[1])
-                          '),
-                footer = tagList(
-                  actionButton("save_Imp_mde9_mtf", "save")
-                )
-    )
-  )
-})
-observeEvent(input$save_Imp_mde9_mtf,{
-  tryCatch({
-    eval(parse(text=input$script_mde9_mtf))
-  },
-  error=function(e){
-    shinyWidgets::sendSweetAlert(session=session,title = "error in code",text = as.character(e),type = "error")
-  }
-  )
-  removeModal()
-})
-
-observeEvent(input$Import_type_mde9_mtf,{
-  showModal(
-    modalDialog(size = "l",easyClose = T,fade = T,
-                textInput(inputId = "Import_mtf_save_man_mde9",label = "types (one for all)",placeholder = "Please type in the type"),
-                actionButton("Import_mtf_save_man_save_mde9", "save")
-    )
-  )
-}
-)
-
-observeEvent(input$Import_mtf_save_man_save_mde9,{
-  values$Import_mtf_mde9<-rep(input$Import_mtf_save_man_mde9,dim(values$data_mtf)[1])
-  removeModal()
-})
-
-observe({
-  validate(
-    need(!is.null(input$Import_mtf_mde9),message=FALSE),
-    need(input$Import_mtf_mde9%in%c(colnames(values$data_mtf),"not required"),message=FALSE)
-  )
-  if(input$Import_mtf_mde9=="not required"){
-    values$Import_mtf_mde9<-NULL
-  }
-  else{
-    values$Import_mtf_mde9<-as.vector(as.matrix(values$data_mtf[,input$Import_mtf_mde9]))
-  }
-})
-
+script_events("mde9", "mtf", 13)
+type_events("mde9", "mtf")
+observe_mde("mde9", "mtf")
 
 
 
@@ -2884,13 +2022,38 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_db,{
   }
 })
 
-
-
-
-
-
-
-
+observeEvent(input$Import_mtf_sanity_check,{
+  data_check_choices <- c("body", "id_doc", "title", "date")
+  if(input$Import_mtf_mde1 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde1")
+  }
+  if(input$Import_mtf_mde2 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde2")
+  }
+  if(input$Import_mtf_mde3 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde3")
+  }
+  if(input$Import_mtf_mde4 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde4")
+  }
+  if(input$Import_mtf_mde5 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde5")
+  }
+  if(input$Import_mtf_mde6 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde6")
+  }
+  if(input$Import_mtf_mde7 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde7")
+  }
+  if(input$Import_mtf_mde8!= "not required"){
+    data_check_choices <- c(data_check_choices, "mde8")
+  }
+  if(input$Import_mtf_mde9 != "not required"){
+    data_check_choices <- c(data_check_choices, "mde9")
+  }
+  
+  sanity_check_Modal("mtf", data_check_choices)
+})
 
 
 
@@ -2899,7 +2062,6 @@ observe({
   autoInvalidate_normal()
   values$import_files_changed<-length(list.files("data_import/processed_data/"))
 })
-
 
 ########################################
 #            DB & SOLR                 #
