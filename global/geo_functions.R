@@ -2,6 +2,7 @@ library("geonames")
 library("tmaptools")
 library("geosphere")
 library("stringr")
+library("dplyr")
 source("global/log_to_file.R")
 
 
@@ -24,7 +25,6 @@ source("global/log_to_file.R")
 #' @return a data frame containing lat, lon, countryCode, countryName, countryLanguages
 #' 
 getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defaultRadius, maxRadiusIfDefaultRadiusLeadsToNoResults){
-  
   #print(paste("LAT LON: ", lat,lon))
   
   # check if lat lon are in stored data
@@ -101,6 +101,7 @@ getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defa
       } # end of error function 1
     )# end of try catch
     
+    
     # either success or nothing found because of noCountryFoundInGivenRadius or other error
     successType <- get("successType", env=countryInfoEnvironment)
     if(successType == "success"){
@@ -110,6 +111,7 @@ getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defa
       hashtableLatLonCountryInfos[[searchKey]] <- createdValue
       
     }else if(successType == "noCountryFoundInGivenRadius"){
+      
       entryToWrite <- "UNKNOWN_because_of_noCountryFoundInGivenRadius"
       createdValue <- data.frame(lat = lat, lon = lon, countryCode = entryToWrite, countryName = entryToWrite, countryLanguages = entryToWrite)
       
@@ -186,6 +188,7 @@ getGeolocationForString <- function(inputString, hashtableCachedGeoInformation, 
   
   #print("not in cache. needs to be queried")
   log_to_file(message = paste("<b>Geododing string \"", searchKey, "\": not in cache. needs to be queried</b>"),file = logfile)
+  
   result <- geocodingFunction(searchKey)
   if(result$successType == "success"){
     hashtableCachedGeoInformation[[searchKey]] <- result
@@ -239,8 +242,7 @@ getGeolocationForStringUsingOSMDefault <- function(inputString, hashtableCachedG
                                             return (result)
                                           }
                                         }, error = function(e) {
-                                          #browser()
-                                          
+
                                             print(paste("A problem (error) occured when trying to retrieve geolocation for ", inputString, "This is the Error:" , message(e), sep =" " ))
                                             result$successType <- "problemOccured"
                                             result$result <- e
@@ -325,13 +327,14 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
                                                   functionToGetUniqueLocationStrings,
                                                   useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter = F,
                                                   functionToRetrieveUniqueAreaIds,
-                                                  functionToGetLocationStringssAndFrequencyForGivenAreaId,
+                                                  functionToGetLocationStringsAndFrequencyForGivenAreaId,
                                                   cacheForGeocodingData,
                                                   functionToUpdateGeoCodingCacheForGeoLocationString,
                                                   functionToFilterOrSelectGeoResultForALocationString,
                                                   functionToFilterGeoResultsPerArea,
                                                   functionToFilterGeoResultsForWholeData
 ){
+  
   log_to_file(message = "<b>Geocoding: get unique location strings</b>",file = logfile)
   allDistinctLocationStrings <- functionToGetUniqueLocationStrings(inputDataForLocationStringsAndOptionalAreaIds)
   
@@ -374,7 +377,7 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
     log_to_file(message = paste("<b>Geocoding: perform geocoding calculation for area id", areaId,"</b>"),file = logfile)
     
     # get location tokens for area
-    entitydistributionsInArea <- functionToGetLocationsAndFrequencyForGivenAreaId(inputDataForLocationStringsAndOptionalAreaIds, areaId)
+    entitydistributionsInArea <- functionToGetLocationStringsAndFrequencyForGivenAreaId(inputDataForLocationStringsAndOptionalAreaIds, areaId)
     
     if(is.null(entitydistributionsInArea)){
       # skip current area
@@ -390,7 +393,7 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
     for(j in 1:numberOfEntities){
       #print(paste0("entityIndex: ",j))
       entityName <- str_trim(str_replace(geoDataForArea$entityName[j], "_", " "),side = "both")
-      geoResult <- functionToGetGeolocationsFromString(entityName, cacheForGeocodingData) # since all are in cache, querying cache would be sufficient as well, but using this function makes the code better readable and internally just the cache is queried inside function as all are in cache already because of the step above
+      geoResult <- functionToUpdateGeoCodingCacheForGeoLocationString(entityName, cacheForGeocodingData) # since all are in cache, querying cache would be sufficient as well, but using this function makes the code better readable and internally just the cache is queried inside function as all are in cache already because of the step above
       
       #print(entityName)
       if(geoResult$successType == "success"){
@@ -461,9 +464,7 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
 # convenience function for filtering
 ########################################
 
-filterLocationEntitiesForTopXFrequencies <- function(inputData, numberOfResultsToReturn){
-  
-}
+
 
 filterForEntitiesInClusterWithMinDistanceToCenterOfGravity <- function(inputData){
   result <- NULL
@@ -551,7 +552,6 @@ performClustering_returnIndicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravi
 }
 
 
-
 selectBasedOnMaxValue <- function(inputData, fieldName){
   indexOfGeoResultToReturn <- which(inputData[[fieldName]] == max(inputData[[fieldName]]), arr.ind = T)[1] 
   result <- inputData[indexOfGeoResultToReturn,]
@@ -623,6 +623,15 @@ dataframe_getTokensAndFrequenciesForGivenAreaId <- function(inputDataDBDataToken
 # util functions for inputDataDTM  <- list(dtm = dtm) being sparse matrix
 ########################
 
+
+#' getUniqueDocIDs for given ilcm dtm resulting from filtering via UI
+#'
+#' @param inputDataDTM 
+#'
+#' @return docids resulting from inputData$dtm@Dimnames$docs which are composed of [datasetName]_[id_doc], e.g. "MMF-2020-06-15_12345"
+#' @export
+#'
+#' @examples
 dtm_getUniqueDocIDs <- function(inputDataDTM){
   dtm <- inputDataDTM$dtm
   return(dtm@Dimnames$docs)
@@ -658,4 +667,19 @@ dtm_getTokensAndFrequencyForGivenDocId <- function(inputDataDTM, docId){
   }
 }
 
+############
+# convenience function for assigning lat/lon for given countries
+##############
 
+functionToGetUniqueLocationStrings_country <- function(x){unique(x$countryName)}
+
+# ignores areaID
+functionToGetLocationStringssAndFrequencyForGivenAreaId_country <- function(inputData, areaID){
+  result <- aggregate(lat~countryName, data  = inputData, FUN = function(x){NROW(x)})
+  names(result) <- c("entityName","frequencyInArea")
+  return(result)
+}
+functionToFilterOrSelectGeoResultForALocationString_country <- function(geocodingResultresult){
+  result <- geocodingResultresult %>% filter(type == "administrative") %>% filter(class == "boundary")
+  result <- selectBasedOnMaxValue(result, "importance")
+  }
