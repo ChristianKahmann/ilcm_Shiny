@@ -103,7 +103,7 @@ error<-try(expr = {
   # define functions to retrieve needed data from inputData containing dtm
   inputDataDTM <- list(dtm = dtm)
   functionToGetDistinctLocationStrings <- dtm_getUniqueFeaturesFromDTM # see global/geo_functions.R
-  functionToRetrieveUniqueAreaIds <- dtm_getUniqueDocIDs # see global/geo_functions.R
+  functionToRetrieveUniqueAreaIds <- dtm_getUniqueDocIDs # see global/geo_functions.R #Attention! If this is changed you need to adjust the code of diplaying geocoding results as there is an translation from dataset+docId = areaID
   functionToGetLocationsAndFrequencyForGivenAreaId <- dtm_getTokensAndFrequencyForGivenDocId # see global/geo_functions.R
   inputDataForLocationStringsAndOptionalAreaIds <- inputDataDTM
   
@@ -159,6 +159,19 @@ error<-try(expr = {
 
         geocodingResult <- applyCountryInfosForLatLonForDataframe(inputDataframe = geocodingResult, hashtableLatLonCountryInfos = hashtableLatLonCountryInfos, columnForLat = "latitude", columnForLon = "longitude",targetColumnnameForCountryName = "countryName", targetColumnNameForCountryCode = "countryCode", assignCountryInfoForLatLon_defaultRadius, assignCountryInfoForLatLon_maxRadiusIfDefaultRadiusLeadsToNoResults)
         
+        # retrieve lat / lon for each country name, save it in own RData file because applying it to each row of individual places would be redundant
+        geocodingResultForCountries <- performGeoCodingWithCacheAndFiltering(
+          geocodingResult, 
+          functionToGetUniqueLocationStrings = functionToGetUniqueLocationStrings_country,
+          useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter = T,
+          functionToRetrieveUniqueAreaIds,
+          functionToGetLocationStringsAndFrequencyForGivenAreaId = functionToGetLocationStringssAndFrequencyForGivenAreaId_country,
+          cacheForGeocodingData,
+          functionToUpdateCacheForGeoLocationString,
+          functionToFilterOrSelectGeoResultForALocationString = functionToFilterOrSelectGeoResultForALocationString_country,
+          functionToFilterGeoResultsPerArea = function(x){x},
+          functionToFilterGeoResultsForWholeData = function(x){x}
+        )
       }
             
     },
@@ -182,6 +195,7 @@ error<-try(expr = {
   path0<-paste0("collections/results/geocoding/",path,"/")
   dir.create(path0)
   save(geocodingResult,file = paste0(path0,"geocodingResult.RData"))
+  save(geocodingResultForCountries,file = paste0(path0,"geocodingResultForCountries.RData"))
   save(dtm,file=paste0(path0,"dtm.RData"))
   save(info,file=paste0(path0,"info.RData"))
   parameters<-parameters_original
