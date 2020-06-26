@@ -1,3 +1,35 @@
+
+#' getMetaData for given ids and datasets (which means via GUI a selected a collection)
+#'
+#' @param collectionIDs 
+#' @param collectionDataSet 
+#' @param host 
+#' @param port 
+#'
+#' @return a list of size 2 with the following elements
+#' list
+#'		meta: dataframe
+#'			id: internal ids
+#'			dataset: [Name of imported dataset, e.g. MMF-2020-06-15 for each id]
+#'			id_doc = docID / MMF-postID 
+#'			title:
+#'			date:
+#'			[metaDataColumnName1] e.g. typeOfThreat from mde1
+#'			[metaDataColumnName2] e.g. sourceOfThreat from mde2
+#'			[metaDataColumnName3] e.g. lat from mde3
+#'			[metaDataColumnName4] e.g. lon from mde4
+#'			...
+#'			
+#'		meta_names: dataframe
+#'			dataset: [Name of imported dataset, e.g. MMF-2020-06-15
+#'			mde1: [metaDataColumnName1], e.g. typeOfThreat 
+#'			mde2: [metaDataColumnName2], e.g. sourceOfThreat
+#'			mde3: [metaDataColumnName3], e.g. lat 
+#'			mde4: [metaDataColumnName4], e.g. lon
+#'			...
+#' @export
+#'
+#' @examples
 getMetaData <- function(collectionIDs, collectionDataSet, host, port){
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
   rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
