@@ -31,7 +31,13 @@ getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defa
   searchKey <- paste(lat, lon, sep=" ")
   if(!is.null(hashtableLatLonCountryInfos[[searchKey]])){
     #print(paste("latlon already saved in hashtable environment, no need to query geonames for ", lat, lon, ": ", hashtableLatLonCountryInfos[[searchKey]]$countryName, sep =" "))
-    return(hashtableLatLonCountryInfos[[searchKey]])
+    # some were stored as factors, undo this
+    foundCountryInfo <-hashtableLatLonCountryInfos [[searchKey]] 
+    if(length(names(Filter(is.factor, foundCountryInfo)))>0){
+      foundCountryInfo[] <-  lapply(foundCountryInfo, as.character)
+      hashtableLatLonCountryInfos[[searchKey]] <- foundCountryInfo
+    }
+    return(foundCountryInfo)
   }
   else{# else query geonames
     
@@ -107,13 +113,13 @@ getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defa
     if(successType == "success"){
       geonamesCountryCode <- get("geonamesCountryCode", NULL, env=countryInfoEnvironment)
       
-      createdValue <- data.frame(lat = lat, lon = lon, countryCode = geonamesCountryCode$countryCode, countryName = geonamesCountryCode$countryName, countryLanguages = geonamesCountryCode$languages)
+      createdValue <- data.frame(lat = lat, lon = lon, countryCode = geonamesCountryCode$countryCode, countryName = geonamesCountryCode$countryName, countryLanguages = geonamesCountryCode$languages, stringsAsFactors = F)
       hashtableLatLonCountryInfos[[searchKey]] <- createdValue
       
     }else if(successType == "noCountryFoundInGivenRadius"){
       
       entryToWrite <- "UNKNOWN_because_of_noCountryFoundInGivenRadius"
-      createdValue <- data.frame(lat = lat, lon = lon, countryCode = entryToWrite, countryName = entryToWrite, countryLanguages = entryToWrite)
+      createdValue <- data.frame(lat = lat, lon = lon, countryCode = entryToWrite, countryName = entryToWrite, countryLanguages = entryToWrite, stringsAsFactors = F)
       
       warningMessage <- paste0("WARNING: for lat lon ", lat, ", ", lon, " no country could be found within radius",get("radiusToUse", env=countryInfoEnvironment), ". Result will be: ", entryToWrite)
       #print(warningMessage)
@@ -121,7 +127,7 @@ getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defa
       
     }else{
       entryToWrite <- paste0("UNKNOWN_because_of Error: ", successType)
-      createdValue <- data.frame(lat = lat, lon = lon, countryCode = entryToWrite, countryName = entryToWrite, countryLanguages = entryToWrite)
+      createdValue <- data.frame(lat = lat, lon = lon, countryCode = entryToWrite, countryName = entryToWrite, countryLanguages = entryToWrite, stringsAsFactors = F)
 
       warningMessage <- paste0("WARNING: for lat lon ", lat, ", ", lon, " no country could be found within radius ",get("radiusToUse", env=countryInfoEnvironment), ". Result will be: ", entryToWrite)
       #print(warningMessage)
@@ -138,7 +144,6 @@ getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defa
 # convenience function
 applyCountryInfosForLatLonForDataframe <- function(hashtableLatLonCountryInfos, inputDataframe, columnForLat, columnForLon, targetColumnnameForCountryName, targetColumnNameForCountryCode, defaultRadius, maxRadiusIfDefaultRadiusLeadsToNoResults){
   
-
   for(i in 1:nrow(inputDataframe)) 
   {
     foundCountryInfo <- getCountryInfosForLatLon(lat = inputDataframe[[columnForLat]][i] , lon = inputDataframe[[columnForLon]][i], hashtableLatLonCountryInfos = hashtableLatLonCountryInfos, defaultRadius, maxRadiusIfDefaultRadiusLeadsToNoResults)
