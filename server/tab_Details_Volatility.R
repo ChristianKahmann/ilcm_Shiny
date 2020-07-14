@@ -7,9 +7,9 @@ values$open<-F
 observeEvent(input$Det_VA_Update,{
   #load data once and make it avaiable for all visulisations
   output$VA_plot<-renderPlotly({
- validate(
-   need(nchar(input$Det_VA_Select_Word)>0,message="Please choose a word.")
- )
+    validate(
+      need(nchar(input$Det_VA_Select_Word)>0,message="Please choose a word.")
+    )
     termss<<-rownames(values$va_freq)
     un_dates<-values$va_un_dates[order(values$va_un_dates,decreasing = F)]
     label<<-un_dates
@@ -138,8 +138,7 @@ observeEvent(input$Det_VA_Update,{
     d<-d[order(d[,2],decreasing = T),]
     d[,2]<-d[,2]/max(d[,2])  
     d[,2]<-d[,2]*20
-    
-    wordcloud2(d,size=0.35,color = colors,backgroundColor = "black",fontFamily = "Helvetica")
+    wordcloud2(d,size=0.4,color = colors,backgroundColor = "black",fontFamily = "Helvetica")
   }) 
   
   output$volat_divergent_headline<-renderUI({
@@ -204,9 +203,10 @@ observeEvent(input$Det_VA_Update,{
   
   output$Det_VA_highest_period<-renderPlotly({
     id<-which(values$va_un_dates==(input$Det_VA_time))
-    frequence<-values$va_freq[,id]
-    volat<-values$va_voldata[,id]
     words<-rownames(values$va_voldata)
+    frequence<-values$va_freq[words,id]
+    volat<-values$va_voldata[,id]
+
     if(input$Det_VA_POS!="all"){
       words<-values$va_pos_tags[which(values$va_pos_tags[,2]==input$Det_VA_POS),1]
       frequence<-frequence[words]
@@ -217,7 +217,6 @@ observeEvent(input$Det_VA_Update,{
       frequence<-frequence[words]
       volat<-volat[words]
     }
-    
     p<-plot_ly(x=frequence,y=volat,text=words,color=volat,size=(volat*frequence),colors=c("firebrick","limegreen"))
     p<-layout(p,yaxis=list(zeroline=FALSE,title="Context Volatility"),xaxis=list(zeroline=FALSE,title="Frequency",type="log"))
     return(p)

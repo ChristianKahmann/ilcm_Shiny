@@ -4,6 +4,23 @@ output$Analysis_Parameter_CL<-renderUI({
     tags$hr(),
     #standard parameters
     fluidRow(
+      column(2,
+             checkboxInput(inputId="CL_use_fixed_vocab",label="use fixed vocabulary?",value=F)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Use an already existing vocabulary instead of performing a parameterized preprocessing. Vocabularies can be added and adjusted in Scripts > Vocabularies.", placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             conditionalPanel(condition = 'input.CL_use_fixed_vocab==true',
+                              selectInput(inputId="CL_fixed_vocab",label="found vocabularies",choices=list.files("collections/vocabularies/",full.names = F),multiple=F)
+             )
+      )
+    ),
+    
+    fluidRow(
       column(1,
              selectInput(inputId = "CL_baseform",label = "Baseform Reduction",choices = c("lemma","stemming","none"),selected = "none") %>%
                shinyInput_label_embed(
@@ -12,14 +29,6 @@ output$Analysis_Parameter_CL<-renderUI({
                      title = "Specify whether and how to do baseform reduction. The options are stemming, lemmatization or no baseorm reduction.", placement = "right"
                    )
                )
-      ),
-      column(2,
-             sliderInput(inputId = "CL_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
-                     ,html=T))
       ),
       column(2,
              selectInput(inputId = "CL_ngram",label = "ngrams?",choices = c(1,2,3),selected = 1,multiple = T) %>%
@@ -31,6 +40,17 @@ output$Analysis_Parameter_CL<-renderUI({
                )
       ),
       column(2,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
+             sliderInput(inputId = "CL_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
+                     ,html=T))
+             )
+      ),
+      column(2,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
              textInput(inputId = "CL_remove_custom",label = HTML("remove custom words"),placeholder ="Add words (Seperated by ,)")%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -38,8 +58,10 @@ output$Analysis_Parameter_CL<-renderUI({
                      title = "Delete specific words from the analysis. Seperate them with ','.", placement = "right"
                    )
                )
+               )
       ),
       column(2,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
              textInput(inputId = "CL_keep_custom",label = HTML("Keep custom words"),placeholder ="Add words (Seperated by ,)")%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -47,17 +69,10 @@ output$Analysis_Parameter_CL<-renderUI({
                      title = "Keep specific words in the analysis. Seperate them with ','. If both custom words and whitelist are specified, they will be merged together.", placement = "right"
                    )
                )
+             )
       )
     ),
     fluidRow(
-      column(1,
-             checkboxInput(inputId = "CL_remove_stopwords",label = "Remove Stopwords",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
-                   )
-               )),
       column(1,
              checkboxInput(inputId = "CL_lowercase",label = "Transform tokens to lowercase?",value = T)%>%
                shinyInput_label_embed(
@@ -67,38 +82,65 @@ output$Analysis_Parameter_CL<-renderUI({
                    )
                )),
       column(1,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
+             checkboxInput(inputId = "CL_remove_stopwords",label = "Remove Stopwords",value = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
+                   )
+               )
+               )),
+      column(1,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
              checkboxInput(inputId = "CL_remove_numbers",label = "Remove Numbers?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove types which consist of numbers only from the analysis.", placement = "bottom"
                    )
+               )
                )),
       column(1,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
              checkboxInput(inputId = "CL_remove_numbers_all",label = "Remove everything containing a number number?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove words which are composed of at least one number.", placement = "right"
                    )
+               )
                )),
       column(1,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
              checkboxInput(inputId = "CL_remove_punctuation",label = "Remove Punctuation?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove words, which reflect punctuation from the analysis.", placement = "right"
                    )
+               )
                )),
       column(1,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
              checkboxInput(inputId = "CL_remove_hyphenation",label = "Remove Hyphenation?",value = F)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove words, which reflect hyphens from the analysis.", placement = "right"
                    )
+               )
+               )),
+      column(1,
+             checkboxInput(inputId = "CL_consolidate_entities",label = "Consolidate Entities?",value = F)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Consolidate found entities by binding them together with '_' and treat them as a single word afterwards.", placement = "right"
+                   )
                ))
     ),
+    conditionalPanel(condition='input.CL_use_fixed_vocab==false',
     fluidRow(
       column(1,
              checkboxInput(inputId = "CL_use_custom_blacklist",label = "use custom blacklist?",value = F)%>%
@@ -266,7 +308,7 @@ output$Analysis_Parameter_CL<-renderUI({
                               numericInput(inputId = "CL_max_docfreq_q",label = "max. doc quantile",min = 0,max = 1,step = 0.25,value=NULL)
              )
       )
-      
+    )
     ),
     # specific parameters
     tags$hr(),
@@ -573,6 +615,7 @@ observeEvent(ignoreInit = T,input$CL_Submit_Script,{
                        min_document=min_d,
                        max_document=max_d,
                        remove_custom=input$CL_remove_custom,
+                       consolidate_entities=input$CL_consolidate_entities,
                        blacklist=input$CL_blacklist,
                        reduce_POS=input$CL_POS_TYPES,
                        reduce_POS_exclude=input$CL_POS_TYPES_exclude,
@@ -594,7 +637,9 @@ observeEvent(ignoreInit = T,input$CL_Submit_Script,{
                        use_dictionary=input$CL_use_dict,
                        Dictioanry=input$CL_dict,
                        cl_active_learning_strategy=input$CL_active_learning_strategy,
-                       cl_c=input$CL_c
+                       cl_c=input$CL_c,
+                       use_fixed_vocab=input$CL_use_fixed_vocab,
+                       fixed_vocab=input$CL_fixed_vocab
       )
       #create process ID
       ID<-get_task_id_counter()+1
@@ -703,6 +748,7 @@ observeEvent(ignoreInit=T,input$CL_pruning_continue,{
                      min_document=min_d,
                      max_document=max_d,
                      remove_custom=input$CL_remove_custom,
+                     consolidate_entities=input$CL_consolidate_entities,
                      blacklist=input$CL_blacklist,
                      reduce_POS=input$CL_POS_TYPES,
                      reduce_POS_exclude=input$CL_POS_TYPES_exclude,
@@ -724,7 +770,9 @@ observeEvent(ignoreInit=T,input$CL_pruning_continue,{
                      use_dictionary=input$CL_use_dict,
                      Dictioanry=input$CL_dict,
                      cl_active_learning_strategy=input$CL_active_learning_strategy,
-                     cl_c=input$CL_c
+                     cl_c=input$CL_c,
+                     use_fixed_vocab=input$CL_use_fixed_vocab,
+                     fixed_vocab=input$CL_fixed_vocab
     )
     #create process ID
     ID<-get_task_id_counter()+1
@@ -744,7 +792,13 @@ observeEvent(ignoreInit=T,input$CL_pruning_continue,{
     }
     else{
       system(paste('Rscript collections/scripts/Classification_Script.R','&'))
-      #show modal when process is started
+      #show modal when process is started%>%
+      shinyInput_label_embed(
+        shiny_iconlink() %>%
+          bs_embed_popover(
+            title = "Use an already existing vocabulary instead of performing a parameterized preprocessing. Vocabularies can be added and adjusted in Scripts-->Vocabularies.", placement = "right"
+          )
+      )
       showModal(modalDialog(
         title = "Process started",
         "The process was succesfully started. Check details in 'My Tasks'."

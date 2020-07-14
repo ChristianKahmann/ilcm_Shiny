@@ -97,6 +97,7 @@ error<-try(expr = {
   
   #Saving results
   log_to_file(message = "<b>Step 8/8: Saving results</b>",file = logfile)
+  vocab_only<-colnames(dtm)
   vocab<-cbind(colnames(dtm),colSums(dtm))
   vocab<-vocab[order(as.numeric(vocab[,2]),decreasing = T),]
   path<-paste(parameters$id,parameters$collection,sep = "_")
@@ -105,6 +106,8 @@ error<-try(expr = {
   save(freqs_day,freqs_week,freqs_month,freqs_year,doc_freqs_day,doc_freqs_week,doc_freqs_month,doc_freqs_year,
        rel_freqs_day,rel_freqs_week,rel_freqs_month,rel_freqs_year,rel_doc_freqs_day,rel_doc_freqs_week,rel_doc_freqs_month,rel_doc_freqs_year,file = paste0(path0,"frequencies.RData"))
   save(vocab,file=paste0(path0,"vocab.RData"))
+  write(paste(vocab_only,collapse=","),file = paste0(path0,"vocab_task",parameters$id,".txt"))
+  saveRDS(vocab_only,file=paste0(path0,"vocab_task",parameters$id,".RDS"))
   save(dtm,file=paste0(path0,"dtm.RData"))
   save(info,file=paste0(path0,"info.RData"))
   parameters<-parameters_original

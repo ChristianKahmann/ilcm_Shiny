@@ -96,7 +96,9 @@ output$body_UI<-renderUI({
                        # create or change whitelists
                        source(file.path("ui","tab_Keep_Lists.R"),local = T)$value,
                        # create or change dictionaries
-                       source(file.path("ui","tab_Dictionaries.R"),local = T)$value
+                       source(file.path("ui","tab_Dictionaries.R"),local = T)$value,
+                       # create or change vocabularies
+                       source(file.path("ui","tab_Vocabularies.R"),local = T)$value
             )
     ),
     # fifth tab: Importer/Exporter

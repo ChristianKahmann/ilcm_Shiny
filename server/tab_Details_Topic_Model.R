@@ -244,6 +244,10 @@ output$TM_Subcollection_Table<-DT::renderDataTable({
     }
     remove_existing_material(1:dim(values$tm_phi)[1])
     words<-do.call(rbind,words)
+    if((length(isolate(values$tm_sub_selected))+1)<nrow(words)){
+      print("ersatz")
+      isolate(values$tm_sub_selected<-c(isolate(values$tm_sub_selected),FALSE))
+    }
     words<-cbind(paste("<h4>Topic: ",values$tm_timeline_ids,"</h4>",sep = ""),words,
                  keep=shinyInput_material(shinyWidgets::materialSwitch,dim(words)[1],"tmsubcoll_",values=c(isolate(values$tm_sub_selected),FALSE),label=NULL,status="info"))
     colnames(words)<-c("Topic","most coherent words","Use topic for sub-collection?")
@@ -1128,6 +1132,9 @@ observeEvent(input$TM_dict_save,{
   }
 })
 
+######################################################################
+#                         Metadata                                   #
+######################################################################
 
 
 output$TM_meta_ui<-renderUI({
@@ -1135,19 +1142,273 @@ output$TM_meta_ui<-renderUI({
     need(file.exists(paste0(values$Details_Data_TM,"/meta_TM.RData")),message="no detailed metadata analyis selected in task scheduler")
   )
   return(tagList(
-    uiOutput(outputId = "Det_TM_Meta1")%>%withSpinner(),
-    uiOutput(outputId = "Det_TM_Meta2")%>%withSpinner(),
-    uiOutput(outputId = "Det_TM_Meta3")%>%withSpinner(),
-    uiOutput(outputId = "Det_TM_Meta4")%>%withSpinner(),
-    uiOutput(outputId = "Det_TM_Meta5")%>%withSpinner(),
-    uiOutput(outputId = "Det_TM_Meta6")%>%withSpinner(),
-    uiOutput(outputId = "Det_TM_Meta7")%>%withSpinner(),
-    uiOutput(outputId = "Det_TM_Meta8")%>%withSpinner(),
-    uiOutput(outputId = "Det_TM_Meta9")%>%withSpinner(),
-    uiOutput(outputId = "Det_TM_Meta10")%>%withSpinner(),
-    uiOutput(outputId = "Det_TM_Meta11")%>%withSpinner()
+    tabsetPanel(id = "TM_meta",
+                tabPanel(title = "Overview",
+                         uiOutput(outputId = "Det_TM_Meta1"),
+                         uiOutput(outputId = "Det_TM_Meta2"),
+                         uiOutput(outputId = "Det_TM_Meta3"),
+                         uiOutput(outputId = "Det_TM_Meta4"),
+                         uiOutput(outputId = "Det_TM_Meta5"),
+                         uiOutput(outputId = "Det_TM_Meta6"),
+                         uiOutput(outputId = "Det_TM_Meta7"),
+                         uiOutput(outputId = "Det_TM_Meta8"),
+                         uiOutput(outputId = "Det_TM_Meta9"),
+                         uiOutput(outputId = "Det_TM_Meta10"),
+                         uiOutput(outputId = "Det_TM_Meta11"),
+                         uiOutput(outputId = "Det_TM_Meta12"),
+                         uiOutput(outputId = "Det_TM_Meta13"),
+                         uiOutput(outputId = "Det_TM_Meta14"),
+                         uiOutput(outputId = "Det_TM_Meta15"),
+                         uiOutput(outputId = "Det_TM_Meta16"),
+                         uiOutput(outputId = "Det_TM_Meta17"),
+                         uiOutput(outputId = "Det_TM_Meta18"),
+                         uiOutput(outputId = "Det_TM_Meta19"),
+                         tags$hr(),
+                         tags$h4("Scatter plot"),
+                         fluidRow(style="margin-left:0px;margin-right:0px",
+                                  column(12,
+                                         uiOutput("Det_TM_scatter_plot_ui")%>%withSpinner()
+                                  )
+                         )
+                ),
+                tabPanel(title="Membership Heatmap",
+                         fluidRow(style="margin-left:0px;margin-right:0px",
+                                  column(12,
+                                         #plotly::plotlyOutput(outputId = "Det_TM_meta_membership_heatmap")%>%withSpinner()
+                                         DT::dataTableOutput(outputId = "Det_TM_meta_membership_heatmap_table")%>%withSpinner()
+                                  )
+                         )
+                ),
+                tabPanel(title = "Documents",
+                         tags$div(style="overflow-x:auto;overflow-y:auto;",
+                                  tags$h4("found documents"),
+                                  DT::dataTableOutput(outputId = "Det_TM_Meta_Table")
+                         )
+                ),
+                tabPanel(title = "Topic Meta Correlation",
+                         tags$div(style="overflow-x:auto;overflow-y:auto;",
+                                  tags$h4("Correlations"),
+                                  DT::dataTableOutput(outputId = "Det_TM_Meta_Correlations_table_simple")%>%withSpinner()
+                         )
+                )
+    )
   ))
 })
+
+
+output$Det_TM_meta_membership_heatmap_table<-DT::renderDataTable({
+  validate(
+    need(!is.null(input$Det_meta_select),message=F)
+  )
+  theta<-values$tm_theta
+  meta_all<-values$TM_meta[,input$Det_meta_select]
+  if(input$TM_meta_Rank1==TRUE){
+    rank1<-apply(X = theta,MARGIN = 1,which.max)
+    theta[,]<-0
+    for(i in 1:length(rank1)){
+      theta[i,rank1[i]]<-1
+    }
+  }
+  else{
+    greater_than_treshold<-which(theta>=input$TM_meta_Prob,arr.ind = T)
+    theta[,]<-0
+    theta[greater_than_treshold]<-1
+  }
+  data<-data.frame(cbind(meta_all,theta),stringsAsFactors = F)
+  for(j in 2:ncol(data)){
+    class(data[,j])<-"numeric"
+  }
+  
+  if(input$Det_TM_meta_multi_valued==TRUE){
+    meta_all <- trimws(unlist(stringr::str_split(string = data[,1],pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both")
+  }
+  if(input$Det_TM_meta_use_quantiles==TRUE){
+    if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+      data[,1]<-get_quantile_belonging(all_data = meta_all,sample = data[,1])
+      data[is.na(data[,1]),1]<-"NA"
+      meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+      meta_all[is.na(meta_all)]<-"NA"
+      
+    }
+  }
+  meta_classes<-unique(meta_all)
+  result<-matrix(c(0),length(meta_classes),ncol(theta))
+  for(i in 1:length(meta_classes)){
+    print(i)
+    # if data is numeric use == else use grepl for characters
+    if(all(varhandle::check.numeric(v = data[,1],exceptions = "NA"))&&input$Det_TM_meta_use_quantiles!=TRUE){
+      relevant_rows<-which(data[,1]==meta_classes[i])
+    }
+    else{
+      if(input$Det_TM_meta_multi_valued==TRUE){
+        relevant_rows<-which(unlist(lapply(X = 1:nrow(data),FUN = function(x){
+          meta_classes[i]%in%trimws(unlist(stringr::str_split(string = data[x,1],pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both")
+        })))
+        meta_all <- trimws(unlist(stringr::str_split(string = data[,1],pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both")
+      }
+      else{
+        relevant_rows<-which(data[,1]==meta_classes[i])
+      }
+      #relevant_rows<-which(grepl(pattern = meta_classes[i],x = data[,1],fixed = T))
+    }
+    result[i,]<-colSums(data[relevant_rows,2:ncol(data),drop=F])
+  }
+  
+  rownames(result)<-meta_classes
+  colnames(result)<-1:ncol(values$tm_theta)
+  df<-data.frame(result,stringsAsFactors = F)
+  
+  rownames(df)<-paste0(meta_classes," (n=",table(meta_all)[meta_classes],")")
+  colnames(df)<-paste0("Topic ",colnames(result)," (n=",colSums(df),")")
+  df<-df[order(rowSums(df),decreasing = T),]
+  #get colors 
+  
+  
+  brks<-seq(min(df),max(df),((max(df)-min(df))/25))
+  clrs <- round(seq(255, 40, length.out = length(brks) + 1), 0) %>%
+    {paste0("rgb(255,", ., ",", ., ")")}
+  datatable(df,selection = "none",escape=F,class = 'cell-border stripe',options = list(dom="ltp",pageLength = 15,lengthMenu = list(c(10,25, -1), c("10","25", "All")),
+                                                                                       columnDefs = list(
+                                                                                         list(className = "dt-center", targets = "_all")
+                                                                                       ) )) %>% formatStyle(names(df), backgroundColor = styleInterval(brks, clrs))
+  
+})
+
+
+
+output$Det_TM_meta_membership_heatmap<-plotly::renderPlotly({
+  validate(
+    need(!is.null(input$Det_meta_select),message=F)
+  )
+  theta<-values$tm_theta
+  meta_all<-values$TM_meta[,input$Det_meta_select]
+  if(input$TM_meta_Rank1==TRUE){
+    rank1<-apply(X = theta,MARGIN = 1,which.max)
+    theta[,]<-0
+    for(i in 1:length(rank1)){
+      theta[i,rank1[i]]<-1
+    }
+  }
+  else{
+    greater_than_treshold<-which(theta>=input$TM_meta_Prob,arr.ind = T)
+    theta[,]<-0
+    theta[greater_than_treshold]<-1
+  }
+  data<-data.frame(cbind(meta_all,theta),stringsAsFactors = F)
+  for(j in 2:ncol(data)){
+    class(data[,j])<-"numeric"
+  }
+  
+  if(input$Det_TM_meta_multi_valued==TRUE){
+    meta_all <- trimws(unlist(stringr::str_split(string = data[,1],pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both")
+  }
+  if(input$Det_TM_meta_use_quantiles==TRUE){
+    if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+      data[,1]<-get_quantile_belonging(all_data = meta_all,sample = data[,1])
+      data[is.na(data[,1]),1]<-"NA"
+      meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+      meta_all[is.na(meta_all)]<-"NA"
+      
+    }
+  }
+  meta_classes<-unique(meta_all)
+  result<-matrix(c(0),length(meta_classes),ncol(theta))
+  for(i in 1:length(meta_classes)){
+    print(i)
+    # if data is numeric use == else use grepl for characters
+    if(all(varhandle::check.numeric(v = data[,1],exceptions = "NA"))&&input$Det_TM_meta_use_quantiles!=TRUE){
+      relevant_rows<-which(data[,1]==meta_classes[i])
+    }
+    else{
+      if(input$Det_TM_meta_multi_valued==TRUE){
+        relevant_rows<-which(unlist(lapply(X = 1:nrow(data),FUN = function(x){
+          meta_classes[i]%in%trimws(unlist(stringr::str_split(string = data[x,1],pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both")
+        })))
+        meta_all <- trimws(unlist(stringr::str_split(string = data[,1],pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both")
+      }
+      else{
+        relevant_rows<-which(data[,1]==meta_classes[i])
+      }
+      #relevant_rows<-which(grepl(pattern = meta_classes[i],x = data[,1],fixed = T))
+    }
+    result[i,]<-colSums(data[relevant_rows,2:ncol(data),drop=F])
+  }
+  
+  rownames(result)<-meta_classes
+  colnames(result)<-1:ncol(values$tm_theta)
+  result<-result[order(rownames(result)),]
+  #create input format for ggplot
+  dummylist1 <- rownames(result)
+  dummylist2 <- colnames(result)
+  # Create an empty (0 value) matrix topics X groups
+  tnmatrix<-data.frame(topic=NULL,meta=NULL,value=NULL)
+  for (i in 1:length(dummylist1)) {
+    for (j in 1:length(dummylist2)) {
+      tnmatrix<-rbind(tnmatrix,c(dummylist1[i],dummylist2[j],result[dummylist1[i],dummylist2[j]]))
+    }
+  }
+  colnames(tnmatrix)<-c("meta","topic","value")
+  class(tnmatrix$value)<-"numeric"
+  class(tnmatrix$topic)<-"numeric"
+  # browser()
+  
+  p<-ggplot(tnmatrix, aes(x = topic, y = meta, fill = value)) +
+    geom_tile() +
+    geom_text(aes(label = round(value, 1))) +
+    scale_fill_gradient(low = "white", high = "darkred") +
+    scale_x_continuous() + # pull labels to include (n=..)
+    scale_y_discrete(labels = rownames(result)) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 0)) +
+    labs(title = "Affiliation and topic membership (minimum threshold = 1/15)")
+  
+  ggplotly(p, tooltip = c("text", "size"))
+  
+  
+})
+
+
+
+output$Det_TM_Meta_Correlations_table_simple<-DT::renderDataTable({
+  validate(
+    need(!is.null(values$tm_theta),message = F),
+    need(!is.null(values$TM_meta),message=F)
+  )
+  theta<-values$tm_theta
+  meta<-values$TM_meta
+  validate(
+    need(
+      ncol(meta)>9,message="No Metadata found"
+    )
+  )
+  meta<-meta[,10:ncol(meta),drop=F]
+  results<-matrix(c(0),ncol(theta),ncol(meta))
+  for(topic_i in 1:ncol(theta)){
+    print(topic_i)
+    for(meta_i in 1:ncol(meta)){
+      df<- cbind(theta[,topic_i],meta[,meta_i])
+      df<-data.frame(df)
+      class(df$X1)<-"numeric"
+      if(all(varhandle::check.numeric(v = df$X2,exceptions = "NA"))){
+        class(df$X2)<-"numeric" 
+      }
+      try({
+        results[topic_i,meta_i]<-mixed_assoc(df = df)[1,"assoc"]
+      },silent = T)
+    }
+  }
+  colnames(results)<-colnames(meta)
+  rownames(results)<-paste0("Topic:",colnames(theta))
+  results<-round(results,digits = 3)
+  return(DT::datatable(data = results, selection = "none",escape=F,class = 'cell-border stripe',options = list(paging=F,dom="t"))%>%
+           formatStyle(colnames(results),
+                       background = styleColorBar(range(results), 'lightblue'),
+                       backgroundSize = '98% 88%',
+                       backgroundRepeat = 'no-repeat',
+                       backgroundPosition = 'center')
+  )
+})
+
+
 
 output$Det_meta_select_ui<-renderUI({
   validate(
@@ -1155,19 +1416,45 @@ output$Det_meta_select_ui<-renderUI({
     )
   )
   tagList(
-    selectInput(inputId = "Det_meta_select",label = "Choose a Meta Category",choices = colnames(values$TM_meta)[4:length(colnames(values$TM_meta))]),
+    selectInput(inputId = "Det_meta_select",label = "Choose a Meta Category",choices = colnames(values$TM_meta)[5:length(colnames(values$TM_meta))]),
     checkboxInput(inputId ="Det_TM_meta_multi_valued", label = "Metadata field multi valued?", FALSE),
     conditionalPanel(condition="input.Det_TM_meta_multi_valued==true",
-                     textInput(inputId = "Det_TM_meta_multi_valued_seperator", label = "value seperator", value = ",")
+                     textInput(inputId = "Det_TM_meta_multi_valued_seperator", label = "value seperator", value = "/")
+    ),
+    checkboxInput(inputId ="Det_TM_meta_use_quantiles", label = "Use Quantiles if metadata is numeric", FALSE),
+    conditionalPanel(condition='input.Det_TM_meta_use_quantiles==true',
+                     tableOutput(outputId = "Det_TM_meta_quantiles")
     ),
     numericInput(inputId = "Det_meta_topic",label="Which topic should be analyzed?",value = 1,min = 1,max = dim(values$tm_theta)[2],step = 1),
     materialSwitch(inputId = "TM_meta_Rank1",label = "Use Rank1 for selecting document memebership",value = T,status = "warning"),
     conditionalPanel(condition = 'input.TM_meta_Rank1==false',
-                     knobInput(inputId = "TM_meta_Prob",label = "Minimal Probability",value = 0.5,min = 0,max = 1,step = 0.01)
+                     knobInput(inputId = "TM_meta_Prob",label = "Minimal Probability",value = 0.5,min = 0,max = 1,step = 0.001)
     ),
     sliderInput(inputId = "Det_TM_meta_min_occurrences_for_pie", label = "minimal occurrences to include in pie chart",
                 min = 1, max = 30, value = 1)
+    
   )
+})
+
+output$Det_meta_select_ui2<-renderUI({
+  validate(
+    need(!is.null(values$TM_meta),message=F
+    )
+  )
+  if(is.null(input$Det_meta_select)){
+    return(
+      conditionalPanel(condition = 'input.TM_meta=="Overview"',
+                       selectizeInput(inputId = "Det_meta_select2",label = "Choose a second meta category",choices = colnames(values$TM_meta)[5:length(colnames(values$TM_meta))])
+      )
+    )
+  }
+  else{
+    return(conditionalPanel(condition = 'input.TM_meta=="Overview"',
+                            selectizeInput(inputId = "Det_meta_select2",label = "Choose a second meta category",choices = setdiff(colnames(values$TM_meta)[5:length(colnames(values$TM_meta))],input$Det_meta_select))
+    )
+    )
+  }
+  
 })
 
 
@@ -1338,14 +1625,177 @@ output$Det_TM_meta_wordcloud11<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
 })
+output$Det_TM_meta_wordcloud12<-renderWordcloud2({
+  theta=0.25
+  pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
+  pwt<-isolate(values$tm_phi)[as.numeric(input$Det_meta_topic),]
+  
+  data<-theta*log(pwt)+(1-theta)*log(pwt/pw)
+  data<-sort(data,decreasing = T)[1:20]  
+  
+  data<-data.frame(cbind(names(data),data),stringsAsFactors = FALSE)
+  class(data$data)<-"numeric"
+  #normalize weights for wordcloud
+  data$data<-data$data-min(data$data)
+  data$data<-data$data/max(data$data)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+})
+output$Det_TM_meta_wordcloud13<-renderWordcloud2({
+  theta=0.25
+  pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
+  pwt<-isolate(values$tm_phi)[as.numeric(input$Det_meta_topic),]
+  
+  data<-theta*log(pwt)+(1-theta)*log(pwt/pw)
+  data<-sort(data,decreasing = T)[1:20]  
+  
+  data<-data.frame(cbind(names(data),data),stringsAsFactors = FALSE)
+  class(data$data)<-"numeric"
+  #normalize weights for wordcloud
+  data$data<-data$data-min(data$data)
+  data$data<-data$data/max(data$data)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+})
+output$Det_TM_meta_wordcloud14<-renderWordcloud2({
+  theta=0.25
+  pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
+  pwt<-isolate(values$tm_phi)[as.numeric(input$Det_meta_topic),]
+  
+  data<-theta*log(pwt)+(1-theta)*log(pwt/pw)
+  data<-sort(data,decreasing = T)[1:20]  
+  
+  data<-data.frame(cbind(names(data),data),stringsAsFactors = FALSE)
+  class(data$data)<-"numeric"
+  #normalize weights for wordcloud
+  data$data<-data$data-min(data$data)
+  data$data<-data$data/max(data$data)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+})
+output$Det_TM_meta_wordcloud15<-renderWordcloud2({
+  theta=0.25
+  pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
+  pwt<-isolate(values$tm_phi)[as.numeric(input$Det_meta_topic),]
+  
+  data<-theta*log(pwt)+(1-theta)*log(pwt/pw)
+  data<-sort(data,decreasing = T)[1:20]  
+  
+  data<-data.frame(cbind(names(data),data),stringsAsFactors = FALSE)
+  class(data$data)<-"numeric"
+  #normalize weights for wordcloud
+  data$data<-data$data-min(data$data)
+  data$data<-data$data/max(data$data)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+})
+output$Det_TM_meta_wordcloud16<-renderWordcloud2({
+  theta=0.25
+  pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
+  pwt<-isolate(values$tm_phi)[as.numeric(input$Det_meta_topic),]
+  
+  data<-theta*log(pwt)+(1-theta)*log(pwt/pw)
+  data<-sort(data,decreasing = T)[1:20]  
+  
+  data<-data.frame(cbind(names(data),data),stringsAsFactors = FALSE)
+  class(data$data)<-"numeric"
+  #normalize weights for wordcloud
+  data$data<-data$data-min(data$data)
+  data$data<-data$data/max(data$data)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+})
+output$Det_TM_meta_wordcloud17<-renderWordcloud2({
+  theta=0.25
+  pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
+  pwt<-isolate(values$tm_phi)[as.numeric(input$Det_meta_topic),]
+  
+  data<-theta*log(pwt)+(1-theta)*log(pwt/pw)
+  data<-sort(data,decreasing = T)[1:20]  
+  
+  data<-data.frame(cbind(names(data),data),stringsAsFactors = FALSE)
+  class(data$data)<-"numeric"
+  #normalize weights for wordcloud
+  data$data<-data$data-min(data$data)
+  data$data<-data$data/max(data$data)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+})
+output$Det_TM_meta_wordcloud18<-renderWordcloud2({
+  theta=0.25
+  pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
+  pwt<-isolate(values$tm_phi)[as.numeric(input$Det_meta_topic),]
+  
+  data<-theta*log(pwt)+(1-theta)*log(pwt/pw)
+  data<-sort(data,decreasing = T)[1:20]  
+  
+  data<-data.frame(cbind(names(data),data),stringsAsFactors = FALSE)
+  class(data$data)<-"numeric"
+  #normalize weights for wordcloud
+  data$data<-data$data-min(data$data)
+  data$data<-data$data/max(data$data)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+})
+
+output$Det_TM_meta_wordcloud19<-renderWordcloud2({
+  theta=0.25
+  pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
+  pwt<-isolate(values$tm_phi)[as.numeric(input$Det_meta_topic),]
+  
+  data<-theta*log(pwt)+(1-theta)*log(pwt/pw)
+  data<-sort(data,decreasing = T)[1:20]  
+  
+  data<-data.frame(cbind(names(data),data),stringsAsFactors = FALSE)
+  class(data$data)<-"numeric"
+  #normalize weights for wordcloud
+  data$data<-data$data-min(data$data)
+  data$data<-data$data/max(data$data)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+})
+
 
 
 #################################################
 #           Detailed Metadata for selected Topic#
 #################################################
 
+#scatter Plot of meta vs topic
+output$Det_TM_scatter_plot_ui<-renderUI({
+  validate(
+    need(!is.null(input$Det_meta_topic),message=F)
+  )
+  theta<-round(values$tm_theta[,as.character(input$Det_meta_topic)],digits=4)
+  data<-data.frame(id=names(theta),theta=theta,meta=values$TM_meta[,input$Det_meta_select],belongs_to_topic=rep(FALSE,length(theta)),meta2=values$TM_meta[,input$Det_meta_select2],title=values$TM_meta[,"title"],doc_id=values$TM_meta[,"id_doc"],stringsAsFactors = F)
+  theta<-values$tm_theta
+  if(input$TM_meta_Rank1==TRUE){
+    ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
+  }
+  else{
+    ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
+  }
+  data[ids,4]<-TRUE
+  values$Det_TM_meta_scatter_data<-data
+  return(tagList(
+    plotly::plotlyOutput(outputId = "Det_TM_scatter_plot")
+  ))
+})
+
+output$Det_TM_scatter_plot<-plotly::renderPlotly({
+  data<- values$Det_TM_meta_scatter_data
+  meta_numeric<-all(varhandle::check.numeric(v = data$meta,exceptions = "NA"))
+  meta2_numeric<-all(varhandle::check.numeric(v = data$meta2,exceptions = "NA"))
+  axe_type_meta<-"category"
+  axe_type_meta2<-"category"
+  if(meta_numeric==TRUE){
+    axe_type_meta<-"number"
+  }
+  if(meta2_numeric==TRUE){
+    axe_type_meta2<-"number"
+  }
+  p<-plotly::plot_ly(data = data,x=~meta,y=~meta2,color=~belongs_to_topic,type="scatter",colors=c("tomato","forestgreen"),symbol=~belongs_to_topic,symbols = c("cross","diamond"),
+                     marker=list(size=10), text=~paste("Title: ",title,"<br>topic proportion: ",theta))
+  p<-plotly::layout(p,xaxis=list(title=input$Det_meta_select,type=axe_type_meta),
+                    yaxis=list(title=input$Det_meta_select2,type=axe_type_meta2),
+                    margin=list(b=100))
+  return(p)
+})
+
 output$Det_TM_Meta1<-renderUI({
-  if("token"%in%input$Det_meta_select){
+  if(colnames(values$TM_meta)[5]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
       ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
@@ -1358,7 +1808,25 @@ output$Det_TM_Meta1<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),"token"]
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
+    }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),3)
+    
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     # check if > min occurrences
     counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
@@ -1372,10 +1840,12 @@ output$Det_TM_Meta1<-renderUI({
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_1<-DT::renderDataTable({
-      counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
       #order data by absolute frequency
       counts <- counts[order(counts[,2], decreasing = T),]
-      colnames(counts)<-c(colnames(values$TM_meta)[5],"absolute","relative")
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(colnames(values$TM_meta)[5],"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
     return(tagList(
@@ -1402,7 +1872,7 @@ output$Det_TM_Meta1<-renderUI({
 
 
 output$Det_TM_Meta2<-renderUI({
-  if(colnames(values$TM_meta)[5]%in%input$Det_meta_select){
+  if(colnames(values$TM_meta)[6]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
       ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
@@ -1415,12 +1885,25 @@ output$Det_TM_Meta2<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[5]]
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
     # check if > min occurrences
     # multi valued?
     if(input$Det_TM_meta_multi_valued==TRUE){
-      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
     }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),3)  
+    
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
@@ -1429,15 +1912,17 @@ output$Det_TM_Meta2<-renderUI({
         need(nrow(counts_pie)>0,message="No results for current setting!")
       )
       p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
-        layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[5],'"'),legend=T,
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_2<-DT::renderDataTable({
-      counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
       #order data by absolute frequency
       counts <- counts[order(counts[,2], decreasing = T),]
-      colnames(counts)<-c(colnames(values$TM_meta)[5],"absolute","relative")
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
     
@@ -1466,7 +1951,7 @@ output$Det_TM_Meta2<-renderUI({
 
 
 output$Det_TM_Meta3<-renderUI({
-  if(colnames(values$TM_meta)[6]%in%input$Det_meta_select){
+  if(colnames(values$TM_meta)[7]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
       ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
@@ -1479,11 +1964,24 @@ output$Det_TM_Meta3<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[6]]
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
     # multi valued?
     if(input$Det_TM_meta_multi_valued==TRUE){
-      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
     }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3)  
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     # check if > min occurrences
     counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
@@ -1493,15 +1991,17 @@ output$Det_TM_Meta3<-renderUI({
         need(nrow(counts_pie)>0,message="No results for current setting!")
       )
       p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
-        layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[6],'"'),legend=T,
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_3<-DT::renderDataTable({
-      counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
       #order data by absolute frequency
       counts <- counts[order(counts[,2], decreasing = T),]
-      colnames(counts)<-c(colnames(values$TM_meta)[6],"absolute","relative")
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
     
@@ -1530,7 +2030,7 @@ output$Det_TM_Meta3<-renderUI({
 
 
 output$Det_TM_Meta4<-renderUI({
-  if(colnames(values$TM_meta)[7]%in%input$Det_meta_select){
+  if(colnames(values$TM_meta)[8]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
       ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
@@ -1543,11 +2043,24 @@ output$Det_TM_Meta4<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[7]]
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
     # multi valued?
     if(input$Det_TM_meta_multi_valued==TRUE){
-      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
     }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3)  
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     # check if > min occurrences
     counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
@@ -1557,15 +2070,17 @@ output$Det_TM_Meta4<-renderUI({
         need(nrow(counts_pie)>0,message="No results for current setting!")
       )
       p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
-        layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[7],'"'),legend=T,
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_4<-DT::renderDataTable({
-      counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
       #order data by absolute frequency
       counts <- counts[order(counts[,2], decreasing = T),]
-      colnames(counts)<-c(colnames(values$TM_meta)[7],"absolute","relative")
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
     
@@ -1592,7 +2107,7 @@ output$Det_TM_Meta4<-renderUI({
 })
 
 output$Det_TM_Meta5<-renderUI({
-  if(colnames(values$TM_meta)[8]%in%input$Det_meta_select){
+  if(colnames(values$TM_meta)[9]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
       ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
@@ -1605,11 +2120,24 @@ output$Det_TM_Meta5<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[8]]
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
     # multi valued?
     if(input$Det_TM_meta_multi_valued==TRUE){
-      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
     }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3)  
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     # check if > min occurrences
     counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
@@ -1619,15 +2147,17 @@ output$Det_TM_Meta5<-renderUI({
         need(nrow(counts_pie)>0,message="No results for current setting!")
       )
       p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
-        layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[8],'"'),legend=T,
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_5<-DT::renderDataTable({
-      counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
       #order data by absolute frequency
       counts <- counts[order(counts[,2], decreasing = T),]
-      colnames(counts)<-c(colnames(values$TM_meta)[8],"absolute","relative")
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
     
@@ -1656,7 +2186,7 @@ output$Det_TM_Meta5<-renderUI({
 
 
 output$Det_TM_Meta6<-renderUI({
-  if(colnames(values$TM_meta)[9]%in%input$Det_meta_select){
+  if(colnames(values$TM_meta)[10]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
       ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
@@ -1669,11 +2199,24 @@ output$Det_TM_Meta6<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[9]]
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
     # multi valued?
     if(input$Det_TM_meta_multi_valued==TRUE){
-      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
     }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     # check if > min occurrences
     counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
@@ -1683,15 +2226,17 @@ output$Det_TM_Meta6<-renderUI({
         need(nrow(counts_pie)>0,message="No results for current setting!")
       )
       p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
-        layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[9],'"'),legend=T,
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_6<-DT::renderDataTable({
-      counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
       #order data by absolute frequency
       counts <- counts[order(counts[,2], decreasing = T),]
-      colnames(counts)<-c(colnames(values$TM_meta)[9],"absolute","relative")
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
     
@@ -1720,7 +2265,7 @@ output$Det_TM_Meta6<-renderUI({
 
 
 output$Det_TM_Meta7<-renderUI({
-  if(colnames(values$TM_meta)[10]%in%input$Det_meta_select){
+  if(colnames(values$TM_meta)[11]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
       ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
@@ -1733,11 +2278,24 @@ output$Det_TM_Meta7<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[10]]
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
     # multi valued?
     if(input$Det_TM_meta_multi_valued==TRUE){
-      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
     }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     # check if > min occurrences
     counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
@@ -1747,15 +2305,17 @@ output$Det_TM_Meta7<-renderUI({
         need(nrow(counts_pie)>0,message="No results for current setting!")
       )
       p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
-        layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[10],'"'),legend=T,
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_7<-DT::renderDataTable({
-      counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
       #order data by absolute frequency
       counts <- counts[order(counts[,2], decreasing = T),]
-      colnames(counts)<-c(colnames(values$TM_meta)[10],"absolute","relative")
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
     
@@ -1784,7 +2344,7 @@ output$Det_TM_Meta7<-renderUI({
 
 
 output$Det_TM_Meta8<-renderUI({
-  if(colnames(values$TM_meta)[11]%in%input$Det_meta_select){
+  if(colnames(values$TM_meta)[12]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
       ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
@@ -1797,11 +2357,24 @@ output$Det_TM_Meta8<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[11]]
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
     # multi valued?
     if(input$Det_TM_meta_multi_valued==TRUE){
-      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
     }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     # check if > min occurrences
     counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
@@ -1811,15 +2384,17 @@ output$Det_TM_Meta8<-renderUI({
         need(nrow(counts_pie)>0,message="No results for current setting!")
       )
       p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
-        layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[11],'"'),legend=T,
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_8<-DT::renderDataTable({
-      counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
       #order data by absolute frequency
       counts <- counts[order(counts[,2], decreasing = T),]
-      colnames(counts)<-c(colnames(values$TM_meta)[11],"absolute","relative")
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
     
@@ -1848,71 +2423,6 @@ output$Det_TM_Meta8<-renderUI({
 
 
 output$Det_TM_Meta9<-renderUI({
-  if(colnames(values$TM_meta)[12]%in%input$Det_meta_select){
-    theta<-values$tm_theta
-    if(input$TM_meta_Rank1==TRUE){
-      ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
-    }
-    else{
-      ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
-    }
-    # if no document is found
-    validate(
-      need(length(ids)>0,message = "no document found that matches the selected settings")
-    )
-    text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[12]]
-    # multi valued?
-    if(input$Det_TM_meta_multi_valued==TRUE){
-      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
-    }
-    counts<-as.data.frame(table(meta),stringsAsFactors = F)
-    # check if > min occurrences
-    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
-    counts<-as.data.frame(table(meta),stringsAsFactors = F)
-    output$Det_TM_meta_plot_8<-renderPlotly({
-      validate(
-        need(nrow(counts_pie)>0,message="No results for current setting!")
-      )
-      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
-        layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[12],'"'),legend=T,
-               xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-               yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-    })
-    output$Det_TM_meta_table_8<-DT::renderDataTable({
-      counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
-      #order data by absolute frequency
-      counts <- counts[order(counts[,2], decreasing = T),]
-      colnames(counts)<-c(colnames(values$TM_meta)[12],"absolute","relative")
-      datatable(data = counts,rownames = F,options = list(dom="tp"))
-    })
-    
-    return(tagList(
-      fluidRow(style="margin-left:0px;margin-right:0px",
-               text),
-      fluidRow(style="margin-left:0px;margin-right:0px",
-               column(4,
-                      tags$div(paste("most relevant words for topic: ",input$Det_meta_topic ," with lambda=0.25")),
-                      wordcloud2Output("Det_TM_meta_wordcloud8")
-               ),
-               column(5,
-                      plotlyOutput("Det_TM_meta_plot_8")
-               ),
-               column(3,
-                      DT::dataTableOutput("Det_TM_meta_table_8")
-               )
-      )
-    ))
-  }
-  else{
-    return(NULL)
-  }
-})
-
-
-
-
-output$Det_TM_Meta10<-renderUI({
   if(colnames(values$TM_meta)[13]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
@@ -1926,11 +2436,24 @@ output$Det_TM_Meta10<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[13]]
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
     # multi valued?
     if(input$Det_TM_meta_multi_valued==TRUE){
-      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
     }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     # check if > min occurrences
     counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
@@ -1940,15 +2463,17 @@ output$Det_TM_Meta10<-renderUI({
         need(nrow(counts_pie)>0,message="No results for current setting!")
       )
       p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
-        layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[13],'"'),legend=T,
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_9<-DT::renderDataTable({
-      counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
       #order data by absolute frequency
       counts <- counts[order(counts[,2], decreasing = T),]
-      colnames(counts)<-c(colnames(values$TM_meta)[13],"absolute","relative")
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
     
@@ -1975,7 +2500,9 @@ output$Det_TM_Meta10<-renderUI({
 })
 
 
-output$Det_TM_Meta11<-renderUI({
+
+
+output$Det_TM_Meta10<-renderUI({
   if(colnames(values$TM_meta)[14]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
@@ -1989,11 +2516,24 @@ output$Det_TM_Meta11<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[14]]
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
     # multi valued?
     if(input$Det_TM_meta_multi_valued==TRUE){
-      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
     }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     # check if > min occurrences
     counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
@@ -2003,15 +2543,17 @@ output$Det_TM_Meta11<-renderUI({
         need(nrow(counts_pie)>0,message="No results for current setting!")
       )
       p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
-        layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[14],'"'),legend=T,
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_10<-DT::renderDataTable({
-      counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
       #order data by absolute frequency
       counts <- counts[order(counts[,2], decreasing = T),]
-      colnames(counts)<-c(colnames(values$TM_meta)[14],"absolute","relative")
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
     
@@ -2038,8 +2580,7 @@ output$Det_TM_Meta11<-renderUI({
 })
 
 
-
-output$Det_TM_Meta12<-renderUI({
+output$Det_TM_Meta11<-renderUI({
   if(colnames(values$TM_meta)[15]%in%input$Det_meta_select){
     theta<-values$tm_theta
     if(input$TM_meta_Rank1==TRUE){
@@ -2053,11 +2594,24 @@ output$Det_TM_Meta12<-renderUI({
       need(length(ids)>0,message = "no document found that matches the selected settings")
     )
     text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
-    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),colnames(values$TM_meta)[15]]
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
     # multi valued?
     if(input$Det_TM_meta_multi_valued==TRUE){
-      meta <- unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)) 
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
     }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
     counts<-as.data.frame(table(meta),stringsAsFactors = F)
     # check if > min occurrences
     counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
@@ -2067,15 +2621,17 @@ output$Det_TM_Meta12<-renderUI({
         need(nrow(counts_pie)>0,message="No results for current setting!")
       )
       p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
-        layout(title = paste('Meta distribution for meta category: "',colnames(values$TM_meta)[15],'"'),legend=T,
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     })
     output$Det_TM_meta_table_11<-DT::renderDataTable({
-      counts<-cbind(counts,round(counts[,2]/sum(counts[,2]),digits = 3))
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
       #order data by absolute frequency
       counts <- counts[order(counts[,2], decreasing = T),]
-      colnames(counts)<-c(colnames(values$TM_meta)[15],"absolute","relative")
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
       datatable(data = counts,rownames = F,options = list(dom="tp"))
     })
     
@@ -2103,6 +2659,674 @@ output$Det_TM_Meta12<-renderUI({
 
 
 
+output$Det_TM_Meta12<-renderUI({
+  if(colnames(values$TM_meta)[16]%in%input$Det_meta_select){
+    theta<-values$tm_theta
+    if(input$TM_meta_Rank1==TRUE){
+      ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
+    }
+    else{
+      ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
+    }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
+    text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
+    }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/nrow(values$TM_meta),digits = 3)  
+    
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    output$Det_TM_meta_plot_12<-renderPlotly({
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
+               xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+               yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    })
+    output$Det_TM_meta_table_12<-DT::renderDataTable({
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
+      datatable(data = counts,rownames = F,options = list(dom="tp"))
+    })
+    
+    return(tagList(
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               text),
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(4,
+                      tags$div(paste("most relevant words for topic: ",input$Det_meta_topic ," with lambda=0.25")),
+                      wordcloud2Output("Det_TM_meta_wordcloud12")
+               ),
+               column(5,
+                      plotlyOutput("Det_TM_meta_plot_12")
+               ),
+               column(3,
+                      DT::dataTableOutput("Det_TM_meta_table_12")
+               )
+      )
+    ))
+  }
+  else{
+    return(NULL)
+  }
+})
+
+
+
+output$Det_TM_Meta13<-renderUI({
+  if(colnames(values$TM_meta)[17]%in%input$Det_meta_select){
+    theta<-values$tm_theta
+    if(input$TM_meta_Rank1==TRUE){
+      ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
+    }
+    else{
+      ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
+    }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
+    text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
+    #relevant_words<-
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
+    }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    output$Det_TM_meta_plot_13<-renderPlotly({
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
+               xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+               yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    })
+    output$Det_TM_meta_table_13<-DT::renderDataTable({
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
+      datatable(data = counts,rownames = F,options = list(dom="tp"))
+    })
+    
+    return(tagList(
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               text),
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(4,
+                      tags$div(paste("most relevant words for topic: ",input$Det_meta_topic ," with lambda=0.25")),
+                      wordcloud2Output("Det_TM_meta_wordcloud13")
+               ),
+               column(5,
+                      plotlyOutput("Det_TM_meta_plot_13")
+               ),
+               column(3,
+                      DT::dataTableOutput("Det_TM_meta_table_13")
+               )
+      )
+    ))
+  }
+  else{
+    return(NULL)
+  }
+})
+
+
+output$Det_TM_Meta14<-renderUI({
+  if(colnames(values$TM_meta)[18]%in%input$Det_meta_select){
+    theta<-values$tm_theta
+    if(input$TM_meta_Rank1==TRUE){
+      ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
+    }
+    else{
+      ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
+    }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
+    text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
+    #relevant_words<-
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
+    }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    output$Det_TM_meta_plot_14<-renderPlotly({
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
+               xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+               yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    })
+    output$Det_TM_meta_table_14<-DT::renderDataTable({
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
+      datatable(data = counts,rownames = F,options = list(dom="tp"))
+    })
+    
+    return(tagList(
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               text),
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(4,
+                      tags$div(paste("most relevant words for topic: ",input$Det_meta_topic ," with lambda=0.25")),
+                      wordcloud2Output("Det_TM_meta_wordcloud14")
+               ),
+               column(5,
+                      plotlyOutput("Det_TM_meta_plot_14")
+               ),
+               column(3,
+                      DT::dataTableOutput("Det_TM_meta_table_14")
+               )
+      )
+    ))
+  }
+  else{
+    return(NULL)
+  }
+})
+
+
+output$Det_TM_Meta15<-renderUI({
+  if(colnames(values$TM_meta)[19]%in%input$Det_meta_select){
+    theta<-values$tm_theta
+    if(input$TM_meta_Rank1==TRUE){
+      ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
+    }
+    else{
+      ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
+    }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
+    text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
+    #relevant_words<-
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
+    }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    output$Det_TM_meta_plot_15<-renderPlotly({
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
+               xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+               yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    })
+    output$Det_TM_meta_table_15<-DT::renderDataTable({
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
+      datatable(data = counts,rownames = F,options = list(dom="tp"))
+    })
+    
+    return(tagList(
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               text),
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(4,
+                      tags$div(paste("most relevant words for topic: ",input$Det_meta_topic ," with lambda=0.25")),
+                      wordcloud2Output("Det_TM_meta_wordcloud15")
+               ),
+               column(5,
+                      plotlyOutput("Det_TM_meta_plot_15")
+               ),
+               column(3,
+                      DT::dataTableOutput("Det_TM_meta_table_15")
+               )
+      )
+    ))
+  }
+  else{
+    return(NULL)
+  }
+})
+
+
+output$Det_TM_Meta16<-renderUI({
+  if(colnames(values$TM_meta)[20]%in%input$Det_meta_select){
+    theta<-values$tm_theta
+    if(input$TM_meta_Rank1==TRUE){
+      ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
+    }
+    else{
+      ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
+    }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
+    text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
+    #relevant_words<-
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),cinput$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
+    }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    output$Det_TM_meta_plot_16<-renderPlotly({
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
+               xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+               yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    })
+    output$Det_TM_meta_table_16<-DT::renderDataTable({
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
+      datatable(data = counts,rownames = F,options = list(dom="tp"))
+    })
+    
+    return(tagList(
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               text),
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(4,
+                      tags$div(paste("most relevant words for topic: ",input$Det_meta_topic ," with lambda=0.25")),
+                      wordcloud2Output("Det_TM_meta_wordcloud16")
+               ),
+               column(5,
+                      plotlyOutput("Det_TM_meta_plot_16")
+               ),
+               column(3,
+                      DT::dataTableOutput("Det_TM_meta_table_16")
+               )
+      )
+    ))
+  }
+  else{
+    return(NULL)
+  }
+})
+
+output$Det_TM_Meta17<-renderUI({
+  if(colnames(values$TM_meta)[21]%in%input$Det_meta_select){
+    theta<-values$tm_theta
+    if(input$TM_meta_Rank1==TRUE){
+      ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
+    }
+    else{
+      ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
+    }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
+    text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
+    #relevant_words<-
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
+    }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    output$Det_TM_meta_plot_17<-renderPlotly({
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
+               xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+               yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    })
+    output$Det_TM_meta_table_17<-DT::renderDataTable({
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
+      datatable(data = counts,rownames = F,options = list(dom="tp"))
+    })
+    
+    return(tagList(
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               text),
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(4,
+                      tags$div(paste("most relevant words for topic: ",input$Det_meta_topic ," with lambda=0.25")),
+                      wordcloud2Output("Det_TM_meta_wordcloud17")
+               ),
+               column(5,
+                      plotlyOutput("Det_TM_meta_plot_17")
+               ),
+               column(3,
+                      DT::dataTableOutput("Det_TM_meta_table_17")
+               )
+      )
+    ))
+  }
+  else{
+    return(NULL)
+  }
+})
+
+
+output$Det_TM_Meta18<-renderUI({
+  if(colnames(values$TM_meta)[22]%in%input$Det_meta_select){
+    theta<-values$tm_theta
+    if(input$TM_meta_Rank1==TRUE){
+      ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
+    }
+    else{
+      ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
+    }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
+    text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
+    #relevant_words<-
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
+    }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    output$Det_TM_meta_plot_18<-renderPlotly({
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
+               xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+               yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    })
+    output$Det_TM_meta_table_18<-DT::renderDataTable({
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
+      datatable(data = counts,rownames = F,options = list(dom="tp"))
+    })
+    
+    return(tagList(
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               text),
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(4,
+                      tags$div(paste("most relevant words for topic: ",input$Det_meta_topic ," with lambda=0.25")),
+                      wordcloud2Output("Det_TM_meta_wordcloud18")
+               ),
+               column(5,
+                      plotlyOutput("Det_TM_meta_plot_18")
+               ),
+               column(3,
+                      DT::dataTableOutput("Det_TM_meta_table_18")
+               )
+      )
+    ))
+  }
+  else{
+    return(NULL)
+  }
+})
+
+output$Det_TM_Meta19<-renderUI({
+  if(colnames(values$TM_meta)[23]%in%input$Det_meta_select){
+    theta<-values$tm_theta
+    if(input$TM_meta_Rank1==TRUE){
+      ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
+    }
+    else{
+      ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
+    }
+    # if no document is found
+    validate(
+      need(length(ids)>0,message = "no document found that matches the selected settings")
+    )
+    text<-tags$h4(paste0(length(ids)," documents belong to topic:", input$Det_meta_topic))
+    #relevant_words<-
+    meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),input$Det_meta_select]
+    meta_all<-values$TM_meta[,input$Det_meta_select]
+    # check if > min occurrences
+    # multi valued?
+    if(input$Det_TM_meta_multi_valued==TRUE){
+      meta <- trimws(unlist(stringr::str_split(string = meta,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which = "both") 
+      meta_all<-trimws(unlist(stringr::str_split(string = meta_all,pattern = input$Det_TM_meta_multi_valued_seperator, simplify = F)),which="both")
+    }
+    if(input$Det_TM_meta_use_quantiles==TRUE){
+      if(all(varhandle::check.numeric(v = meta_all,exceptions = "NA"))){
+        meta<-get_quantile_belonging(all_data = meta_all,sample = meta)
+        meta[is.na(meta)]<-"NA"
+        meta_all<-get_quantile_belonging(all_data = meta_all,sample = meta_all)
+        meta_all[is.na(meta_all)]<-"NA"
+      }
+    }
+    counts_all<-as.data.frame(table(meta_all),stringsAsFactors = F)
+    counts_all[,2]<-round(counts_all[,2]/ nrow(values$TM_meta),digits = 3) 
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    # check if > min occurrences
+    counts_pie <- counts[which(counts$Freq >= input$Det_TM_meta_min_occurrences_for_pie),]
+    counts<-as.data.frame(table(meta),stringsAsFactors = F)
+    output$Det_TM_meta_plot_19<-renderPlotly({
+      validate(
+        need(nrow(counts_pie)>0,message="No results for current setting!")
+      )
+      p <- plot_ly(counts_pie, labels = ~meta, values = ~Freq, type = 'pie') %>%
+        layout(title = paste('Meta distribution for meta category: "',input$Det_meta_select,'"'),legend=T,
+               xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+               yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    })
+    output$Det_TM_meta_table_19<-DT::renderDataTable({
+      counts<-cbind(counts,round(counts[,2]/length(ids),digits = 3))
+      #order data by absolute frequency
+      counts <- counts[order(counts[,2], decreasing = T),]
+      counts<-merge(counts,counts_all,by.x = 1,by.y = 1,all.y = F)
+      colnames(counts)<-c(input$Det_meta_select,"absolute","relative","overall percentage")
+      counts<-counts[order(counts[,"relative"],decreasing = T),]
+      datatable(data = counts,rownames = F,options = list(dom="tp"))
+    })
+    
+    return(tagList(
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               text),
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(4,
+                      tags$div(paste("most relevant words for topic: ",input$Det_meta_topic ," with lambda=0.25")),
+                      wordcloud2Output("Det_TM_meta_wordcloud19")
+               ),
+               column(5,
+                      plotlyOutput("Det_TM_meta_plot_19")
+               ),
+               column(3,
+                      DT::dataTableOutput("Det_TM_meta_table_19")
+               )
+      )
+    ))
+  }
+  else{
+    return(NULL)
+  }
+})
+
+
+
+output$Det_TM_Meta_Table<-DT::renderDataTable({
+  validate(
+    need(!is.null(input$TM_meta_Rank1),message=F),
+    need(!is.null(input$Det_meta_topic),message=F)
+  )
+  theta<-values$tm_theta
+  if(input$TM_meta_Rank1==TRUE){
+    ids<-names(which(apply(theta,1,max)==theta[,as.character(input$Det_meta_topic)]))
+  }
+  else{
+    ids<-names(which(theta[,as.character(input$Det_meta_topic)]>=input$TM_meta_Prob))
+  }
+  # if no document is found
+  validate(
+    need(length(ids)>0, message=F)
+  )
+  meta<-values$TM_meta[which(values$TM_meta[,"id_doc"]%in%ids),]
+  meta<-meta[,-c(1,2,4)]
+  try({
+    meta$title<-paste0("<b>",meta$title,"</b>")
+  })
+  datatable(data = meta,escape = F,class = 'cell-border stripe',rownames=T)
+})
+
+
+output$Det_TM_meta_quantiles<-renderTable({
+  meta<-values$TM_meta[,input$Det_meta_select]
+  validate(
+    need(all(varhandle::check.numeric(v = meta,exceptions = "NA")),message = "Not all values are numeric")
+  )
+  quantiles<-quantile(x = as.numeric(meta),na.rm = T)
+  data<-t(data.frame(quantiles=quantiles))
+  colnames(data)<-names(quantiles)
+  
+  return(data)
+})
 
 ######################################################
 #########  estimated word frequencies ################
@@ -2674,7 +3898,7 @@ output$Det_TM_document_comparison_correlation_heatmap_euclidean_distance<-plotly
 
 output$TM_document_outlier_UI<-renderUI({
   return(tagList(
-    tags$h4("Average document differentness"),
+    tags$h4("Average document similarity"),
     DT::dataTableOutput(outputId = "Det_TM_document_outlier_table"),
     plotly::plotlyOutput(outputId = "Det_TM_document_outlier_heatmap")
     
@@ -2686,20 +3910,21 @@ output$TM_document_outlier_UI<-renderUI({
 output$Det_TM_document_outlier_heatmap<-plotly::renderPlotly({
   selected_ids<-values$TM_document_outlier_tabledata[input$Det_TM_document_outlier_table_rows_selected,"id_doc"]
   titles<-values$TM_document_outlier_tabledata[input$Det_TM_document_outlier_table_rows_selected,"title"]
-
+  
   validate(
     need(length(selected_ids)>0,message=F)
   )
-
+  
   comparison_matrix <- values$Det_TM_document_outlier_comparison_matrix[selected_ids,,drop=F]
   ids_rest<-data.frame(id_doc=colnames(values$Det_TM_document_outlier_comparison_matrix),stringsAsFactors = F)
   all_titles<-plyr::join(y=values$TM_document_outlier_tabledata,x=ids_rest,by="id_doc")[,"title"]
   rownames(comparison_matrix)<-titles
   colnames(comparison_matrix)<-all_titles
-  heatmap<-plotly::plot_ly(z=comparison_matrix,type="heatmap",x=all_titles,y=titles,
-                           colors= colorRamp(c(input$Det_TM_document_outlier_color_low, input$Det_TM_document_outlier_color_high))
+  
+  #colors= colorRamp(c(input$Det_TM_document_outlier_color_low,"white", input$Det_TM_document_outlier_color_high))
+  heatmap<-plotly::plot_ly(z=comparison_matrix,type="heatmap",x=all_titles,y=titles
   )%>%
-    plotly::layout(xaxis=list(type="category"),yaxis=list(type="category"))
+    plotly::layout(xaxis=list(type="category"),yaxis=list(type="category"),margin = list(b=200))
   
   return(heatmap)
 })
@@ -2747,6 +3972,29 @@ output$Det_TM_document_outlier_table<-DT::renderDataTable({
 })
 
 
+output$Det_TM_outlier_download_document_document_similarity_matrix<-downloadHandler(
+  filename = function() {
+    paste('outlier_similarity_matrix_',input$Det_TM_document_outlier_measure,"_",  Sys.Date(), '.csv', sep='')
+  },
+  content = function(con) {
+    data<-values$Det_TM_document_outlier_comparison_matrix
+    write.csv(data, con)
+  }
+)
+
+
+output$Det_TM_outlier_download_list_of_outliers<-downloadHandler(
+  filename = function() {
+    paste('outlier_avg_similarity_',input$Det_TM_document_outlier_measure,"_", Sys.Date(), '.csv', sep='')
+  },
+  content = function(con) {
+    data<-values$TM_document_outlier_tabledata
+    write.csv(data, con)
+  }
+)
+
+
+
 
 
 
@@ -2764,18 +4012,24 @@ output$TM_document_clustering_UI<-renderUI({
   titles<-paste0(titles$title," (",titles$id_doc,")")
   data<-t(data)
   # do kmeans clustering
-  km.res <- kmeans(data, centers = input$Det_TM_document_clustering_k, iter.max = input$Det_TM_document_clustering_max_iterations,nstart = input$Det_TM_document_clustering_n_start)
+  km.res <- stats::kmeans(data, centers = input$Det_TM_document_clustering_k, iter.max = input$Det_TM_document_clustering_max_iterations,nstart = input$Det_TM_document_clustering_n_start)
   # apply dimension reduction using pca from factoextra package
-  cluster_data<-fviz_cluster(data = data,object = km.res)
+  cluster_data<-factoextra::fviz_cluster(data = data,object = km.res)
   values$Det_TM_document_clustering_cluster_data<-cluster_data
   values$Det_TM_document_clustering_titles<-titles
   return(
     tagList(
-      #plotOutput(outputId = "Det_TM_document_clustering_best_number_of_k")  
-      plotly::plotlyOutput(outputId = "Det_TM_document_clustering_kmeans"),
-      tags$br(),
-      tags$hr(),
-      uiOutput(outputId = "Det_TM_document_clustering_metadata_UI")
+      tabsetPanel(id = "TM Clustering",
+                  tabPanel(title = "Graph",
+                           plotly::plotlyOutput(outputId = "Det_TM_document_clustering_kmeans"),
+                           tags$br(),
+                           tags$hr(),
+                           uiOutput(outputId = "Det_TM_document_clustering_metadata_UI")
+                  ),
+                  tabPanel(title = "Table",
+                           DT::dataTableOutput(outputId="Det_TM_document_clustering_table")
+                  )
+      )
     )
   )
 })
@@ -2849,3 +4103,444 @@ output$Det_TM_document_clustering_metadata_UI<-renderUI({
     )
   )
 })
+
+
+output$Det_TM_document_clustering_table<-DT::renderDataTable({
+  cluster_result<-values$Det_TM_document_clustering_cluster_summary
+  cluster_result<-cbind(cluster_result,values$Det_TM_document_clustering_titles)
+  #browser()
+  clusters<-1:length(unique(cluster_result[,5]))
+  clusters_elements<-lapply(X = clusters,FUN = function(x){
+    data.frame(cluster_result[which(cluster_result[,5]==x),6],stringsAsFactors = F)
+  })
+  data<-matrix(c(""),max(unlist(lapply(X = clusters_elements,FUN = nrow))),length(clusters))
+  for(i in clusters){
+    data[1: nrow(clusters_elements[[i]]),i]<-clusters_elements[[i]][,1]
+  }  
+  colnames(data)<-paste0("Cluster ",clusters)
+  datatable(data = data,rownames = T,selection = "none",options=list(
+    pageLength=max(unlist(lapply(X = clusters_elements,FUN = nrow)))
+  )
+  )
+})
+
+
+
+####################################################
+###                Document Grouping             ###
+####################################################
+
+
+output$TM_document_grouping_UI<-renderUI({
+  
+  
+  return(
+    tagList(
+      tabsetPanel(id = "Det_TM_grouping",
+                  tabPanel(title = "Group 1",style='padding-right:0px; padding-left:0px;',
+                           checkboxInput(inputId="Det_TM_grouping_quantile_group1",label="use quantiles",value=T),
+                           conditionalPanel(condition="input.Det_TM_grouping_quantile_group1==true",
+                                            tags$h3("Quantiles"),
+                                            DT::dataTableOutput(outputId = "Det_TM_grouping_quantile_group1_quantiles"),
+                                            tags$hr()
+                           ),
+                           tags$h3("Countries"),
+                           DT::dataTableOutput(outputId = "Det_TM_grouping_group1")
+                  ),
+                  tabPanel(title = "Group 2",style='padding-right:0px; padding-left:0px;',
+                           checkboxInput(inputId="Det_TM_grouping_quantile_group2",label="use quantiles",value=T),
+                           conditionalPanel(condition="input.Det_TM_grouping_quantile_group2==true",
+                                            tags$h3("Quantiles"),
+                                            DT::dataTableOutput(outputId = "Det_TM_grouping_quantile_group2_quantiles"),
+                                            tags$hr()
+                           ),
+                           tags$h3("Countries"),
+                           DT::dataTableOutput(outputId = "Det_TM_grouping_group2")
+                  ),
+                  tabPanel(title="Comparison",
+                           box(title ="Countries Group 1",width = 6,solidHeader = T,status = "primary",collapsible = T,
+                               wordcloud2Output(outputId = "Det_TM_grouping_wc_group1")
+                           ),
+                           box(title ="Countries Group 2",width = 6,solidHeader = T,status = "primary",collapsible = T,
+                               wordcloud2Output(outputId = "Det_TM_grouping_wc_group2")      
+                           ),
+                           tags$hr(),
+                           tabsetPanel(id = "Det_TM_grouping_output",
+                                       tabPanel(title = "Table",
+                                                tags$h4("Average Topic Distributons"),
+                                                DT::dataTableOutput(outputId = "Det_TM_grouping_avg_topic_distribution_table")
+                                       ),
+                                       tabPanel(title = "Plot",
+                                                tags$h4("Average Topic Distributons"),
+                                                plotlyOutput(outputId = "Det_TM_grouping_avg_topic_distribution_plot")
+                                       )
+                           ),
+                           tags$h4("Correlation"),
+                           uiOutput(outputId = "Det_TM_grouping_correlation")
+                           
+                           
+                  )
+      )
+    ))
+})
+
+
+output$Det_TM_grouping_correlation<-renderUI(({
+  correlation<-cor(x = colMeans(values$tm_theta[values$TM_meta[input$Det_TM_grouping_group1_rows_all,"id_doc"],,drop=F]),y = colMeans(values$tm_theta[values$TM_meta[input$Det_TM_grouping_group2_rows_all,"id_doc"],,drop=F]))
+  text<-HTML(paste0("Correlation: <b>",correlation,"</b>"))
+  return(text)
+}))
+
+
+output$Det_TM_grouping_avg_topic_distribution_plot<-plotly::renderPlotly({
+  validate(
+    need(!is.null(input$Det_TM_grouping_group1_rows_all),message=F)
+  )
+  
+  ids_group1<-values$TM_meta[input$Det_TM_grouping_group1_rows_all,"id_doc"]
+  ids_group2<-values$TM_meta[input$Det_TM_grouping_group2_rows_all,"id_doc"]
+  theta_group1<-colMeans(values$tm_theta[ids_group1,,drop=F])
+  theta_group2<-colMeans(values$tm_theta[ids_group2,,drop=F])
+  
+  p<-plotly::plot_ly(z=rbind(theta_group2,theta_group1),x=paste0("Topic:",names(theta_group1)),y=c("Group 2","Group 1"),type="heatmap")%>%
+    plotly::layout(xaxis=list(type="category"),yaxis=list(type="category"))
+  return(p)
+})
+
+
+output$Det_TM_grouping_avg_topic_distribution_table<-DT::renderDataTable({
+  validate(
+    need(!is.null(input$Det_TM_grouping_group1_rows_all),message=F)
+  )
+  ids_group1<-values$TM_meta[input$Det_TM_grouping_group1_rows_all,"id_doc"]
+  ids_group2<-values$TM_meta[input$Det_TM_grouping_group2_rows_all,"id_doc"]
+  theta_group1<-colMeans(values$tm_theta[ids_group1,,drop=F])
+  theta_group2<-colMeans(values$tm_theta[ids_group2,,drop=F])
+  #browser()
+  
+  data<-rbind(theta_group1,theta_group2)
+  data<-round(data,digits = 3)
+  
+  colnames(data) <- paste0("<b>Topic ",1:ncol(values$tm_theta),"</b>")
+  rownames(data) <- c("Group 1","Group 2")
+  return(DT::datatable(data = data, selection = "none",escape=F,class = 'cell-border stripe',options = list(paging=F,dom="t"))%>%
+           formatStyle(colnames(data),
+                       background = styleColorBar(range(data), 'lightblue'),
+                       backgroundSize = '98% 88%',
+                       backgroundRepeat = 'no-repeat',
+                       backgroundPosition = 'center')
+  )
+})
+
+
+output$Det_TM_grouping_group1<-DT::renderDataTable({
+  validate(
+    need(length(input$Det_TM_grouping_group1_columns)>0,message="Select atleast one column for filtering")
+  )
+  meta<-values$TM_meta[,unique(union("title",input$Det_TM_grouping_group1_columns)),drop=F]
+  quantiles<-matrix(c(0),0,5)
+  for(i in 1:ncol(meta)){
+    if(all(varhandle::check.numeric(v = meta[,i],exceptions = "NA"))){
+      if(input$Det_TM_grouping_quantile_group1==TRUE){
+        quantiles<-rbind(quantiles,quantile(as.numeric(meta[,i]),na.rm = T))
+        rownames(quantiles)[nrow(quantiles)]<-colnames(meta)[i]
+        meta[,i]<-get_quantile_belonging(all_data = meta[,i],sample = meta[,i])
+        meta[which(is.na(meta[,i])),i]<-"NA"
+        meta[,i]<-as.factor(meta[,i])
+      }
+      else{
+        class(meta[,i])<-"numeric"
+      }
+    }
+    else{
+      if(colnames(meta)[i]=="affils"){
+        print("use regexp")
+      }
+      else{
+        meta[,i]<-as.factor(meta[,i])
+      }
+    }
+  }
+  values$Det_TM_grouping_quantiles_group1<-quantiles
+  datatable(data = meta,rownames = F,escape = F,selection = "none",filter = list(position='top',clear=TRUE),options=list(
+    autoWidth = TRUE,
+    search = list(regex = TRUE, caseInsensitive = FALSE))
+  )
+})
+
+output$Det_TM_grouping_quantile_group1_quantiles<-DT::renderDataTable({
+  validate(
+    need(
+      !is.null(values$Det_TM_grouping_quantiles_group1),message=F
+    )
+  )
+  data=values$Det_TM_grouping_quantiles_group1
+  datatable(data=data,rownames = T,selection="none",options=list(dom="t"))
+})
+
+
+
+
+output$Det_TM_grouping_group2<-renderDataTable({
+  validate(
+    need(length(input$Det_TM_grouping_group2_columns)>0,message="Select atleast one column for filtering")
+  )
+  meta<-values$TM_meta[,unique(union("title",input$Det_TM_grouping_group2_columns)),drop=F]
+  quantiles<-matrix(c(0),0,5)
+  for(i in 1:ncol(meta)){
+    if(all(varhandle::check.numeric(v = meta[,i],exceptions = "NA"))){
+      if(input$Det_TM_grouping_quantile_group2==TRUE){
+        quantiles<-rbind(quantiles,quantile(as.numeric(meta[,i]),na.rm = T))
+        rownames(quantiles)[nrow(quantiles)]<-colnames(meta)[i]
+        meta[,i]<-get_quantile_belonging(all_data = meta[,i],sample = meta[,i])
+        meta[which(is.na(meta[,i])),i]<-"NA"
+        meta[,i]<-as.factor(meta[,i])
+      }
+      else{
+        class(meta[,i])<-"numeric"
+      }
+    }
+    else{
+      if(colnames(meta)[i]=="affils"){
+        print("use regexp")
+      }
+      else{
+        meta[,i]<-as.factor(meta[,i])
+      }
+    }
+  }
+  values$Det_TM_grouping_quantiles_group2<-quantiles
+  datatable(data = meta,rownames = F,escape = F,selection = "none",filter = list(position='top',clear=TRUE),options=list(
+    autoWidth = TRUE,
+    search = list(regex = TRUE, caseInsensitive = FALSE))
+  )
+})
+
+output$Det_TM_grouping_quantile_group2_quantiles<-DT::renderDataTable({
+  validate(
+    need(
+      !is.null(values$Det_TM_grouping_quantiles_group2),message=F
+    )
+  )
+  data=values$Det_TM_grouping_quantiles_group2
+  datatable(data=data,rownames = T,selection="none",options=list(dom="t"))
+})
+
+
+
+output$Det_TM_grouping_wc_group1<-renderWordcloud2({
+  validate(
+    need(!is.null(input$Det_TM_grouping_group1_rows_all),message=F)
+  )
+  titles<-values$TM_meta[ input$Det_TM_grouping_group1_rows_all,"title"]
+  wordcloud2(data = data.frame(word=titles,freq=rep(1,length(titles))),size = 0.15,color = "random-light", backgroundColor = "black")
+  
+})
+output$Det_TM_grouping_wc_group2<-renderWordcloud2({
+  validate(
+    need(!is.null(input$Det_TM_grouping_group2_rows_all),message=F)
+  )
+  titles<-values$TM_meta[ input$Det_TM_grouping_group2_rows_all,"title"]
+  wordcloud2(data = data.frame(word=titles,freq=rep(1,length(titles))),size = 0.15,color = "random-light", backgroundColor = "black")
+  
+})
+
+
+
+
+
+###########################################################
+#               Model Reproducibility                     #
+###########################################################
+
+
+output$TM_model_reproducibility_UI<-renderUI({
+  
+  
+  return(tagList(
+    tags$br(),
+    uiOutput("Det_TM_model_reproducibility_avg_overlap")%>%withSpinner(),
+    tags$hr(),
+    DT::dataTableOutput(outputId = "Det_TM_model_reproducibility_result_table"),
+    
+    tags$h3("Specific Information"),
+    tags$br(),
+    column(1,
+           selectInput(inputId="Det_TM_model_reproducibility_specific_topic","Topic to analyze:",choices=1:nrow(values$tm_phi))
+    ),
+    column(5,
+           selectInput(inputId="Det_TM_model_reproducibility_specific_resultset","Resultset to compare with:",choices=input$Det_TM_reproducibility_models)
+    ),
+    tags$br(),
+    tags$hr(),
+    DT::dataTableOutput(outputId = "Det_TM_model_reproducibility_specific_table"),
+    tags$br(),
+    tags$hr(),
+    uiOutput(outputId = "Det_TM_model_reproducibility_specific_topic_reference_UI"),
+    wordcloud2Output(outputId = "Det_TM_model_reproducibility_specific_wordcloud")
+    
+  ))
+  
+  
+  
+})
+
+
+output$Det_TM_model_reproducibility_specific_table<-DT::renderDataTable({
+  validate(
+    need(!is.null(values$Det_TM_model_reproducibility_top_words_per_result_per_topic),"Please calculate the Average Values first"),
+    need(!is.null(isolate(input$Det_TM_reproducibility_models)),message=F)
+  )
+  found_match_percentage<-NULL
+  
+  topic_i<-values$Det_TM_model_reproducibility_top_words_per_result_per_topic[[1]][[as.numeric(input$Det_TM_model_reproducibility_specific_topic)]][1:isolate(input$Det_TM_reproducibility_number_of_words)]
+  matches<-NULL
+  max_sim<-NULL
+  j<-which(isolate(input$Det_TM_reproducibility_models)==input$Det_TM_model_reproducibility_specific_resultset)+1
+  similarities<-unlist(lapply(values$Det_TM_model_reproducibility_top_words_per_result_per_topic[[j]],FUN = function(x){
+    relative_number_of_shared_elements(a = topic_i,x[1:isolate(input$Det_TM_reproducibility_number_of_words)])
+  }))
+  data<-similarities
+  values$Det_TM_model_reproducibility_specific_number_of_reference_topics<-length(values$Det_TM_model_reproducibility_top_words_per_result_per_topic[[j]])
+  names(data)<-paste("Topic:",1:length(values$Det_TM_model_reproducibility_top_words_per_result_per_topic[[j]]))
+  data<-round(data,digits=3)
+  data<-t(as.data.frame(data))
+  datatable(data = data,selection=list(mode="single", target="cell"),rownames = F,class = 'cell-border stripe',
+            options=list(dom="t",pageLength=length(values$Det_TM_model_reproducibility_top_words_per_result_per_topic[[j]]))) %>%
+    formatStyle(colnames(data),
+                background = styleColorBar(range(data), 'lightblue'),
+                backgroundSize = '98% 88%',
+                backgroundRepeat = 'no-repeat',
+                backgroundPosition = 'center')
+})
+
+
+output$Det_TM_model_reproducibility_specific_topic_reference_UI<-renderUI({
+  validate(
+    need(!is.null(values$Det_TM_model_reproducibility_specific_number_of_reference_topics),message=F)
+  )
+  return(tagList(
+    fluidRow(
+      column(2,offset=1,
+             selectInput(inputId="Det_TM_model_reproducibility_specific_topic_reference",label="Reference Topic:",choices=1:values$Det_TM_model_reproducibility_specific_number_of_reference_topics)
+      ),
+      column(2,
+             numericInput(inputId="Det_TM_model_reproducibility_specific_wordcloud_size",value=0.3,min=0.001,max=2,step=0.05,label="wordcloud word size")
+      )
+    )
+  ))
+}) 
+
+
+output$Det_TM_model_reproducibility_specific_wordcloud<-wordcloud2::renderWordcloud2({
+  validate(
+    need(!is.null(input$Det_TM_model_reproducibility_specific_topic_reference),message=F),
+    need(isTRUE(values$Det_TM_model_reproducibility_calculated),"Please press Calculate first")
+  )
+  topic_i<-values$Det_TM_model_reproducibility_top_words_per_result_per_topic[[1]][[as.numeric(input$Det_TM_model_reproducibility_specific_topic)]][1:isolate(input$Det_TM_reproducibility_number_of_words)]
+  topic_j<-values$Det_TM_model_reproducibility_top_words_per_result_per_topic[[which(isolate(input$Det_TM_reproducibility_models)==input$Det_TM_model_reproducibility_specific_resultset)+1]][[as.numeric(input$Det_TM_model_reproducibility_specific_topic_reference)]][1:isolate(input$Det_TM_reproducibility_number_of_words)]
+  shared<-intersect(topic_i,topic_j)
+  just_i<-setdiff(topic_i,topic_j)
+  just_j<-setdiff(topic_j,topic_i)
+  colors_shared<-rep("chartreuse",length(shared))
+  colors_i<-rep("darkorange",length(just_i))
+  colors_j<-rep("aquamarine",length(just_j))
+  d<-c(shared,just_i,just_j)
+  d<-as.data.frame(cbind(d,rep(0.1,length(d))))
+  class(d$V2)<-"numeric"
+  colors<-c(colors_shared,colors_i,colors_j)
+  wc<-wordcloud2::wordcloud2(d,size=input$Det_TM_model_reproducibility_specific_wordcloud_size,color = colors,backgroundColor = "black", minRotation = -pi/2, maxRotation = -pi/2)   
+  return(wc)
+})
+
+observeEvent(input$Det_TM_reproducibility_calculate,ignoreNULL = F,{
+  output$Det_TM_model_reproducibility_avg_overlap<-renderUI({
+    top_words_per_result_per_topic<-list()
+    results<-c(values$Details_Data_TM,isolate(input$Det_TM_reproducibility_models))
+    validate(
+      need(length(results)>1,"Plese specify atleast one model to compare")
+    )
+    results<-paste0(results,"/data_TM.RData")
+    for(i in 1:length(results)){
+      load(results[i])
+      topics<-list()
+      rel<-calculate_topic_relevance(lambda = isolate(input$Det_TM_reproducibility_lambda),phi = phi,theta = theta,doc.length = doc.length)
+      for(j in 1:nrow(phi)){
+        topics[[j]]<-names(sort(rel[,j],decreasing = T)[1:isolate(input$Det_TM_reproducibility_number_of_words)])
+      }
+      top_words_per_result_per_topic[[i]]<-topics
+    }
+    values$Det_TM_model_reproducibility_top_words_per_result_per_topic<-top_words_per_result_per_topic
+    values$Det_TM_model_reproducibility_calculated<-TRUE
+    found_match_percentage<-NULL
+    ausgangsresult=1
+    for( i in 1:nrow(values$tm_phi)){
+      topic_i<-top_words_per_result_per_topic[[ausgangsresult]][[i]][1:isolate(input$Det_TM_reproducibility_number_of_words)]
+      matches<-NULL
+      max_sim<-NULL
+      for(j in setdiff(1:length(results),ausgangsresult)){
+        max_sim<-max(unlist(lapply(top_words_per_result_per_topic[[j]],FUN = function(x){
+          relative_number_of_shared_elements(a = topic_i,x[1:isolate(input$Det_TM_reproducibility_number_of_words)])
+        }))
+        )
+        if(max_sim>isolate(input$Det_TM_reproducibility_overlap)){
+          matches<-c(matches,1)
+        }
+        else{
+          matches<-c(matches,0)
+        }
+      }
+      matches<-mean(matches)
+      found_match_percentage<-c(found_match_percentage,matches)
+    }
+    
+    values$Det_TM_model_reproducibility_found_match_percentage<-found_match_percentage
+    return(HTML(paste0("Average Topic Overlap: <b>",mean(found_match_percentage),"</b>")))
+  })
+  
+  
+  
+  
+  output$Det_TM_model_reproducibility_result_table<-DT::renderDataTable({
+    validate(
+      need(!is.null(isolate(values$Det_TM_model_reproducibility_top_words_per_result_per_topic)),message=F),
+      need(!is.null(isolate(values$Det_TM_model_reproducibility_found_match_percentage)),message=F)
+    )
+    data<-paste("<b>",round(isolate(values$Det_TM_model_reproducibility_found_match_percentage),digits = 3),"</b>")
+    relevant_words<-unlist(lapply(isolate(values$Det_TM_model_reproducibility_top_words_per_result_per_topic[[1]]),FUN = function(x){
+      paste(x,collapse=", ")}
+    )
+    )
+    data<-cbind(data,relevant_words)
+    rownames(data)<-paste0("Topic: ",1:nrow(values$tm_phi))
+    colnames(data)<-c("Reproducibility","most relevant words")
+    datatable(data = data,options=list(dom="t",pageLength=nrow(values$tm_phi)),escape = F,selection = "single")
+  })
+})
+
+# change selected topic, if user selects a row in the overview table
+observe({
+  s = input$Det_TM_model_reproducibility_result_table_rows_selected
+  if (length(s)) {
+    updateSelectInput(session = session,inputId = "Det_TM_model_reproducibility_specific_topic",selected = as.numeric(s))
+  }
+})
+
+
+# change selected comparison topic, if user selects a row in the overview table
+observe({
+  s = input$Det_TM_model_reproducibility_specific_table_cells_selected
+  if (length(s)) {
+    updateSelectInput(session = session,inputId = "Det_TM_model_reproducibility_specific_topic_reference",selected = (as.numeric(s[1,2])+1))
+  }
+})
+
+
+
+
+
+
+
+
+
+

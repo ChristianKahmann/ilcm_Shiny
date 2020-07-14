@@ -78,8 +78,9 @@ error<-try(expr = {
   dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
-  #calculate co-occurrence statistics
+  #calculate co-occurrence statistics 
   log_to_file(message = "<b>Step 7/10: Calculating diachronic co-occurrence statistics</b>",file = logfile)
+
   diachron_data<-calculate_diachronic_cooccurrences(dtm = dtm,parameters = parameters,meta = db_data$meta)
   diachron_Coocs<-diachron_data$diachron_Coocs
   word_Frequencies<-diachron_data$word_Frequencies
@@ -89,6 +90,9 @@ error<-try(expr = {
   empty_terms<-diachron_data$empty_terms
   un_dates<-diachron_data$un_dates
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating co-occurrence slices",logfile)
+  
+
+
   
   
   #calculate volatility
@@ -115,7 +119,7 @@ error<-try(expr = {
   }
   log_to_file(message = " <b style='color:green'> ✔ </b>   Finished calculating volatility statistics",logfile)
   
-  
+   
   un_dates<-un_dates[(as.numeric(parameters$va_history)+1):length(un_dates)]
   diachron_Coocs<-diachron_Coocs[(as.numeric(parameters$va_history)+1):length(diachron_Coocs)]
   freq<-word_Frequencies[,(as.numeric(parameters$va_history)+1):dim(word_Frequencies)[2]]
@@ -131,12 +135,15 @@ error<-try(expr = {
   
   
   #Saving results
+  vocab<-rownames(voldata)
   log_to_file(message = "<b>Step 10/10: Saving results</b>",file = logfile)
   path<-paste(parameters$id,parameters$collection,sep = "_")
   path0<-paste0("collections/results/volatility-analysis/",path,"/")
   dir.create(path0)
   save(diachron_Coocs,file=paste0(path0,"CoocYears.RData"))
   save(ner_tags,pos_tags,file=paste0(path0,"tags.RData"))
+  write(paste(vocab,collapse=","),file = paste0(path0,"vocab_task",parameters$id,".txt"))
+  saveRDS(vocab,file=paste0(path0,"vocab_task",parameters$id,".RDS"))
   save(freq,file = paste0(path0,"freq.RData"))
   save(voldata,file = paste0(path0,"voldata.RData"))
   save(un_dates,file= paste0(path0,"labels.RData"))

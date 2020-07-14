@@ -122,6 +122,8 @@ observeEvent(input$Det_action_Sub,{
     values$Doc_search<-values$search+1
     values$Doc_solr_query<-stringr::str_replace(string=stringr::str_replace(string=response[2],pattern = "&wt=(.)+",replacement = ""),pattern = "start=[0-9]+&rows=[0-9]&",replacement="")
     values$Sub_search<-T
+    # reset list of documents that were marked for removal when a new search is started
+    values$Doc_delete_documents<-NULL
     shiny::removeModal()
   })
 })

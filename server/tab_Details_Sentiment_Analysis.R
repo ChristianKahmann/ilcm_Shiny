@@ -1,6 +1,5 @@
 
-##############Sentiments###############
-
+# render Sentiments dates aggreagted by date
 output$Det_Senti_date<-renderPlotly({
   validate(
     need(!is.null(values$Det_Senti_meta),message = F),
@@ -63,6 +62,8 @@ output$Det_Senti_date<-renderPlotly({
   return(p)
 })
 
+
+# render sentiments aggreagted by  document length
 output$Det_Senti_length<-renderPlotly({
   validate(
     need(!is.null(values$Det_Senti_meta),message = F)
@@ -121,118 +122,7 @@ output$Det_Senti_length<-renderPlotly({
   return(p)
 })
 
-
-
-# output$Det_Senti_author<-renderPlotly({
-#   meta<-values$Det_Senti_meta
-#   authors<-meta[,"author"]
-#   table_authors<-table(authors)
-#   
-#   unique_authors<-names(table_authors[which(table_authors>input$Det_SA_min_Author)])
-#   validate(
-#     need(length(unique_authors)>0,message=paste0("No author left with at least ",input$Det_SA_min_Author, " occurrences"))
-#   )
-#   results<-matrix(c(0),length(unique_authors),2)
-#   
-#   for(i in 1:length(unique_authors)){
-#     idx<-which(authors==unique_authors[i])
-#     if(length(idx)>0){
-#       results_for_bin<-list()
-#       for(j in 1:length(idx)){
-#         results_for_bin[[j]]<-meta[idx[j],14]
-#       }
-#       results[i,1]<-mean(na.omit(unlist(results_for_bin)))
-#       results[i,2]<-length(idx)
-#     }
-#     else{
-#       results[i,1]<-NA
-#       results[i,2]<-length(idx) 
-#     }
-#   }
-#   if(input$Det_SA_Lines==T){
-#     mode="markers+lines"
-#   }
-#   else{
-#     mode="markers"
-#   }
-#   p<-plot_ly(x=unique_authors,y=results[,1],type="scatter",mode=mode,name="avg. sentiment scores",marker = list(
-#     color = 'aquamarine',
-#     size = 14,
-#     line = list(
-#       color = 'darkblue',
-#       width = 2
-#     )))
-#   p<-plotly::add_trace(p = p,x=unique_authors,y=results[,2],mode=mode,type="scatter",name="number of documents found",yaxis="y2",marker = list(
-#     color = 'coral',
-#     size = 14,
-#     line = list(
-#       color = 'darkred',
-#       width = 2
-#     )
-#   ))
-#   p<-layout(p = p,barmode="group",legend=list(orientation="h",yanchor="bottom",xanchor="center",x=0.5,y=1),margin=list(r=50,b=150),yaxis2=list(rangemode="tozero",tickfont = list(color = "red"),overlaying = "y",side = "right",title = "number of documents found"),
-#             yaxis=list(rangemode = "tozero",title="Sentiment Score",type="linear",showgrid=T,showgrid = TRUE,showline = FALSE,showticklabels = TRUE,tickcolor = 'rgb(127,127,127)', ticks = 'outside', zeroline = T),
-#             xaxis=list(title="authors"))
-#   rownames(results)<-unique_authors
-#   values$Det_SA_DL_res<-results
-#   return(p)
-# })
-# 
-# 
-# output$Det_Senti_section<-renderPlotly({
-#   meta<-values$Det_Senti_meta
-#   sections<-meta[,"section"]
-#   table_sections<-table(sections)
-# 
-#   unique_sections<-names(table_sections[which(table_sections>input$Det_SA_min_Section)])
-#   results<-matrix(c(0),length(unique_sections),2)
-# 
-#   for(i in 1:length(unique_sections)){
-#     idx<-which(sections==unique_sections[i])
-#     if(length(idx)>0){
-#       results_for_bin<-list()
-#       for(j in 1:length(idx)){
-#         results_for_bin[[j]]<-meta[idx[j],14]
-#       }
-#       results[i,1]<-mean(na.omit(unlist(results_for_bin)))
-#       results[i,2]<-length(idx)
-#     }
-#     else{
-#       results[i,1]<-NA
-#       results[i,2]<-length(idx)
-#     }
-#   }
-#   if(input$Det_SA_Lines==T){
-#     mode="markers+lines"
-#   }
-#   else{
-#     mode="markers"
-#   }
-#   p<-plot_ly(x=unique_sections,y=results[,1],type="scatter",mode=mode,name="avg. sentiment scores",marker = list(
-#     color = 'aquamarine',
-#     size = 14,
-#     line = list(
-#       color = 'darkblue',
-#       width = 2
-#     )))
-#   p<-plotly::add_trace(p = p,x=unique_sections,y=results[,2],mode=mode,type="scatter",name="number of documents found",yaxis="y2",marker = list(
-#     color = 'coral',
-#     size = 14,
-#     line = list(
-#       color = 'darkred',
-#       width = 2
-#     )
-#   ))
-#   p<-layout(p = p,barmode="group",legend=list(orientation="h",yanchor="bottom",xanchor="center",x=0.5,y=1),margin=list(r=50,b=150),yaxis2=list(rangemode="tozero",tickfont = list(color = "red"),overlaying = "y",side = "right",title = "number of documents found"),
-#             yaxis=list(rangemode = "tozero",title="Sentiment Score",type="linear",showgrid=T,showgrid = TRUE,showline = FALSE,showticklabels = TRUE,tickcolor = 'rgb(127,127,127)', ticks = 'outside', zeroline = T),
-#             xaxis=list(title="sections"))
-#   rownames(results)<-unique_sections
-#   values$Det_SA_DL_res<-results
-#   return(p)
-# 
-# })
-
-
+# download csv containing sentiment data by date 
 output$Det_SA_download_timeseries<-downloadHandler(
   filename = function() {
     paste('Sentiment_Analysis-', Sys.Date(), '.csv', sep='')
@@ -245,8 +135,8 @@ output$Det_SA_download_timeseries<-downloadHandler(
 
 
 
-output$tab_Panels_senti_mde<-renderUI({
-  #browser()
+# placeholder for other sentiment plots aggragated by available metadata
+output$Det_Senti_tab_Panels_mde_UI<-renderUI({
   #check which metadata are avaiable
   meta<-values$Det_Senti_meta
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
@@ -255,6 +145,10 @@ output$tab_Panels_senti_mde<-renderUI({
   if(dim(rs)[1]>0){
     available<-rs
   }
+  validate(
+    need(exists("available"),"no extra metadata found"),
+    need(!is.null(available),message=F)
+  )
   not_empty_metadata<-names(which(apply(available,MARGIN = 2,function(x){!all(is.na(x))})))
   if(length(not_empty_metadata)>0){
     meta<-meta[,which(colnames(meta)%in%not_empty_metadata)]
@@ -833,4 +727,108 @@ output$senti_plot_9<-plotly::renderPlotly({
   rownames(results)<-unique_sections
   values$Det_SA_DL_res<-results
   return(p)
+})
+
+
+
+# validation tab for sentiments showing the original documents with highlights sentiment scores
+output$Det_Senti_validation_UI<-renderUI({
+  validate(
+    need(
+      !is.null(input$Det_SA_validation_document),message=FALSE
+    ),
+    need(
+      input$Det_SA_validation_document!="",message="please choose a document"
+    )
+  )
+  
+  identifier<-stringr::str_split(string = input$Det_SA_validation_document,pattern = "_",simplify = T)
+  dataset<-identifier[1]
+  doc_id<-identifier[2]
+  #browser()
+  title_score<-values$Det_Senti_meta[intersect(which(values$Det_Senti_meta[,"dataset"]==dataset),which(values$Det_Senti_meta[,"id_doc"]==doc_id)),c("title","scores")]
+  token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
+  # remove idx column from token
+  token<-token[,-ncol(token)]
+  
+  validate(
+    need(nrow(token)>0,message="Could not find doucments in the database")
+  )
+
+  load(paste0(values$Details_Data_SA,"/parameters.RData"))
+  space_ids<-which(token[,"pos"]=="SPACE")
+  if(length(space_ids)>0){
+    token<-token[-space_ids,]
+  }
+  
+  if(parameters$baseform_reduction=="none"){
+    features<-tolower(token[,"word"])  
+  }
+  if(parameters$baseform_reduction=="lemma"){
+    features<-tolower(token[,"lemma"])  
+  }
+  if(parameters$baseform_reduction=="stemming"){
+    features<-tolower(quanteda::tokens_wordstem(quanteda::tokens(paste(token[,"word"],collapse=" ")),lang)$text1)
+  }
+  token<-cbind(token,features)
+  token<-cbind(1:dim(token)[1],token)
+  
+  # load sentiment weights   
+  sentiments<-read.csv(file = paste0("collections/sentiments/",parameters$Sentiment_Dictionary))
+  colnames(sentiments)<-c("id","features","weight")
+  
+  
+  #browser()
+  m<-merge(x = token,y=sentiments,by = "features",all.x=TRUE)
+  m<-m[order(m[,2]),]
+  #getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+  #colors<-getPalette(10)
+  #colors<-colors[order(values$tm_theta[input$Det_TM_validation_document,],decreasing = F)]
+  m<-cbind(m,rep("",dim(m)[1]))
+  rbPal_pos <- colorRampPalette(c("red","white","chartreuse1"))
+  
+  m[intersect(which(!is.na(m$weight)),which(m$weight!=0)),13]<-  rbPal_pos(100)[as.numeric(cut(c(max(as.numeric(sentiments[,"weight"])),
+                                                                                                 min(as.numeric(sentiments[,"weight"])),
+                                                                                                 m$weight[intersect(which(!is.na(m$weight)),which(m$weight!=0))]),breaks = 100))[-c(1,2)]] #Alternative#seq(0,to = max(data$weight),length.out = 100) #original m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))]
+  
+  
+  strings<-apply(m,MARGIN = 1,FUN = function(x){
+    if(is.na(x[12])){
+      return(x[7])
+    }
+    else{
+      return( paste0('<font style="font-weight: bold; background-color:',x[13],';"','title="feature: ',x[1],' with weight: ',round(as.numeric(x[12]),digits = 5),'">',x[7],'</font>'))
+    }
+  })
+  
+  document<-list()
+  for(i in 1:dim(m)[1]){
+    document[[i]]<-paste0("<span span_nr='",i,"'>",strings[i],"</span>")
+  }
+  document<-do.call(rbind,document)
+  document<-HTML(document)
+  
+  return(tagList(
+    tags$h4(title_score[1]),
+    tags$h5(HTML(paste0("Document Sentiment Score: <b>",title_score[2],"</b>"))),
+    tags$hr(),
+    document
+  ))
+})
+
+
+
+# table showing the most "positive" documents
+output$Det_Senti_validation_table_positive<-DT::renderDataTable({
+  data<-values$Det_Senti_meta
+  data<-data[order(data$score,decreasing=T),c("title","scores")]
+  datatable(data = data,rownames=F,selection = "none")
+})
+
+
+# table showing the most "negative" documents
+output$Det_Senti_validation_table_negative<-DT::renderDataTable({
+  data<-values$Det_Senti_meta
+  data<-data[order(data$score,decreasing=F),c("title","scores")]
+  datatable(data = data,rownames=F,selection = "none")
 })

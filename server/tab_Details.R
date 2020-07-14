@@ -8,6 +8,7 @@ values$tm_stm_parameters_contentFormula <- ""
 #render parameter tagset depending on the process
 output$details_parameter<-renderUI({
   if(!is.null(values$Details_Analysis)){
+    # Parameters for Syntactic Parsing Visualization
     if(values$Details_Analysis=="SP"){
       load(paste0(values$Details_Data_SP,"/annotations.RData"))
       load(paste0(values$Details_Data_SP,"/meta.RData"))
@@ -22,6 +23,7 @@ output$details_parameter<-renderUI({
         )
       )
     }
+    # Parameters for Keyword Extraction Visualization
     if(values$Details_Analysis=="KE"){
       load(paste0(values$Details_Data_KE,"/stats.RData"))
       values$Det_KE_stats<-stats
@@ -36,6 +38,7 @@ output$details_parameter<-renderUI({
         )
       )
     }
+    # Parameters for Document Deduplication Visualization
     if(values$Details_Analysis=="DD"){
       load(paste0(values$Details_Data_DD,"/info_and_removal_candidates.RData"))
       values$Det_DD_info<-info
@@ -62,6 +65,7 @@ output$details_parameter<-renderUI({
         )
       )
     }
+    # Parameters for Classification Visualization
     if(values$Details_Analysis=="CL"){
       if(values$Details_CL_mode=="whole_collection"){
         load(paste0(values$Details_Data_CL,"/feature_matrix.RData"))
@@ -90,14 +94,14 @@ output$details_parameter<-renderUI({
                                ),
                              shinyWidgets::materialSwitch(inputId = "Det_CL_feature_show_labels",label = "show labels",value = TRUE,status = "default"),
                              downloadButton(outputId = "Det_CL_download_feature_matrix",label = "Download feature matrix",icon=icon("download"), style="position:fixed;
-  bottom:120px;")
+                                            bottom:120px;")
             ),
             conditionalPanel(condition = 'input.tabBox_classification=="Validation"',
                              selectInput(inputId = "Det_CL_feature_class2",label = "Category",choices = setdiff(rownames(feature_matrix),"NEG"),multiple = F),
                              uiOutput(outputId = "Det_CL_validation_document_UI")
             ),
             downloadButton(outputId = "Det_CL_download_texts",label = "Download examples",icon=icon("download"), style="position:fixed;
-  bottom:75px;")
+                           bottom:75px;")
           )
         )
       }
@@ -117,7 +121,10 @@ output$details_parameter<-renderUI({
         return(NULL)
       }
     }
+    # Parameters for Sentiment Analysis Visualization
     if(values$Details_Analysis=="SA"){
+      load(paste0(values$Details_Data_SA,"/data_Senti.RData"))
+      values$Det_Senti_meta<-meta
       return(
         tagList(
           conditionalPanel(condition = 'input.tabBox_senti=="Time Series"',
@@ -126,16 +133,20 @@ output$details_parameter<-renderUI({
           conditionalPanel(condition = 'input.tabBox_senti=="Document Length"',
                            numericInput(inputId = "Det_SA_max_breaks",label = "Maximal number of breaks",value = 25,min = 2,max = 1000)
           ),
-          conditionalPanel(condition='input.tabBox_senti!="Author" && input.tabBox_senti!="Section"',
+          conditionalPanel(condition='input.tabBox_senti!="Validation"',
                            checkboxInput(inputId = "Det_SA_Lines",label = "Draw Lines",value = FALSE)
           ),
-          conditionalPanel(condition='input.tabBox_senti!="Timeintervall" && input.tabBox_senti!="Document Length"',
+          conditionalPanel(condition='input.tabBox_senti=="Other meta data"',
                            numericInput(inputId = "Det_SA_min",label = "minimal number of occurrences to be shown in plot",value = 10,min = 2)
+          ),
+          conditionalPanel(condition='input.tabBox_senti=="Validation"',
+                           selectizeInput(inputId = "Det_SA_validation_document",label="Document:",choices=NULL,multiple=F),                  
           ),
           downloadButton(outputId = "Det_SA_download_timeseries",label = HTML("current plot data"),icon=icon("download"))
         )
       )
     }
+    # Parameters for Cooccurrence Analysis Visualization
     if(values$Details_Analysis=="CO"){
       #load data needed for selection on input words
       load(paste0(values$Details_Data_CO,"/data_Coocs.RData"))
@@ -193,6 +204,7 @@ output$details_parameter<-renderUI({
         )
       )
     }
+    # Parameters for Vector Space Visualization
     if(values$Details_Analysis=="VS"){
       #load data needed for selection on input words
       try({
@@ -245,6 +257,7 @@ output$details_parameter<-renderUI({
         )
       )
     }
+    # Parameters for Frequency Extractions Visualization
     if(values$Details_Analysis=="FE"){
       #load data needed for selection on input words
       load(paste0(values$Details_Data_FE,"/vocab.RData"))
@@ -266,6 +279,7 @@ output$details_parameter<-renderUI({
         )
       )
     }
+    # Parameters for Dictionary Extraction Visualization
     if(values$Details_Analysis=="DE"){
       #load data needed for selection on input words
       load(paste0(values$Details_Data_DE,"/vocab.RData"))
@@ -280,6 +294,7 @@ output$details_parameter<-renderUI({
         )
       )
     }
+    # Parameters for Volatility Analysis Visualization
     if(values$Details_Analysis=="VA"){
       #load data needed for selection on input words
       withProgress(message = 'Loading data', value = 0, {
@@ -340,15 +355,18 @@ output$details_parameter<-renderUI({
         )
       )
     }
+    # Parameters forTopic Modeling Visualization
     if(values$Details_Analysis=="TM"){
       #load tm resultset and make it available
       load(paste0(values$Details_Data_TM,"/data_TM.RData"))
       load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
+      task_id<-HTML(paste0("Task ID: <b>",as.character(values$tasks_tm[input$Topic_Results_rows_selected,"task.id"]),"</b>"))
       updateSelectizeInput(session = session,inputId = "Det_TM_ewf_word",server = T,choices = colnames(phi))
       values$TM_Coherence_show<-FALSE
       values$TM_Intrusion_show<-FALSE
       values$TM_topic_intrusion_run<-NULL
       values$TM_Intrusion_word_show<-FALSE
+      values$Det_TM_model_reproducibility_calculated<-FALSE
       values$TM_word_intrusion_run<-NULL
       values$tm_rel_counts <- round((colSums(theta * doc.length))*phi,digits = 2)
       values$tm_freqs<-term.frequency
@@ -365,8 +383,8 @@ output$details_parameter<-renderUI({
       values$tm_term.frequency<-term.frequency
       values$tm_meta<-meta
       mde_use<-colnames(meta_names[1,2:dim(meta_names)[2]])[which(!is.na(meta_names[1,2:dim(meta_names)[2]]))]
-      meta<-meta[,c("id","dataset","id_doc","token","language",mde_use)]
-      colnames(meta)<-c("id","dataset","id_doc","token","language",meta_names[,mde_use])
+      meta<-meta[,c("id","dataset","title","id_doc","token","language",mde_use)]
+      colnames(meta)<-c("id","dataset","title","id_doc","token","language",meta_names[,mde_use])
       values$TM_meta<-meta
       
       # #stm
@@ -468,7 +486,9 @@ output$details_parameter<-renderUI({
                                                    numericInput("TM_dict_number_of_words", "Number of words included in dictionary from each topic", min = 1, max = 5000, value = 25,step=1)
       )
       panelDetailedMetaDataAnalysis <- conditionalPanel(condition = 'input.tabBox_tm=="Detailed Metadata Distribution"',
-                                                        uiOutput(outputId = "Det_meta_select_ui")
+                                                        uiOutput(outputId = "Det_meta_select_ui"),
+                                                        tags$hr(),
+                                                        uiOutput(outputId = "Det_meta_select_ui2")
       )
       panelValidation <- conditionalPanel(condition = 'input.tabBox_tm=="Validation"',
                                           selectizeInput(inputId = "Det_TM_validation_document",label="Document:",choices=NULL,multiple=F),
@@ -505,20 +525,36 @@ output$details_parameter<-renderUI({
                                                conditionalPanel(condition='input.Det_TM_document_outlier_measure=="Correlation"',
                                                                 selectInput(inputId="Det_TM_document_outlier_correlation_method",label="Correlation method",choices=c("pearson","kendall","spearman"))
                                                ),
-                                               colourpicker::colourInput(inputId="Det_TM_document_outlier_color_low","color 1",value="firebrick"),
-                                               colourpicker::colourInput(inputId="Det_TM_document_outlier_color_high","color 2",value="cyan")
+                                               #colourpicker::colourInput(inputId="Det_TM_document_outlier_color_low","color 1",value="firebrick"),
+                                               #colourpicker::colourInput(inputId="Det_TM_document_outlier_color_high","color 2",value="cyan"),
+                                               downloadButton(outputId = "Det_TM_outlier_download_document_document_similarity_matrix",label = "document similarity-matrix"),
+                                               downloadButton(outputId = "Det_TM_outlier_download_list_of_outliers",label = "average similarity")
       )
       panelDocumentClustering <- conditionalPanel(condition='input.tabBox_tm=="Document Clustering"',
                                                   numericInput(inputId = "Det_TM_document_clustering_k","number of clusters for k-means clustering",value = 3,min = 1,max = 10),
                                                   numericInput(inputId = "Det_TM_document_clustering_max_iterations","maximum number of iterations",value = 5,min = 10,max = 50),
                                                   numericInput(inputId = "Det_TM_document_clustering_n_start","number of random sets",value = 25,min = 1,max = 50),
-                                                  numericInput(inputId = "Det_TM_document_clustering_marker_size","size of markers",value = 8,min = 1,max = 25),
+                                                  numericInput(inputId = "Det_TM_document_clustering_marker_size","size of markers",value = 10,min = 1,max = 25),
                                                   downloadButton(outputId = "Det_TM_document_clustering_download_clustering_result",label = "current clustering result",icon=icon("download"))
       )
       panelTopicDispersion <- conditionalPanel(condition = 'input.tabBox_tm=="Topic Dispersion"',
                                                selectizeInput(inputId="Det_TM_dispersion_topic",label="Topic",choices=1:values$tm_number_of_topics,multiple=T,selected=character(0)),
                                                knobInput(inputId = "Det_TM_dispersion_probability_threshold",label = "Minimal Probability",value = 0.2,min = 0,max = 1,step = 0.01)
                                                
+      )
+      panelDocumentGrouping <- conditionalPanel(condition = 'input.tabBox_tm=="Document Grouping"',
+                                                checkboxGroupInput(inputId = "Det_TM_grouping_group1_columns",label = "Columns for filtering Group 1",choices = colnames(values$TM_meta)),
+                                                checkboxGroupInput(inputId = "Det_TM_grouping_group2_columns",label = "Columns for filtering Group 2",choices = colnames(values$TM_meta))
+      )
+      panelModelReproducibility <- conditionalPanel(condition = 'input.tabBox_tm=="Model Reproducibility"',
+                                                    selectInput(inputId = "Det_TM_reproducibility_models",label = "Models to compare",multiple=T,
+                                                                choices = setNames(nm = apply(X = stringr::str_split(list.files("collections/results/topic-model/"),pattern = "_",simplify = T)[,1:2],MARGIN = 1,FUN = function(x){paste(x,collapse=" ")}),
+                                                                                   object =list.files(path = "collections/results/topic-model/",full.names = T))
+                                                    ),
+                                                    bsButton(inputId = "Det_TM_reproducibility_calculate",label = "Calculate",icon = icon("play"),style = "default"),
+                                                    numericInput(inputId="Det_TM_reproducibility_lambda",label="lambda for relevance score",min=0,max=1,value=0.5,step=0.1),
+                                                    numericInput(inputId="Det_TM_reproducibility_number_of_words",label="number of top n words to compare",min=1,max=200,value=30,step=5),
+                                                    numericInput(inputId="Det_TM_reproducibility_overlap",label="needed percentage for a topic map",min=0.1,max=1,value=0.5,step=0.1)
       )
       #stm
       if(values$tm_method == "stm"){
@@ -562,6 +598,8 @@ output$details_parameter<-renderUI({
       
       if(values$tm_method =="stm"){
         returnValue <-  tagList(
+          tags$h5(task_id),
+          tags$hr(),
           panelLDAVIs,
           panelEstWordFrequencies,
           panelCoherence,
@@ -573,10 +611,14 @@ output$details_parameter<-renderUI({
           panelDocumentComparison,
           panelDocumentOutlier,
           panelDocumentClustering,
+          panelDocumentGrouping,
+          panelModelReproducibility,
           panelSTM
         )
       }else{
         returnValue <-  tagList(
+          tags$h5(task_id),
+          tags$hr(),
           panelLDAVIs,
           panelEstWordFrequencies,
           panelCoherence,
@@ -587,7 +629,9 @@ output$details_parameter<-renderUI({
           panelTopicDispersion,
           panelDocumentComparison,
           panelDocumentOutlier,
-          panelDocumentClustering
+          panelDocumentClustering,
+          panelDocumentGrouping,
+          panelModelReproducibility
         )
       }
       return (returnValue)
@@ -615,8 +659,7 @@ output$details_visu<-renderUI({
       names(choices)<-paste0(title_data$title," (",title_data$id_doc,")")
       updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = choices)
       updateSelectizeInput(session = session,inputId = "Det_TM_document_comparison_document",server = T,choices = choices)
-      
-      #stm
+
       
       #return visu for topic modeling
       tabPanelLDAVis <- tabPanel("LDA-Vis",
@@ -679,6 +722,12 @@ output$details_visu<-renderUI({
       )
       tabPanelClustering <- tabPanel("Document Clustering",
                                      uiOutput("TM_document_clustering_UI")
+      )
+      tabPanelGrouping <- tabPanel("Document Grouping",
+                                   uiOutput("TM_document_grouping_UI")
+      )
+      tabPanelReproducibility <- tabPanel("Model Reproducibility",
+                                          uiOutput("TM_model_reproducibility_UI")
       )
       
       # additional panels specific for stm
@@ -831,6 +880,8 @@ output$details_visu<-renderUI({
                  tabPanelDocumentComparison,
                  tabPanelDocumentOutlier,
                  tabPanelClustering,
+                 tabPanelGrouping,
+                 tabPanelReproducibility,
                  tabPanelSTM
           )
           
@@ -850,7 +901,9 @@ output$details_visu<-renderUI({
                  tabPanelValidation,
                  tabPanelDocumentComparison,
                  tabPanelDocumentOutlier,
-                 tabPanelClustering
+                 tabPanelClustering,
+                 tabPanelGrouping,
+                 tabPanelReproducibility
           )
         )
       }
@@ -1192,8 +1245,13 @@ output$details_visu<-renderUI({
       )
     }
     if(values$Details_Analysis=="SA"){
-      load(paste0(values$Details_Data_SA,"/data_Senti.RData"))
-      values$Det_Senti_meta<-meta
+      validate(
+        need(!is.null(values$Det_Senti_meta),message=F)
+      )
+      title_data<-values$Det_Senti_meta[,c("title","id_doc","dataset","scores")]
+      choices<-paste(title_data$dataset,title_data$id_doc,sep="_")
+      names(choices)<-paste0(title_data$title," (",round(title_data$scores,digits = 2),")")
+      updateSelectizeInput(session = session,inputId = "Det_SA_validation_document",choices = choices,server = T)
       return(
         tagList(
           tabBox(id="tabBox_senti",width=12,
@@ -1204,7 +1262,23 @@ output$details_visu<-renderUI({
                           plotlyOutput(outputId = "Det_Senti_length")
                  ),
                  tabPanel("Other meta data",
-                          uiOutput("tab_Panels_senti_mde")
+                          uiOutput("Det_Senti_tab_Panels_mde_UI")
+                 ),
+                 tabPanel("Validation",
+                          tabsetPanel(id = "Det_Senti_validation_tabs",
+                            tabPanel(title = "Documents",
+                          uiOutput("Det_Senti_validation_UI")
+                            ),
+                            tabPanel("Top Documents",
+                                     tags$br(),
+                                     box(title = "Most Positive",status = "success",solidHeader = T,width = 6,
+                                         DT::dataTableOutput("Det_Senti_validation_table_positive")
+                                         ),
+                                     box(title = "Most Negative",status = "danger",solidHeader = T,width = 6,
+                                         DT::dataTableOutput("Det_Senti_validation_table_negative")
+                                     ),
+                            )
+                          )
                  )
           )
         )
@@ -1304,13 +1378,10 @@ source(file.path("server","tab_Details_Syntactic_Parsing.R"),local = T)$value
 
 
 
-output$Details_FA_selected<-reactive({
-  values$Details_Analysis=="FA"
-})
 
 outputOptions(output,"details_visu",suspendWhenHidden=FALSE)
 outputOptions(output,"TM_LDAvis",suspendWhenHidden=FALSE)
-outputOptions(output, "Details_FA_selected", suspendWhenHidden = FALSE)
+
 
 
 

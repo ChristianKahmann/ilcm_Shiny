@@ -47,7 +47,6 @@ library(zip)
 library(stringi)
 library(readr)
 library(refi)
-library(factoextra)
 # tell library future how to handle requests; used when solr updates are started from inside the app in order to be able to continue using the app and not having to wait until the solr update is finished
 plan(multiprocess)
 
@@ -80,6 +79,7 @@ source("global/get_token_from_db.R")
 source("global/get_metadata_from_db.R")
 source("global/deduplication_decision.R")
 source("global/task_id_functions.R")
+source("global/get_qunatile_belonings.R")
 source("global/update-input.R")
 source("global/refi/db.R")
 source("global/refi/df.R")
@@ -91,6 +91,8 @@ source("global/refi/plaintext_selection.R")
 source("global/refi/xml.R")
 source("global/refi/modals.R")
 source("global/change_annotation_offset_methods.R")
+source("global/relative_number_of_shared_elements.R")
+source("global/mixed_assoc.R")
 # load the available themes
 source("www/ilcm_dashboard_theme.R")
 # load the current settings
@@ -141,7 +143,7 @@ ui <- dashboardPage(
   dashboardBody(
     #show loading screen on startup
     waiter::use_waiter(),
-    #use specified dashboardstyle
+    #specified dashboardstyle
     dashboardstyle,
     # enable shinyjs
     shinyjs::useShinyjs(),
@@ -181,6 +183,7 @@ server <- function(input, output, session) {
   values$db_port<-db_port
   values$user<-"unknown"
   values$logged_in<-FALSE
+  values$random_seed<-random_seed
   options(shiny.maxRequestSize=max_upload_file_size*1024^2) 
   USER<- reactiveValues(login = hide_login)
   # when the app load start with the Explorer Tab selected
@@ -228,43 +231,80 @@ server <- function(input, output, session) {
     values$user<-"unknown"
   })
   
+  
+
   #source the server parts of the app
+  # render the overall UI structure of the applications's body
   source(file.path("server","tab_body_overall.R"),local = T)$value
+  # render the overall UI Structure of the sidebar
   source(file.path("server","tab_sidebar_overall.R"),local = T)$value
+  # options menu
   source(file.path("server","System_Load_Menu.R"),local = T)$value
+  # server part for simple search
   source(file.path("server","tab_Simple.R"),local = T)$value
+  # server part for detailed search
   source(file.path("server","tab_Detailed.R"),local = T)$value
-  source(file.path("server","tab_Search_Results.R"),local = T)$value
-  source(file.path("server","tab_Document_View.R"),local = T)$value
-  source(file.path("server","tab_DV_Annotations.R"),local = T)$value
-  source(file.path("server","tab_Annotations.R"),local = T)$value
-  source(file.path("server","tab_Facets.R"),local = T)$value
-  source(file.path("server","tab_Time_Series.R"),local = T)$value
-  source(file.path("server","tab_ShinyAce.R"),local = T)$value
-  source(file.path("server","tab_Projects.R"),local = T)$value
-  source(file.path("server","tab_Task_Scheduler.R"),local = T)$value
-  source(file.path("server","tab_save_Collection.R"),local = T)$value
-  source(file.path("server","tab_Scripting.R"),local = T)$value
-  source(file.path("server","tab_My_Tasks.R"),local = T)$value
-  source(file.path("server","tab_Results.R"),local = T)$value
-  source(file.path("server","tab_Details.R"),local = T)$value
-  source(file.path("server","tab_Importer.R"),local = T)$value
-  source(file.path("server","tab_Documents.R"),local=T)$value
-  source(file.path("server","tab_Document_View2.R"),local=T)$value
-  source(file.path("server","tab_Document_View3.R"),local=T)$value
-  source(file.path("server","tab_Create_Annotation_Set.R"),local=T)$value
-  source(file.path("server","tab_Remove_Lists.R"),local=T)$value
-  source(file.path("server","tab_Keep_Lists.R"),local=T)$value
+  # server part for custom search
   source(file.path("server","tab_Custom.R"),local=T)$value
-  source(file.path("server","tab_Script_inside_App.R"),local=T)$value
+  # server parth for rendering the search results
+  source(file.path("server","tab_Search_Results.R"),local = T)$value
+  # server part for rendering the document view in the explorer part
+  source(file.path("server","tab_Document_View.R"),local = T)$value
+  # server part for the Annotations funcitonality in document view in explorer part
+  source(file.path("server","tab_DV_Annotations.R"),local = T)$value
+  # server part for the annotations in categories
+  source(file.path("server","tab_Annotations.R"),local = T)$value
+  # server part for the facet view in Explorer
+  source(file.path("server","tab_Facets.R"),local = T)$value
+  # server part for the time series plots in explorer
+  source(file.path("server","tab_Time_Series.R"),local = T)$value
+  # server part for managing the projects in categories
+  source(file.path("server","tab_Projects.R"),local = T)$value
+  # server part for the task scheduler; the analysis specific task scheduler server parts are sourced in here
+  source(file.path("server","tab_Task_Scheduler.R"),local = T)$value
+  # server part for saving collections in explorer
+  source(file.path("server","tab_save_Collection.R"),local = T)$value
+  # server part for Scripting of analysis scripts
+  source(file.path("server","tab_Scripting.R"),local = T)$value
+  # server part for My Tasks area showing the log files
+  source(file.path("server","tab_My_Tasks.R"),local = T)$value
+  # server part of the overall results are in collection worker; the analysis sepcific result server parts are sourced in here
+  source(file.path("server","tab_Results.R"),local = T)$value
+  # server part of the overall Details View; the analysis specific detailed server parts are sources in here
+  source(file.path("server","tab_Details.R"),local = T)$value
+  # server part for the import functionalities
+  source(file.path("server","tab_Importer.R"),local = T)$value
+  # server part for the documents area in collections worker
+  source(file.path("server","tab_Documents.R"),local=T)$value
+  # server parth of the document view in the collection worker
+  source(file.path("server","tab_Document_View_Collection_Worker.R"),local=T)$value
+  # server part of the document view in categories 
+  source(file.path("server","tab_Document_View_Categories.R"),local=T)$value
+  # server part of the annotation scheme functionalities
+  source(file.path("server","tab_Create_Annotation_Set.R"),local=T)$value
+  # server part for managing the blacklists
+  source(file.path("server","tab_Remove_Lists.R"),local=T)$value
+  # server part for managing the whitelists
+  source(file.path("server","tab_Keep_Lists.R"),local=T)$value
+  # server part for showing the available collecitons in collection worker
   source(file.path("server","tab_Collections.R"),local=T)$value
+  # server part for the classification area
   source(file.path("server","tab_Classifications.R"),local=T)$value
+  # server parting for managing the dictionaries
   source(file.path("server","tab_Dictionaries.R"),local=T)$value
+  # server part of the simple search in the collection worker 
   source(file.path("server","tab_Simple_Sub.R"),local=T)$value
+  # server part of the detailed search in the collection worker
   source(file.path("server","tab_Detailed_Sub.R"),local=T)$value
+  # server part of the custom search in the collection worker
   source(file.path("server","tab_Custom_Sub.R"),local=T)$value
+  # server part of the export functionalities
   source(file.path("server","tab_Exporter.R"),local=T)$value
-  source(file.path("server","tab_Refi_Export.R"),local=T)$value  
+  # server part for managing vocabularies
+  source(file.path("server","tab_Vocabularies.R"),local=T)$value
+  # server part for REFI exports
+  source(file.path("server","tab_Refi_Export.R"),local=T)$value 
+  # server part for REFI imports
   source(file.path("server","tab_Refi_Import.R"),local=T)$value
   # allow reconnect to app if connection got disturbed
   session$allowReconnect(TRUE)
@@ -272,4 +312,6 @@ server <- function(input, output, session) {
 
 # start the app
 shiny::shinyApp(ui,server)
+
+
 

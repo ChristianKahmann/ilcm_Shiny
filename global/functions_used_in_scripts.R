@@ -215,6 +215,31 @@ if_empty_return_NULL<-function(string){
 
 
 calculate_dtm<-function(token,parameters,tibble=F,lang){
+  # if useser chooses to use a predefined vocabulary
+  if(!is.null(parameters$use_fixed_vocab)){
+    if(parameters$use_fixed_vocab==TRUE){
+      vocab_words<-paste0(readRDS(paste0("collections/vocabularies/",parameters$fixed_vocab)),collapse=",")
+      #vocab_words<-readChar(con=paste0("collections/vocabularies/",parameters$fixed_vocab),nchars = file.info(paste0("collections/vocabularies/",parameters$fixed_vocab))$size)
+      #vocab_words<-stringr::str_replace_all(string = vocab_words,pattern = ", ",replacement = ",")
+      #vocab_words<-stringr::str_replace_all(string = vocab_words,pattern = " ,",replacement = ",")
+      #vocab_words<-stringr::str_replace_all(string = vocab_words,pattern = ",,",replacement = ",")
+      #vocab_words<-stringr::str_replace_all(string = vocab_words,pattern = ",[ ]+,",replacement = ",")
+      #vocab_words<-stringr::str_remove_all(string = vocab_words,pattern = "\n")
+      #vocab_words<-stringr::str_remove_all(string = vocab_words,pattern = "[\\p{P}\\p{S}&&[^_,]]+")
+      #vocab_words<-stringr::str_remove_all(string = vocab_words,pattern = "[⁰¹²³⁴⁵⁶⁷⁸⁹]+")
+      
+      #vocab_words<-stringr::str_split(string = vocab_words,pattern = ",",simplify = T)[1,]
+      #empty<-which(vocab_words=="")
+      #if(length(empty)>0){
+      #  vocab_words<-vocab_words[-empty]
+      #}
+      
+      
+      parameters$keep_custom<-stringr::str_remove(string = paste(parameters$keep_custom,vocab_words,sep = ","),pattern = "^,")
+      parameters$whitelist_only<-T
+    }
+  }
+  
   tow<-tmca.util::TextObjectWrapper$new()
   control=plyr::compact(
     list(
@@ -233,7 +258,8 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
       expand_save_custom=parameters$whitelist_expand,
       just_save_custom=parameters$whitelist_only
     )
-  )
+  )  
+
   # split token
   splitsize<-ceiling(100000/(dim(token)[1]/length(unique(token[,1]))))
   split<-split(unique(token[,1]), ceiling(seq_along(unique(token[,1]))/splitsize))
@@ -242,6 +268,7 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
   loghelper<-floor(seq(1,length(split),length.out = 11))[2:11]
   names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
   for(i in 1:length(split)){
+    print(i)
     tow$logging("silent")
     tow$input(x = token[which(token[,1]%in%split[[i]]),])
     if(i==1){
@@ -310,7 +337,6 @@ calculate_diachronic_cooccurrences<-function(dtm,parameters,meta){
   ids<-stringr::str_split(string = rownames(dtm),pattern = "_",simplify = T)[,1:2]
   ids<-paste(ids[,1],ids[,2],sep="_")
   coocsCalc <- tmca.cooccurrence::Coocc$new(dtm)
-  
   #calculate cooc-slices
   diachron_Coocs<-list()
   if(parameters$va_timeintervall=="week"){
@@ -319,10 +345,20 @@ calculate_diachronic_cooccurrences<-function(dtm,parameters,meta){
   if(parameters$va_timeintervall=="month"){
     db_data$meta[,2]<<-(substr(as.matrix(db_data$meta[,2]),1,7))
   }
-  if(parameters$va_timeintervall=="year"){
-    db_data$meta[,2]<<-(substr(as.matrix(db_data$meta[,2]),1,4))
+  if(parameters$va_timeintervall=="quarter"){
+    db_data$meta[,2]<<-zoo::as.yearqtr(db_data$meta[,2], format = "%Y-%m-%d")
   }
-  un_dates<-as.matrix(unique(db_data$meta[,2]))
+  if(parameters$va_timeintervall=="year"){
+    db_data$meta[,2]<<-(substr(as.matrix(as.character(db_data$meta[,2])),1,4))
+  }
+  
+  if(parameters$va_timeintervall=="quarter"){
+    un_dates<-as.matrix(as.character(unique(db_data$meta[,2])))
+  }
+  else{
+    un_dates<-as.matrix(unique(db_data$meta[,2]))
+  }
+  
   un_dates<-un_dates[order(un_dates,decreasing = F)]
   
   freq<-matrix(c(0),dim(dtm)[2],length(un_dates))
@@ -335,6 +371,7 @@ calculate_diachronic_cooccurrences<-function(dtm,parameters,meta){
   
   loghelper<-floor(seq(1,length(un_dates),length.out = 11))[2:11]
   names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+  #browser()
   for(d in un_dates){
     count<-count+1
     idx<-which(ids%in%db_data$meta[which(db_data$meta[,2]==d),1])

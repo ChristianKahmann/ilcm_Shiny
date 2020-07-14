@@ -92,7 +92,7 @@ observeEvent(input$save_annotation_tagset,{
     isolate(values$anno<-NULL)
     path<-paste0("collections/annotation_schemes/",input$project_selected,".RData")
     save(anno,file=path)
-    values$update_projects<-runif(1,0,1)
+    values$newscheme<-runif(1,0,1)
   }
   else{
     showModal(
@@ -114,7 +114,6 @@ observeEvent(input$Save_Tagset_confirm,{
   isolate(values$anno<-NULL)
   path<-paste0("collections/annotation_schemes/",input$Save_Tagset_name,".RData")
   save(anno,file=path)
-  values$update_projects<-runif(1,0,1)
   values$newscheme<-runif(1,0,1)
 })
 

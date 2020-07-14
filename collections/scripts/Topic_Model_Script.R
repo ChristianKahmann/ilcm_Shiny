@@ -30,7 +30,6 @@ error<-try(expr = {
   
   
   
-  
   #sanity check
   log_to_file(message = "<b>Step 3/13: Sanity check</b>",file = logfile)
   #token object not empty
@@ -90,11 +89,10 @@ error<-try(expr = {
   
   #calculating dtm
   log_to_file(message = "<b>Step 8/13: Calculating DTM</b>",file = logfile)
-  dtm <- calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
+  dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
-  
-  
+  #save.image(paste0("data_TM_Pruning_",Sys.Date(),".RData"))
   
   
   log_to_file(message = "<b>Step 9/13: Clean vocabulary from non asci2 characters</b>",file = logfile)
@@ -140,90 +138,150 @@ error<-try(expr = {
   
   #calculate topic model
   log_to_file(message = "<b>Step 11/13: Create Topic Model</b>",file = logfile)
-  t <- tmca.unsupervised::tmodel$new(method =parameters$tm_method)
-  t$input_preprocessed(dtm = dtm,documents)
-  
-  # specific for Structural Topic Models because it has different parameters
-  if(parameters$tm_method == "stm"){
+  if(isTRUE(parameters_original$tm_use_precalculated_topic_model)){
+    #browser()
+    log_to_file(message = "&emsp;Use of a predefinded topic model",file = logfile)
+    info_orig<-info
+    load(paste0("collections/results/topic-model/",parameters_original$tm_precalculated_topic_model,"/data_TM.RData"))
+    info<-info_orig
+    rm(info_orig)
+    #infer new documents using old topic model
+    log_to_file(message = "&emsp;Infering new documents...",file = logfile)
     
-    # meta data: set names from mde1/mde2 etc to real meta names
-    metaDataToUse <- combineMetaDataWithMetaNamesForMDEs(meta, meta_names)
-    
-    # get all stm parameters from parameters and also set metadata
-    parametersNeededForSTM <- t$get_parameters() # work around for missing parameters
-    parametersNeededForSTM[["metaData"]] <- metaDataToUse
-    parametersNeededForSTM[["K"]] <- parameters$tm_number_of_topics
-    prevalence <- NULL
-    if(nchar(parameters$stm_prevalenceFormula)>0) {prevalence <- as.formula(parameters$stm_prevalenceFormula)}
-    parametersNeededForSTM[["prevalence"]] <- prevalence
-    contentFormula <- NULL
-    if(nchar(parameters$stm_contentFormula)>0) {contentFormula <- as.formula(parameters$stm_contentFormula)}
-    parametersNeededForSTM[["content"]] <- contentFormula
-    parametersNeededForSTM[["init.type"]] <- parameters$stm_init_type
-    parametersNeededForSTM[["max.em.its"]] <- parameters$stm_max_em_its
-    parametersNeededForSTM[["emtol"]] <- parameters$stm_emtol
-    parametersNeededForSTM[["LDAbeta"]] <- parameters$stm_LDAbeta
-    parametersNeededForSTM[["interactions"]] <- parameters$stm_interactions
-    parametersNeededForSTM[["ngroups"]] <- parameters$stm_ngroups
-    parametersNeededForSTM[["gamma.prior"]] <- parameters$stm_gamma_prior
-    parametersNeededForSTM[["sigma.prior"]] <- parameters$stm_sigma_prior
-    parametersNeededForSTM[["kappa.prior"]] <- parameters$stm_kappa_prior
-    
-    parametersToUse <- copyListButRemoveNullValuesAndEmptyStringValues(parametersNeededForSTM)
-    
-    t$set_parameters(par_list = parametersToUse)
+    result<-t$infer_topics(dtm = dtm)
+    t$.__enclos_env__$private$theta<-result
     
     
-  }else{
-    t$set_parameters(par_list = list("alpha"=as.numeric(parameters$tm_alpha),"K"=parameters$tm_number_of_topics))
+    log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating topic model",file = logfile)
+    
+    log_to_file(message = "<b>Step 12/13: Create Variables for Visulization</b>",file = logfile)
+    model<-t$get_model()
+    theta<-result
+    phi<-model$phi
+    #set column names and row names for theta and phi
+    
+    if(is.null(colnames(theta))){colnames(theta) <- 1:ncol(theta)} # topic names
+    if(is.null(rownames(theta))){rownames(theta) <- dtm@Dimnames$docs} # doc names
+    
+    if(is.null(colnames(phi))){colnames(phi) <- dtm@Dimnames$features} # vocab
+    if(is.null(rownames(phi))){rownames(phi) <- 1:nrow(phi)} # topic names
+    
+    doc.length<-Matrix::rowSums(dtm)
+    vocab<-colnames(phi)
+    #append unknown vocab to dtm
+    unknown_vocab<-Matrix(c(0),nrow(dtm),length(setdiff(vocab,colnames(dtm))))
+    colnames(unknown_vocab)<-setdiff(vocab,colnames(dtm))
+    dtm<-cbind(dtm,unknown_vocab)
+    term.frequency<-Matrix::colSums((dtm[,vocab]))
+    topic.frequency <- colSums(theta * doc.length)
+    topic.proportion <- topic.frequency/sum(topic.frequency)
+    o <- order(topic.proportion, decreasing = TRUE)
+    phi <- phi[o, ]
+    theta <- theta[, o]
+    topic.frequency <- topic.frequency[o]
+    topic.proportion <- topic.proportion[o]
+    json <- LDAvis::createJSON(
+      phi = phi, 
+      theta = theta, 
+      doc.length = doc.length, 
+      vocab = vocab, 
+      term.frequency = term.frequency,
+      reorder.topics=FALSE
+    )
+    log_to_file(message = "  <b style='color:green'> ✔ </b>  ",file = logfile)
+    
+    
+  }
+  else{
+    #delete columns from dtm if they dont occur
+    empty<-which(colSums(dtm)==0)
+    if(length(empty)>0){
+      dtm<-dtm[,-empty]
+    }
+    t <- tmca.unsupervised::tmodel$new(method =parameters$tm_method)
+    t$input_preprocessed(dtm = dtm,documents)
+    
+    # specific for Structural Topic Models because it has different parameters
+    if(parameters$tm_method == "stm"){
+      
+      # meta data: set names from mde1/mde2 etc to real meta names
+      metaDataToUse <- combineMetaDataWithMetaNamesForMDEs(meta, meta_names)
+      # get all stm parameters from parameters and also set metadata
+      parametersNeededForSTM <- t$get_parameters() # work around for missing parameters
+      parametersNeededForSTM[["metaData"]] <- metaDataToUse
+      parametersNeededForSTM[["K"]] <- parameters$tm_number_of_topics
+      prevalence <- NULL
+      if(nchar(parameters$stm_prevalenceFormula)>0) {prevalence <- as.formula(parameters$stm_prevalenceFormula)}
+      parametersNeededForSTM[["prevalence"]] <- prevalence
+      contentFormula <- NULL
+      if(nchar(parameters$stm_contentFormula)>0) {contentFormula <- as.formula(parameters$stm_contentFormula)}
+      parametersNeededForSTM[["content"]] <- contentFormula
+      parametersNeededForSTM[["init.type"]] <- parameters$stm_init_type
+      parametersNeededForSTM[["max.em.its"]] <- parameters$stm_max_em_its
+      parametersNeededForSTM[["emtol"]] <- parameters$stm_emtol
+      parametersNeededForSTM[["LDAbeta"]] <- parameters$stm_LDAbeta
+      parametersNeededForSTM[["interactions"]] <- parameters$stm_interactions
+      parametersNeededForSTM[["ngroups"]] <- parameters$stm_ngroups
+      parametersNeededForSTM[["gamma.prior"]] <- parameters$stm_gamma_prior
+      parametersNeededForSTM[["sigma.prior"]] <- parameters$stm_sigma_prior
+      parametersNeededForSTM[["kappa.prior"]] <- parameters$stm_kappa_prior
+      
+      parametersToUse <- copyListButRemoveNullValuesAndEmptyStringValues(parametersNeededForSTM)
+      
+      t$set_parameters(par_list = parametersToUse)
+      
+      
+    }
+    else{
+      t$set_parameters(par_list = list("alpha"=parameters$tm_alpha,"K"=parameters$tm_number_of_topics))
+    }
+    
+    t$create_tm()
+    
+    log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating topic model",file = logfile)
+    
+    log_to_file(message = "<b>Step 12/13: Create Variables for Visulization</b>",file = logfile)
+    model<-t$get_model()
+    theta<-model$theta
+    phi<-model$phi
+    
+    #set column names and row names for theta and phi
+    if(is.null(colnames(theta))){colnames(theta) <- sapply(seq(1:parameters$tm_number_of_topics), function(x) x)} # topic names
+    if(is.null(rownames(theta))){rownames(theta) <- dtm@Dimnames$docs} # doc names
+    if(is.null(colnames(phi))){colnames(phi) <- dtm@Dimnames$features} # vocab
+    if(is.null(rownames(phi))){rownames(phi) <- sapply(seq(1:parameters$tm_number_of_topics), function(x) x)} # topic names
+    
+    
+    doc.length<-Matrix::rowSums(dtm)
+    vocab<-colnames(phi)
+    term.frequency<-Matrix::colSums((dtm[,vocab]))
+    topic.frequency <- colSums(theta * doc.length)
+    topic.proportion <- topic.frequency/sum(topic.frequency)
+    o <- order(topic.proportion, decreasing = TRUE)
+    phi <- phi[o, ]
+    theta <- theta[, o]
+    topic.frequency <- topic.frequency[o]
+    topic.proportion <- topic.proportion[o]
+    json <- LDAvis::createJSON(
+      phi = phi, 
+      theta = theta, 
+      doc.length = doc.length, 
+      vocab = vocab, 
+      term.frequency = term.frequency,
+      reorder.topics=FALSE
+    )
+    log_to_file(message = "  <b style='color:green'> ✔ </b>  ",file = logfile)
   }
   
-  t$create_tm()
-  
-  
-  log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating topic model",file = logfile)
-  
-  log_to_file(message = "<b>Step 12/13: Create Variables for Visulization</b>",file = logfile)
-  model<-t$get_model()
-  theta<-model$theta
-  phi<-model$phi
-  
-  #set column names and row names for theta and phi
-  if(is.null(colnames(theta))){colnames(theta) <- sapply(seq(1:parameters$tm_number_of_topics), function(x) x)} # topic names
-  if(is.null(rownames(theta))){rownames(theta) <- dtm@Dimnames$docs} # doc names
-  if(is.null(colnames(phi))){colnames(phi) <- dtm@Dimnames$features} # vocab
-  if(is.null(rownames(phi))){rownames(phi) <- sapply(seq(1:parameters$tm_number_of_topics), function(x) x)} # topic names
-  
-  
-  doc.length<-Matrix::rowSums(dtm)
-  vocab<-colnames(phi)
-  term.frequency<-Matrix::colSums((dtm[,vocab]))
-  topic.frequency <- colSums(theta * doc.length)
-  topic.proportion <- topic.frequency/sum(topic.frequency)
-  o <- order(topic.proportion, decreasing = TRUE)
-  phi <- phi[o, ]
-  theta <- theta[, o]
-  topic.frequency <- topic.frequency[o]
-  topic.proportion <- topic.proportion[o]
-  json <- LDAvis::createJSON(
-    phi = phi, 
-    theta = theta, 
-    doc.length = doc.length, 
-    vocab = vocab, 
-    term.frequency = term.frequency,
-    reorder.topics=FALSE
-  )
-  log_to_file(message = "  <b style='color:green'> ✔ </b>  ",file = logfile)
-  
-  
-  
-  
+
   #Saving results
   log_to_file(message = "<b>Step 13/13: Saving results</b>",file = logfile)
   lang<-db_data$language
   path0<-paste0("collections/results/topic-model/",paste(process_info[[1]],process_info[[2]],process_info[[4]],sep="_"),"/")
   dir.create(path0)
   save(model,t,theta,phi,doc.length,vocab,term.frequency,json,info,lang,file = paste0(path0,"data_TM.RData"))
+  write(paste(vocab,collapse=","),file = paste0(path0,"vocab_task",parameters$id,".txt"))
+  saveRDS(vocab,file=paste0(path0,"vocab_task",parameters$id,".RDS"))
   save(dtm,file=paste0(path0,"dtm_TM.RData"))
   save(documents_original,file=paste0(path0,"documents_TM.RData"))
   #save(rel_counts,freqs,file=paste0(path0,"est_counts_TM.RData"))

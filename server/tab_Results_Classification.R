@@ -140,7 +140,7 @@ output$Classification_Results <- renderDataTable({
 })
 
 
-#check wheather a certain result was clicked and then switch with needed information to details tab
+#check wheather a certain result was clicked and then switch with needed information to classification tab
 observeEvent(input$Classification_Results_rows_selected,ignoreInit = T,{
   s = input$Classification_Results_rows_selected
   if (length(s)) {
@@ -149,14 +149,17 @@ observeEvent(input$Classification_Results_rows_selected,ignoreInit = T,{
               values$Classification_Results_Files[s])
     if(grepl(x = values$Classification_Results_Files[s],pattern = "activeLearning")||grepl(x = values$Classification_Results_Files[s],pattern = "activeLearning_documents")){
       values$Details_CL_mode<-"activeLearning"
-      print("wechsel jetzt")
+      # change selcted sidebar tab to categories
       updateTabItems(session=session,
                      inputId="tabs",
                      selected="Categories")
+      # change selected navbar tab to Classifications
       updateTabsetPanel(session = session,
                         inputId = "category",
                         selected = "Classifications")
-      return(NULL)
+      # update chosen project to used annotation schema in selected task
+       values$classification_project<-values$tasks_class[s,"Project"]
+       return(NULL)
     }
     else{
       if(grepl(x = values$Classification_Results_Files[s],pattern = "evaluateTraining")){
@@ -212,6 +215,7 @@ observeEvent(input$more_details_classification_results,{
   }
 })
 
+# show chosen parameters for classification results 
 output$more_details_classification_table<-DT::renderDataTable({
   validate(
     need(values$class_selected_row>0,message=F)

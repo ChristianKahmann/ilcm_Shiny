@@ -208,8 +208,8 @@ split_test_view <- function(type) {
       conditionalPanel(
         condition = display_condition,
         column(6,
-          column(9,textInput(inputId = paste0(method_regex_label, "2"),label = "Regular Expression:", value = input[[method_regex_label]])),
-          column(3,actionButton("Import_live_split_test", "Test Split", style = "info", block=T))
+               column(9,textInput(inputId = paste0(method_regex_label, "2"),label = "Regular Expression:", value = input[[method_regex_label]])),
+               column(3,actionButton("Import_live_split_test", "Test Split", style = "info", block=T))
         )
       )
     ),
@@ -255,7 +255,6 @@ sanity_check_Modal <- function(type, data_check_choices) {
     }
     
     regex_check <- is.na(str_extract(regarding_data,regex(sanity_check_regex)))
-    
     data.frame(id_doc = values[[id_doc_label]], characters = nchar(regarding_data), valid_encoding, detected_language, regex_check)
   }, server = FALSE, selection = "single")
   
@@ -277,13 +276,13 @@ sanity_check_Modal <- function(type, data_check_choices) {
         ids = paste(values[[id_doc_label]])
         xlab = list(categoryorder = "array", categoryarray = ids)
         plot_ly(y = nchar(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]), x = ids, type = "bar",
-                marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>% layout(title = "Lenght", xaxis = xlab)
+                marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>% layout(title = "Length", xaxis = xlab,yaxis=list(title="number of characters"))
       }),
-      p("NOTE: Use unice 'id_doc' to see character lenght individually - otherwise it gets stacked"),
+      p("NOTE: Use unice 'id_doc' to see character length individually - otherwise it gets stacked"),
       hr(),
       DT::dataTableOutput('sanity_check_table'),
-      p(tags$b("valid_encoding")," - returns true is no error is found, checks date format if date is selected"),
-      p(tags$b("regex_check")," - returns true is nothing is found"),
+      p(tags$b("valid_encoding")," - returns true if no error is found, checks date format if date is selected"),
+      p(tags$b("regex_check")," - returns true if nothing is found"),
       p("NOTE: Language detection might fail - especially with short text"),
       hr(),
       h5("Content"),
@@ -295,7 +294,6 @@ sanity_check_Modal <- function(type, data_check_choices) {
 ##########################################################################################################
 #                                import csv                                                              #
 ##########################################################################################################
-values$Import_csv_id_doc<-""
 values$Import_csv_title<-""
 values$Import_csv_date<-""
 values$Import_csv_body<-""
@@ -352,7 +350,7 @@ observeEvent(input$Import_csv_new,ignoreInit = T,{
 observeEvent(input$Import_load_csv,{
   withBusyIndicatorServer("Import_load_csv", {
     values$data_csv<-readr::read_delim(file = paste0("data_import/unprocessed_data/",input$Import_csv_files),col_names = input$Import_load_csv_header,
-                                     delim = input$import_load_csv_seperator,na = character() )
+                                       delim = input$import_load_csv_seperator,na = character() )
     colnames(values$data_csv)<-stringr::str_replace_all(string = colnames(values$data_csv),pattern = "\\.",replacement = " ")
     values$Import_csv_scripts<-rep(default_script_decription_import,13) # 13 for id_doc, title, date, body and 9 mde's
     if(dim(values$data_csv)[1]<2 | dim(values$data_csv)[2]<2){
@@ -439,11 +437,6 @@ output$UI_Import_csv_column_name <- renderUI({
     )
 })
 
-output$UI_Import_csv_id_doc<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_id_doc",label = "Map id_doc",
-                                   choices = c("automatic",values$header_csv),
-                                   fill=T,animation = "pulse",selected = "automatic")
-})
 
 output$UI_Import_csv_title<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_title",label = "Map title",
@@ -572,32 +565,6 @@ observe({
 })
 
 
-#id_doc
-script_events("id_doc", "csv", 2)
-type_events("id_doc", "csv")
-
-observe({
-  validate(
-    need(!is.null(input$Import_csv_id_doc),message=FALSE),
-    need(input$Import_csv_id_doc%in%c(colnames(values$data_csv),"automatic"),message=FALSE)
-  )
-  if(input$Import_csv_id_doc=="automatic"){
-    #check max id_doc in database for specified dataset
-    offset=NA
-    if(input$Import_csv_dataset!=""){
-      mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
-      print(paste0("SELECT MAX(id_doc) FROM ilcm.documents where dataset=",input$Import_csv_dataset,";"))
-      offset<-RMariaDB::dbGetQuery(mydb,paste0("SELECT MAX(id_doc) FROM ilcm.documents where dataset='",input$Import_csv_dataset,"';"))[1,1]
-    }
-    if(is.na(offset)){
-      offset=0
-    }
-    values$Import_csv_id_doc<-(offset+1):(offset+dim(values$data_csv)[1])
-  }
-  else{
-    values$Import_csv_id_doc<-as.vector(as.matrix(values$data_csv[,input$Import_csv_id_doc]))
-  }
-})
 
 
 #body
@@ -681,7 +648,19 @@ observe_mde("mde9", "csv")
 output$Import_csv_metadata<-DT::renderDataTable({
   if(values$start_mapping==T){
     dataset<-input$Import_csv_dataset
-    id_doc<-values$Import_csv_id_doc
+    # get id_doc automatically by finding an offset in database if abbreviation is  already used
+    #check max id_doc in database for specified dataset
+    offset=NA
+    if(input$Import_csv_dataset!=""){
+      mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
+      print(paste0("SELECT MAX(id_doc) FROM ilcm.documents where dataset=",input$Import_csv_dataset,";"))
+      offset<-RMariaDB::dbGetQuery(mydb,paste0("SELECT MAX(id_doc) FROM ilcm.documents where dataset='",input$Import_csv_dataset,"';"))[1,1]
+    }
+    if(is.na(offset)){
+      offset=0
+    }
+    id_doc<-(offset+1):(offset+dim(values$data_csv)[1])
+    values$Import_csv_id_doc<-id_doc
     
     title<-values$Import_csv_title
     date<-values$Import_csv_date
@@ -800,7 +779,7 @@ output$Import_csv_metadata_names_warning<-renderUI({
   }
   return(tagList(
     tags$div(HTML(paste0("There is already a corpus existing with the abbreviation:",tags$b(isolate(input$Import_csv_dataset)),". If you like to add data to this corpus, be aware of the used mde's:"))
-             ),
+    ),
     DT::dataTableOutput(outputId = "Import_csv_metadatanames_table"),
     tags$br(),
     Icon
@@ -811,7 +790,7 @@ output$Import_csv_metadata_names_warning<-renderUI({
 output$Import_csv_metadatanames_table<-DT::renderDataTable({
   data =values$Import_csv_metadatanames_data
   validate(
-    need(dim(data)[2]>0,message="In the database aswell in the current setting no mde's are beeing used.")
+    need(dim(data)[2]>0,message="In the database aswell as in the current setting no mde's are beeing used.")
   )
   table<-DT::datatable( data = data,class = 'cell-border stripe',
                         options=list(dom="t",selection="none",columnDefs=list(list(targets=c(((ncol(data)/2)+1):ncol(data)),visible=F))))%>%
@@ -1159,7 +1138,6 @@ observeEvent(input$Import_csv_sanity_check,{
 ##########################################################################################################
 #                                import multiple text files   MTF                                        #
 ##########################################################################################################
-values$Import_mtf_id_doc<-""
 values$Import_mtf_title<-""
 values$Import_mtf_date<-""
 values$Import_mtf_body<-""
@@ -1232,7 +1210,7 @@ observeEvent(input$Import_load_mtf,{
     colnames(file_data)[1] <- "file_id"
     data<-cbind(id = row.names(file_data),file_data)
     values$Import_mtf_scripts<-rep(default_script_decription_import,13) # 13 for id_doc, title, date, body and 9 mde's
-
+    
     values$header_mtf<-colnames(data)
     values$data_mtf<-data
     values$data_load_mtf_success<-TRUE
@@ -1321,18 +1299,13 @@ observeEvent(input$Import_check_mtf,{
 output$UI_Import_mtf_column_name <- renderUI({
   select_value <- input$Import_mtf_column_name
   selectInput(inputId = "Import_mtf_column_name", "Column:", choices=values$header_mtf, selected = select_value)%>%
-  shinyInput_label_embed(
-    icon("info") %>%
-      bs_embed_tooltip(title = "Select a column with the data you want to split.")
-  )
+    shinyInput_label_embed(
+      icon("info") %>%
+        bs_embed_tooltip(title = "Select a column with the data you want to split.")
+    )
 })
 
-output$UI_Import_mtf_id_doc<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_id_doc",label = "Map id_doc",
-                                   choices = c("automatic",values$header_mtf),
-                                   fill=T,animation = "pulse",selected = "automatic")
-  
-})
+
 
 output$UI_Import_mtf_title<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_title",label = "Map title",
@@ -1462,33 +1435,6 @@ observe({
 })
 
 
-#id_doc
-script_events("id_doc", "mtf", 2)
-type_events("id_doc", "mtf")
-
-observe({
-  validate(
-    need(!is.null(input$Import_mtf_id_doc),message=FALSE),
-    need(input$Import_mtf_id_doc%in%c(colnames(values$data_mtf),"automatic"),message=FALSE)
-  )
-  if(input$Import_mtf_id_doc=="automatic"){
-    #check max id_doc in database for specified dataset
-    offset=NA
-    if(input$Import_mtf_dataset!=""){
-      mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
-      #print(paste0("SELECT MAX(id_doc) FROM ilcm.documents where dataset=",input$Import_mtf_dataset,";"))
-      offset<-RMariaDB::dbGetQuery(mydb,paste0("SELECT MAX(id_doc) FROM ilcm.documents where dataset='",input$Import_mtf_dataset,"';"))[1,1]
-    }
-    if(is.na(offset)){
-      offset=0
-    }
-    values$Import_mtf_id_doc<-(offset+1):(offset+dim(values$data_mtf)[1])
-  }
-  else{
-    values$Import_mtf_id_doc<-as.vector(as.matrix(values$data_mtf[,input$Import_mtf_id_doc]))
-  }
-})
-
 
 #body
 script_events("body", "mtf", 3)
@@ -1572,7 +1518,20 @@ observe_mde("mde9", "mtf")
 output$Import_mtf_metadata<-DT::renderDataTable({
   if(values$start_mapping_mtf==T){
     dataset<-input$Import_mtf_dataset
-    id_doc<-values$Import_mtf_id_doc
+    
+    #check max id_doc in database for specified dataset
+    offset=NA
+    if(input$Import_mtf_dataset!=""){
+      mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
+      #print(paste0("SELECT MAX(id_doc) FROM ilcm.documents where dataset=",input$Import_mtf_dataset,";"))
+      offset<-RMariaDB::dbGetQuery(mydb,paste0("SELECT MAX(id_doc) FROM ilcm.documents where dataset='",input$Import_mtf_dataset,"';"))[1,1]
+    }
+    if(is.na(offset)){
+      offset=0
+    }
+    id_doc<-(offset+1):(offset+dim(values$data_mtf)[1])
+    values$Import_mtf_id_doc<-id_doc
+    
     title<-values$Import_mtf_title
     date<-values$Import_mtf_date
     body<-values$Import_mtf_body

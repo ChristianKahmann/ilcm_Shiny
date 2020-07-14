@@ -136,6 +136,8 @@ observeEvent(input$Det_action,{
       values$start=1
       values$search<-values$search+1
       values$solr_query<-stringr::str_replace(string=stringr::str_replace(string=response[2],pattern = "&wt=(.)+",replacement = ""),pattern = "start=[0-9]+&rows=[0-9]&",replacement="")
+      # reset the list of documents which were marked to remove when a new search is started     
+       values$delete_documents<-NULL
       #switch to search results tab
       updateTabsetPanel(session = session,inputId = "expl",selected = "Search Results")
     }

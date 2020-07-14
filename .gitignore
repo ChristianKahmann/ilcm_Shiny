@@ -61,10 +61,13 @@ packrat/lib*/
 !/collections/results/volatility-analysis/.gitkeep
 /collections/results/syntactic-parsing/*
 !/collections/results/syntactic-parsing/.gitkeep
-/collections/tmp/*
+/collections/tmp/*  
+!/collections/tmp/refi/.gitkeep
 !/collections/tmp/.gitkeep
 /collections/ecpmf_resources/*
 !/collections/ecpmf_resources/.gitkeep
+/data_import/refi/*
+!/data_import/refi/xsd
 /play/*
 config_file.R
 /global/escape_quotes.R

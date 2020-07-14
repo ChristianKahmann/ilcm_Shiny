@@ -5,6 +5,22 @@ output$Analysis_Parameter_CA<-renderUI({
     tags$hr(),
     #standard parameters
     fluidRow(
+      column(2,
+             checkboxInput(inputId="CA_use_fixed_vocab",label="use fixed vocabulary?",value=F)   %>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Use an already existing vocabulary instead of performing a parameterized preprocessing. Vocabularies can be added and adjusted in Scripts > Vocabularies.", placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             conditionalPanel(condition = 'input.CA_use_fixed_vocab==true',
+                              selectInput(inputId="CA_fixed_vocab",label="found vocabularies",choices=list.files("collections/vocabularies/",full.names = F),multiple=F)
+             )
+      )
+    ),
+    fluidRow(
       column(1,
              selectInput(inputId = "CA_baseform",label = "Baseform Reduction",choices = c("lemma","stemming","none"),selected = "none")#,
              #shinyBS::bsPopover(id = "CA_baseform", title = "Specify whether and how to do baseform reduction. The options are stemming, lemmatization or no baseorm reduction.",
@@ -17,14 +33,6 @@ output$Analysis_Parameter_CA<-renderUI({
                    )
                )
       ),
-      column(2,
-             sliderInput(inputId = "CA_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
-                     ,html=T)
-               )),
       column(1,
              selectInput(inputId = "CA_ngram",label = "N-grams",choices = c(1,2,3),selected = 1,multiple = T)%>%
                shinyInput_label_embed(
@@ -34,6 +42,17 @@ output$Analysis_Parameter_CA<-renderUI({
                    )
                )),
       column(2,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
+             sliderInput(inputId = "CA_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
+                     ,html=T)
+               )
+               )),
+           column(2,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              textInput(inputId = "CA_remove_custom",label = HTML("Remove custom words"),placeholder ="Add words (Seperated by ,)")%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -41,8 +60,10 @@ output$Analysis_Parameter_CA<-renderUI({
                      title = "Delete specific words from the analysis. Seperate them with ','.", placement = "right"
                    )
                )
+               )
       ),
       column(2,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              textInput(inputId = "CA_keep_custom",label = HTML("Keep custom words"),placeholder ="Add words (Seperated by ,)")%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -50,17 +71,10 @@ output$Analysis_Parameter_CA<-renderUI({
                      title = "Keep specific words in the analysis. Seperate them with ','. If both custom words and whitelist are specified, they will be merged together.", placement = "right"
                    )
                )
+             )
       )
     ),
     fluidRow(
-      column(1,
-             checkboxInput(inputId = "CA_remove_stopwords",label = "Remove Stopwords",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
-                   )
-               )),
       column(1,
              checkboxInput(inputId = "CA_lowercase",label = "Transform tokens to lowercase?",value = T)%>%
                shinyInput_label_embed(
@@ -70,36 +84,54 @@ output$Analysis_Parameter_CA<-renderUI({
                    )
                )),
       column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
+             checkboxInput(inputId = "CA_remove_stopwords",label = "Remove Stopwords",value = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
+                   )
+               )
+               )),
+      column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              checkboxInput(inputId = "CA_remove_numbers",label = "Remove Numbers?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove types which consist of numbers only from the analysis.", placement = "bottom"
                    )
+               )
                )),
       column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              checkboxInput(inputId = "CA_remove_numbers_all",label = "Remove everything containing a number number?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove words which are composed of at least one number.", placement = "right"
                    )
+               )
                )),
       column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              checkboxInput(inputId = "CA_remove_punctuation",label = "Remove Punctuation?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove words, which reflect punctuation from the analysis.", placement = "right"
                    )
+               )
                )),
       column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              checkboxInput(inputId = "CA_remove_hyphenation",label = "Remove Hyphenation?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove words, which reflect hyphens from the analysis.", placement = "right"
                    )
+               )
                )),
       column(1,
              checkboxInput(inputId = "CA_consolidate_entities",label = "Consolidate Entities?",value = F)%>%
@@ -110,6 +142,7 @@ output$Analysis_Parameter_CA<-renderUI({
                    )
                ))
     ),
+    conditionalPanel(condition='input.CA_use_fixed_vocab==false',
     fluidRow(
       column(1,
              checkboxInput(inputId = "CA_use_custom_blacklist",label = "use custom blacklist?",value = F)%>%
@@ -234,7 +267,7 @@ output$Analysis_Parameter_CA<-renderUI({
                               numericInput(inputId = "CA_max_docfreq_q",label = "max. doc quantile",min = 0,max = 1,step = 0.25,value=NULL)
              )
       )
-      
+    ) 
     ),
     #specific parameters
     tags$hr(),
@@ -261,6 +294,7 @@ output$Analysis_Parameter_CA<-renderUI({
                )
       ),
       column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              selectInput(inputId = "CA_POS_TYPES",label = "Include POS-Types",
                          choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X") ,selected = "all",multiple = T)%>%
                shinyInput_label_embed(
@@ -270,8 +304,10 @@ output$Analysis_Parameter_CA<-renderUI({
                      placement = "right"
                    )
                )
+             )
       ),
       column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              selectInput(inputId = "CA_ENTITY_TYPES",label = " Include NER-Tags",
                          choices =c("all","PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
                                     "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = "all",multiple=T)%>%
@@ -282,10 +318,12 @@ output$Analysis_Parameter_CA<-renderUI({
                      placement = "right"
                    )
                )
+             )
       )
     ),
     fluidRow(
       column(1,offset=2,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              selectInput(inputId = "CA_POS_TYPES_exclude",label = "Exclude POS-Types",
                          choices =c("NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X"), selected=character(0),multiple = T)%>%
                shinyInput_label_embed(
@@ -295,8 +333,10 @@ output$Analysis_Parameter_CA<-renderUI({
                      placement = "right"
                    )
                )
+             )
       ),
       column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              selectInput(inputId = "CA_ENTITY_TYPES_exclude",label = "Exclude NER-Tags",
                          choices =c("PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
                                     "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = character(0),multiple=T)%>%
@@ -307,6 +347,7 @@ output$Analysis_Parameter_CA<-renderUI({
                      placement = "right"
                    )
                )
+             )
       )
     ),
     bsButton(inputId = "CA_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
@@ -443,7 +484,9 @@ observeEvent(input$CA_Submit_Script,{
                      use_whitelist=input$CA_use_custom_whitelist,
                      whitelist=input$CA_whitelist,
                      whitelist_expand=input$CA_whitelist_expand,
-                     whitelist_only=input$CA_whitelist_only
+                     whitelist_only=input$CA_whitelist_only,
+                     use_fixed_vocab=input$CA_use_fixed_vocab,
+                     fixed_vocab=input$CA_fixed_vocab
     )
     #create process ID
     ID<-get_task_id_counter()+1
@@ -547,7 +590,9 @@ observeEvent(input$CA_pruning_continue,ignoreInit = T,{
                    use_whitelist=input$CA_use_custom_whitelist,
                    whitelist=input$CA_whitelist,
                    whitelist_expand=input$CA_whitelist_expand,
-                   whitelist_only=input$CA_whitelist_only
+                   whitelist_only=input$CA_whitelist_only,
+                   use_fixed_vocab=input$CA_use_fixed_vocab,
+                   fixed_vocab=input$CA_fixed_vocab
   )
   #create process ID
   ID<-get_task_id_counter()+1

@@ -169,7 +169,15 @@ observeEvent(input$openOptionsModal, {
                          column(4,
                                 numericInput(inputId = "options_max_size_import",label = "max upload size for data import in Mb",value = max_upload_file_size,min = 5,max = 1000,step = 1)
                          )
-                )
+                ),
+                fluidRow(style="margin-left:0px;margin-right:0px",
+                         column(3,
+                                tags$span(icon("random"),tags$b("Random Seed"))
+                         ),
+                         column(4,
+                                numericInput(inputId = "options_random_seed",label = "Random Seed",value = values$random_seed,min = 1,max = 9999,step = 1)
+                         )
+                ),
                 
     )
   )
@@ -305,6 +313,14 @@ observeEvent(ignoreInit = T,input$options_max_size_import,{
   config<-stringr::str_replace_all(string = config,pattern = "^max_upload_file_size=.{1,20}$",replacement = paste0("max_upload_file_size=",input$options_max_size_import))
   writeLines(config,con="config_file.R")
   options(shiny.maxRequestSize=input$options_max_size_import*1024^2) 
+})
+
+#change random seed
+observeEvent(ignoreInit = T,input$options_random_seed,{
+  config<-readLines("config_file.R")
+  config<-stringr::str_replace_all(string = config,pattern = "^random_seed=.{1,20}$",replacement = paste0("random_seed=",input$options_random_seed))
+  writeLines(config,con="config_file.R")
+  values$random_seed<-input$options_random_seed
 })
 
 

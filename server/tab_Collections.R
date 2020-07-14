@@ -189,8 +189,8 @@ output$Collection_TS <- renderPlotly({
   ))
   dates <- values$collection_time_series
   missing_dates <-
-    seq.Date(from = min(as.Date(dates[, 1])),
-             to = max(as.Date(dates[, 1])),
+    seq.Date(from = min(as.Date(dates[, 1]),na.rm=T),
+             to = max(as.Date(dates[, 1]),na.rm=T),
              by = "day")
   if (input$Collection_TS_timeintervall == "day") {
     dates[, 1] <- substr(dates[, 1], 1, 10)

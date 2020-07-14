@@ -52,56 +52,55 @@ error<-try(expr = {
   
   
   #get keywords
-  if(parameters$KE_Mode=="without reference"){
-    token<-db_data$token[,2:7]
-    colnames(token)<-c("doc_id","sentence_id","token_id","token","lemma","upos")
-    if(parameters$lowercase==TRUE){
-      token$token<-tolower(token$token)
-      token$lemma<-tolower(token$lemma)
-    }
-    if(parameters$baseform_reduction=="lemma"){
-      term<-"lemma"
+  token<-db_data$token[,2:7]
+  colnames(token)<-c("doc_id","sentence_id","token_id","token","lemma","upos")
+  if(parameters$lowercase==TRUE){
+    token$token<-tolower(token$token)
+    token$lemma<-tolower(token$lemma)
+  }
+  if(parameters$baseform_reduction=="lemma"){
+    term<-"lemma"
+  }
+  else{
+    term<-"token"
+  }
+  log_to_file(message = paste0("<b>Step 5/6: Identifying Keywords using strategy ",parameters$KE_no_ref_method,"</b>"),file = logfile)
+  if(parameters$KE_no_ref_method=="RAKE"){
+    relevant=token$upos %in% parameters$KE_filter
+    if(length(relevant)>0){
+      stats <- keywords_rake(x = token, term = term, group = "sentence_id", ngram_max = parameters$KE_no_ref_ngram_max,n_min = parameters$KE_no_ref_n_min,
+                             relevant =token$upos %in% parameters$KE_filter,sep = parameters$KE_seperator)
     }
     else{
-      term<-"token"
+      log_to_file(message = "&emsp;<b style='color:red'>&#10008; No relevant words were selected to be used in RAKE. Check your settings.</b>",logfile)
+      stop("no relevant words selected for RAKE")
     }
-    log_to_file(message = paste0("<b>Step 5/6: Identifying Keywords using strategy ",parameters$KE_no_ref_method,"</b>"),file = logfile)
-    if(parameters$KE_no_ref_method=="RAKE"){
-      relevant=token$upos %in% parameters$KE_filter
-      if(length(relevant)>0){
-        stats <- keywords_rake(x = token, term = term, group = "sentence_id", ngram_max = parameters$KE_no_ref_ngram_max,n_min = parameters$KE_no_ref_n_min,
-                               relevant =token$upos %in% parameters$KE_filter,sep = parameters$KE_seperator)
-      }
-      else{
-        log_to_file(message = "&emsp;<b style='color:red'>&#10008; No relevant words were selected to be used in RAKE. Check your settings.</b>",logfile)
-        stop("no relevant words selected for RAKE")
-      }
-    }
-    if(parameters$KE_no_ref_method=="PMI Collocation"){
-      stats <- keywords_collocation(x = token, term = term, group = "sentence_id",ngram_max = parameters$KE_no_ref_ngram_max,n_min = parameters$KE_no_ref_n_min,sep = parameters$KE_seperator )
-    }
-    if(parameters$KE_no_ref_method=="Phrase Sequence"){
-      token$upos<-stringr::str_replace_all(string = token$upos,pattern = "CONJ",replacement = "CCONJ")
-      token$upos<-stringr::str_replace_all(string = token$upos,pattern = "SCCONJ",replacement = "CCONJ")
-      token$upos<-stringr::str_replace_all(string = token$upos,pattern = "SPACE",replacement = "X")
-      token$phrase_tag <- as_phrasemachine(token$upos, type = "upos")
-      stats <- keywords_phrases(x = token$phrase_tag, term = token[,term], 
-                                pattern = "(A|N)*N(P+D*(A|N)*N)*", 
-                                is_regex = TRUE, detailed = FALSE,sep = parameters$KE_seperator)
-    }
-    if(parameters$KE_no_ref_method=="Textrank"){
-      relevant=token$upos %in% parameters$KE_filter
-      if(length(relevant)>0){
-        stats <- textrank_keywords(x = token[,term],ngram_max = parameters$KE_no_ref_ngram_max,relevant = relevant,sep = parameters$KE_seperator )$keywords
-      }
-      else{
-        log_to_file(message = "&emsp;<b style='color:red'>&#10008; No relevant words were selected to be used in RAKE. Check your settings.</b>",logfile)
-        stop("no relevant words selected for Textrank")
-      }
-    }
-    
-    log_to_file(message = "  <b style='color:green'> ✔ </b>  Keywords identified",file = logfile)
   }
+  if(parameters$KE_no_ref_method=="PMI Collocation"){
+    stats <- keywords_collocation(x = token, term = term, group = "sentence_id",ngram_max = parameters$KE_no_ref_ngram_max,n_min = parameters$KE_no_ref_n_min,sep = parameters$KE_seperator )
+  }
+  if(parameters$KE_no_ref_method=="Phrase Sequence"){
+    token$upos<-stringr::str_replace_all(string = token$upos,pattern = "CONJ",replacement = "CCONJ")
+    token$upos<-stringr::str_replace_all(string = token$upos,pattern = "SCCONJ",replacement = "CCONJ")
+    token$upos<-stringr::str_replace_all(string = token$upos,pattern = "SPACE",replacement = "X")
+    token$phrase_tag <- as_phrasemachine(token$upos, type = "upos")
+    stats <- keywords_phrases(x = token$phrase_tag, term = token[,term], 
+                              pattern = "(A|N)*N(P+D*(A|N)*N)*", 
+                              is_regex = TRUE, detailed = FALSE,sep = parameters$KE_seperator)
+  }
+  if(parameters$KE_no_ref_method=="Textrank"){
+    relevant=token$upos %in% parameters$KE_filter
+    if(length(relevant)>0){
+      stats <- textrank_keywords(x = token[,term],ngram_max = parameters$KE_no_ref_ngram_max,relevant = relevant,sep = parameters$KE_seperator )$keywords
+    }
+    else{
+      log_to_file(message = "&emsp;<b style='color:red'>&#10008; No relevant words were selected to be used in RAKE. Check your settings.</b>",logfile)
+      stop("no relevant words selected for Textrank")
+    }
+  }
+  
+  log_to_file(message = "  <b style='color:green'> ✔ </b>  Keywords identified",file = logfile)
+  
   
   
   
@@ -120,7 +119,7 @@ error<-try(expr = {
   
   
   
-
+  
   
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Keyword Extraction </b>",logfile)
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))
