@@ -87,7 +87,6 @@ output$Class_all_categories_documents_UI<-renderUI({
   }
   
   selected<-choiceValues[1]
-  #browser()
   if(!is.null(isolate(values$last_selected))){
     if(isolate(values$last_selected)%in%choiceValues){
       selected<-isolate(values$last_selected)
@@ -118,7 +117,6 @@ output$Class_all_categories_document_UI<-renderUI({
   dataset<-stringr::str_split(input$Class_all_categories_documents,pattern = "_",simplify = T)[1,1]
   id_doc<-stringr::str_split(input$Class_all_categories_documents,pattern = "_",simplify = T)[1,2]
   data<-isolate(values$Class_all_documents_texts[intersect(which(isolate(values$Class_all_documents_texts[,"id_doc"])==id_doc),which(isolate(values$Class_all_documents_texts[,"dataset"])==dataset)),])
-  #browser()
   validate(
     need(
       dim(data)[1]>0,message=F)
@@ -326,7 +324,6 @@ observe({
 
 observeEvent(input$Class_all_categories_save,{
   withBusyIndicatorServer("Class_all_categories_save", {
-    browser()
     texts<-isolate(values$Class_all_documents_texts)
     labels<-isolate(values$Class_all_documents_labels)
     project<-input$project_selected

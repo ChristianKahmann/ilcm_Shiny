@@ -272,7 +272,7 @@ output$Det_FE_most_frequent_words_wc<-wordcloud2::renderWordcloud2({
   )
   data<- values$Det_FE_most_frequent_words_counts
   data<-data[order(data$counts,decreasing=T),]
-  wordcloud2(data = data,size=1,fontFamily = "Helvetica",color = "random-light",minSize = 0.2,backgroundColor = "black",minRotation = -pi/2,maxRotation = -pi/2)
+  wordcloud2(data = data,size=ß.9,fontFamily = "Helvetica",color = "random-light",minSize = 0.2,backgroundColor = "black",minRotation = -pi/2,maxRotation = -pi/2)
   
 })
 

@@ -43,10 +43,18 @@ output$details_parameter<-renderUI({
       load(paste0(values$Details_Data_DD,"/info_and_removal_candidates.RData"))
       values$Det_DD_info<-info
       values$Det_DD_results<-results
+      if(is.numeric(isolate(values$invalidate_deduplication_visulisation))){
+        isolate(values$invalidate_deduplication_visulisation<-values$invalidate_deduplication_visulisation+1)
+      }
+      else{
+        values$invalidate_deduplication_visulisation<-runif(1,0,1)
+      }
+      print("in details")
       values$Det_DD_meta<-meta
       values$DD_whitelist<-NULL
       values$DD_blacklist<-NULL
       values$Det_DD_current_table<-NULL
+      values$Det_DD_data_display<-NULL
       return(
         tagList(
           selectInput(inputId = "Det_DD_strategy",label = "Default strategy",choices = c("longest","shortest","latest","earliest","maximum node degree","random"),multiple = F),
@@ -266,28 +274,28 @@ output$details_parameter<-renderUI({
       return(
         tagList(
           conditionalPanel(condition = 'input.tabBox_FE=="Frequency Plot"',
-          selectInput(inputId = "Det_FE_REL_ABS",label = "relative or absolute",choices = c("relative","absolute")),
-          selectInput(inputId = "Det_FE_Time",label = "Timeintervall",choices = c("Day","Week","Month","Year"),selected = "Month"),
-          selectInput(inputId = "Det_FE_Term_Doc",label = "Word- or Documentlevel",choices = c("Word","Document")),
-          checkboxInput(inputId="Det_FE_use_regexp",label = "use regexp?",value = FALSE),
-          conditionalPanel(condition='input.Det_FE_use_regexp==true',
-                           textInput(inputId = "Det_FE_regexp",label = "reg exp:"),
-                           materialSwitch(inputId = "Det_FE_calc",label = "calculate",value = FALSE,status = "primary")
-          ),
-          conditionalPanel(condition='input.Det_FE_use_regexp==false',
-                           selectizeInput(inputId = "Det_FE_Word",label="Words:",choices=NULL,multiple=T)
-          )
+                           selectInput(inputId = "Det_FE_REL_ABS",label = "relative or absolute",choices = c("relative","absolute")),
+                           selectInput(inputId = "Det_FE_Time",label = "Timeintervall",choices = c("Day","Week","Month","Year"),selected = "Month"),
+                           selectInput(inputId = "Det_FE_Term_Doc",label = "Word- or Documentlevel",choices = c("Word","Document")),
+                           checkboxInput(inputId="Det_FE_use_regexp",label = "use regexp?",value = FALSE),
+                           conditionalPanel(condition='input.Det_FE_use_regexp==true',
+                                            textInput(inputId = "Det_FE_regexp",label = "reg exp:"),
+                                            materialSwitch(inputId = "Det_FE_calc",label = "calculate",value = FALSE,status = "primary")
+                           ),
+                           conditionalPanel(condition='input.Det_FE_use_regexp==false',
+                                            selectizeInput(inputId = "Det_FE_Word",label="Words:",choices=NULL,multiple=T)
+                           )
           ),
           conditionalPanel(condition = 'input.tabBox_FE=="Most frequent words"',
-               shinyWidgets::prettySwitch(inputId = "Det_FE_most_frequent_words_use_whole_time",label = "use whole timespan?",value = TRUE,status = "primary"),
-               conditionalPanel(condition = 'input.Det_FE_most_frequent_words_use_whole_time==false',
-                                selectInput(inputId = "Det_FE_most_frequent_words_timeintervall",label = "Timeintervall",choices = c("Day","Week","Month","Year"),selected = "Month"),
-                                uiOutput(outputId = "Det_FE_most_frequent_words_points_in_time_UI")
-                                ),
-               tags$hr(),
-               numericInput(inputId="Det_FE_most_frequent_words_wc_minSize",label="wordcloud min Size",value=0.5),
-               numericInput(inputId="Det_FE_most_frequent_words_wc_Size",label="wordcloud Size",value=0.8),
-               
+                           shinyWidgets::prettySwitch(inputId = "Det_FE_most_frequent_words_use_whole_time",label = "use whole timespan?",value = TRUE,status = "primary"),
+                           conditionalPanel(condition = 'input.Det_FE_most_frequent_words_use_whole_time==false',
+                                            selectInput(inputId = "Det_FE_most_frequent_words_timeintervall",label = "Timeintervall",choices = c("Day","Week","Month","Year"),selected = "Month"),
+                                            uiOutput(outputId = "Det_FE_most_frequent_words_points_in_time_UI")
+                           ),
+                           tags$hr(),
+                           numericInput(inputId="Det_FE_most_frequent_words_wc_minSize",label="wordcloud min Size",value=0.5),
+                           numericInput(inputId="Det_FE_most_frequent_words_wc_Size",label="wordcloud Size",value=0.8),
+                           
           )
         )
       )
@@ -559,16 +567,23 @@ output$details_parameter<-renderUI({
                                                 checkboxGroupInput(inputId = "Det_TM_grouping_group1_columns",label = "Columns for filtering Group 1",choices = colnames(values$TM_meta)),
                                                 checkboxGroupInput(inputId = "Det_TM_grouping_group2_columns",label = "Columns for filtering Group 2",choices = colnames(values$TM_meta))
       )
-      panelModelReproducibility <- conditionalPanel(condition = 'input.tabBox_tm=="Model Reproducibility"',
-                                                    selectInput(inputId = "Det_TM_reproducibility_models",label = "Models to compare",multiple=T,
-                                                                choices = setNames(nm = apply(X = stringr::str_split(list.files("collections/results/topic-model/"),pattern = "_",simplify = T)[,1:2],MARGIN = 1,FUN = function(x){paste(x,collapse=" ")}),
-                                                                                   object =list.files(path = "collections/results/topic-model/",full.names = T))
-                                                    ),
-                                                    bsButton(inputId = "Det_TM_reproducibility_calculate",label = "Calculate",icon = icon("play"),style = "default"),
-                                                    numericInput(inputId="Det_TM_reproducibility_lambda",label="lambda for relevance score",min=0,max=1,value=0.5,step=0.1),
-                                                    numericInput(inputId="Det_TM_reproducibility_number_of_words",label="number of top n words to compare",min=1,max=200,value=30,step=5),
-                                                    numericInput(inputId="Det_TM_reproducibility_overlap",label="needed percentage for a topic map",min=0.1,max=1,value=0.5,step=0.1)
-      )
+      if(length(list.files("collections/results/topic-model/"))>1){
+        panelModelReproducibility <- conditionalPanel(condition = 'input.tabBox_tm=="Model Reproducibility"',
+                                                      selectInput(inputId = "Det_TM_reproducibility_models",label = "Models to compare",multiple=T,
+                                                                  choices = setNames(nm = apply(X = stringr::str_split(list.files("collections/results/topic-model/"),pattern = "_",simplify = T)[,1:2],MARGIN = 1,FUN = function(x){paste(x,collapse=" ")}),
+                                                                                     object =list.files(path = "collections/results/topic-model/",full.names = T))
+                                                      ),
+                                                      bsButton(inputId = "Det_TM_reproducibility_calculate",label = "Calculate",icon = icon("play"),style = "default"),
+                                                      numericInput(inputId="Det_TM_reproducibility_lambda",label="lambda for relevance score",min=0,max=1,value=0.5,step=0.1),
+                                                      numericInput(inputId="Det_TM_reproducibility_number_of_words",label="number of top n words to compare",min=1,max=200,value=30,step=5),
+                                                      numericInput(inputId="Det_TM_reproducibility_overlap",label="needed percentage for a topic map",min=0.1,max=1,value=0.5,step=0.1)
+        )
+      }
+      else{
+        panelModelReproducibility<-conditionalPanel(condition = 'input.tabBox_tm=="Model Reproducibility"',
+                                                    tags$div("For reproducibility checks at least two different models need to exist")
+        )
+      }
       #stm
       if(values$tm_method == "stm"){
         panelSTM <- conditionalPanel(condition = 'input.tabBox_tm=="Structural Topic Model"',
@@ -672,7 +687,7 @@ output$details_visu<-renderUI({
       names(choices)<-paste0(title_data$title," (",title_data$id_doc,")")
       updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = choices)
       updateSelectizeInput(session = session,inputId = "Det_TM_document_comparison_document",server = T,choices = choices)
-
+      
       
       #return visu for topic modeling
       tabPanelLDAVis <- tabPanel("LDA-Vis",
@@ -739,10 +754,15 @@ output$details_visu<-renderUI({
       tabPanelGrouping <- tabPanel("Document Grouping",
                                    uiOutput("TM_document_grouping_UI")
       )
-      tabPanelReproducibility <- tabPanel("Model Reproducibility",
-                                          uiOutput("TM_model_reproducibility_UI")
-      )
-      
+      if(length(list.files("collections/results/topic-model/"))>1){
+        tabPanelReproducibility <- tabPanel("Model Reproducibility",
+                                            uiOutput("TM_model_reproducibility_UI")
+        )
+      }
+      else{
+        tabPanelReproducibility <- tabPanel("Model Reproducibility"
+        )
+      }
       # additional panels specific for stm
       # needs values$tm_parameters and values$tm_method to be set (via load parameters from file). This is currently performed in output$details_parameter above, so doesn't need to be performed again here
       if(values$tm_method == "stm"){
@@ -1088,7 +1108,7 @@ output$details_visu<-renderUI({
                  ),
                  tabPanel(title="Most frequent words",
                           uiOutput(outputId = "Det_FE_most_frequent_words_UI")
-                          )
+                 )
           )
         )
       )
@@ -1282,18 +1302,18 @@ output$details_visu<-renderUI({
                  ),
                  tabPanel("Validation",
                           tabsetPanel(id = "Det_Senti_validation_tabs",
-                            tabPanel(title = "Documents",
-                          uiOutput("Det_Senti_validation_UI")
-                            ),
-                            tabPanel("Top Documents",
-                                     tags$br(),
-                                     box(title = "Most Positive",status = "success",solidHeader = T,width = 6,
-                                         DT::dataTableOutput("Det_Senti_validation_table_positive")
-                                         ),
-                                     box(title = "Most Negative",status = "danger",solidHeader = T,width = 6,
-                                         DT::dataTableOutput("Det_Senti_validation_table_negative")
-                                     ),
-                            )
+                                      tabPanel(title = "Documents",
+                                               uiOutput("Det_Senti_validation_UI")
+                                      ),
+                                      tabPanel("Top Documents",
+                                               tags$br(),
+                                               box(title = "Most Positive",status = "success",solidHeader = T,width = 6,
+                                                   DT::dataTableOutput("Det_Senti_validation_table_positive")
+                                               ),
+                                               box(title = "Most Negative",status = "danger",solidHeader = T,width = 6,
+                                                   DT::dataTableOutput("Det_Senti_validation_table_negative")
+                                               ),
+                                      )
                           )
                  )
           )

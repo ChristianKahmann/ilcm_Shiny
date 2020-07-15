@@ -6,6 +6,8 @@ observeEvent(ignoreInit = T,input$Det_DD_reset_user_input,{
 
 
 observe({
+  print("vor validate")
+  print(  values$invalidate_deduplication_visulisation)
   validate(
     need(!is.null(values$Det_DD_results),message=F),
     need(!is.null(input$Det_DD_strategy),message=F),
@@ -13,7 +15,7 @@ observe({
   )
   input$Det_DD_strategy
   input$Det_DD_threshold
-  
+  values$invalidate_deduplication_visulisation
   data<-data.frame(a=values$Det_DD_results[,1],token_a=0,date_a=0,b=values$Det_DD_results[,2],token_b=0,date_b=0,similarity=values$Det_DD_results[,3],keep_a=0,keep_b=0,stringsAsFactors = F)
   data<-data[which(data$similarity>input$Det_DD_threshold),]
   data<-data[order(data$similarity,decreasing = T),]
@@ -25,7 +27,6 @@ observe({
     data<-merge(data,y = x,by.x = "b",by.y = "Var1")
     data<-data[,c("a","token_a","date_a","b","token_b","date_b","similarity","keep_a","keep_b","Freq.x","Freq.y")]
     final_remove<-matrix(c(0),dim(data)[1],2)
-    #browser()
     
     ############
     if(input$Det_DD_strategy=="longest"){
@@ -65,7 +66,6 @@ observe({
       })
     }
     if(input$Det_DD_strategy=="maximum node degree"){
-      #browser()
       try({
         relevant_data<-cbind(values$Det_DD_meta[data[,1],"Freq.x"],values$Det_DD_meta[data[,4],"Freq.y"])
         remove<-apply(relevant_data,MARGIN = 1,FUN = which.max)
@@ -83,55 +83,7 @@ observe({
       final_remove[which(remove==1),1]<-1
       final_remove[which(remove==2),2]<-1
     }
-    ############
-    # for(i in 1:dim(data)[1]){
-    #   print(i)
-    #   if(input$Det_DD_strategy=="longest"){
-    #     try({
-    #       remove<-which.max(c(values$Det_DD_meta[data[i,1],"token"],values$Det_DD_meta[data[i,4],"token"]))
-    #     })
-    #     if(length(remove)==0){
-    #       remove<-sample(x = c(1,2),size = 1)
-    #     }
-    #   }  
-    #   if(input$Det_DD_strategy=="shortest"){
-    #     try({
-    #       remove<-which.min(c(values$Det_DD_meta[data[i,1],"token"],values$Det_DD_meta[data[i,4],"token"]))
-    #     })
-    #     if(length(remove)==0){
-    #       remove<-sample(x = c(1,2),size = 1)
-    #     }
-    #   }
-    #   if(input$Det_DD_strategy=="latest"){
-    #     try({
-    #       remove<-which.max(c(values$Det_DD_meta[data[i,1],"date"],values$Det_DD_meta[data[i,4],"date"]))
-    #     })
-    #     if(length(remove)==0){
-    #       remove<-sample(x = c(1,2),size = 1)
-    #     }
-    #   }
-    #   if(input$Det_DD_strategy=="earliest"){
-    #     try({
-    #       remove<-which.min(c(values$Det_DD_meta[data[i,1],"date"],values$Det_DD_meta[data[i,4],"date"]))
-    #     })
-    #     if(length(remove)==0){
-    #       remove<-sample(x = c(1,2),size = 1)
-    #     }
-    #   }
-    #   if(input$Det_DD_strategy=="maximum node degree"){
-    #     #browser()
-    #     try({
-    #       remove<-which.max(c(data[i,"Freq.x"],data[i,"Freq.y"]))
-    #     })
-    #     if(length(remove)==0){
-    #       remove<-sample(x = c(1,2),size = 1)
-    #     }
-    #   }
-    #   if(input$Det_DD_strategy=="random"){
-    #     remove<-sample(x = c(1,2),size = 1)
-    #   }
-    #   final_remove[i,remove]<-1
-    # }
+    
     data[,8:9]<-final_remove
     data[,2]<-values$Det_DD_meta[data[,1],"token"]
     data[,3]<-values$Det_DD_meta[data[,1],"date"]
@@ -164,7 +116,6 @@ observe({
       sort<-sample(x = 1:dim(data)[1],size = dim(data)[1],replace = T)
       data<-data[order(sort,decreasing = T),]
     }
-    #browser()
     values$Det_DD_data_display<-data
   }
   else{
@@ -180,10 +131,8 @@ observe({
   validate(
     need(dim(values$Det_DD_data_display)[1]>0,message=F)
   )
-  #browser()
   d_tmp<-values$Det_DD_data_display
   documents<-unique(union(d_tmp[,"a"],d_tmp[,"b"]))
-  
   #user decisions
   user_whitelist<-(values$DD_whitelist)
   user_blacklist<-(values$DD_blacklist)
@@ -200,7 +149,6 @@ observe({
   if(dim(d_tmp)[1]>0){
     repeat({
       count=count+1
-      print(count)
       top_pair<-d_tmp[1,,drop=F]
       id_del<-decide_which_document_to_delete(pair=top_pair,strategy = input$Det_DD_strategy)
       blacklist<-c(blacklist,id_del)
@@ -212,59 +160,6 @@ observe({
   }
   
   whitelist<-setdiff(documents,blacklist)
-  
-  # #set by user
-  # values$DD_whitelist<-unique(c(union(d_tmp[which(d_tmp[,"keep_a"]==9),"a"],d_tmp[which(d_tmp[,"keep_b"]==9),"b"]),isolate(values$DD_whitelist)))
-  # values$DD_blacklist<-setdiff(unique(c(union(d_tmp[which(d_tmp[,"keep_a"]==8),"a"],d_tmp[which(d_tmp[,"keep_b"]==8),"b"]),isolate(values$DD_blacklist))),values$DD_whitelist)
-  # 
-  # blacklist<-setdiff(unique(c(values$DD_blacklist,union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(isolate(values$DD_whitelist))),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(isolate(values$DD_whitelist))),"a"]))),values$DD_whitelist)
-  # whitelist<-unique(c(values$DD_whitelist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(blacklist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(blacklist)),"a"]),union(values$DD_whitelist,blacklist))[1]))
-  # whitelist<-whitelist[!is.na(whitelist)]
-  # 
-  # repeat({
-  #   repeat({
-  #     lenB<-length(blacklist)
-  #     blacklist<-unique(c(blacklist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(whitelist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(whitelist)),"a"]),union(blacklist,whitelist))))
-  #     blacklist<-blacklist[!is.na(blacklist)]
-  #     if(length(blacklist)==lenB ){break}
-  #   })
-  #   lenW<-length(whitelist)
-  #   whitelist<-unique(c(whitelist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(blacklist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(blacklist)),"a"]),union(whitelist,blacklist))[1]))
-  #   whitelist<-whitelist[!is.na(whitelist)]
-  #   if(length(whitelist)==lenW ){break}
-  # })
-  # 
-  # repeat({
-  #   seen<-unique(union(c(which(d_tmp[,"a"]%in%whitelist),which(d_tmp[,"b"]%in%whitelist)),c(which(d_tmp[,"a"]%in%blacklist),which(d_tmp[,"b"]%in%blacklist))))
-  #   if(length(seen)==0){
-  #     d_rest<-d_tmp
-  #   }
-  #   else{
-  #     d_rest<-d_tmp[-seen,]
-  #   }
-  #   if(dim(d_rest)[1]==0){break}
-  #   if(d_rest[1,"keep_a"]==1){
-  #     whitelist<-unique(c(whitelist,d_rest[1,"a"]))
-  #   }
-  #   else{
-  #     whitelist<-unique(c(whitelist,d_rest[1,"b"]))
-  #   }
-  #   
-  #   #browser()
-  #   repeat({
-  #     repeat({
-  #       lenB<-length(blacklist)
-  #       blacklist<-unique(c(blacklist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(whitelist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(whitelist)),"a"]),union(blacklist,whitelist))))
-  #       blacklist<-blacklist[!is.na(blacklist)]
-  #       if(length(blacklist)==lenB ){break}
-  #     })
-  #     lenW<-length(whitelist)
-  #     whitelist<-unique(c(whitelist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(blacklist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(blacklist)),"a"]),union(whitelist,blacklist))[1]))
-  #     whitelist<-whitelist[!is.na(whitelist)]
-  #     if(length(whitelist)==lenW ){break}
-  #   })
-  # })
-  
   
   values$Det_DD_current_table<-values$Det_DD_data_display
   values$blacklist<-blacklist
