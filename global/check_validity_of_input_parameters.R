@@ -68,6 +68,26 @@ check_pruning_parameters<-function(min_t_c,max_t_c,min_t_p,max_t_p,min_t_r,max_t
       valid=F
     }
   }
-     
+  
   return(valid)
+}
+
+
+
+
+check_if_predefined_vocabulary_is_valid<-function(use_predefined_vocab,vocabulary){
+  if(use_predefined_vocab==TRUE){
+    if(is.null(vocabulary)){
+      return(FALSE)
+    }
+    if(vocabulary==""){
+      return(FALSE)
+    }
+    else{
+      return(TRUE)
+    }
+  }
+  else{
+    return(TRUE)
+  }
 }

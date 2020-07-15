@@ -62,7 +62,7 @@ error<-try(expr = {
   }))
   documents_original<-cbind(doc_ids,documents_original)  
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
-  
+
   
   #get metadata
   log_to_file(message = "<b>Step 6/13: Getting metadata for detailed metadata analysis from database</b>",file = logfile)
@@ -126,9 +126,8 @@ error<-try(expr = {
     documents<-documents[-empty,]
     documents_original<-documents_original[-empty,]
     info[[6]]<-data.frame(info[[6]][-empty,1],stringsAsFactors = F)
-    if(parameters$tm_detailed_meta==TRUE || parameters$tm_method == "stm"){
-      meta<-meta[-empty,]
-    }
+    meta<-meta[-empty,]
+    
   }
   log_to_file(message = paste0("<b style='color:green'> ✔ </b>  Deleted ",length(empty)," documents from topic model, because they are empty with the current settings"),logfile)  
   

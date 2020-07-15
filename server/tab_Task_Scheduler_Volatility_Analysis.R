@@ -428,9 +428,14 @@ observeEvent(input$VA_Submit_Script,{
                                   ,min_t_r =input$VA_min_termfreq_r,max_t_r = input$VA_max_termfreq_r,min_t_q = input$VA_min_termfreq_q, max_t_q = input$VA_max_termfreq_q
                                   ,min_d_c = input$VA_min_docfreq_c,max_d_c = input$VA_max_docfreq_c,min_d_p = input$VA_min_docfreq_p,max_d_p = input$VA_max_docfreq_p
                                   ,min_d_r = input$VA_min_docfreq_r,max_d_r = input$VA_max_docfreq_r,min_d_q = input$VA_min_docfreq_q,max_d_q = input$VA_max_docfreq_q)
+  valid_vocab<-check_if_predefined_vocabulary_is_valid(use_predefined_vocab = input$VA_use_fixed_vocab, vocabulary = input$VA_fixed_vocab)
   if(isFALSE(valid)){
     shinyWidgets::confirmSweetAlert(session = session,title = "Check pruning settings!",text = HTML("It seems your current pruning input parameters don't make sense. It's very likely, that the whole vocabulary will be removed.
                            Check <a href='https://quanteda.io/reference/dfm_trim.html' title='quanteda pruning'> Quanteda Pruning Settings </a>"),html=T,inputId="VA_pruning_continue",
+                                    type="warning",closeOnClickOutside = T,btn_labels = c("Change Settings","Continue anyway!"))
+  }
+  else if(isFALSE(valid_vocab)){
+    shinyWidgets::confirmSweetAlert(session = session,title = "Check vocabulary",text = HTML("You chose to use a predefined vocabulary. It seems this vocabulary is not present."),html=T,inputId="VA_pruning_continue",
                                     type="warning",closeOnClickOutside = T,btn_labels = c("Change Settings","Continue anyway!"))
   }
   else{

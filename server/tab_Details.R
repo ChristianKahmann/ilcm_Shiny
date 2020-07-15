@@ -265,6 +265,7 @@ output$details_parameter<-renderUI({
       #tagList for frequency extraction parameters for visualisation
       return(
         tagList(
+          conditionalPanel(condition = 'input.tabBox_FE=="Frequency Plot"',
           selectInput(inputId = "Det_FE_REL_ABS",label = "relative or absolute",choices = c("relative","absolute")),
           selectInput(inputId = "Det_FE_Time",label = "Timeintervall",choices = c("Day","Week","Month","Year"),selected = "Month"),
           selectInput(inputId = "Det_FE_Term_Doc",label = "Word- or Documentlevel",choices = c("Word","Document")),
@@ -275,6 +276,18 @@ output$details_parameter<-renderUI({
           ),
           conditionalPanel(condition='input.Det_FE_use_regexp==false',
                            selectizeInput(inputId = "Det_FE_Word",label="Words:",choices=NULL,multiple=T)
+          )
+          ),
+          conditionalPanel(condition = 'input.tabBox_FE=="Most frequent words"',
+               shinyWidgets::prettySwitch(inputId = "Det_FE_most_frequent_words_use_whole_time",label = "use whole timespan?",value = TRUE,status = "primary"),
+               conditionalPanel(condition = 'input.Det_FE_most_frequent_words_use_whole_time==false',
+                                selectInput(inputId = "Det_FE_most_frequent_words_timeintervall",label = "Timeintervall",choices = c("Day","Week","Month","Year"),selected = "Month"),
+                                uiOutput(outputId = "Det_FE_most_frequent_words_points_in_time_UI")
+                                ),
+               tags$hr(),
+               numericInput(inputId="Det_FE_most_frequent_words_wc_minSize",label="wordcloud min Size",value=0.5),
+               numericInput(inputId="Det_FE_most_frequent_words_wc_Size",label="wordcloud Size",value=0.8),
+               
           )
         )
       )
@@ -927,8 +940,8 @@ output$details_visu<-renderUI({
       
       updateSelectizeInput(session = session,inputId = "Det_CO_Word",server = T,choices = vocab)
       updateSelectizeInput(session = session,inputId = "coocs_examples_words",server = T,choices = vocab)
-      updateSelectizeInput(session = session,inputId = "coocs_top_word1",server = T,choices = vocab)
-      updateSelectizeInput(session = session,inputId = "coocs_top_word2",server = T,choices = vocab)
+      updateSelectizeInput(session = session,inputId = "coocs_top_word1",server = T,choices = vocab,selected = character(0))
+      updateSelectizeInput(session = session,inputId = "coocs_top_word2",server = T,choices = vocab,selected = character(0))
       
       #return cooccurrence graph depending on the chosen Display Type
       return(
@@ -949,7 +962,7 @@ output$details_visu<-renderUI({
                             DT::dataTableOutput(outputId = "cooc_examples_table")
                    ),
                    tabPanel("Top-Co-occurrences",
-                            busyIndicator(text = "loading data",wait = 0),
+                            tags$br(),
                             box(title = tags$h4("Dice",style="color:white;"),solidHeader = T,width = 4,status="primary",
                                 DT::dataTableOutput(outputId = "coocs_top_dice_table")%>% withSpinner(type = 6)
                             ),
@@ -1072,7 +1085,10 @@ output$details_visu<-renderUI({
                                            uiOutput(outputId = "FE_words_to_export"),
                                            downloadButton(outputId = "download_FE_frequencies",label = "Download Time Series")
                           )
-                 )
+                 ),
+                 tabPanel(title="Most frequent words",
+                          uiOutput(outputId = "Det_FE_most_frequent_words_UI")
+                          )
           )
         )
       )

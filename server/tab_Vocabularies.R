@@ -60,8 +60,17 @@ observeEvent(input$vocabulary_import_vocab_from_task,{
 
 # move vocabulary from analysis to preset vocabulary
  observeEvent(input$vocabulary_import_start_import,{
-   
+
    file.copy(from = list.files(input$vocabulary_import_found_tasks,pattern = "vocab_[a-z0-9]+\\.RDS$",full.names = T)[1],to = "collections/vocabularies/",overwrite = T)
+   
+   # update input options in Task Scheduler
+   updateSelectInput(session = session,inputId = "TM_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$TM_fixed_vocab)
+   updateSelectInput(session = session,inputId = "CL_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$CL_fixed_vocab)
+   updateSelectInput(session = session,inputId = "FE_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$FE_fixed_vocab)
+   updateSelectInput(session = session,inputId = "CA_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$CA_fixed_vocab)
+   updateSelectInput(session = session,inputId = "VA_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$VA_fixed_vocab)
+   values$invalidate_vocabularies<-runif(1,0,1)
+
    shinyWidgets::sendSweetAlert(session = session,title = "Success",type = "success",text = "The vocabulary has been imported to the vocabulary preset directory. It can now be chosen in the Task Scheduler.")
    
  })
@@ -96,7 +105,7 @@ output$vocabulary_import_classification_active_learning_scheme_UI<-renderUI({
 })
 
 
-# show avaivlabe tasks depending on chosen analysis
+# show available tasks depending on chosen analysis
 output$vocabulary_import_found_tasks_UI<-renderUI({
   validate(
     need(!is.null(input$vocabulary_import_type_of_analysis),message=F)
@@ -107,12 +116,12 @@ output$vocabulary_import_found_tasks_UI<-renderUI({
     )
     if(input$vocabulary_import_classification_type%in%c("activeLearning","activeLearning_documents")){
       choices=set_names(x = list.files(path = paste0("collections/results/",input$vocabulary_import_type_of_analysis,"/",input$vocabulary_import_classification_type,"/",input$vocabulary_import_classification_active_learning_scheme,"/"),full.names = T),
-                        value = paste0("Task ID: ",stringr::str_split(list.files(path = paste0("collections/results/",input$vocabulary_import_type_of_analysis,"/",input$vocabulary_import_classification_type,"/",input$vocabulary_import_classification_active_learning_scheme,"/"),full.names = F),pattern = "_",simplify = T)[,1]))
+                        nm = paste0("Task ID: ",stringr::str_split(list.files(path = paste0("collections/results/",input$vocabulary_import_type_of_analysis,"/",input$vocabulary_import_classification_type,"/",input$vocabulary_import_classification_active_learning_scheme,"/"),full.names = F),pattern = "_",simplify = T)[,1]))
       
     }
     else{
       choices=set_names(x = list.files(path = paste0("collections/results/",input$vocabulary_import_type_of_analysis,"/",input$vocabulary_import_classification_type,"/"),full.names = T),
-                        value = paste0("Task ID: ",stringr::str_split(list.files(path = paste0("collections/results/",input$vocabulary_import_type_of_analysis,"/",input$vocabulary_import_classification_type,"/"),full.names = F),pattern = "_",simplify = T)[,1]))
+                        nm = paste0("Task ID: ",stringr::str_split(list.files(path = paste0("collections/results/",input$vocabulary_import_type_of_analysis,"/",input$vocabulary_import_classification_type,"/"),full.names = F),pattern = "_",simplify = T)[,1]))
     }
   }
   else{
@@ -120,7 +129,7 @@ output$vocabulary_import_found_tasks_UI<-renderUI({
       need(length(list.files(path = paste0("collections/results/",input$vocabulary_import_type_of_analysis,"/"),full.names = F))>0,message="No tasks found")
     )
     choices=set_names(x = list.files(path = paste0("collections/results/",input$vocabulary_import_type_of_analysis,"/"),full.names = T),
-                      value = paste0("Task ID: ",stringr::str_split(list.files(path = paste0("collections/results/",input$vocabulary_import_type_of_analysis,"/"),full.names = F),pattern = "_",simplify = T)[,1]))
+                      nm = paste0("Task ID: ",stringr::str_split(list.files(path = paste0("collections/results/",input$vocabulary_import_type_of_analysis,"/"),full.names = F),pattern = "_",simplify = T)[,1]))
     
     
   }
@@ -141,7 +150,7 @@ output$UI_vocabulary_textarea<-renderUI({
 })
 
 
-observeEvent(input$save_vocabulary_list,{
+observeEvent(input$save_vocabulary_list,{ 
   showModal(
     modalDialog(
       title = "Save vocabularies",
@@ -168,6 +177,7 @@ observeEvent(input$Save_vocabulary_confirm,{
   updateSelectInput(session = session,inputId = "FE_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$FE_fixed_vocab)
   updateSelectInput(session = session,inputId = "CA_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$CA_fixed_vocab)
   updateSelectInput(session = session,inputId = "VA_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$VA_fixed_vocab)
+  values$invalidate_vocabularies<-runif(1,0,1)
   shinyWidgets::sendSweetAlert(session = session,title = "Success",text = "successfully saved vocabulary",type = "sucess")
 
 })

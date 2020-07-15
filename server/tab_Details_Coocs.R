@@ -193,16 +193,7 @@ observeEvent(input$Det_CO_Update,{
   }
 })
 
-#output$cooc_net<-renderForceNetwork({
-#  validate(
-#    need(dim(values$cooc_nodes)[1]>0,message = "please press update Plot")
-#  )
-#  nodes<-values$cooc_nodes
-#  links<-values$cooc_edges
-#  links[,3]<-links[,3]+1
-#  #call coocsChart function with given nodes, edges and charge parameter
-#  return(coocsChart(nodes,links,(input$Det_CO_Charge)))
-#})
+
 
 output$visNetwork_cooc_net<-visNetwork::renderVisNetwork({
   validate(
@@ -285,29 +276,7 @@ output$visNetwork_cooc_net<-visNetwork::renderVisNetwork({
   }
 })
 
-#set clicked word in cooc-graph as input word in knk
-# output$coocs_knk_word_ui<-renderUI({
-#   if(!is.null(input$cooc_word)){
-#     word<-isolate(values$name_for_cooc_knk)[as.numeric(input$cooc_word)]
-#     ui_res<-selectizeInput(inputId = "coocs_knk_word",label = "Word",choices = values$coocs_terms,selected = word)
-#   }
-#   else{
-#     ui_res<-selectInput(inputId = "coocs_knk_word",label = "Word",choices = rownames(values$coocs_matrix),selected=character(0))
-#   }
-#   return(ui_res)
-# })
-# 
-# 
-# observeEvent(input$coocs_knk_calc,{
-#   output$cooc_kwic_table<-DT::renderDataTable({
-#     if(!is.null(input$coocs_knk_word)){
-#       result<-kwic2(Tokens = isolate(values$coocs_token),target = isolate(input$coocs_knk_word),k = isolate(input$coocs_knk_k),n=isolate(input$coocs_knk_n))
-#       result[,2]<-paste0('<span style="color:red">',result[,2],'</span>')
-#       return(datatable(result,escape = F))
-#     }
-#   })
-# })
-# 
+
 
 output$Det_CO_download_coocs<-downloadHandler(
   filename = function() {
