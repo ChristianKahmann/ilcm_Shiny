@@ -95,7 +95,7 @@ observeEvent(values$tm_phi,{
       plotname_wc=paste0("tm_wc_",i)
       plotname_sp=paste0("tm_sp_",i)
       output[[plotname_wc]]<-renderWordcloud2({
-        wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+        wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1,minRotation = -pi/2, maxRotation = -pi/2)
       }
       )
       output[[plotname_sp]]<-renderSparkline({
@@ -910,7 +910,7 @@ output$TM_Coherence_word_intrusion_words<-renderDataTable({
 
 output$TM_Coherence_word_intrusion_wordcloud<-renderWordcloud2({
   data = data.frame(words= values$TM_Coherence_word_intrusion_words,counts=rep(1,length(values$TM_Coherence_word_intrusion_words)),stringsAsFactors = F)
-  wordcloud2(data = data,fontFamily = "Helvetica",backgroundColor = "azure",color = "random-dark",size=1.5/input$TM_Coherence_setsize)
+  wordcloud2(data = data,fontFamily = "Helvetica",backgroundColor = "azure",color = "random-dark",size=1.5/input$TM_Coherence_setsize,minRotation = -pi/2, maxRotation = -pi/2)
 })
 
 observe({
@@ -1377,10 +1377,10 @@ output$Det_TM_Meta_Correlations_table_simple<-DT::renderDataTable({
   meta<-values$TM_meta
   validate(
     need(
-      ncol(meta)>9,message="No Metadata found"
+      ncol(meta)>4,message="No Metadata found"
     )
   )
-  meta<-meta[,10:ncol(meta),drop=F]
+  meta<-meta[,5:ncol(meta),drop=F]
   results<-matrix(c(0),ncol(theta),ncol(meta))
   for(topic_i in 1:ncol(theta)){
     print(topic_i)
@@ -1471,7 +1471,7 @@ output$Det_TM_meta_wordcloud1<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1,minRotation = -pi/2, maxRotation = -pi/2)
 })
 
 output$Det_TM_meta_wordcloud2<-renderWordcloud2({
@@ -1487,7 +1487,7 @@ output$Det_TM_meta_wordcloud2<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 
 output$Det_TM_meta_wordcloud3<-renderWordcloud2({
@@ -1503,7 +1503,7 @@ output$Det_TM_meta_wordcloud3<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud4<-renderWordcloud2({
   theta=0.25
@@ -1518,7 +1518,7 @@ output$Det_TM_meta_wordcloud4<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud5<-renderWordcloud2({
   theta=0.25
@@ -1533,7 +1533,7 @@ output$Det_TM_meta_wordcloud5<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud6<-renderWordcloud2({
   theta=0.25
@@ -1548,7 +1548,7 @@ output$Det_TM_meta_wordcloud6<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud7<-renderWordcloud2({
   theta=0.25
@@ -1563,7 +1563,7 @@ output$Det_TM_meta_wordcloud7<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud8<-renderWordcloud2({
   theta=0.25
@@ -1578,7 +1578,7 @@ output$Det_TM_meta_wordcloud8<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud9<-renderWordcloud2({
   theta=0.25
@@ -1593,7 +1593,7 @@ output$Det_TM_meta_wordcloud9<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud10<-renderWordcloud2({
   theta=0.25
@@ -1608,7 +1608,7 @@ output$Det_TM_meta_wordcloud10<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud11<-renderWordcloud2({
   theta=0.25
@@ -1623,7 +1623,7 @@ output$Det_TM_meta_wordcloud11<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud12<-renderWordcloud2({
   theta=0.25
@@ -1638,7 +1638,7 @@ output$Det_TM_meta_wordcloud12<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud13<-renderWordcloud2({
   theta=0.25
@@ -1653,7 +1653,7 @@ output$Det_TM_meta_wordcloud13<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud14<-renderWordcloud2({
   theta=0.25
@@ -1668,7 +1668,7 @@ output$Det_TM_meta_wordcloud14<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud15<-renderWordcloud2({
   theta=0.25
@@ -1683,7 +1683,7 @@ output$Det_TM_meta_wordcloud15<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud16<-renderWordcloud2({
   theta=0.25
@@ -1698,7 +1698,7 @@ output$Det_TM_meta_wordcloud16<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud17<-renderWordcloud2({
   theta=0.25
@@ -1713,7 +1713,7 @@ output$Det_TM_meta_wordcloud17<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 output$Det_TM_meta_wordcloud18<-renderWordcloud2({
   theta=0.25
@@ -1728,7 +1728,7 @@ output$Det_TM_meta_wordcloud18<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 
 output$Det_TM_meta_wordcloud19<-renderWordcloud2({
@@ -1744,7 +1744,7 @@ output$Det_TM_meta_wordcloud19<-renderWordcloud2({
   #normalize weights for wordcloud
   data$data<-data$data-min(data$data)
   data$data<-data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
 
 
@@ -3566,7 +3566,7 @@ output$Det_TM_validation_wordcloud <- wordcloud2::renderWordcloud2({
   # normalize weights for wordcloud
   data$data <- data$data-min(data$data)
   data$data <- data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1)
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1,minRotation = -pi/2,maxRotation = -pi/2)
 })
 
 
@@ -4039,14 +4039,13 @@ output$Det_TM_document_clustering_kmeans<-plotly::renderPlotly({
     need(!is.null(values$Det_TM_document_clustering_cluster_data),message=F)
   )
   cluster_data<-values$Det_TM_document_clustering_cluster_data
-  plot_data<-data.frame(cbind(cluster_data$data$name,cluster_data$data$x,cluster_data$data$y,cluster_data$data$coord,cluster_data$data$cluster),stringsAsFactors = F)
+  plot_data<-data.frame(cbind(as.character(cluster_data$data$name),cluster_data$data$x,cluster_data$data$y,cluster_data$data$coord,cluster_data$data$cluster),stringsAsFactors = F)
   values$Det_TM_document_clustering_cluster_summary<-plot_data
   x_lab<-cluster_data$labels$x
   y_lab<-cluster_data$labels$y
   colnames(plot_data)<-c("name","x","y","coord","cluster")
   plot_data$x<-round(as.numeric(plot_data$x),digits = 3)
   plot_data$y<-round(as.numeric(plot_data$y),digits = 3)
-  
   fig<-plot_ly(source = "Det_TM_document_clustering_kmeans", data=plot_data,x=~x,y=~y,type="scatter",mode="markers",color=~cluster,symbol=~cluster,marker=list(size=input$Det_TM_document_clustering_marker_size),
                text=values$Det_TM_document_clustering_titles, key=~name)
   fig<-layout(fig,xaxis=list(title=x_lab),yaxis=list(title=y_lab))
@@ -4333,7 +4332,7 @@ output$Det_TM_grouping_wc_group1<-renderWordcloud2({
     need(!is.null(input$Det_TM_grouping_group1_rows_all),message=F)
   )
   titles<-values$TM_meta[ input$Det_TM_grouping_group1_rows_all,"title"]
-  wordcloud2(data = data.frame(word=titles,freq=rep(1,length(titles))),size = 0.15,color = "random-light", backgroundColor = "black")
+  wordcloud2(data = data.frame(word=titles,freq=rep(1,length(titles))),size = 0.15,color = "random-light", backgroundColor = "black",fontFamily = "Helvetica", minRotation = -pi/2, maxRotation = -pi/2)
   
 })
 output$Det_TM_grouping_wc_group2<-renderWordcloud2({
@@ -4341,7 +4340,7 @@ output$Det_TM_grouping_wc_group2<-renderWordcloud2({
     need(!is.null(input$Det_TM_grouping_group2_rows_all),message=F)
   )
   titles<-values$TM_meta[ input$Det_TM_grouping_group2_rows_all,"title"]
-  wordcloud2(data = data.frame(word=titles,freq=rep(1,length(titles))),size = 0.15,color = "random-light", backgroundColor = "black")
+  wordcloud2(data = data.frame(word=titles,freq=rep(1,length(titles))),size = 0.15,color = "random-light", backgroundColor = "black",fontFamily = "Helvetica", minRotation = -pi/2, maxRotation = -pi/2)
   
 })
 
@@ -4449,7 +4448,7 @@ output$Det_TM_model_reproducibility_specific_wordcloud<-wordcloud2::renderWordcl
   d<-as.data.frame(cbind(d,rep(0.1,length(d))))
   class(d$V2)<-"numeric"
   colors<-c(colors_shared,colors_i,colors_j)
-  wc<-wordcloud2::wordcloud2(d,size=input$Det_TM_model_reproducibility_specific_wordcloud_size,color = colors,backgroundColor = "black", minRotation = -pi/2, maxRotation = -pi/2)   
+  wc<-wordcloud2::wordcloud2(d,size=input$Det_TM_model_reproducibility_specific_wordcloud_size,color = colors,backgroundColor = "black", minRotation = -pi/2, maxRotation = -pi/2,fontFamily = "Helvetica")   
   return(wc)
 })
 

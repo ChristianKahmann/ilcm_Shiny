@@ -2118,7 +2118,7 @@ observeEvent(input$Upload_Data,{
           mde1<-cbind(rep(data[1,2],length(mde1)),mde1)
           #check if only NA
           if(any(!is.na(mde1[,2]))){
-            mde1<-mde1[which(!is.na(mde1[,2])),]
+            mde1<-mde1[which(!is.na(mde1[,2])),,drop=F]
             rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde1 (dataset, mde1) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde1[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde1[,2])), collapse=', ') ,";"))
           }
         })
@@ -2128,7 +2128,7 @@ observeEvent(input$Upload_Data,{
           mde2<-cbind(rep(data[1,2],length(mde2)),mde2)
           #check if only NA
           if(any(!is.na(mde2[,2]))){
-            mde2<-mde2[which(!is.na(mde2[,2])),]
+            mde2<-mde2[which(!is.na(mde2[,2])),,drop=F]
             rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde2 (dataset, mde2) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde2[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde2[,2])), collapse=', ') ,";"))
           }
         })
@@ -2138,7 +2138,7 @@ observeEvent(input$Upload_Data,{
           mde3<-cbind(rep(data[1,2],length(mde3)),mde3)
           #check if only NA
           if(any(!is.na(mde3[,2]))){
-            mde3<-mde3[which(!is.na(mde3[,2])),]
+            mde3<-mde3[which(!is.na(mde3[,2])),,drop=F]
             rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde3 (dataset, mde3) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde3[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde3[,2])), collapse=', ') ,";"))
           }
         })
@@ -2148,7 +2148,7 @@ observeEvent(input$Upload_Data,{
           mde4<-cbind(rep(data[1,2],length(mde4)),mde4)
           #check if only NA
           if(any(!is.na(mde4[,2]))){
-            mde4<-mde4[which(!is.na(mde4[,2])),]
+            mde4<-mde4[which(!is.na(mde4[,2])),,drop=F]
             rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde4 (dataset, mde4) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde4[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde4[,2])), collapse=', ') ,";"))
           }
         })
@@ -2158,7 +2158,7 @@ observeEvent(input$Upload_Data,{
           mde5<-cbind(rep(data[1,2],length(mde5)),mde5)
           #check if only NA
           if(any(!is.na(mde5[,2]))){
-            mde5<-mde5[which(!is.na(mde5[,2])),]
+            mde5<-mde5[which(!is.na(mde5[,2])),,drop=F]
             rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde5 (dataset, mde5) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde5[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde5[,2])), collapse=', ') ,";"))
           }
         })
@@ -2168,7 +2168,7 @@ observeEvent(input$Upload_Data,{
           mde6<-cbind(rep(data[1,2],length(mde6)),mde6)
           #check if only NA
           if(any(!is.na(mde6[,2]))){
-            mde6<-mde6[which(!is.na(mde6[,2])),]
+            mde6<-mde6[which(!is.na(mde6[,2])),,drop=F]
             rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde6 (dataset, mde6) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde6[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde6[,2])), collapse=', ') ,";"))
           }
         })
@@ -2178,7 +2178,7 @@ observeEvent(input$Upload_Data,{
           mde7<-cbind(rep(data[1,2],length(mde7)),mde7)
           #check if only NA
           if(any(!is.na(mde7[,2]))){
-            mde7<-mde7[which(!is.na(mde7[,2])),]
+            mde7<-mde7[which(!is.na(mde7[,2])),,drop=F]
             rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde7 (dataset, mde7) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde7[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde7[,2])), collapse=', ') ,";"))
           }
         })
@@ -2188,7 +2188,7 @@ observeEvent(input$Upload_Data,{
           mde8<-cbind(rep(data[1,2],length(mde8)),mde8)
           #check if only NA
           if(any(!is.na(mde8[,2]))){
-            mde8<-mde8[which(!is.na(mde8[,2])),]
+            mde8<-mde8[which(!is.na(mde8[,2])),,drop=F]
             rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde8 (dataset, mde8) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde8[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde8[,2])), collapse=', ') ,";"))
           }
         })
@@ -2198,7 +2198,7 @@ observeEvent(input$Upload_Data,{
           mde9<-cbind(rep(data[1,2],length(mde9)),mde9)
           #check if only NA
           if(any(!is.na(mde9[,2]))){
-            mde9<-mde9[which(!is.na(mde9[,2])),]
+            mde9<-mde9[which(!is.na(mde9[,2])),,drop=F]
             rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_mde9 (dataset, mde9) values ",paste(sprintf("(%s, %s)", RMariaDB::dbQuoteString(conn = mydb,x = mde9[,1]),RMariaDB::dbQuoteString(conn = mydb,x= mde9[,2])), collapse=', ') ,";"))
           }
         })
