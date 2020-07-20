@@ -9,12 +9,12 @@ There is a standalone iLCM version avaiable at https://hub.docker.com/r/ckahmann
 To use this version locally one has to install docker before (https://docs.docker.com/install/).
 Having done this, the command 
 
-`docker run -it -d -p 3666:3838 -p 3667:8787 -p 3668:8983 -v  r_data:/home/rstudio/iLCM -v r_data:/srv/shiny-server -v solr:/var/solr/data/iLCM  -v mariadb:/var/lib/mysql ckahmann/ilcm:latest` 
+`docker run -it -d -p 3838:3838 -p 8787:8787 -p 8983:8983 ckahmann/ilcm:latest` 
 
 does pull the image from dockerhub and starts a container hosting the needed services.
 
 One can set port mappings to diffrent ports on their local system.
 Per default the 3 services are available on this ports:
-* **shiny-server**: http://localhost:3666 
-* **rstudio-server**: http://localhost:3667 
-* **solr-dashboard**: http://localhost:3668 
+* **shiny-server**: http://localhost:3838 
+* **rstudio-server**: http://localhost:8787 
+* **solr-dashboard**: http://localhost:8983 
