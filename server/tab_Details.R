@@ -291,11 +291,7 @@ output$details_parameter<-renderUI({
                            conditionalPanel(condition = 'input.Det_FE_most_frequent_words_use_whole_time==false',
                                             selectInput(inputId = "Det_FE_most_frequent_words_timeintervall",label = "Timeintervall",choices = c("Day","Week","Month","Year"),selected = "Month"),
                                             uiOutput(outputId = "Det_FE_most_frequent_words_points_in_time_UI")
-                           ),
-                           tags$hr(),
-                           numericInput(inputId="Det_FE_most_frequent_words_wc_minSize",label="wordcloud min Size",value=0.5),
-                           numericInput(inputId="Det_FE_most_frequent_words_wc_Size",label="wordcloud Size",value=0.8),
-                           
+                           )
           )
         )
       )

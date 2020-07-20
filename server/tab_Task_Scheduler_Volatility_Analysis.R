@@ -321,18 +321,6 @@ output$Analysis_Parameter_VA<-renderUI({
                    )
                )),
       column(1,
-             #"sig_vc_window",
-             #"sig_sd_window","rank_minmax","rank_no_zero",
-             #"rank_max_rank","rank_recommender"
-             selectInput(inputId = "VA_method",label = HTML("Method <br/> <br/>"),choices = c("sig_simple","sig_cosine"),selected = "sig_simple")%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Context Volatility can be calculated with different approaches. Here you can choose this method.",
-                     placement = "right"
-                   )
-               )),
-      column(1,
              selectInput(inputId = "VA_cooc_type",label = HTML("Co-occurrence window <br/>"),choices = c("Document","Sentence"),selected = "Sentence")%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -343,21 +331,6 @@ output$Analysis_Parameter_VA<-renderUI({
                ))
     ),
     fluidRow(
-      column(2,
-             conditionalPanel(condition='input.VA_method=="sig_simple" || input.VA_method=="sig_cosine"',
-                              selectInput(inputId = "VA_weightfactor",label = "Weightfactor",choices = c("linear","exponential"),selected = "linear")%>%
-                                shinyInput_label_embed(
-                                  shiny_iconlink() %>%
-                                    bs_embed_popover(
-                                      title = "This parameter specifies the influence of the individual points in time in the past on the calculation of an expected value with the respective present.
-                                      The shorter a point in time lies in the past, the higher its weight for the calculation of the expected value.
-                                      If a linear weightfactor is taken, the weights for a set memorysize of 3 could look as follows: (0.5, 0.333, 0.1667).
-                                      Using an exponential weighting factor, the weights would be as follows: (0.665, 0.2447, 0.09).",
-                                      placement = "right"
-                                    )
-                                )
-             )
-      ),
       column(1,
              conditionalPanel(condition='input.VA_use_fixed_vocab==false',
                               selectInput(inputId = "VA_POS_TYPES",label = "Include POS-Types",
@@ -411,6 +384,118 @@ output$Analysis_Parameter_VA<-renderUI({
                                     )
                                 )
              )
+      )
+    ),
+    fluidRow(
+      column(2,
+             selectInput(inputId="VA_rank_significance",label="Use ranks or signficances",choices=setNames(object = c("sig","rank"),nm = c("significances","ranks")))%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "In order to calculate context volatility, both rank-based and significance-based approaches can be used",
+                     placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             conditionalPanel(condition = 'input.VA_rank_significance=="sig"',
+                              selectInput(inputId="VA_reference_window",label="Reference or window based",choices=c("reference","window"))%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "The significant-based approaches are further subdivided into reference-based and window-based approaches.
+In the reference-based approaches, an expected value is determined on the basis of a given set of points in time, with which the actual available data is subsequently compared.
+With the window based approaches, the dispersion of the available values within a time window is examined.",
+                                      placement = "right"
+                                    )
+                                )
+             ),
+             conditionalPanel(condition = 'input.VA_rank_significance=="rank"',
+                              # selectInput(inputId="VA_rank",label="Rank based methods",choices=setNames(object = c("minmax","no_zero","max_rank","global","recommender"),
+                              #                                                                           nm = c("Min Max algorithm","no gap information","use max ranks for gaps","use global information to fill gaps",
+                              #                                                                                  "use local inforamtion to fill gaps")))
+                              selectInput(inputId="VA_rank",label="Rank based methods",choices=setNames(object = c("minmax"),
+                                                                                                        nm = c("Min Max algorithm")))%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "The Minmax algorithm is a ranking-based method for calculating context volatility, with a special focus on dealing with incomplete data.",
+                                      placement = "right"
+                                    )
+                                )
+             )
+      ),
+      conditionalPanel(condition = 'input.VA_rank_significance=="sig"',
+                       conditionalPanel(condition = 'input.VA_reference_window=="window"',
+                                        column(2,
+                                               selectInput(inputId="VA_window_var",label="Variation calculation",choices=setNames(object = c("iqr","var","vc"),nm = c("Inter Quartile Range","Variance","Variance coefficient")))%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "The variation within a time window can be determined by the 3 methods: interquartile range, variance and variance coefficient.",
+                                                       placement = "right"
+                                                     )
+                                                 )
+                                        )
+                       ),
+                       conditionalPanel(condition = 'input.VA_reference_window=="reference"',
+                                        column(2,
+                                               selectInput(inputId="VA_sig_reference_dist",label="Distance Measure",
+                                                           choices=setNames(object = c("ed","edmc","md","mdmc","cosine","jensen_shannon","kl","tanimoto","dice_dist"),
+                                                                            nm = c("Euclidean distance","Euclidean distance combined with mean difference",
+                                                                                   "Manhattan distance","Manhattan distance combinded with mean difference",
+                                                                                   "Cosine distance","Jensen Shannon distance","Kullback Leibler distance",
+                                                                                   "Tanimoto distance","Dice distance")))%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "Various methods are implemented to estimate the distance between the expected value and the actual value.",
+                                                       placement = "right"
+                                                     )
+                                                 )
+                                        ),
+                                        column(1,
+                                               selectInput(inputId="VA_sig_reference_weightfactor",label="Weightfactor",
+                                                           choices=setNames(object = c("linear","exp"),nm = c("Linear","Exponential")))%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "This parameter specifies the influence of the individual points in time in the past on the calculation of an expected value with the respective present.
+                                      The shorter a point in time lies in the past, the higher its weight for the calculation of the expected value.
+                                      If a linear weightfactor is taken, the weights for a set memorysize of 3 could look as follows: (0.5, 0.333, 0.1667).
+                                      Using an exponential weighting factor, the weights would be as follows: (0.665, 0.2447, 0.09).",
+                                                       placement = "right"
+                                                     )
+                                                 )
+                                        )
+                       )
+      ),
+      conditionalPanel(condition = 'input.VA_rank_significance=="rank"',
+                       conditionalPanel(condition = 'input.VA_rank=="minmax"',
+                                        column(2,
+                                               numericInput(inputId="VA_rank_minmax_beta",label="Beta Parameter",value=2,min=1,max=100)%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "The beta parameter allows to down-weight noise in the data. The higher the value for beta, the lower the weighting on small changes.",
+                                                       placement = "right"
+                                                     )
+                                                 )
+                                        )      
+                       ),
+                       conditionalPanel(condition = 'input.VA_rank!="minmax"',
+                                        column(2,
+                                               selectInput(inputId="VA_window_var",label="Variation calculation",choices=setNames(object = c("iqr","var","vc"),nm = c("Inter Quartile Range","Variance","Variance coefficient")))%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "The variation within a time window can be determined by the 3 methods: interquartile range, variance and variance coefficient.",
+                                                       placement = "right"
+                                                     )
+                                                 )
+                                               
+                                        )      
+                       )
       )
     ),
     tags$hr(),
@@ -506,8 +591,13 @@ observeEvent(input$VA_Submit_Script,{
                      reduce_NER_exclude=input$VA_ENTITY_TYPES_exclude,
                      termfreq_type=input$VA_termfreq_type,
                      docfreq_type=input$VA_docfreq_type,
-                     va_weightfactor=input$VA_weightfactor,
-                     va_method=input$VA_method,
+                     rank_significance=input$VA_rank_significance,
+                     reference_window=input$VA_reference_window,
+                     rank_method=input$VA_rank,
+                     window_var=input$VA_window_var,
+                     sig_reference_dist=input$VA_sig_reference_dist,
+                     sig_reference_weightfactor=input$VA_sig_reference_weightfactor,
+                     rank_minmax_beta=input$VA_rank_minmax_beta,
                      keep_custom=input$VA_keep_custom,
                      use_blacklist=input$VA_use_custom_blacklist,
                      use_whitelist=input$VA_use_custom_whitelist,
@@ -668,8 +758,13 @@ observeEvent(input$VA_pruning_continue,ignoreInit = T,{
                    reduce_NER_exclude=input$VA_ENTITY_TYPES_exclude,
                    termfreq_type=input$VA_termfreq_type,
                    docfreq_type=input$VA_docfreq_type,
-                   va_weightfactor=input$VA_weightfactor,
-                   va_method=input$VA_method,
+                   rank_significance=input$VA_rank_significance,
+                   reference_window=input$VA_reference_window,
+                   rank_method=input$VA_rank,
+                   window_var=input$VA_window_var,
+                   sig_reference_dist=input$VA_sig_reference_dist,
+                   sig_reference_weightfactor=input$VA_sig_reference_weightfactor,
+                   rank_minmax_beta=input$VA_rank_minmax_beta,
                    keep_custom=input$VA_keep_custom,
                    use_blacklist=input$VA_use_custom_blacklist,
                    use_whitelist=input$VA_use_custom_whitelist,
@@ -691,7 +786,7 @@ observeEvent(input$VA_pruning_continue,ignoreInit = T,{
   write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0( "Collection: <b>",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
   #save data needed in script execution 
   save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
-  #start script
+  #start script 
   if(input$use_custom_script==TRUE && !is.null(input$custom_script_options)){
     shinyWidgets::sendSweetAlert(session=session,title = "Starting a custom script",text = "You are about to start a custom script. Caution with the calculation and results!",type = "info")
     system(paste0('Rscript collections/scripts/Volatility_Analysis/',input$custom_script_options,' &'))

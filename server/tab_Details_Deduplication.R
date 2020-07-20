@@ -6,8 +6,6 @@ observeEvent(ignoreInit = T,input$Det_DD_reset_user_input,{
 
 
 observe({
-  print("vor validate")
-  print(  values$invalidate_deduplication_visulisation)
   validate(
     need(!is.null(values$Det_DD_results),message=F),
     need(!is.null(input$Det_DD_strategy),message=F),
