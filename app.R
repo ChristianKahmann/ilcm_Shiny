@@ -1,4 +1,4 @@
-# load required libraries
+# load required libraries 
 library(shiny)
 library(shinyFiles)
 library(data.table)
@@ -96,6 +96,8 @@ source("global/mixed_assoc.R")
 source("www/ilcm_dashboard_theme.R")
 # load the current settings
 source("config_file.R")
+# add Tutorials Directory to Resource Path
+shiny::addResourcePath(directoryPath = "Tutorials",prefix = "Tutorials")
 # apply settings to REFI Vaiables
 source("global/refi/interface.R")
 # load the UI for the login page
@@ -136,7 +138,7 @@ ui <- dashboardPage(
   # app sidebar
   dashboardSidebar(width="200px",
                    # UI for sidebar panel
-                   uiOutput("sidebarpanel_UI")
+                   uiOutput("sidebarpanel_UI")  # defined in file /server/tab_sidebar_overall.R
   ),
   # app main body
   dashboardBody(
@@ -311,6 +313,7 @@ server <- function(input, output, session) {
 
 # start the app
 shiny::shinyApp(ui,server)
+
 
 
 
