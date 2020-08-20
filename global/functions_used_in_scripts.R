@@ -1,3 +1,5 @@
+library(tidyverse)
+library(shinyWidgets)
 
 #' getMetaData for given ids and datasets (which means via GUI a selected a collection)
 #'
@@ -1075,3 +1077,261 @@ getSpecificResultFolderNameFromSelectedTopic <- function(data){
   
   return(specificResultFolderName)
 }
+
+# convenience function to get available distinct values even if column contains multiple values separated by separator
+getAvailableValues <- function(dataToUse, columnName, columnContainsMultipleValues = F, separator = ",", replaceNullWith = NULL, replaceNAWith = NA, replaceEmptyWith =""){
+  if(!columnContainsMultipleValues){
+    result <- unique(dataToUse[[columnName]])
+  }else{
+    collectedValues <- NULL
+    for(i in 1:dim(dataToUse)[1]){
+      entry <- dataToUse[[columnName]][i]
+      entries <- str_split(string = entry, pattern = separator)
+      collectedValues <- unique(c(collectedValues, entries[[1]]))
+    }
+    result <- collectedValues
+  }
+  
+  return (result)
+}
+
+getAvailableValuesForGivenColumns <- function(dataToUse, columnNames, columnNamesContainingMultiValues, separatorsToUseForColumnsWithMultivalues){
+  result <- vector("list", length(columnNames))
+  names(result) <- columnNames
+
+  for(columnName in columnNames){
+    isMultiValue <- (columnName %in% columnNamesContainingMultiValues)
+    multiValueSeparator <- NULL
+    if(isMultiValue){
+      multiValueSeparator <- separatorsToUseForColumnsWithMultivalues[which(columnNamesContainingMultiValues==columnName)[[1]]]
+    }
+    availableValues <- getAvailableValues(dataToUse,columnName = columnName, columnContainsMultipleValues = isMultiValue, separator = multiValueSeparator)
+    result[[columnName]] <- availableValues
+  }
+  return(result)
+}
+
+
+#' Covenience function to calculate distributions of values. Works also for multi-value data. Used grep, so values shouldn't be substrings of another value.
+#'
+#' @param inputData data frame with columnNames, meaning names(inputData) is set
+#' @param columnNamesOfColumnsToUse which column names to consider for calculation, if null all are taken
+#' @param dataWithColumnNamesAndAvailableValues available/possible values to check (can be retrieved via fuction getAvailableValues above)
+#' @param performSingleValueExactMatchInsteadOfGrep usually performs grep to deal with multi value entries. If you have single value entries and some values might be substrings of other values, please use TRUE here
+#'
+#' @return a named list with columnNames as names of the list, list entry: dataframe with columns: valueName, frequency, percent 
+#' @export
+#'
+#' @examples
+calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesAndAvailableValues, includeValuesNotUsed, performSingleValueExactMatchInsteadOfGrep){
+  if(is.null(columnNamesOfColumnsToUse)){
+    columnNamesOfColumnsToUse <- names(inputData)
+  }
+  numberOfEntriesTotal <- dim(inputData)[1]
+  stats <- list()
+  for(columnName in columnNamesOfColumnsToUse){
+    availableValuesForGivenColumn <- dataWithColumnNamesAndAvailableValues[[columnName]]
+    
+    statsForColumn <- data.frame(metaDataName = character(),numberOfEntries = numeric(), percent = numeric() )
+    lineToWrite <-1
+    for(currentValue in availableValuesForGivenColumn){
+      
+      if(is.null(currentValue) | is.na(currentValue) | nchar(currentValue) == 0){
+          numberOfEntriesWithNoValue <- length(which(nchar(inputData[[columnName]])==0))
+          if(numberOfEntriesWithNoValue > 0 | includeValuesNotUsed){
+            percentValue <- numberOfEntriesWithNoValue/numberOfEntriesTotal*100
+            #statsForColumn[lineToWrite,] <- c("EMPTY (Nothing set)",numberOfEntriesWithNoValue, percentValue)
+            statsForColumn <- statsForColumn %>% add_row(metaDataName = "EMPTY (Nothing set)",numberOfEntries = numberOfEntriesWithNoValue, percent = percentValue)
+            lineToWrite <- lineToWrite+1
+            }
+      }else{
+        numberOfEntries <- 0
+        if(performSingleValueExactMatchInsteadOfGrep){
+          numberOfEntries <- inputData[which(inputData[[columnName]]== currentValue),][1]
+          
+        }else{
+          numberOfEntries <- dim(inputData[grep(x = inputData[[columnName]], pattern = currentValue, fixed = T), ])[1]
+          
+        }
+        if(numberOfEntries > 0 | includeValuesNotUsed){
+          percentValue <- numberOfEntries/numberOfEntriesTotal*100
+          #statsForColumn[lineToWrite,] <-c(currentValue,numberOfEntries, percentValue) 
+          statsForColumn <- statsForColumn %>% add_row(metaDataName = currentValue,numberOfEntries = numberOfEntries, percent = percentValue)
+          lineToWrite <- lineToWrite+1
+        }
+      }
+    }
+    stats[[columnName]] <- statsForColumn
+  }
+  
+  return(stats)
+}
+
+
+#' Convenience function to calc different numeric values (sum,min,max,mean,median) for columns of given data
+#'
+#' @param inputData a data frame with columnNames, meaning names(inputData) is set
+#' @param columnsToUseWithNumericContent Specify which columns to use. If NULL, automatcially all columns used which are numeric (is.numeric ==T)
+#'
+#' @return a dataframe with given columnNames as columnNames, the results (like sum,min,max,..) as rows
+#' @export
+#'
+#' @examples
+calcStatsForNumeric <- function(inputData, columnsToUseWithNumericContent){
+  if(is.null(columnsToUseWithNumericContent)){
+    columnsToUseWithNumericContent <- c()
+    availableColumns <- names(inputData)
+    for(columnName in availableColumns){
+      if(is.numeric(inputData[[columnName]])){
+        columnsToUseWithNumericContent <- c(columnsToUseWithNumericContent,columnName)
+      }
+    }
+    columnsToUseWithNumericContent 
+  }
+  
+  namesOfCalculations <- c("sum","min","max","mean","median")
+  statsForNumeric <- data.frame(matrix(ncol = length(columnsToUseWithNumericContent), nrow = length(namesOfCalculations))) 
+  names(statsForNumeric) <- columnsToUseWithNumericContent
+  row.names(statsForNumeric)<- namesOfCalculations
+  for(columnName in columnsToUseWithNumericContent){
+    dataOfColumn <- inputData[[columnName]]
+    # exclude null / NA / empty
+    indicesToExclude <- which(is.null(dataOfColumn) | is.na(dataOfColumn) | nchar(dataOfColumn)==0 | dataOfColumn == "NA")
+    dataToUseForCalc <- dataOfColumn
+    if(length(indicesToExclude)>0){
+      dataToUseForCalc <- dataOfColumn[-indicesToExclude]
+    }
+    if(length(dataToUseForCalc)==0){# no data left
+      statsForNumeric[[columnName]] <- c(NA,NA,NA,NA,NA)
+    }else{
+      dataToUseForCalc <- as.numeric(dataToUseForCalc)
+      statsForNumeric[[columnName]] <- c(sum(dataToUseForCalc),min(dataToUseForCalc),max(dataToUseForCalc),mean(dataToUseForCalc),median(dataToUseForCalc))
+    }
+  }
+  return(statsForNumeric)
+}
+
+#' Convenience function to filter a given data frame based on given input for different columns. Content of data might be multivalue. In this case grep is used to find the mathing entries.
+#'
+#' @param dataToFilter data frame with named columns
+#' @param columnNamesOfDataToFilter the columnNames of dataToFilter to use (might be restricted)
+#' @param columnsNamesWithMultiValueData an array listing all columnNames within dataToFilter which are multivalues. For these grep is used to identify matches
+#' @param filterInput the input variable from shiny
+#' @param prefixInFilterNameForUniqueIdentification when the field names of the input filter have a unique prefix (to make a difference between a$id and b$id the name in input might be input$a_id with "a_" as prefix) 
+#'
+#' @return a data frame like dataToFilter reduced to the entries matching the given filters
+#' @export
+#'
+#' @examples
+filterDataBasedOnInputFilterFields <- function(dataToFilter,columnNamesOfDataToFilter,columnsNamesWithMultiValueData,filterInput,prefixInFilterNameForUniqueIdentification){
+  result <- dataToFilter
+  for(columnName in columnNamesOfDataToFilter){
+    columnNameWithPrefix <- paste0(prefixInFilterNameForUniqueIdentification,columnName)
+    if(length(filterInput[[columnNameWithPrefix]])>0){
+      # if multi value field
+      if(columnName %in% columnsNamesWithMultiValueData){
+        indicesCollected <- NULL
+        for (i in 1:length(filterInput[[columnNameWithPrefix]])) {
+          searchString <- filterInput[[columnNameWithPrefix]][i]
+          indicesWithSearchString <- grep(x=result[[columnName]], pattern = searchString, fixed = T)
+          indicesCollected <- c(indicesCollected,indicesWithSearchString)
+        }
+        indicesCollected <- unique(indicesCollected)
+        result<- result[indicesCollected,]
+        
+      }else{ # single value field
+        result <- result[which(result[[columnName]] %in% filterInput[[columnNameWithPrefix]]),] 
+      }
+    }
+  }
+  return (result)
+}
+
+#create select input lists
+createSelectInputsForColumnsAndValues <- function(fieldNamesWithValues,prefixForUniqueIdentificationUsedForInputId){
+  availableFieldNames <- names(fieldNamesWithValues)
+  selectionInputList <- list(length(availableFieldNames))
+  for(fieldName in availableFieldNames){
+    columnNameWithPrename <- paste0(prefixForUniqueIdentificationUsedForInputId,fieldName)
+    selectInputEntry <- selectInput(inputId=columnNameWithPrename, label=h4(fieldName), choices= fieldNamesWithValues[[fieldName]], multiple = T)
+    selectionInputList[[fieldName]] <- selectInputEntry
+  }
+  return(selectionInputList)
+}
+
+calcStatsGeocodingResult <- function(geocodingResultData, columnsToCalcDistributions,availableValues,includeValuesNotUsedForDistribution,performSingleValueExactMatchInsteadOfGrep, columnsToUseForNumericStats){
+  stats <- list()
+  dataForStats <- geocodingResultData
+  stats$numberOfDinstinctDocs <- length(unique(dataForStats[["areaId"]]))
+  stats$numberOfDistinctLocations <- length(unique(dataForStats[["latlon"]]))
+  stats$numberOfLocations <- sum(dataForStats[["frequencyInArea"]])
+  stats$distributions <- calcStats(dataForStats, columnsToCalcDistributions, availableValues, includeValuesNotUsed = includeValuesNotUsedForDistribution, performSingleValueExactMatchInsteadOfGrep = performSingleValueExactMatchInsteadOfGrep)
+  stats$numericInfos <- calcStatsForNumeric(inputData = dataForStats, columnsToUseWithNumericContent  = columnsToUseForNumericStats)
+  return(stats)
+}
+
+calcStatsMetaData <- function(metaData, columnsToCalcDistributions,availableValues,includeValuesNotUsedForDistribution,performSingleValueExactMatchInsteadOfGrep, columnsToUseForNumericStats){
+  stats <- list()
+  dataForStats <- metaData
+  stats$numberOfDinstinctDocs <- length(unique(dataForStats[["id_doc"]]))
+  stats$distributions <- calcStats(dataForStats, columnsToCalcDistributions, availableValues, includeValuesNotUsed = includeValuesNotUsedForDistribution, performSingleValueExactMatchInsteadOfGrep = performSingleValueExactMatchInsteadOfGrep)
+  stats$numericInfos <- calcStatsForNumeric(inputData = dataForStats, columnsToUseWithNumericContent  = columnsToUseForNumericStats)
+  return(stats)
+}
+
+calcStatsPerMapPoint <- function(geocodingResultReducedToPointData, 
+                                 geocodingResult_columnsToCalcDistributions, 
+                                 geocodingResult_availableValues, 
+                                 geocodingResult_performSingleValueExactMatchInsteadOfGrep,
+                                 geocodingResult_columnsToCalcNumericInfos, 
+                                 geocodingResult_includeValuesNotUsed, 
+                                 metaDataReducedToPointData, 
+                                 metaData_columnsToCalcDistributions, 
+                                 metaData_availableValues, 
+                                 metaData_performSingleValueExactMatchInsteadOfGrep,
+                                 metaData_columnsToCalcNumericInfos, 
+                                 metaData_includeValuesNotUsed
+){
+  
+  stats <- list()
+  metaReduced <- metaDataReducedToPointData
+  stats$geoCodingResult_numberOfDistinctLocationsBasedOnLatLon <- length(unique(geocodingResultReducedToPointData$display_name))
+  stats$geoCodingResult_distinctLocationNames <- sort(unique(geocodingResultReducedToPointData$display_name))
+  stats$geoCodingResult_numberOfTimesLocationsFound <- sum(geocodingResultReducedToPointData$frequencyInArea)
+  stats$geocodingResult_numberOfDictinctDocsLocationFoundIn <- length(unique(geocodingResultReducedToPointData$areaId))
+  
+  stats$geocodingResult_distributionInDocs <- data.frame("docsContainingLocation" = geocodingResultReducedToPointData$areaId,
+                                                         "frequencyInDoc" = geocodingResultReducedToPointData$frequencyInArea)
+  stats$geocodingResult_distributionInDocs$title <- unlist(lapply(stats$geocodingResult_distributionInDocs[["docsContainingLocation"]], FUN = function(x){metaDataReducedToPointData[which(metaDataReducedToPointData[[metaData_columnNameForMatchWithOtherData]]==x),]$title}))
+  
+  stats$geocodingResult_distributions <- calcStats(geocodingResultReducedToPointData, geocodingResult_columnsToCalcDistributions, geocodingResult_availableValues, geocodingResult_includeValuesNotUsed, geocodingResult_performSingleValueExactMatchInsteadOfGrep)
+  stats$geocodingResult_numericStats <- calcStatsForNumeric(geocodingResultReducedToPointData, geocodingResult_columnsToCalcNumericInfos)
+  
+  
+  stats$metaData_distributions <- calcStats(metaDataReducedToPointData, metaData_columnsToCalcDistributions, metaData_availableValues, metaData_includeValuesNotUsed, metaData_performSingleValueExactMatchInsteadOfGrep)
+  stats$metaData_numericStats <- calcStatsForNumeric(metaDataReducedToPointData, metaData_columnsToCalcNumericInfos)
+  
+  #print(names(stats))
+  
+  return(stats)
+}
+
+createPlotsForDistributionData <- function(statsDistributionData){
+    finalPlots <- list()
+    statsToPlot <- statsDistributionData
+    distributionAspects <- names(statsToPlot)
+    for(aspectName in distributionAspects){
+      dataToPlot <- statsToPlot[[aspectName]]
+      dataToPlot <- dataToPlot[order(-dataToPlot$numberOfEntries,dataToPlot$metaDataName),]
+      if(sortByValueDesc){
+        dataToPlot$metaDataName <- factor(dataToPlot$metaDataName, levels = unique(dataToPlot$metaDataName)[order(dataToPlot$numberOfEntries, decreasing = TRUE)])
+      }
+      dataAsPlotly <- plot_ly(x = dataToPlot$metaDataName, y = dataToPlot$numberOfEntries, name = aspectName, type = "bar")
+      
+      finalPlots[[aspectName]] <-dataAsPlotly
+    }
+    return(subplot(finalPlots))
+  
+}
+
+
