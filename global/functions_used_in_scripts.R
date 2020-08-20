@@ -1111,61 +1111,125 @@ getAvailableValuesForGivenColumns <- function(dataToUse, columnNames, columnName
   return(result)
 }
 
-
-#' Covenience function to calculate distributions of values. Works also for multi-value data. Used grep, so values shouldn't be substrings of another value.
+#' Covenience function to calculate distributions of values. Works also for multi-value data.
 #'
 #' @param inputData data frame with columnNames, meaning names(inputData) is set
 #' @param columnNamesOfColumnsToUse which column names to consider for calculation, if null all are taken
 #' @param dataWithColumnNamesAndAvailableValues available/possible values to check (can be retrieved via fuction getAvailableValues above)
-#' @param performSingleValueExactMatchInsteadOfGrep usually performs grep to deal with multi value entries. If you have single value entries and some values might be substrings of other values, please use TRUE here
+#' @param includeValuesNotUsed if false, values from dataWithColumnNamesAndAvailableValues which do not occur in the data will be removed
+#' @param columnsWithMultiValues a list with columnNames which contain multi values
+#' @param separatorsForMultiValues if set, the enries for columns with multivalues will be splitted by the given separator and counted afterwards. If no separators are set (separatorsForMultiValues== NULL), grep will be used. This works only if the values are no substrings of each other. If there are substrings, the substring will be found more in containing values which means falsely counted more often than expected
+#' @param nameEmptyStringInStatsAs In case a entry has an empty string the name would of teh stats will be also "". Here you can set an alternative name, e.g. "EMPTY - NOTHING SET!"
 #'
 #' @return a named list with columnNames as names of the list, list entry: dataframe with columns: valueName, frequency, percent 
-#' @export
-#'
-#' @examples
-calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesAndAvailableValues, includeValuesNotUsed, performSingleValueExactMatchInsteadOfGrep){
+calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesAndAvailableValues, includeValuesNotUsed, columnsWithMultiValues, separatorsForMultiValues, nameEmptyStringInStatsAs){
+  
   if(is.null(columnNamesOfColumnsToUse)){
     columnNamesOfColumnsToUse <- names(inputData)
   }
   numberOfEntriesTotal <- dim(inputData)[1]
   stats <- list()
   for(columnName in columnNamesOfColumnsToUse){
+    
     availableValuesForGivenColumn <- dataWithColumnNamesAndAvailableValues[[columnName]]
     
-    statsForColumn <- data.frame(metaDataName = character(),numberOfEntries = numeric(), percent = numeric() )
-    lineToWrite <-1
-    for(currentValue in availableValuesForGivenColumn){
+    statsForColumn <- data.frame(metaDataName = availableValuesForGivenColumn,
+                                 numberOfEntries = rep(as.numeric(0)), 
+                                 percent = rep(as.numeric(0)),
+                                 stringsAsFactors = F
+    )
+    
+    if(columnName %in% columnsWithMultiValues){
       
-      if(is.null(currentValue) | is.na(currentValue) | nchar(currentValue) == 0){
-          numberOfEntriesWithNoValue <- length(which(nchar(inputData[[columnName]])==0))
-          if(numberOfEntriesWithNoValue > 0 | includeValuesNotUsed){
-            percentValue <- numberOfEntriesWithNoValue/numberOfEntriesTotal*100
-            #statsForColumn[lineToWrite,] <- c("EMPTY (Nothing set)",numberOfEntriesWithNoValue, percentValue)
-            statsForColumn <- statsForColumn %>% add_row(metaDataName = "EMPTY (Nothing set)",numberOfEntries = numberOfEntriesWithNoValue, percent = percentValue)
-            lineToWrite <- lineToWrite+1
-            }
-      }else{
-        numberOfEntries <- 0
-        if(performSingleValueExactMatchInsteadOfGrep){
-          numberOfEntries <- inputData[which(inputData[[columnName]]== currentValue),][1]
-          
-        }else{
-          numberOfEntries <- dim(inputData[grep(x = inputData[[columnName]], pattern = currentValue, fixed = T), ])[1]
-          
+      if(!is.null(separatorsForMultiValues)){# separators are defined, should be used
+        
+        # separate each line and add up occurence of each value in statsForColumn
+        indexOfSeparator <- which(columnsWithMultiValues == columnName)[[1]]
+        separatorForMultiValuesForGivenColumn <- separatorsForMultiValues[indexOfSeparator]
+ 
+        for(i in 1:dim(inputData)[1]){
+          entry <- inputData[[columnName]][i]
+          if(is.na(entry) | entry ==""){ # NA and empty values will be treated separately later
+            next
+          }
+          splittedValues <- strsplit(entry,separatorForMultiValuesForGivenColumn)[[1]]
+          for(splittedValue in splittedValues){
+            indexOfSplittedValue <- which(statsForColumn$metaDataName == splittedValue)[[1]]
+            statsForColumn$numberOfEntries[indexOfSplittedValue] <- statsForColumn$numberOfEntries[indexOfSplittedValue]+1
+          }
         }
-        if(numberOfEntries > 0 | includeValuesNotUsed){
-          percentValue <- numberOfEntries/numberOfEntriesTotal*100
-          #statsForColumn[lineToWrite,] <-c(currentValue,numberOfEntries, percentValue) 
-          statsForColumn <- statsForColumn %>% add_row(metaDataName = currentValue,numberOfEntries = numberOfEntries, percent = percentValue)
-          lineToWrite <- lineToWrite+1
+        
+      }else{# no separators defined, use grep (only produces correct results if there are no values which are substrings of another value)
+        for(currentValue in availableValuesForGivenColumn){# NA and empty values will be treated separately later
+          if(is.na(currentValue) | currentValue ==""){
+            next
+          }
+          numberOfEntries <- dim(inputData[grep(x = inputData[[columnName]], pattern = currentValue, fixed = T), ])[1]
+          indexOfCurrentValue <- which(statsForColumn$metaDataName == currentValue)[[1]]
+          statsForColumn$numberOfEntries[indexOfCurrentValue] <- numberOfEntries
         }
       }
+      
+    }else{# no multivalue
+      # perform single value exact match 
+      for(currentValue in availableValuesForGivenColumn){
+        if(is.na(currentValue) | currentValue ==""){# NA and empty values will be treated separately later
+          next
+        }
+        numberOfEntries <- dim(inputData[which(inputData[[columnName]]== currentValue),])[1]
+        indexOfCurrentValue <- which(statsForColumn$metaDataName == currentValue)[[1]]
+        statsForColumn$numberOfEntries[indexOfCurrentValue] <- numberOfEntries
+      }
     }
+    
+    # special treatment of empty values and NA
+    numberOfEntriesWithNA <- length(which(is.na(inputData[[columnName]])))
+    if(numberOfEntriesWithNA>0){
+      if(NA %in% availableValuesForGivenColumn){
+        indexOfNAValue <- which(is.na(statsForColumn$metaDataName))[[1]]
+        statsForColumn$numberOfEntries[indexOfNAValue] <- numberOfEntriesWithNA
+      }else{
+        statsForColumn %>% add_row(metaDataName = NA,numberOfEntries = numberOfEntriesWithNA, percent = 0)# percent will be calculated later
+      }
+    }
+    numberOfEntriesWithEmptyString <- length(which(inputData[[columnName]]==""))
+    nameToUseInStatsForEmptyString =""
+    if(!is.null(nameEmptyStringInStatsAs)){
+      nameToUseInStatsForEmptyString <- nameEmptyStringInStatsAs
+    }
+    if("" %in% availableValuesForGivenColumn){# if yes, it might have a wrong number because of grep matching "" to each entry
+      indexOfEmptyValue <- which(statsForColumn$metaDataName =="")[[1]]
+      statsForColumn$metaDataName[indexOfEmptyValue] <- nameToUseInStatsForEmptyString
+      statsForColumn$numberOfEntries[indexOfEmptyValue] <- numberOfEntriesWithEmptyString
+    }else{
+      if(numberOfEntriesWithEmptyString>0){
+        statsForColumn %>% add_row(metaDataName = nameToUseInStatsForEmptyString,numberOfEntries = numberOfEntriesWithEmptyString, percent = 0)# percent will be calculated later
+      }
+    }
+    
+    # exclude values not used if configured
+    if(!includeValuesNotUsed){
+      indexesOfValuesNotUsed <- which(statsForColumn$numberOfEntries==0)
+      statsForColumnJustUsedValues <- statsForColumn
+      statsForColumnJustUsedValues[indexesOfValuesNotUsed,] <- NULL
+      
+    }
+    
+    # calc percent
+    statsForColumn$percent <- unlist(lapply(X = statsForColumn$numberOfEntries, FUN = function(x){
+      percentValue <- 0
+      if(x >0){percentValue <- x/numberOfEntriesTotal*100}
+      return (percentValue)
+    }))
+    
     stats[[columnName]] <- statsForColumn
   }
   
   return(stats)
 }
+
+
+
 
 
 #' Convenience function to calc different numeric values (sum,min,max,mean,median) for columns of given data
