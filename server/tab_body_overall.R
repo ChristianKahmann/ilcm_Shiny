@@ -6,7 +6,8 @@ output$body_UI<-renderUI({
                               source(file.path("ui","tab_Search_Results.R"),local = T)$value,
                               source(file.path("ui","tab_Time_Series.R"),local = T)$value,
                               source(file.path("ui","tab_Document_View.R"),local = T)$value,
-                              source(file.path("ui","tab_Facets.R"),local = T)$value
+                              source(file.path("ui","tab_Facets.R"),local = T)$value,
+                              source(file.path("ui","tab_GeoExplorer.R"),local = T)$value
                    )
             ),
             column(width=2,style = 'height: 92vh; overflow-y: auto; overflow-x:hidden;padding-right:0px;',

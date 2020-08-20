@@ -210,6 +210,7 @@ server <- function(input, output, session) {
   source(file.path("server","tab_DV_Annotations.R"),local = T)$value
   source(file.path("server","tab_Annotations.R"),local = T)$value
   source(file.path("server","tab_Facets.R"),local = T)$value
+  source(file.path("server","tab_GeoExplorer.R"),local = T)$value
   source(file.path("server","tab_Time_Series.R"),local = T)$value
   source(file.path("server","tab_ShinyAce.R"),local = T)$value
   source(file.path("server","tab_Projects.R"),local = T)$value
