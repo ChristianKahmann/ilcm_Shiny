@@ -1323,22 +1323,22 @@ createSelectInputsForColumnsAndValues <- function(fieldNamesWithValues,prefixFor
   return(selectionInputList)
 }
 
-calcStatsGeocodingResult <- function(geocodingResultData, columnsToCalcDistributions,availableValues,includeValuesNotUsedForDistribution,performSingleValueExactMatchInsteadOfGrep, columnsToUseForNumericStats){
+calcStatsGeocodingResult <- function(geocodingResultData, columnsToCalcDistributions,availableValues,includeValuesNotUsedForDistribution, columnsWithMultiValues, separatorsForMultiValues, nameEmptyStringInStatsAs, columnsToUseForNumericStats){
   stats <- list()
   dataForStats <- geocodingResultData
   stats$numberOfDinstinctDocs <- length(unique(dataForStats[["areaId"]]))
   stats$numberOfDistinctLocations <- length(unique(dataForStats[["latlon"]]))
   stats$numberOfLocations <- sum(dataForStats[["frequencyInArea"]])
-  stats$distributions <- calcStats(dataForStats, columnsToCalcDistributions, availableValues, includeValuesNotUsed = includeValuesNotUsedForDistribution, performSingleValueExactMatchInsteadOfGrep = performSingleValueExactMatchInsteadOfGrep)
+  stats$distributions <- calcStats(dataForStats, columnsToCalcDistributions, availableValues, includeValuesNotUsed = includeValuesNotUsedForDistribution, columnsWithMultiValues, separatorsForMultiValues, nameEmptyStringInStatsAs)
   stats$numericInfos <- calcStatsForNumeric(inputData = dataForStats, columnsToUseWithNumericContent  = columnsToUseForNumericStats)
   return(stats)
 }
 
-calcStatsMetaData <- function(metaData, columnsToCalcDistributions,availableValues,includeValuesNotUsedForDistribution,performSingleValueExactMatchInsteadOfGrep, columnsToUseForNumericStats){
+calcStatsMetaData <- function(metaData, columnsToCalcDistributions,availableValues,includeValuesNotUsedForDistribution, columnsWithMultiValues, separatorsForMultiValues, nameEmptyStringInStatsAs, columnsToUseForNumericStats){
   stats <- list()
   dataForStats <- metaData
   stats$numberOfDinstinctDocs <- length(unique(dataForStats[["id_doc"]]))
-  stats$distributions <- calcStats(dataForStats, columnsToCalcDistributions, availableValues, includeValuesNotUsed = includeValuesNotUsedForDistribution, performSingleValueExactMatchInsteadOfGrep = performSingleValueExactMatchInsteadOfGrep)
+  stats$distributions <- calcStats(dataForStats, columnsToCalcDistributions, availableValues, includeValuesNotUsed = includeValuesNotUsedForDistribution, columnsWithMultiValues, separatorsForMultiValues, nameEmptyStringInStatsAs)
   stats$numericInfos <- calcStatsForNumeric(inputData = dataForStats, columnsToUseWithNumericContent  = columnsToUseForNumericStats)
   return(stats)
 }
@@ -1346,13 +1346,17 @@ calcStatsMetaData <- function(metaData, columnsToCalcDistributions,availableValu
 calcStatsPerMapPoint <- function(geocodingResultReducedToPointData, 
                                  geocodingResult_columnsToCalcDistributions, 
                                  geocodingResult_availableValues, 
-                                 geocodingResult_performSingleValueExactMatchInsteadOfGrep,
+                                 geocodingResult_columnsWithMultiValues, 
+                                 geocodingResult_separatorsForMultiValues, 
+                                 geocodingResult_nameEmptyStringInStatsAs,
                                  geocodingResult_columnsToCalcNumericInfos, 
                                  geocodingResult_includeValuesNotUsed, 
                                  metaDataReducedToPointData, 
                                  metaData_columnsToCalcDistributions, 
                                  metaData_availableValues, 
-                                 metaData_performSingleValueExactMatchInsteadOfGrep,
+                                 metaData_columnsWithMultiValues, 
+                                 metaData_separatorsForMultiValues, 
+                                 metaData_nameEmptyStringInStatsAs,
                                  metaData_columnsToCalcNumericInfos, 
                                  metaData_includeValuesNotUsed
 ){
@@ -1368,11 +1372,11 @@ calcStatsPerMapPoint <- function(geocodingResultReducedToPointData,
                                                          "frequencyInDoc" = geocodingResultReducedToPointData$frequencyInArea)
   stats$geocodingResult_distributionInDocs$title <- unlist(lapply(stats$geocodingResult_distributionInDocs[["docsContainingLocation"]], FUN = function(x){metaDataReducedToPointData[which(metaDataReducedToPointData[[metaData_columnNameForMatchWithOtherData]]==x),]$title}))
   
-  stats$geocodingResult_distributions <- calcStats(geocodingResultReducedToPointData, geocodingResult_columnsToCalcDistributions, geocodingResult_availableValues, geocodingResult_includeValuesNotUsed, geocodingResult_performSingleValueExactMatchInsteadOfGrep)
+  stats$geocodingResult_distributions <- calcStats(geocodingResultReducedToPointData, geocodingResult_columnsToCalcDistributions, geocodingResult_availableValues, geocodingResult_includeValuesNotUsed, geocodingResult_columnsWithMultiValues, geocodingResult_separatorsForMultiValues, geocodingResult_nameEmptyStringInStatsAs)
   stats$geocodingResult_numericStats <- calcStatsForNumeric(geocodingResultReducedToPointData, geocodingResult_columnsToCalcNumericInfos)
   
   
-  stats$metaData_distributions <- calcStats(metaDataReducedToPointData, metaData_columnsToCalcDistributions, metaData_availableValues, metaData_includeValuesNotUsed, metaData_performSingleValueExactMatchInsteadOfGrep)
+  stats$metaData_distributions <- calcStats(metaDataReducedToPointData, metaData_columnsToCalcDistributions, metaData_availableValues, metaData_includeValuesNotUsed, metaData_columnsWithMultiValues, metaData_separatorsForMultiValues, metaData_nameEmptyStringInStatsAs)
   stats$metaData_numericStats <- calcStatsForNumeric(metaDataReducedToPointData, metaData_columnsToCalcNumericInfos)
   
   #print(names(stats))
