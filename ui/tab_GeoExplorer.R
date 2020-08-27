@@ -18,10 +18,22 @@ tabPanel("GeoExplorer", fluid = TRUE,
                         mainPanel(
                           fluidRow(
                             # leafletOutput(outputId="lmap"),
-                             textOutput(outputId = "textWithSelectedCollection"),
-                             textOutput(outputId = "metaData_dataLoaded_output")
+                             #textOutput(outputId = "textWithSelectedCollection"),
+                             #textOutput(outputId = "metaData_dataLoaded_output")
+                             #,
+                            conditionalPanel(condition = "output.dataLoaded",
+                                             wellPanel(id = "tPanel",style = "overflow-y:scroll; max-height: 600px",
+                                               h3("Configuration of meta data from documents"),
+                                               rHandsontableOutput('metaData_config'),
+                                               h3("Configuration of geocodingResult"),
+                                               rHandsontableOutput('geocodingResult_config'),
+                                               actionButton("config_apply","apply settings")
+                                              )
+                            ),
+                                             
                              
-                             
+                             textOutput("metaData_config_TestOutput")
+                              
                              
                           )
                         )
