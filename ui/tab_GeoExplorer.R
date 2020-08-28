@@ -73,40 +73,42 @@ tabPanel("GeoExplorer", fluid = TRUE,
                           fluidRow(
                             
                             tabsetPanel(
-                              tabPanel("Stats", fluid = T,
-                                       # how many results
-                                       textOutput("metaData_numberOfResults1"),
-                                       textOutput("geocodingResult_numberOfResults1"),
-
-                                       # stats meta data
-                                       h3("Stats meta data"),
-                                       plotlyOutput("metaData_stats_distributions_plots"),
-                                       tableOutput("metaData_stats_numeric_table"),
-
-                                       # stats geocodingResult
-                                       h3("Stats GeocodingResult"),
-                                       plotlyOutput("geocodingResult_stats_distributions_plots"),
-                                       tableOutput("geocodingResult_stats_numeric_table")
-
-
-
-                              )
-                              #,
-                            #   tabPanel("Map", fluid = T, 
-                            #            # how many results
-                            #            textOutput("metaData_numberOfResults2"),
-                            #            textOutput("geocodingResult_numberOfResults2"),
-                            #            textOutput("geoDataToUse_numberOfResults"),
-                            #            
-                            #            # # map
-                            #            leafletOutput(outputId="lmap"),
-                            #            
-                            #            # clicked marker
-                            #            verbatimTextOutput("clickedMarker_infos"),
-                            #            uiOutput("clickedMarkerAllOutput")
-                            #            
-                            #   )
-                             )
+                              wellPanel(id = "tPanel",style = "overflow-y:scroll; max-height: 800px",
+                                tabPanel("Stats", fluid = T,
+                                         # how many results
+                                         textOutput("metaData_numberOfResults1"),
+                                         textOutput("geocodingResult_numberOfResults1"),
+  
+                                         # stats meta data
+                                         h3("Stats meta data"),
+                                         plotlyOutput("metaData_stats_distributions_plots"),
+                                         tableOutput("metaData_stats_numeric_table"),
+  
+                                         # stats geocodingResult
+                                         h3("Stats GeocodingResult"),
+                                         plotlyOutput("geocodingResult_stats_distributions_plots"),
+                                         tableOutput("geocodingResult_stats_numeric_table")
+  
+  
+  
+                                )
+                                #,
+                              #   tabPanel("Map", fluid = T, 
+                              #            # how many results
+                              #            textOutput("metaData_numberOfResults2"),
+                              #            textOutput("geocodingResult_numberOfResults2"),
+                              #            textOutput("geoDataToUse_numberOfResults"),
+                              #            
+                              #            # # map
+                              #            leafletOutput(outputId="lmap"),
+                              #            
+                              #            # clicked marker
+                              #            verbatimTextOutput("clickedMarker_infos"),
+                              #            uiOutput("clickedMarkerAllOutput")
+                              #            
+                              #   )
+                               )
+                            )
                             
                             
                             
