@@ -92,21 +92,21 @@ tabPanel("GeoExplorer", fluid = TRUE,
   
   
                                 )
-                                #,
-                              #   tabPanel("Map", fluid = T, 
-                              #            # how many results
-                              #            textOutput("metaData_numberOfResults2"),
-                              #            textOutput("geocodingResult_numberOfResults2"),
-                              #            textOutput("geoDataToUse_numberOfResults"),
-                              #            
-                              #            # # map
-                              #            leafletOutput(outputId="lmap"),
-                              #            
-                              #            # clicked marker
-                              #            verbatimTextOutput("clickedMarker_infos"),
-                              #            uiOutput("clickedMarkerAllOutput")
-                              #            
-                              #   )
+                              ,
+                                tabPanel("Map", fluid = T,
+                                         # how many results
+                                         textOutput("metaData_numberOfResults2"),
+                                         textOutput("geocodingResult_numberOfResults2"),
+                                         textOutput("geoDataToUse_numberOfResults"),
+
+                                         # # map
+                                         leafletOutput(outputId="lmap"),
+
+                                         # clicked marker
+                                         verbatimTextOutput("clickedMarker_infos"),
+                                         uiOutput("clickedMarkerAllOutput")
+
+                                )
                                )
                             )
                             
