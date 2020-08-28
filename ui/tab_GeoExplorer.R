@@ -29,9 +29,10 @@ tabPanel("GeoExplorer", fluid = TRUE,
                                                h3("Configuration of meta data from documents"),
                                                rHandsontableOutput('metaData_config'),
                                                h3("Configuration of geocodingResult"),
-                                               rHandsontableOutput('geocodingResult_config'),
-                                               actionButton("config_apply","apply settings")
-                                              )
+                                               rHandsontableOutput('geocodingResult_config')
+                                              ),
+                                             actionButton("config_apply","apply settings")
+                                             
                             )
                             
                             
@@ -71,25 +72,26 @@ tabPanel("GeoExplorer", fluid = TRUE,
                         mainPanel(
                           fluidRow(
                             
-                            # tabsetPanel(
-                            #   tabPanel("Stats", fluid = T, 
-                            #            # how many results
-                            #            textOutput("metaData_numberOfResults1"),
-                            #            textOutput("geocodingResult_numberOfResults1"),
-                            #            
-                            #            # stats meta data
-                            #            h3("Stats meta data"),
-                            #            plotlyOutput("metaData_stats_distributions_plots"),
-                            #            tableOutput("metaData_stats_numeric_table"),
-                            #            
-                            #            # stats geocodingResult
-                            #            h3("Stats GeocodingResult"),
-                            #            plotlyOutput("geocodingResult_stats_distributions_plots"),
-                            #            tableOutput("geocodingResult_stats_numeric_table")
-                            #            
-                            #            
-                            #            
-                            #   ),
+                            tabsetPanel(
+                              tabPanel("Stats", fluid = T,
+                                       # how many results
+                                       textOutput("metaData_numberOfResults1"),
+                                       textOutput("geocodingResult_numberOfResults1"),
+
+                                       # stats meta data
+                                       h3("Stats meta data"),
+                                       plotlyOutput("metaData_stats_distributions_plots"),
+                                       tableOutput("metaData_stats_numeric_table"),
+
+                                       # stats geocodingResult
+                                       h3("Stats GeocodingResult"),
+                                       plotlyOutput("geocodingResult_stats_distributions_plots"),
+                                       tableOutput("geocodingResult_stats_numeric_table")
+
+
+
+                              )
+                              #,
                             #   tabPanel("Map", fluid = T, 
                             #            # how many results
                             #            textOutput("metaData_numberOfResults2"),
@@ -104,7 +106,7 @@ tabPanel("GeoExplorer", fluid = TRUE,
                             #            uiOutput("clickedMarkerAllOutput")
                             #            
                             #   )
-                            # )
+                             )
                             
                             
                             
