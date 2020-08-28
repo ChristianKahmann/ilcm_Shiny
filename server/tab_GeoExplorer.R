@@ -28,6 +28,7 @@ folderpathGeoCodingResults <- "collections/results/geocoding/"
 availableGeocodingResults = list.files(path = folderpathGeoCodingResults)
 #availableGeocodingResults <- lapply(X = availableGeoCodingFiles, FUN = function(x) {result <- str_split(x, pattern = ".RData")[[1]][1]})
 
+
 nameEmptyStringInStatsAs = "EMPTY (no value set)"
 
 metaData_prefixFoUniqueIdentificationInInputFilters <- "metaData_"
@@ -37,7 +38,13 @@ geocodingResult_columnNameForMatchWithOtherData <- "areaId"
 geoDataToUse_columnNameForMatchWithOtherData <- "areaId"
 
 statsOfdistributions_sortByValueDesc <- T # TODO: make this configurabke
+
+geocodingResult_columnsToCalcDistributions_default <- c("osm_type","class","type","countryName")
+geocodingResult_columnsToCalcNumericInfos_default <- c("frequencyInArea","place_rank","importance")
+geocodingResult_columnsToUseForFiltering_default <- c("entityName", "frequencyInArea", "query", "osm_type", "place_rank", "display_name", "class", "type", "importance", "countryName", "countryCode")
+
 # TODO: abfangen wenn keine Ergebnisse
+# todo: abfangen wenn keine stats in config ausgewählt
 # TODO: check why values not used are shown in stats graph
 # TODO: display message when no geolocation result is avaialable for selected collection
 # TODO: include option: load geolocation from meta data / from georesults
@@ -206,6 +213,11 @@ observeEvent(input$loadDataForCollection,{
     stringsAsFactors = FALSE
   )
   
+  # set default values (just for convenience)
+  myReactiveValues$geocodingResult_columnsConfig <- setConfigForCertainColumnNames(configToUse = myReactiveValues$geocodingResult_columnsConfig, configFieldNameToUse = "useForStatsToCalcDistributions", listOfColumnNamesTheConfigFieldNameShouldChange = geocodingResult_columnsToCalcDistributions_default, valueToUse = TRUE)
+  myReactiveValues$geocodingResult_columnsConfig <- setConfigForCertainColumnNames(configToUse = myReactiveValues$geocodingResult_columnsConfig, configFieldNameToUse = "useForStatsToCalcNumericInfos", listOfColumnNamesTheConfigFieldNameShouldChange = geocodingResult_columnsToCalcNumericInfos_default, valueToUse = TRUE)
+  myReactiveValues$geocodingResult_columnsConfig <- setConfigForCertainColumnNames(configToUse = myReactiveValues$geocodingResult_columnsConfig, configFieldNameToUse = "useForFiltering", listOfColumnNamesTheConfigFieldNameShouldChange = geocodingResult_columnsToUseForFiltering_default, valueToUse = TRUE)
+  
   # initialize values based on config values (in case the user doesn't configures & doesn't hit apply config button)
   setValuesBasedOnConfig()
   
@@ -251,6 +263,16 @@ observeEvent(input$config_apply, {
   # textToDisplay <- paste0("Selected for filtering: ", paste0(selectedForFiltering, collapse = ", "))
   # print(textToDisplay)
 })
+
+setConfigForCertainColumnNames <- function(configToUse, configFieldNameToUse,listOfColumnNamesTheConfigFieldNameShouldChange,valueToUse){
+  changedConfig <- configToUse
+  for(columnName in listOfColumnNamesTheConfigFieldNameShouldChange){
+    indexToChange <- which(configToUse$columnNameForField == columnName)
+    
+    changedConfig[[configFieldNameToUse]][indexToChange] <- valueToUse
+  }
+  return (changedConfig)
+}
 
 setValuesBasedOnConfig <- function(){
   
@@ -381,6 +403,7 @@ output$geoDataToUse_numberOfResults <- reactive({
 metaData_stats <- reactive({
   #print("re-calc stats for meta data")
   dataForStats <- metaData_filtered()
+  
   stats <- calcStatsMetaData(metaData = dataForStats, 
                              columnsToCalcDistributions = myReactiveValues$metaData_columnsToCalcDistributions,
                              availableValues = myReactiveValues$metaData_availableValues,
@@ -390,7 +413,8 @@ metaData_stats <- reactive({
                              nameEmptyStringInStatsAs = nameEmptyStringInStatsAs,
                              columnsToUseForNumericStats = myReactiveValues$metaData_columnsToCalcNumericInfos)
   
-})
+  
+  })
 
 geocodingResult_stats <- reactive({
   dataForStats <- geocodingResult_filtered()
