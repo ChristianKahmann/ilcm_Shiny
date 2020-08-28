@@ -30,18 +30,77 @@ tabPanel("GeoExplorer", fluid = TRUE,
                                                actionButton("config_apply","apply settings")
                                               )
                             ),
-                                             
+                            conditionalPanel(condition = "!output.dataLoaded",
+                                             h3("Please first select the data to load!"))
+                            
                              
-                             textOutput("metaData_config_TestOutput")
-                              
                              
                           )
                         )
                         
                       )
              ),
-             tabPanel("Filtering & Results", fluid = TRUE
-                      #textOutput("TEST_TEXT")
+             tabPanel("Filtering & Results", fluid = TRUE,
+                     
+                      sidebarPanel(h5("", width=2),
+                                   
+                                   tabsetPanel(
+                                     tabPanel("Meta Data",
+                                              h3("filter based on the meta data of the documents"),
+                                              br(),
+                                              uiOutput("selectInputListForMetaData")),
+                                     tabPanel("Geocoding Result", 
+                                              h3("filter based on the found locations within documents"),
+                                              br(),
+                                              uiOutput("selectInputListForGeocodingResult")
+                                     )
+                                   )
+                                   
+                      ),
+                      mainPanel(
+                        fluidRow(
+                          
+                          # tabsetPanel(
+                          #   tabPanel("Stats", fluid = T, 
+                          #            # how many results
+                          #            textOutput("metaData_numberOfResults1"),
+                          #            textOutput("geocodingResult_numberOfResults1"),
+                          #            
+                          #            # stats meta data
+                          #            h3("Stats meta data"),
+                          #            plotlyOutput("metaData_stats_distributions_plots"),
+                          #            tableOutput("metaData_stats_numeric_table"),
+                          #            
+                          #            # stats geocodingResult
+                          #            h3("Stats GeocodingResult"),
+                          #            plotlyOutput("geocodingResult_stats_distributions_plots"),
+                          #            tableOutput("geocodingResult_stats_numeric_table")
+                          #            
+                          #            
+                          #            
+                          #   ),
+                          #   tabPanel("Map", fluid = T, 
+                          #            # how many results
+                          #            textOutput("metaData_numberOfResults2"),
+                          #            textOutput("geocodingResult_numberOfResults2"),
+                          #            textOutput("geoDataToUse_numberOfResults"),
+                          #            
+                          #            # # map
+                          #            leafletOutput(outputId="lmap"),
+                          #            
+                          #            # clicked marker
+                          #            verbatimTextOutput("clickedMarker_infos"),
+                          #            uiOutput("clickedMarkerAllOutput")
+                          #            
+                          #   )
+                          # )
+                          
+                          
+                          
+                        )
+                      )   
+                      
+                      
              )
              
            )
