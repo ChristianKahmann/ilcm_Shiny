@@ -175,7 +175,7 @@ observeEvent(input$loadDataForCollection,{
   #---------------------
   
   myReactiveValues$metaData_columnsConfig <- data.frame(
-    columnNameForMetaData=myReactiveValues$metaData_columnNames,
+    columnNameForField=myReactiveValues$metaData_columnNames,
     useForFiltering = rep(as.logical(TRUE)),
     useForStatsToCalcDistributions = rep(as.logical(TRUE)),
     useForStatsToCalcNumericInfos = rep(as.logical(TRUE)),
@@ -189,7 +189,7 @@ observeEvent(input$loadDataForCollection,{
   # initialze geocodingResult_columnsConfig
   #---------------------
   myReactiveValues$geocodingResult_columnsConfig <- data.frame(
-    columnNameForMetaData=myReactiveValues$geocodingResult_columnNames,
+    columnNameForField=myReactiveValues$geocodingResult_columnNames,
     useForFiltering = rep(as.logical(TRUE)),
     useForStatsToCalcDistributions = rep(as.logical(TRUE)),
     useForStatsToCalcNumericInfos = rep(as.logical(TRUE)),
@@ -199,7 +199,8 @@ observeEvent(input$loadDataForCollection,{
     stringsAsFactors = FALSE
   )
   
-  
+  # initialize values based on config values (in case the user doesn't configures & doesn't hit apply config button)
+  setValuesBasedOnConfig()
   
   myReactiveValues$dataLoaded <- TRUE
   
@@ -225,31 +226,37 @@ observeEvent(input$config_apply, {
   #-------------------
   
   myReactiveValues$metaData_columnsConfig <-  hot_to_r(input$metaData_config)
-  metaData_configData <- myReactiveValues$metaData_columnsConfig #  just for better readability of code below
-  myReactiveValues$metaData_columnNamesToUseForFiltering <- metaData_configData$columnNameForMetaData[which(metaData_configData$useForFiltering == TRUE)]
-  myReactiveValues$metaData_columnsWithMultiValueData <- metaData_configData$columnNameForMetaData[which(metaData_configData$isMultiValue == TRUE)]
-  myReactiveValues$metaData_multiValueSeparators <- metaData_configData$multiValueSeparator[which(metaData_configData$isMultiValue == TRUE)]
-  myReactiveValues$metaData_columnsToCalcDistributions <- metaData_configData$columnNameForMetaData[which(metaData_configData$useForStatsToCalcDistributions == TRUE)]
-  myReactiveValues$metaData_columnsToCalcNumericInfos <- metaData_configData$columnNameForMetaData[which(metaData_configData$useForStatsToCalcNumericInfos == TRUE)]
-  myReactiveValues$metaData_availableValues <- getAvailableValuesForGivenColumns(dataToUse = myReactiveValues$metaData_dataToUse, columnNames = myReactiveValues$metaData_columnNames,columnNamesContainingMultiValues = myReactiveValues$metaData_columnsWithMultiValueData,separatorsToUseForColumnsWithMultivalues = myReactiveValues$metaData_multiValueSeparators)
-  
-
   myReactiveValues$geocodingResult_columnsConfig <-  hot_to_r(input$geocodingResult_config)
-  geocodingResult_configData <- myReactiveValues$geocodingResult_columnsConfig #  just for better readability of code below
-  myReactiveValues$geocodingResult_columnNamesToUseForFiltering <- geocodingResult_configData$columnNameForgeocodingResult[which(geocodingResult_configData$useForFiltering == TRUE)]
-  myReactiveValues$geocodingResult_columnsWithMultiValueData <- geocodingResult_configData$columnNameForgeocodingResult[which(geocodingResult_configData$isMultiValue == TRUE)]
-  myReactiveValues$geocodingResult_multiValueSeparators <- geocodingResult_configData$multiValueSeparator[which(geocodingResult_configData$isMultiValue == TRUE)]
-  myReactiveValues$geocodingResult_columnsToCalcDistributions <- geocodingResult_configData$columnNameForgeocodingResult[which(geocodingResult_configData$useForStatsToCalcDistributions == TRUE)]
-  myReactiveValues$geocodingResult_columnsToCalcNumericInfos <- geocodingResult_configData$columnNameForgeocodingResult[which(geocodingResult_configData$useForStatsToCalcNumericInfos == TRUE)]
-  myReactiveValues$geocodingResult_availableValues <- getAvailableValuesForGivenColumns(dataToUse = myReactiveValues$geocodingResult_dataToUse, columnNames = myReactiveValues$geocodingResult_columnNames,columnNamesContainingMultiValues = myReactiveValues$geocodingResult_columnsWithMultiValueData,separatorsToUseForColumnsWithMultivalues = myReactiveValues$geocodingResult_multiValueSeparators)
+  
+  setValuesBasedOnConfig()
   
   
   
-  # selectedForFiltering <- myReactiveValues$metaData_columnsConfig$columnNameForMetaData[which(myReactiveValues$metaData_columnsConfig$useForFiltering == TRUE)]
+  # selectedForFiltering <- myReactiveValues$metaData_columnsConfig$columnNameForField[which(myReactiveValues$metaData_columnsConfig$useForFiltering == TRUE)]
   # textToDisplay <- paste0("Selected for filtering: ", paste0(selectedForFiltering, collapse = ", "))
   # print(textToDisplay)
 })
 
+setValuesBasedOnConfig <- function(){
+  
+  metaData_configData <- myReactiveValues$metaData_columnsConfig #  just for better readability of code below
+  myReactiveValues$metaData_columnNamesToUseForFiltering <- metaData_configData$columnNameForField[which(metaData_configData$useForFiltering == TRUE)]
+  myReactiveValues$metaData_columnsWithMultiValueData <- metaData_configData$columnNameForField[which(metaData_configData$isMultiValue == TRUE)]
+  myReactiveValues$metaData_multiValueSeparators <- metaData_configData$multiValueSeparator[which(metaData_configData$isMultiValue == TRUE)]
+  myReactiveValues$metaData_columnsToCalcDistributions <- metaData_configData$columnNameForField[which(metaData_configData$useForStatsToCalcDistributions == TRUE)]
+  myReactiveValues$metaData_columnsToCalcNumericInfos <- metaData_configData$columnNameForField[which(metaData_configData$useForStatsToCalcNumericInfos == TRUE)]
+  myReactiveValues$metaData_availableValues <- getAvailableValuesForGivenColumns(dataToUse = myReactiveValues$metaData_dataToUse, columnNames = myReactiveValues$metaData_columnNames,columnNamesContainingMultiValues = myReactiveValues$metaData_columnsWithMultiValueData,separatorsToUseForColumnsWithMultivalues = myReactiveValues$metaData_multiValueSeparators)
+  
+  
+  geocodingResult_configData <- myReactiveValues$geocodingResult_columnsConfig #  just for better readability of code below
+  myReactiveValues$geocodingResult_columnNamesToUseForFiltering <- geocodingResult_configData$columnNameForField[which(geocodingResult_configData$useForFiltering == TRUE)]
+  myReactiveValues$geocodingResult_columnsWithMultiValueData <- geocodingResult_configData$columnNameForField[which(geocodingResult_configData$isMultiValue == TRUE)]
+  myReactiveValues$geocodingResult_multiValueSeparators <- geocodingResult_configData$multiValueSeparator[which(geocodingResult_configData$isMultiValue == TRUE)]
+  myReactiveValues$geocodingResult_columnsToCalcDistributions <- geocodingResult_configData$columnNameForField[which(geocodingResult_configData$useForStatsToCalcDistributions == TRUE)]
+  myReactiveValues$geocodingResult_columnsToCalcNumericInfos <- geocodingResult_configData$columnNameForField[which(geocodingResult_configData$useForStatsToCalcNumericInfos == TRUE)]
+  myReactiveValues$geocodingResult_availableValues <- getAvailableValuesForGivenColumns(dataToUse = myReactiveValues$geocodingResult_dataToUse, columnNames = myReactiveValues$geocodingResult_columnNames,columnNamesContainingMultiValues = myReactiveValues$geocodingResult_columnsWithMultiValueData,separatorsToUseForColumnsWithMultivalues = myReactiveValues$geocodingResult_multiValueSeparators)
+  
+}
 
 #####################################
 # prepare filtering possibilities
@@ -258,7 +265,7 @@ observeEvent(input$config_apply, {
 # # create selectInputs
 selectInputListForMetaData <- reactive({createSelectInputsForColumnsAndValues(myReactiveValues$metaData_columnNamesToUseForFiltering,  myReactiveValues$metaData_availableValues, prefixForUniqueIdentification = metaData_prefixFoUniqueIdentificationInInputFilters)})
 output$selectInputListForMetaData <- renderUI(selectInputListForMetaData())
-selectInputListForGeocodingResult <- reactive({createSelectInputsForColumnsAndValues(myReactiveValues$geocodingResult_availableValues, prefixForUniqueIdentification = geocodingResult_prefixFoUniqueIdentificationInInputFilters)})
+selectInputListForGeocodingResult <- reactive({createSelectInputsForColumnsAndValues(myReactiveValues$geocodingResult_columnNamesToUseForFiltering, myReactiveValues$geocodingResult_availableValues, prefixForUniqueIdentification = geocodingResult_prefixFoUniqueIdentificationInInputFilters)})
 output$selectInputListForGeocodingResult <- renderUI(selectInputListForGeocodingResult()) 
 
 metaData_uiInputFilterNames <- reactive({paste(metaData_prefixFoUniqueIdentificationInInputFilters,names(myReactiveValues$metaData_availableValues), sep="")})
