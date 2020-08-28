@@ -1312,8 +1312,8 @@ filterDataBasedOnInputFilterFields <- function(dataToFilter,columnNamesOfDataToF
 }
 
 #create select input lists
-createSelectInputsForColumnsAndValues <- function(fieldNamesWithValues,prefixForUniqueIdentificationUsedForInputId){
-  availableFieldNames <- names(fieldNamesWithValues)
+createSelectInputsForColumnsAndValues <- function(fieldNamesToUse, fieldNamesWithValues,prefixForUniqueIdentificationUsedForInputId){
+  availableFieldNames <- fieldNamesToUse
   selectionInputList <- list(length(availableFieldNames))
   for(fieldName in availableFieldNames){
     columnNameWithPrename <- paste0(prefixForUniqueIdentificationUsedForInputId,fieldName)
