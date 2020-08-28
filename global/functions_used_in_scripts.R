@@ -1211,7 +1211,7 @@ calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesA
     if(!includeValuesNotUsed){
       indexesOfValuesNotUsed <- which(statsForColumn$numberOfEntries==0)
       if(length(indexesOfValuesNotUsed>0)){
-        statsForColumnJustValuesUsed <- statsForColumn[-c(indexesOfValuesNotUsed),]
+        statsForColumn <- statsForColumn[-c(indexesOfValuesNotUsed),]
       }
     }
     
