@@ -1210,9 +1210,9 @@ calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesA
     # exclude values not used if configured
     if(!includeValuesNotUsed){
       indexesOfValuesNotUsed <- which(statsForColumn$numberOfEntries==0)
-      statsForColumnJustUsedValues <- statsForColumn
-      statsForColumnJustUsedValues[indexesOfValuesNotUsed,] <- NULL
-      
+      if(length(indexesOfValuesNotUsed>0)){
+        statsForColumnJustValuesUsed <- statsForColumn[-c(indexesOfValuesNotUsed),]
+      }
     }
     
     # calc percent
@@ -1384,14 +1384,14 @@ calcStatsPerMapPoint <- function(geocodingResultReducedToPointData,
   return(stats)
 }
 
-createPlotsForDistributionData <- function(statsDistributionData){
+createPlotsForDistributionData <- function(statsDistributionData, sortByValueDesc){
     finalPlots <- list()
     statsToPlot <- statsDistributionData
     distributionAspects <- names(statsToPlot)
     for(aspectName in distributionAspects){
       dataToPlot <- statsToPlot[[aspectName]]
       dataToPlot <- dataToPlot[order(-dataToPlot$numberOfEntries,dataToPlot$metaDataName),]
-      if(sortByValueDesc){
+      if(sortByValueDesc & dim(dataToPlot)[1]>1){
         dataToPlot$metaDataName <- factor(dataToPlot$metaDataName, levels = unique(dataToPlot$metaDataName)[order(dataToPlot$numberOfEntries, decreasing = TRUE)])
       }
       dataAsPlotly <- plot_ly(x = dataToPlot$metaDataName, y = dataToPlot$numberOfEntries, name = aspectName, type = "bar")
