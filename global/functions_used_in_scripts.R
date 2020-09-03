@@ -1386,6 +1386,7 @@ calcStatsPerMapPoint <- function(geocodingResultReducedToPointData,
 }
 
 createPlotsForDistributionData <- function(statsDistributionData, sortByValueDesc){
+    
     finalPlots <- list()
     statsToPlot <- statsDistributionData
     distributionAspects <- names(statsToPlot)

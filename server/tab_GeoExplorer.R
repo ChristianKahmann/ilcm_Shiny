@@ -190,7 +190,7 @@ observeEvent(input$loadDataForCollection,{
   myReactiveValues$metaData_columnsConfig <- data.frame(
     columnNameForField=myReactiveValues$metaData_columnNames,
     isMultiValue = rep(as.logical(FALSE)),
-    multiValueSeparator = rep(as.String(NA)),
+    multiValueSeparator = rep(as.String(",")),
     useForFiltering = rep(as.logical(TRUE)),
     useForStatsToCalcDistributions = rep(as.logical(FALSE)),
     useForStatsToCalcNumericInfos = rep(as.logical(FALSE)),
@@ -204,7 +204,7 @@ observeEvent(input$loadDataForCollection,{
   myReactiveValues$geocodingResult_columnsConfig <- data.frame(
     columnNameForField=myReactiveValues$geocodingResult_columnNames,
     isMultiValue = rep(as.logical(FALSE)),
-    multiValueSeparator = rep(as.String(NA)),
+    multiValueSeparator = rep(as.String(",")),
     
     useForFiltering = rep(as.logical(TRUE)),
     useForStatsToCalcDistributions = rep(as.logical(FALSE)),
@@ -444,7 +444,7 @@ output$geoDataToUse_numberOfResults <- reactive({
 
 
 output$metaData_stats_distributions_plots <- renderUI({# this a bit complicated looking construct is used here for correct display of stats AND correct error message when no fields selected (and the error message doesn't slide down over the other outputs). This was the working solution I found, might be improved for nicer/better code
-  #browser()
+  
   validate(need(length(myReactiveValues$metaData_columnsToCalcDistributions)>0, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'"))
   tablesToCreate <- c("MetaData_distribution_plots")
   lapply(tablesToCreate, function(nameToUse) {
@@ -454,14 +454,15 @@ output$metaData_stats_distributions_plots <- renderUI({# this a bit complicated 
 })
 
 output$geocodingResult_stats_distributions_plots <-  renderUI({# this a bit complicated looking construct is used here for correct display of stats AND correct error message when no fields selected (and the error message doesn't slide down over the other outputs). This was the working solution I found, might be improved for nicer/better code
-  #browser()
-  validate(need(length(myReactiveValues$geocodingResult_columnsToCalcDistributions)>0, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'"))
- 
+  
+  validate(need(length(myReactiveValues$geocodingResult_columnsToCalcDistributions)>0, message = "GeocodingResult: Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'"))
   tablesToCreate <- c("GeocodingResult_distribution_plots")
   lapply(tablesToCreate, function(nameToUse) {
-    id <- paste0("geocodingResult_stats_distributions_plots","_", nameToUse)
-    output[[id]] <- renderPlotly(createPlotsForDistributionData(geocodingResult_stats()$distributions, statsOfdistributions_sortByValueDesc))
-  })
+      id <- paste0("geocodingResult_stats_distributions_plots","_", nameToUse)
+      dataToUseHere <- geocodingResult_stats()$distributions
+      output[[id]] <- renderPlotly(createPlotsForDistributionData(dataToUseHere, statsOfdistributions_sortByValueDesc))
+    })
+
 })
   
   
