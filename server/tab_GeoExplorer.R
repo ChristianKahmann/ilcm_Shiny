@@ -44,7 +44,7 @@ geocodingResult_columnsToCalcNumericInfos_default <- c("frequencyInArea","place_
 geocodingResult_columnsToUseForFiltering_default <- c("entityName", "frequencyInArea", "query", "osm_type", "place_rank", "display_name", "class", "type", "importance", "countryName", "countryCode")
 
 # TODO: when meta data filter is not set, no clicked marker results are shown (because  X | metastats =0)
-# TODO: check why filtering for Bosnia Herzegovina in geocodingResult filter results in locations on map outside BH -> The filters identify do_ids in common. After that all geolocations from these doc ids are displayed. Same problem occurs for stats geocodingResult.
+# TODO: check why filtering for Bosnia Herzegovina in geocodingResult filter results in locations on map outside BH -> The filters identify doc_ids in common. After that all geolocations from these doc ids are displayed. Same problem occurs for stats geocodingResult.
 # TODO: display message when no geolocation result is avaialable for selected collection
 # TODO: include option: load geolocation from meta data / from georesults
 
@@ -415,7 +415,7 @@ geocodingResult_stats <- reactive({
                                     columnsWithMultiValues = myReactiveValues$geocodingResult_columnsWithMultiValueData, 
                                     separatorsForMultiValues = myReactiveValues$geocodingResult_multiValueSeparators, 
                                     nameEmptyStringInStatsAs = nameEmptyStringInStatsAs,
-                                    columnsToUseForNumericStats = geocodingResult_columnsToCalcNumericInfos)      
+                                    columnsToUseForNumericStats = myReactiveValues$geocodingResult_columnsToCalcNumericInfos)      
 })
 
 #-----------------
@@ -517,10 +517,10 @@ observe({
   
   # filter data for marker and calc stats for marker
   clickedMarker_geoData <- geoDataToUseForMap_filtered()[which(geoDataToUseForMap_filtered()$geoDataLatLon == click$id),]
-  clickedMarker_geocodingResult <- geocodingResult_filtered()[which(geocodingResult_filtered()[["latlon"]] %in% clickedMarker_geoData[["latlon"]]),] # won't work for country
+  clickedMarker_geocodingResult <- geocodingResult_filtered()[which(geocodingResult_filtered()[["latlon"]] %in% clickedMarker_geoData[["latlon"]]),]
   clickedMarker_metaData <- metaData_filtered()[which(metaData_filtered()[[metaData_columnNameForMatchWithOtherData]] %in% clickedMarker_geoData$idForMappingWithOtherData),]
   
-  if(dim(clickedMarker_metaData)[1]==0 | dim(clickedMarker_geocodingResult)[1]==0){
+  if(dim(clickedMarker_metaData)[1]==0 & dim(clickedMarker_geocodingResult)[1]==0){
     displayClickedMarkerInfos <- F
   }else{
     displayClickedMarkerInfos <- T
@@ -543,7 +543,8 @@ observe({
                                                 metaData_columnsWithMultiValues = myReactiveValues$metaData_columnsWithMultiValueData, 
                                                 metaData_separatorsForMultiValues = myReactiveValues$metaData_multiValueSeparators, 
                                                 metaData_nameEmptyStringInStatsAs = nameEmptyStringInStatsAs,
-                                                metaData_columnsToCalcNumericInfos = myReactiveValues$metaData_columnsToCalcNumericInfos)
+                                                metaData_columnsToCalcNumericInfos = myReactiveValues$metaData_columnsToCalcNumericInfos,
+                                                metaData_columnNameForMatchWithOtherData = metaData_columnNameForMatchWithOtherData)
     
 
     # possibility for user error message instead of error when no columns selected for stats calculation (distributions or numeric) (the ouputs use these values here and show the message when not validate)

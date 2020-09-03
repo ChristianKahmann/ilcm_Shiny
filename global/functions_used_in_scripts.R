@@ -1358,7 +1358,8 @@ calcStatsPerMapPoint <- function(geocodingResultReducedToPointData,
                                  metaData_separatorsForMultiValues, 
                                  metaData_nameEmptyStringInStatsAs,
                                  metaData_columnsToCalcNumericInfos, 
-                                 metaData_includeValuesNotUsed
+                                 metaData_includeValuesNotUsed,
+                                 metaData_columnNameForMatchWithOtherData
 ){
   
   stats <- list()
