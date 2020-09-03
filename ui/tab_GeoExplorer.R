@@ -81,12 +81,12 @@ tabPanel("GeoExplorer", fluid = TRUE,
   
                                          # stats meta data
                                          h3("Stats meta data"),
-                                         plotlyOutput("metaData_stats_distributions_plots"),
+                                         uiOutput("metaData_stats_distributions_plots"),
                                          tableOutput("metaData_stats_numeric_table"),
   
                                          # stats geocodingResult
                                          h3("Stats GeocodingResult"),
-                                         plotlyOutput("geocodingResult_stats_distributions_plots"),
+                                         uiOutput("geocodingResult_stats_distributions_plots"),
                                          tableOutput("geocodingResult_stats_numeric_table")
   
   

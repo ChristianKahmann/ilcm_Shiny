@@ -417,34 +417,6 @@ geocodingResult_stats <- reactive({
                                     columnsToUseForNumericStats = myReactiveValues$geocodingResult_columnsToCalcNumericInfos)      
 })
 
-#-----------------
-# possibility for user error message when no columns selected for stats calculation (distributions or numeric) (the ouputs use these values here and show the message when not validate)
-#-----------------
-metaData_stats_distributions <- reactive({# needed  distributions
-  validate(
-    need(length(myReactiveValues$metaData_columnsToCalcDistributions)>0, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'")
-  )
-  metaData_stats()$distributions
-}) 
-metaData_stats_numeric <- reactive({# needed for user error message when no columns selected for calculation 
-  validate(
-    need(length(myReactiveValues$metaData_columnsToCalcNumericInfos)>0, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'Configuration'")
-  )
-  metaData_stats()$numericInfos
-}) 
-
-geocodingResult_stats_distributions <- reactive({# needed for user error message when no columns selected for calculation distributions
-  validate(
-    need(length(myReactiveValues$geocodingResult_columnsToCalcDistributions)>0, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'")
-  )
-  geocodingResult_stats()$distributions
-}) 
-geocodingResult_stats_numeric <- reactive({# needed for user error message when no columns selected for calculation distributions
-  validate(
-    need(length(myReactiveValues$geocodingResult_columnsToCalcNumericInfos)>0, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'Configuration'")
-  )
-  geocodingResult_stats()$numericInfos
-})
 
 ##############################
 # output number of results & stats
@@ -471,11 +443,38 @@ output$geoDataToUse_numberOfResults <- reactive({
 
 
 
-# stats distributions plots
-output$metaData_stats_distributions_plots <- renderPlotly(createPlotsForDistributionData(metaData_stats_distributions(), statsOfdistributions_sortByValueDesc))
-output$geocodingResult_stats_distributions_plots <- renderPlotly(createPlotsForDistributionData(geocodingResult_stats_distributions(), statsOfdistributions_sortByValueDesc))
+output$metaData_stats_distributions_plots <- renderUI({# this a bit complicated looking construct is used here for correct display of stats AND correct error message when no fields selected (and the error message doesn't slide down over the other outputs). This was the working solution I found, might be improved for nicer/better code
+  #browser()
+  validate(need(length(myReactiveValues$metaData_columnsToCalcDistributions)>0, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'"))
+  tablesToCreate <- c("MetaData_distribution_plots")
+  lapply(tablesToCreate, function(nameToUse) {
+    id <- paste0("metaData_stats_distributions_plots","_", nameToUse)
+    output[[id]] <- renderPlotly(createPlotsForDistributionData(metaData_stats()$distributions, statsOfdistributions_sortByValueDesc))
+  })
+})
 
+output$geocodingResult_stats_distributions_plots <-  renderUI({# this a bit complicated looking construct is used here for correct display of stats AND correct error message when no fields selected (and the error message doesn't slide down over the other outputs). This was the working solution I found, might be improved for nicer/better code
+  #browser()
+  validate(need(length(myReactiveValues$geocodingResult_columnsToCalcDistributions)>0, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'"))
+ 
+  tablesToCreate <- c("GeocodingResult_distribution_plots")
+  lapply(tablesToCreate, function(nameToUse) {
+    id <- paste0("geocodingResult_stats_distributions_plots","_", nameToUse)
+    output[[id]] <- renderPlotly(createPlotsForDistributionData(geocodingResult_stats()$distributions, statsOfdistributions_sortByValueDesc))
+  })
+})
+  
+  
 # stats numeric tables
+metaData_stats_numeric <- reactive({# needed for user error message when no columns selected for calculation 
+  validate(need(length(myReactiveValues$metaData_columnsToCalcNumericInfos)>0, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'Configuration'"))
+  metaData_stats()$numericInfos
+}) 
+
+geocodingResult_stats_numeric <- reactive({# needed for user error message when no columns selected for calculation distributions
+  validate(need(length(myReactiveValues$geocodingResult_columnsToCalcNumericInfos)>0, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'Configuration'"))
+  geocodingResult_stats()$numericInfos
+})
 output$metaData_stats_numeric_table <- renderTable(metaData_stats_numeric(), rownames = T)
 output$geocodingResult_stats_numeric_table <- renderTable(geocodingResult_stats_numeric(), rownames = T)
 
