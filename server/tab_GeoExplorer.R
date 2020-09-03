@@ -43,7 +43,6 @@ geocodingResult_columnsToCalcDistributions_default <- c("osm_type","class","type
 geocodingResult_columnsToCalcNumericInfos_default <- c("frequencyInArea","place_rank","importance")
 geocodingResult_columnsToUseForFiltering_default <- c("entityName", "frequencyInArea", "query", "osm_type", "place_rank", "display_name", "class", "type", "importance", "countryName", "countryCode")
 
-# TODO: when useForStatsToCalcDistributions is not set for meta_data, the clicked marker info is not updated
 # TODO: check why filtering for Bosnia Herzegovina in geocodingResult filter results in locations on map outside BH -> The filters identify doc_ids in common. After that all geolocations from these doc ids are displayed. Same problem occurs for stats geocodingResult.
 # TODO: display message when no geolocation result is avaialable for selected collection
 # TODO: include option: load geolocation from meta data / from georesults
@@ -474,11 +473,11 @@ output$geoDataToUse_numberOfResults <- reactive({
 
 # stats distributions plots
 output$metaData_stats_distributions_plots <- renderPlotly(createPlotsForDistributionData(metaData_stats_distributions(), statsOfdistributions_sortByValueDesc))
-output$geocodingResult_stats_distributions_plots <- renderPlotly(createPlotsForDistributionData(geocodingResult_stats()$distributions, statsOfdistributions_sortByValueDesc))
+output$geocodingResult_stats_distributions_plots <- renderPlotly(createPlotsForDistributionData(geocodingResult_stats_distributions(), statsOfdistributions_sortByValueDesc))
 
 # stats numeric tables
 output$metaData_stats_numeric_table <- renderTable(metaData_stats_numeric(), rownames = T)
-output$geocodingResult_stats_numeric_table <- renderTable(geocodingResult_stats()$numericInfos, rownames = T)
+output$geocodingResult_stats_numeric_table <- renderTable(geocodingResult_stats_numeric(), rownames = T)
 
 
 ###################
@@ -514,7 +513,6 @@ output$clickedMarkerAllOutput <-  reactive({renderText("click on a marker to dis
 observe({
   click<-input$lmap_marker_click
   displayClickedMarkerInfos <- F
-  
   # filter data for marker and calc stats for marker
   clickedMarker_geoData <- geoDataToUseForMap_filtered()[which(geoDataToUseForMap_filtered()$geoDataLatLon == click$id),]
   clickedMarker_geocodingResult <- geocodingResult_filtered()[which(geocodingResult_filtered()[["latlon"]] %in% clickedMarker_geoData[["latlon"]]),]
@@ -547,16 +545,6 @@ observe({
                                                 metaData_columnNameForMatchWithOtherData = metaData_columnNameForMatchWithOtherData)
     
 
-    # possibility for user error message instead of error when no columns selected for stats calculation (distributions or numeric) (the ouputs use these values here and show the message when not validate)
-    clickedMarker_stats_metaData_distributions <- reactive({# needed  distributions
-      validate(need(length(myReactiveValues$metaData_columnsToCalcDistributions)>0, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'"))
-      clickedMarker_stats$metaData_distributions
-    }) 
-    clickedMarker_stats_metaData_numericStats <- reactive({# needed for user error message when no columns selected for calculation 
-      validate(need(length(myReactiveValues$metaData_columnsToCalcNumericInfos)>0, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'Configuration'"))
-      clickedMarker_stats$metaData_numericStats
-    }) 
-    
     # output general infos
     clickedMarker_infos<-renderText({
       heading <- paste0("INFORMATION ABOUT CLICKED MARKER: \"",unique(clickedMarker_geoData$entityName),"\"\n===========================\n")
@@ -576,27 +564,41 @@ observe({
     #----------------------------------
     # output of meta data infos (distributions and numeric) - infos about docs the location was found in
     #-----------------------------------
-    clickedMarker_stats_metaData_distributions_aspects <- names(clickedMarker_stats_metaData_distributions())
     
     #output$clickedMarker_metaDataStats_plots <- plotDistributionData(clickedMarker_stats$metaData_distributions) # meta data distributions as plots
     clickedMarker_metaData_distributions_tables <- renderUI({ # meta data distributions as tables: better overview if we have just a few docs per marker
       
+      validate(need(length(myReactiveValues$metaData_columnsToCalcDistributions)>0, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'"))
+      
+      clickedMarker_stats_metaData_distributions_aspects <- names(clickedMarker_stats$metaData_distributions)
+      
       lapply(clickedMarker_stats_metaData_distributions_aspects, function(aspectName) {# lapply needed because else only last table is used due to: The expressions passed into render functions are captured in closures and not evaluated immediately (See https://community.rstudio.com/t/shiny-app-with-dynamic-number-of-datatables/2405/7)
         
         id <- paste0("clickedMarker_metaData_distributions_tables","_", aspectName)
-        tableToUse <- clickedMarker_stats_metaData_distributions()[[aspectName]]
+        tableToUse <- clickedMarker_stats$metaData_distributions[[aspectName]]
         names(tableToUse) <- c(aspectName,"frequency","percent")
         output[[id]] <- renderTable(tableToUse)
       })
     })
-    clickedMarker_metaData_numeric_tables <- renderTable(clickedMarker_stats_metaData_numericStats(), rownames = T)
     
+    clickedMarker_metaData_numeric_tables <- renderUI({
+      validate(need(length(myReactiveValues$metaData_columnsToCalcNumericInfos)>0, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'Configuration'"))
+      tablesToCreate <- c("MetaDataNumeric")
+      lapply(tablesToCreate, function(nameToUse) {
+        id <- paste0("clickedMarker_metaData_numeric_tables","_", nameToUse)
+        tableToUse <- clickedMarker_stats$metaData_numericStats
+        output[[id]] <- renderTable(tableToUse, rownames = T)
+      })
+    })
+    #clickedMarker_metaData_numeric_tables <- renderTable(clickedMarker_stats$metaData_numericStats)
     #----------------------------------
     # output of geoCodingResult infos (distributions and numeric) - infos about docs the location was found in
     #-----------------------------------
-    clickedMarker_stats_geocodingResult_distributions_aspects <-  names(clickedMarker_stats$geocodingResult_distributions)
     
     clickedMarker_geocodingResult_distributions_tables <- renderUI({
+      validate(need(length(myReactiveValues$geocodingResult_columnsToCalcDistributions)>0, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'"))
+      
+      clickedMarker_stats_geocodingResult_distributions_aspects <-  names(clickedMarker_stats$geocodingResult_distributions)
       
       lapply(clickedMarker_stats_geocodingResult_distributions_aspects, function(aspectName) {
         id <- paste0("clickedMarker_geocodingResult_distributions_tables","_", aspectName)
@@ -605,12 +607,21 @@ observe({
         output[[id]] <- renderTable(tableToUse)
       })
     })
-    clickedMarker_geocodingResult_numeric_tables <- renderTable(clickedMarker_stats$geocodingResult_numericStats, rownames = T)
     
+    #clickedMarker_geocodingResult_numeric_tables <- renderTable(clickedMarker_stats$geocodingResult_numericStats, rownames = T)
+    clickedMarker_geocodingResult_numeric_tables <- renderUI({
+      validate(need(length(myReactiveValues$geocodingResult_columnsToCalcNumericInfos)>0, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'Configuration'"))
+      tablesToCreate <- c("geocodingResultNumeric")
+      lapply(tablesToCreate, function(nameToUse) {
+        id <- paste0("clickedMarker_geocodingResult_numeric_tables","_", nameToUse)
+        tableToUse <- clickedMarker_stats$geocodingResult_numericStats
+        output[[id]] <- renderTable(tableToUse, rownames = T)
+      })
+    })
     
     # put all clicked marker infos in one object
-    clickedMarkerAllOutput <- renderUI(
-      tagList(
+    clickedMarkerAllOutput <- renderUI({
+      result <- tagList(
         # clicked marker infos is not included here but used separatetely because verbatimTextOutput should be used for nicer output
         h4("In which documents this marker was found:"),
         clickedMarkerDistribution,
@@ -621,6 +632,8 @@ observe({
         clickedMarker_metaData_distributions_tables,
         clickedMarker_metaData_numeric_tables
       )
+      return (result)
+    }
     )
   }
   else{ # displayClickedMarkerInfos == F
