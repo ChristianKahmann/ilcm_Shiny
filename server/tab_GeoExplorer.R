@@ -43,7 +43,7 @@ geocodingResult_columnsToCalcDistributions_default <- c("osm_type","class","type
 geocodingResult_columnsToCalcNumericInfos_default <- c("frequencyInArea","place_rank","importance")
 geocodingResult_columnsToUseForFiltering_default <- c("entityName", "frequencyInArea", "query", "osm_type", "place_rank", "display_name", "class", "type", "importance", "countryName", "countryCode")
 
-# TODO: when meta data filter is not set, no clicked marker results are shown (because  X | metastats =0)
+# TODO: when useForStatsToCalcDistributions is not set for meta_data, the clicked marker info is not updated
 # TODO: check why filtering for Bosnia Herzegovina in geocodingResult filter results in locations on map outside BH -> The filters identify doc_ids in common. After that all geolocations from these doc ids are displayed. Same problem occurs for stats geocodingResult.
 # TODO: display message when no geolocation result is avaialable for selected collection
 # TODO: include option: load geolocation from meta data / from georesults
