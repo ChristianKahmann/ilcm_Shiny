@@ -35,7 +35,13 @@ metaData_prefixFoUniqueIdentificationInInputFilters <- "metaData_"
 geocodingResult_prefixFoUniqueIdentificationInInputFilters <- "geocodingResult_"
 metaData_columnNameForMatchWithOtherData <- "areaId" # see code below how areaId is composed for documents
 geocodingResult_columnNameForMatchWithOtherData <- "areaId"
-geoDataToUse_columnNameForMatchWithOtherData <- "areaId"
+
+# geoDataToUse
+geoDataToUseForMap_dataSource <- "geocodingResult"
+geoDataToUseForMap_columnNameForMatchWithOtherData <- "areaId"
+geoDataToUseForMap_columnNameForLat <- "lat"
+geoDataToUseForMap_columnNameForLon <- "lon"
+
 
 statsOfdistributions_sortByValueDesc <- T # TODO: make this configurabke
 
@@ -43,7 +49,7 @@ geocodingResult_columnsToCalcDistributions_default <- c("osm_type","class","type
 geocodingResult_columnsToCalcNumericInfos_default <- c("frequencyInArea","place_rank","importance")
 geocodingResult_columnsToUseForFiltering_default <- c("entityName", "frequencyInArea", "query", "osm_type", "place_rank", "display_name", "class", "type", "importance", "countryName", "countryCode")
 
-# TODO: check why filtering for Bosnia Herzegovina in geocodingResult filter results in locations on map outside BH -> The filters identify doc_ids in common. After that all geolocations from these doc ids are displayed. Same problem occurs for stats geocodingResult.
+
 # TODO: display message when no geolocation result is avaialable for selected collection
 # TODO: include option: load geolocation from meta data / from georesults
 
@@ -226,15 +232,6 @@ observeEvent(input$loadDataForCollection,{
   
 })
 
-geoDataToUseForMap <- reactive({
-  req(myReactiveValues$dataLoaded)
-  geoDataToUse <- myReactiveValues$geocodingResult_dataToUse # TODO: make this selectable to be able to select locations from meta data (or other data)
-  geoDataToUse$geoDataLat <- geoDataToUse$lat
-  geoDataToUse$geoDataLon <- geoDataToUse$lon
-  geoDataToUse$geoDataLatLon <- paste(geoDataToUse$geoDataLat, geoDataToUse$geoDataLon, sep = " ")
-  geoDataToUse$idForMappingWithOtherData <- geoDataToUse[[geoDataToUse_columnNameForMatchWithOtherData]]
-  return(geoDataToUse)
-})
 
 #############################
 # configuration of columns
@@ -370,13 +367,26 @@ metaData_filtered <- reactive({
 })
 geocodingResult_filtered <- reactive({
   result <- myReactiveValues$geocodingResult_dataToUse
-  result <- result[which(result[[geocodingResult_columnNameForMatchWithOtherData]] %in% idsAfterFiltering()),]
+  result <- result[which(result[[geocodingResult_columnNameForMatchWithOtherData]] %in% idsAfterFiltering()),] # this just filters for certain docs. As a doc might include several geoCodingResults, the filter of geoCodingResult is not applied yet correctly and needs to be re-applied to the given docs
+  result <- filterDataBasedOnInputFilterFields(dataToFilter = result, columnNamesOfDataToFilter = myReactiveValues$geocodingResult_columnNames,columnsNamesWithMultiValueData = myReactiveValues$geocodingResult_columnsWithMultiValueData,filterInput = input,prefixInFilterNameForUniqueIdentification = geocodingResult_prefixFoUniqueIdentificationInInputFilters)
+  
 })
 
 geoDataToUseForMap_filtered <- reactive({
   req(myReactiveValues$dataLoaded)
-  result <- geoDataToUseForMap()
-  result <- result[which(result[[geoDataToUse_columnNameForMatchWithOtherData]] %in% idsAfterFiltering()),]
+  result <- NULL
+  if(geoDataToUseForMap_dataSource == "geocodingResult"){
+    result <- geocodingResult_filtered()
+  }else{
+    stop("The given geoDataToUseForMap_dataSource \"",geoDataToUseForMap_dataSource,"\" is not implemented")
+  }
+  
+
+  result$geoDataLat <- result[[geoDataToUse_columnNameForLat]]
+  result$geoDataLon <- result[[geoDataToUse_columnNameForLon]]
+  result$geoDataLatLon <- paste(result[[geoDataToUse_columnNameForLat]], result[[geoDataToUse_columnNameForLon]], sep = " ")
+  
+  return (result)
 })
 
 ##############################
@@ -485,7 +495,8 @@ output$geocodingResult_stats_numeric_table <- renderTable(geocodingResult_stats_
 ###################
 
 # show map and update based on (filtered) geoData
-output$lmap <- renderLeaflet(
+output$lmap <- renderLeaflet({
+  validate(need(dim(geoDataToUseForMap_filtered()[1]>0), message = "No Geolocation Data available for given filters. You might try to adjust (relax) the filters."))
   leaflet(data=geoDataToUseForMap_filtered()) %>%
     addTiles() %>%
     clearMarkers()%>%
@@ -496,6 +507,7 @@ output$lmap <- renderLeaflet(
       label = ~htmlEscape(paste0( entityName)),
       popup = ~htmlEscape(paste0( entityName, " (", geoDataLat, ",", geoDataLon,")"))
     )
+}
 )
 
 
@@ -516,7 +528,7 @@ observe({
   # filter data for marker and calc stats for marker
   clickedMarker_geoData <- geoDataToUseForMap_filtered()[which(geoDataToUseForMap_filtered()$geoDataLatLon == click$id),]
   clickedMarker_geocodingResult <- geocodingResult_filtered()[which(geocodingResult_filtered()[["latlon"]] %in% clickedMarker_geoData[["latlon"]]),]
-  clickedMarker_metaData <- metaData_filtered()[which(metaData_filtered()[[metaData_columnNameForMatchWithOtherData]] %in% clickedMarker_geoData$idForMappingWithOtherData),]
+  clickedMarker_metaData <- metaData_filtered()[which(metaData_filtered()[[metaData_columnNameForMatchWithOtherData]] %in% clickedMarker_geoData[[geoDataToUse_columnNameForMatchWithOtherData]]),]
   
   if(dim(clickedMarker_metaData)[1]==0 & dim(clickedMarker_geocodingResult)[1]==0){
     displayClickedMarkerInfos <- F
