@@ -1130,7 +1130,6 @@ calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesA
   numberOfEntriesTotal <- dim(inputData)[1]
   stats <- list()
   for(columnName in columnNamesOfColumnsToUse){
-    
     availableValuesForGivenColumn <- dataWithColumnNamesAndAvailableValues[[columnName]]
     
     statsForColumn <- data.frame(metaDataName = availableValuesForGivenColumn,
@@ -1138,6 +1137,7 @@ calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesA
                                  percent = rep(as.numeric(0)),
                                  stringsAsFactors = F
     )
+    
     
     if(columnName %in% columnsWithMultiValues){
       
@@ -1153,7 +1153,12 @@ calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesA
             next
           }
           splittedValues <- strsplit(entry,separatorForMultiValuesForGivenColumn)[[1]]
+
           for(splittedValue in splittedValues){
+            if(!splittedValue %in% statsForColumn$metaDataName){
+              warning("Warning: For column \"",columnName ,"\" the following value appeared in the data but wasn't given via dataWithColumnNamesAndAvailableValues: \"", splittedValue, "\". It will be ignored. It is assumed that you don't want this value regarded by not providing it. If this is not thje case, provide all values via dataWithColumnNamesAndAvailableValues")
+              next
+            }
             indexOfSplittedValue <- which(statsForColumn$metaDataName == splittedValue)[[1]]
             statsForColumn$numberOfEntries[indexOfSplittedValue] <- statsForColumn$numberOfEntries[indexOfSplittedValue]+1
           }
@@ -1203,7 +1208,7 @@ calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesA
       statsForColumn$numberOfEntries[indexOfEmptyValue] <- numberOfEntriesWithEmptyString
     }else{
       if(numberOfEntriesWithEmptyString>0){
-        statsForColumn %>% add_row(metaDataName = nameToUseInStatsForEmptyString,numberOfEntries = numberOfEntriesWithEmptyString, percent = 0)# percent will be calculated later
+        statsForColumn <- statsForColumn %>% add_row(metaDataName = nameToUseInStatsForEmptyString,numberOfEntries = numberOfEntriesWithEmptyString, percent = 0)# percent will be calculated later
       }
     }
     
