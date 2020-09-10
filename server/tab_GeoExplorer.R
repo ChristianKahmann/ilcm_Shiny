@@ -50,7 +50,6 @@ geocodingResult_columnsToCalcNumericInfos_default <- c("frequencyInArea","place_
 geocodingResult_columnsToUseForFiltering_default <- c("entityName", "frequencyInArea", "query", "osm_type", "place_rank", "display_name", "class", "type", "importance", "countryName", "countryCode")
 
 
-# TODO: display message when no geolocation result is avaialable for selected collection
 # TODO: include option: load geolocation from meta data / from georesults
 
 
@@ -108,10 +107,21 @@ observe({
   selectedCollection <- selectedCollection() # needed because observe is executed at the very beginning where input$geoExplorer_selectedCollection value is not available yet (NULL)
   # update ui selection based on collection
   availableGeocodingResultsForGivenCollection <-  availableGeocodingResults[grep(x = availableGeocodingResults, pattern = paste0("_",selectedCollection,"$"))]
-  updateSelectInput(session, "geocodingResult",
-                    label = "select geocoding results",
-                    choices = availableGeocodingResultsForGivenCollection
-  )
+  
+  
+  if(length(availableGeocodingResultsForGivenCollection)==0){
+    updateSelectInput(session, "geocodingResult",
+                      label = "select geocoding results",
+                      choices = c("Sorry, no geocoding results available for given collection. Please select another collection")
+                      #choices = NULL
+                      )
+  }else{
+    updateSelectInput(session, "geocodingResult",
+                      label = "select geocoding results",
+                      choices = availableGeocodingResultsForGivenCollection
+    )
+  }
+  
 })
 
 
@@ -382,9 +392,9 @@ geoDataToUseForMap_filtered <- reactive({
   }
   
 
-  result$geoDataLat <- result[[geoDataToUse_columnNameForLat]]
-  result$geoDataLon <- result[[geoDataToUse_columnNameForLon]]
-  result$geoDataLatLon <- paste(result[[geoDataToUse_columnNameForLat]], result[[geoDataToUse_columnNameForLon]], sep = " ")
+  result$geoDataLat <- result[[geoDataToUseForMap_columnNameForLat]]
+  result$geoDataLon <- result[[geoDataToUseForMap_columnNameForLon]]
+  result$geoDataLatLon <- paste(result[[geoDataToUseForMap_columnNameForLat]], result[[geoDataToUseForMap_columnNameForLon]], sep = " ")
   
   return (result)
 })
@@ -528,7 +538,7 @@ observe({
   # filter data for marker and calc stats for marker
   clickedMarker_geoData <- geoDataToUseForMap_filtered()[which(geoDataToUseForMap_filtered()$geoDataLatLon == click$id),]
   clickedMarker_geocodingResult <- geocodingResult_filtered()[which(geocodingResult_filtered()[["latlon"]] %in% clickedMarker_geoData[["latlon"]]),]
-  clickedMarker_metaData <- metaData_filtered()[which(metaData_filtered()[[metaData_columnNameForMatchWithOtherData]] %in% clickedMarker_geoData[[geoDataToUse_columnNameForMatchWithOtherData]]),]
+  clickedMarker_metaData <- metaData_filtered()[which(metaData_filtered()[[metaData_columnNameForMatchWithOtherData]] %in% clickedMarker_geoData[[geoDataToUseForMap_columnNameForMatchWithOtherData]]),]
   
   if(dim(clickedMarker_metaData)[1]==0 & dim(clickedMarker_geocodingResult)[1]==0){
     displayClickedMarkerInfos <- F
