@@ -54,13 +54,13 @@ error<-try(expr = {
   
   
   
+  
   #get original documents 
   log_to_file(message = "<b>Step 5/13: Create original documents</b>",file = logfile)
   doc_ids<-unique(db_data$token[,2])
-  documents_original<-unlist(lapply(X = doc_ids,FUN = function(x){
-    paste(db_data$token[which(db_data$token[,1]==x),4],collapse=" ")
-  }))
-  documents_original<-cbind(doc_ids,documents_original)  
+  db_data$token <- data.table::as.data.table(db_data$token[which(db_data$token[,2]%in%doc_ids),])
+  documents_original<-db_data$token[, list(text = paste(word, collapse=" ")), by = id]
+  colnames(documents_original)<-c("doc_ids","documents_original")
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
 
   

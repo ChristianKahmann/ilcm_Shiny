@@ -710,8 +710,7 @@ observeEvent(input$TM_Submit_Script,{
     logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
     #create logfile
     write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
-    #save data needed in script execution 
-    #print("save parameters")
+    #save parameter needed in script execution 
     save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
     #start script
     if(input$use_custom_script==TRUE && !is.null(input$custom_script_options)){

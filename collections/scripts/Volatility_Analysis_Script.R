@@ -157,7 +157,7 @@ error<-try(expr = {
   if(grepl("reference",method)){
       relevant_points_in_time<-(as.numeric(parameters$va_history)+1):length(un_dates)
   }
-  if(grepl("rank",method) || grep("window",method)){
+  if(grepl("rank",method) || grepl("window",method)){
     if(parameters$va_history%/%2==1){
       relevant_points_in_time<-(as.numeric(ceiling(parameters$va_history/2))):(length(un_dates)-floor(parameters$va_history/2))
     }
