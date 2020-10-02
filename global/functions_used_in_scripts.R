@@ -543,7 +543,6 @@ get_meta_data_for_detailed_topic_analysis<-function(host,port,ids,datasets,token
   ))
 }
 
-
 calculate_diachron_frequencies<-function(dtm,meta){
   meta<-meta[which(meta[,1]%in%rownames(dtm)),]
   
@@ -559,64 +558,122 @@ calculate_diachron_frequencies<-function(dtm,meta){
   un_dates_week<-unique(dates_week)
   un_dates_month<-unique(dates_month)
   un_dates_year<-unique(dates_year)
-  
   #create frequency matrices
-  freqs_day<-matrix(c(0),length(un_dates_day),length(vocab))
+  freqs_day<-Matrix::Matrix(c(0),0,length(vocab))
   colnames(freqs_day)<-vocab
-  rownames(freqs_day)<-un_dates_day
-  freqs_week<-matrix(c(0),length(un_dates_week),length(vocab))
-  colnames(freqs_week)<-vocab
-  rownames(freqs_week)<-un_dates_week
-  freqs_month<-matrix(c(0),length(un_dates_month),length(vocab))
-  colnames(freqs_month)<-vocab
-  rownames(freqs_month)<-un_dates_month
-  freqs_year<-matrix(c(0),length(un_dates_year),length(vocab))
-  colnames(freqs_year)<-vocab
-  rownames(freqs_year)<-un_dates_year
   
-  doc_freqs_day<-matrix(c(0),length(un_dates_day),length(vocab))
+  freqs_week<-Matrix::Matrix(c(0),0,length(vocab))
+  colnames(freqs_week)<-vocab
+  
+  freqs_month<-Matrix::Matrix(c(0),0,length(vocab))
+  colnames(freqs_month)<-vocab
+  
+  freqs_year<-Matrix::Matrix(c(0),0,length(vocab))
+  colnames(freqs_year)<-vocab
+  
+  
+  doc_freqs_day<-Matrix::Matrix(c(0),0,length(vocab))
   colnames(doc_freqs_day)<-vocab
-  rownames(doc_freqs_day)<-un_dates_day
-  doc_freqs_week<-matrix(c(0),length(un_dates_week),length(vocab))
+  
+  doc_freqs_week<-Matrix::Matrix(c(0),0,length(vocab))
   colnames(doc_freqs_week)<-vocab
-  rownames(doc_freqs_week)<-un_dates_week
-  doc_freqs_month<-matrix(c(0),length(un_dates_month),length(vocab))
+  
+  doc_freqs_month<-Matrix::Matrix(c(0),0,length(vocab))
   colnames(doc_freqs_month)<-vocab
-  rownames(doc_freqs_month)<-un_dates_month
-  doc_freqs_year<-matrix(c(0),length(un_dates_year),length(vocab))
+  
+  doc_freqs_year<-Matrix::Matrix(c(0),0,length(vocab))
   colnames(doc_freqs_year)<-vocab
-  rownames(doc_freqs_year)<-un_dates_year
   
   #calculate frequencies on daily basis
   log_to_file(message = "&emsp; Calculating frequencies on daily basis",logfile)
+  loghelper<-floor(seq(1,length(un_dates_day),length.out = 11))[2:11]
+  names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+  count=0
   for(i in 1:length(un_dates_day)){
-    freqs_day[i,]<-colSums(x = dtm[which(dates_day==un_dates_day[i]),,drop=FALSE])
-    doc_freqs_day[i,]<-colSums(x = bin_dtm[which(dates_day==un_dates_day[i]),,drop=FALSE])
+    count=count+1
+    relevant<-which(dates_day==un_dates_day[i])
+    freqs_day<-rbind(freqs_day,colSums(x = dtm[relevant,,drop=FALSE]))
+    doc_freqs_day<-rbind(doc_freqs_day,colSums(x = bin_dtm[relevant,,drop=FALSE]))
+    if(count %in% loghelper){
+      if(length(un_dates_day)>10){
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",un_dates_day[i],")"),logfile)
+      }
+      else{
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed"),logfile)
+      }
+    }
   }
+  rownames(freqs_day)<-un_dates_day
+  rownames(doc_freqs_day)<-un_dates_day
   log_to_file(message = "&emsp;  ✔ ",logfile)
   
   #calculate frequencies on weekly basis
   log_to_file(message = "&emsp; Calculating frequencies on weekly basis",logfile)
+  loghelper<-floor(seq(1,length(un_dates_week),length.out = 11))[2:11]
+  names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+  count=0
   for(i in 1:length(un_dates_week)){
-    freqs_week[i,]<-colSums(x = dtm[which(dates_week==un_dates_week[i]),,drop=FALSE])
-    doc_freqs_week[i,]<-colSums(x = bin_dtm[which(dates_week==un_dates_week[i]),,drop=FALSE])
+    count=count+1
+    relevant<-which(dates_week==un_dates_week[i])
+    freqs_week<-rbind(freqs_week,colSums(x = dtm[relevant,,drop=FALSE]))
+    doc_freqs_week<-rbind(doc_freqs_week,colSums(x = bin_dtm[relevant,,drop=FALSE]))
+    if(count %in% loghelper){
+      if(length(un_dates_week)>10){
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",un_dates_week[i],")"),logfile)
+      }
+      else{
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed"),logfile)
+      }
+    }
   }
+  rownames(freqs_week)<-un_dates_week
+  rownames(doc_freqs_week)<-un_dates_week
   log_to_file(message = "&emsp;  ✔ ",logfile)
   
   #calculate frequencies on monthly basis
-  log_to_file(message = "&emsp; Calculating frequencies on montly basis",logfile)
+  log_to_file(message = "&emsp; Calculating frequencies on monthly basis",logfile)
+  loghelper<-floor(seq(1,length(un_dates_month),length.out = 11))[2:11]
+  names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+  count=0
   for(i in 1:length(un_dates_month)){
-    freqs_month[i,]<-colSums(x = dtm[which(dates_month==un_dates_month[i]),,drop=FALSE])
-    doc_freqs_month[i,]<-colSums(x = bin_dtm[which(dates_month==un_dates_month[i]),,drop=FALSE])
+    count=count+1
+    relevant<-which(dates_month==un_dates_month[i])
+    freqs_month<-rbind(freqs_month,colSums(x = dtm[relevant,,drop=FALSE]))
+    doc_freqs_month<-rbind(doc_freqs_month,colSums(x = bin_dtm[relevant,,drop=FALSE]))
+    if(count %in% loghelper){
+      if(length(un_dates_month)>10){
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",un_dates_month[i],")"),logfile)
+      }
+      else{
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed"),logfile)
+      }
+    }
   }
+  rownames(freqs_month)<-un_dates_month
+  rownames(doc_freqs_month)<-un_dates_month
   log_to_file(message = "&emsp;  ✔ ",logfile)
   
   #calculate frequencies on yearly basis
-  log_to_file(message = "&emsp; Calculating frequencies on annual basis",logfile)
+  log_to_file(message = "&emsp; Calculating frequencies on yearly basis",logfile)
+  loghelper<-floor(seq(1,length(un_dates_year),length.out = 11))[2:11]
+  names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+  count=0
   for(i in 1:length(un_dates_year)){
-    freqs_year[i,]<-colSums(x = dtm[which(dates_year==un_dates_year[i]),,drop=FALSE])
-    doc_freqs_year[i,]<-colSums(x = bin_dtm[which(dates_year==un_dates_year[i]),,drop=FALSE])
+    count=count+1
+    relevant<-which(dates_year==un_dates_year[i])
+    freqs_year<-rbind(freqs_year,colSums(x = dtm[relevant,,drop=FALSE]))
+    doc_freqs_year<-rbind(doc_freqs_year,colSums(x = bin_dtm[relevant,,drop=FALSE]))
+    if(count %in% loghelper){
+      if(length(un_dates_year)>10){
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",un_dates_year[i],")"),logfile)
+      }
+      else{
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed"),logfile)
+      }
+    }
   }
+  rownames(freqs_year)<-un_dates_year
+  rownames(doc_freqs_year)<-un_dates_year
   log_to_file(message = "&emsp;  ✔ ",logfile)
   
   #calculating relative frequencies
@@ -650,6 +707,8 @@ calculate_diachron_frequencies<-function(dtm,meta){
          rel_freqs_day=rel_freqs_day)
   )
 }
+
+
 
 
 
