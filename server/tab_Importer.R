@@ -255,7 +255,7 @@ sanity_check_Modal <- function(type, data_check_choices) {
     }
     
     regex_check <- is.na(str_extract(regarding_data,regex(sanity_check_regex)))
-    data.frame(id_doc = values[[id_doc_label]], characters = nchar(regarding_data), valid_encoding, detected_language, regex_check)
+    data.frame(id_doc = values[[id_doc_label]], characters = nchar(regarding_data,allowNA = T), valid_encoding, detected_language, regex_check)
   }, server = FALSE, selection = "single")
   
   output$selected_row = renderText({
@@ -265,7 +265,6 @@ sanity_check_Modal <- function(type, data_check_choices) {
       return(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]][input$sanity_check_table_rows_selected])
     }
   })
-  
   showModal(
     modalDialog(
       size = "l",easyClose = T,fade = T,
@@ -275,7 +274,7 @@ sanity_check_Modal <- function(type, data_check_choices) {
       renderPlotly({
         ids = paste(values[[id_doc_label]])
         xlab = list(categoryorder = "array", categoryarray = ids)
-        plot_ly(y = nchar(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]]), x = ids, type = "bar",
+        plot_ly(y = nchar(values[[sprintf("Import_%s_%s", type, input$Import_data_id_check)]],allowNA = T), x = ids, type = "bar",
                 marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>% layout(title = "Length", xaxis = xlab,yaxis=list(title="number of characters"))
       }),
       p("NOTE: Use unice 'id_doc' to see character length individually - otherwise it gets stacked"),
@@ -686,6 +685,8 @@ output$Import_csv_metadata<-DT::renderDataTable({
     data<-data.frame(dataset=rep(dataset,max_length))
     data$id_doc<-c(id_doc, rep("", nrow(data)-length(id_doc)))
     data$title<-c(title, rep("", nrow(data)-length(title)))
+    # make sure no invalid multibyte code is present
+    body<-iconv(body, "UTF-8", "UTF-8",sub='')
     data$body<-c(body, rep("", nrow(data)-length(body)))
     data$date<-c(date, rep("", nrow(data)-length(date)))
     data$token<-c(token, rep("", nrow(data)-length(token)))
@@ -825,7 +826,7 @@ observeEvent(input$Import_csv_start_preprocess,{
             shinyWidgets::sendSweetAlert(session=session,title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
           }
           else{
-            if(any(nchar(data[,"body"])<1)){
+            if(any(nchar(data[,"body"],allowNA = T)<=2)){
               #shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
               confirmSweetAlert(
                 session = session,
@@ -975,7 +976,7 @@ observeEvent(input$Import_csv_start_preprocess_and_write,{
             shinyWidgets::sendSweetAlert(session=session,title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
           }
           else{
-            if(any(nchar(data[,"body"])<1)){
+            if(any(nchar(data[,"body"],allowNA = T)<=2)){
               #shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
               confirmSweetAlert(
                 session = session,
@@ -1555,6 +1556,8 @@ output$Import_mtf_metadata<-DT::renderDataTable({
     data<-data.frame(dataset=rep(dataset,max_length))
     data$id_doc<-c(id_doc, rep("", nrow(data)-length(id_doc)))
     data$title<-c(title, rep("", nrow(data)-length(title)))
+    #make sure there is no invalid multibyte string
+    body<-iconv(body, "UTF-8", "UTF-8",sub='')
     data$body<-c(body, rep("", nrow(data)-length(body)))
     data$date<-c(date, rep("", nrow(data)-length(date)))
     data$token<-c(token, rep("", nrow(data)-length(token)))
@@ -1699,7 +1702,7 @@ observeEvent(input$Import_mtf_start_preprocess,{
               shinyWidgets::sendSweetAlert(session=session,title = "At least one given date can't be imported",text = "Please specify the date and the date format",type = "error")
             }
             else{
-              if(any(nchar(data[,"body"])<1)){
+              if(any(nchar(data[,"body"],allowNA = T)<=2)){
                 #shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
                 confirmSweetAlert(
                   session = session,
@@ -1854,7 +1857,7 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
               shinyWidgets::sendSweetAlert(session=session,title = "At least one given date can't be imported",text = "Please specify the date and the date format or if you are not intrested in using dates, just use the 'autoamtic'-option",type = "error")
             }
             else{
-              if(any(nchar(data[,"body"])<1)){
+              if(any(nchar(data[,"body"],allowNA = T)<=2)){
                 #shinyWidgets::sendSweetAlert(session=session,title = "Body is empty for at least one document",type = "warning")
                 confirmSweetAlert(
                   session = session,
