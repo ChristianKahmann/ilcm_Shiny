@@ -23,9 +23,9 @@ observeEvent(input$simple_action,{
       s<-isolate(input$simple_inputtext)
       
       #transform input to Solr Query
-      s<-stringr::str_replace_all(string = s,pattern = "\\+",replacement = " AND ")
-      s<-stringr::str_replace_all(string = s,pattern = "\\#",replacement = " OR ")
-      s<-stringr::str_replace_all(string = s,pattern = "\\-",replacement = " NOT ")
+      s<-stringr::str_replace_all(string = s,pattern = '\\+(?=((?:[^"]*"){2})*[^"]*$)',replacement = " AND ")
+      s<-stringr::str_replace_all(string = s,pattern = '\\#(?=((?:[^"]*"){2})*[^"]*$)',replacement = " OR ")
+      s<-stringr::str_replace_all(string = s,pattern = '\\-(?=((?:[^"]*"){2})*[^"]*$)',replacement = " NOT ")
       
       if(nchar(s)>0){
         q<-s
