@@ -43,6 +43,41 @@ tabPanel("GeoExplorer", fluid = TRUE,
                         
                       )
              ),
+             tabPanel("RegEx", fluid = TRUE,
+                      
+                        fluidRow(
+                          conditionalPanel(condition = "output.dataLoaded",
+                                           wellPanel(id = "tPanel",style = "overflow-y:scroll; max-height: 600px",
+                                                     h3("Configuration of regular expression to search in text"),
+                                                     h5("For more information on regular expressions see https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html"),
+                                                     h5("The default regEx shown here ('[0-9]{1,3}(,[0-9]{3})*(\.[0-9]+)?') extracts numbers - with optional decimal separator using a dot ('.') and optional thousands separator comma (',')."),
+                                                     textInput(inputId = "regexInput", label = "regular expression to apply", value = "[0-9]{1,3}(,[0-9]{3})*(\\.[0-9]+)?"),
+                                                    
+                                                     column(6,checkboxInput(inputId = "regex_includeTitleForRegExMatching", label = "include title for regex matching (additionally to text)", value = F)),
+                                                     column(6, 
+                                                            checkboxInput(inputId = "regex_tranformToNumeric", label = "transformToNumeric", value = TRUE),
+                                                            textInput(inputId = "regex_separatorForThousandsUsedInTextData", label = "separator for thousands used in text data", value = ","),
+                                                            textInput(inputId = "regex_separatorForDecimalUsedInTextData", label = "separator for decimal used in text data", value = ".")
+                                                     ),
+                                                     br(),
+                                                    
+                                                     column(4, numericInput(inputId = "regex_showMatches_topX", label = "Show matches of the first ", value = 20)),
+                                                     column(4, radioButtons(inputId = "regex_showMatches_typeDocsOrDocsWithMatches", choices = c("documents","documents with matches"), selected = "documents", label = NULL)),
+                                                     column(4, textInput(inputId = "regex_separatorForMatchesDisplay", label = "separate matches by", value = " - ")),
+                                                     
+                                                     actionButton(inputId = "performRegexMatching","APPLY and perform regex matching"),
+                                                     actionButton(inputId = "resetRegexMatching","RESET (do not apply any regex)"),
+                                                     br(),
+                                                     h4("Regex results"),
+                                                     br(),
+                                                     textOutput(outputId = "regExInfo"),
+                                                     br(),
+                                                    rHandsontableOutput('regexResults')
+                                           )
+                          )
+                        )
+                        
+             ),
              tabPanel("Filtering & Results", fluid = TRUE,
                      
                       conditionalPanel(condition = "!output.dataLoaded",
@@ -87,9 +122,13 @@ tabPanel("GeoExplorer", fluid = TRUE,
                                          # stats geocodingResult
                                          h3("Stats GeocodingResult"),
                                          uiOutput("geocodingResult_stats_distributions_plots"),
-                                         tableOutput("geocodingResult_stats_numeric_table")
+                                         tableOutput("geocodingResult_stats_numeric_table"),
   
-  
+                                         # stats regexData
+                                         h3("Stats RegEx Data"),
+                                         uiOutput("regexData_stats_distributions_plots"),
+                                         tableOutput("regexData_stats_numeric_table")
+                                         
   
                                 )
                               ,
