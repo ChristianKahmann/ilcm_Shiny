@@ -59,6 +59,31 @@ getMetaData <- function(collectionIDs, collectionDataSet, host, port){
   return(list(meta = meta, meta_names = meta_names))
 }
 
+getFullDocDataFromDB <- function(collectionIDs, collectionDataSet, host, port){
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=port)
+  rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+  uniqueCollectionDataSets <- unique(collectionDataSet)
+  d<-data.frame(id=collectionIDs,dataset=collectionDataSet)
+  dataFromDB=NULL
+  for(i in 1:length(uniqueCollectionDataSets)){
+    ids<-paste(d[which(d[,2]==unique(d[,2])[i]),1],collapse = " ")
+    ids<-stringr::str_replace_all(string = as.character(ids),pattern = " ",",")
+    
+    statement <-  paste("select * from documents where dataset='",unique(uniqueCollectionDataSets[i]),"' and id_doc in (",ids,");",sep="")
+    dbResult <- RMariaDB::dbGetQuery(mydb,statement = statement)
+    
+    if(is.null(dataFromDB)){
+      dataFromDB <- dbResult
+    }else{
+      dataFromDB<-rbind(dataFromDB,dbResult)
+    }
+  }
+  
+  RMariaDB::dbDisconnect(mydb)
+  return(dataFromDB)
+  
+}
+
 get_token_meta_and_language_from_db<-function(get_meta=T,get_language=T,get_global_doc_ids=F,host=NULL,port=NULL,id,dataset){
   token<-NULL
   meta=NULL
@@ -1343,6 +1368,15 @@ calcStatsMetaData <- function(metaData, columnsToCalcDistributions,availableValu
   stats <- list()
   dataForStats <- metaData
   stats$numberOfDinstinctDocs <- length(unique(dataForStats[["id_doc"]]))
+  stats$distributions <- calcStats(dataForStats, columnsToCalcDistributions, availableValues, includeValuesNotUsed = includeValuesNotUsedForDistribution, columnsWithMultiValues, separatorsForMultiValues, nameEmptyStringInStatsAs)
+  stats$numericInfos <- calcStatsForNumeric(inputData = dataForStats, columnsToUseWithNumericContent  = columnsToUseForNumericStats)
+  return(stats)
+}
+
+calcStatsGeneralData <- function(inputData,  columnsToCalcDistributions,availableValues,includeValuesNotUsedForDistribution, columnsWithMultiValues, separatorsForMultiValues, nameEmptyStringInStatsAs, columnsToUseForNumericStats ){
+  stats <- list()
+  dataForStats <- inputData
+  stats$numberOfDinstinctDocs <- length(unique(dataForStats[["areaId"]]))
   stats$distributions <- calcStats(dataForStats, columnsToCalcDistributions, availableValues, includeValuesNotUsed = includeValuesNotUsedForDistribution, columnsWithMultiValues, separatorsForMultiValues, nameEmptyStringInStatsAs)
   stats$numericInfos <- calcStatsForNumeric(inputData = dataForStats, columnsToUseWithNumericContent  = columnsToUseForNumericStats)
   return(stats)
