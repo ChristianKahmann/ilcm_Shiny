@@ -119,7 +119,9 @@ tabPanel("GeoExplorer", fluid = TRUE,
                                          # how many results
                                          textOutput("metaData_numberOfResults1"),
                                          textOutput("geocodingResult_numberOfResults1"),
-  
+                                         textOutput("regexData_numberOfResults1"),
+                                         
+                                         
                                          # stats meta data
                                          h3("Stats meta data"),
                                          uiOutput("metaData_stats_distributions_plots"),
@@ -143,7 +145,8 @@ tabPanel("GeoExplorer", fluid = TRUE,
                                          textOutput("metaData_numberOfResults2"),
                                          textOutput("geocodingResult_numberOfResults2"),
                                          textOutput("geoDataToUse_numberOfResults"),
-
+                                         textOutput("regexData_numberOfResults2"),
+                                         
                                          # # map
                                          leafletOutput(outputId="lmap"),
 

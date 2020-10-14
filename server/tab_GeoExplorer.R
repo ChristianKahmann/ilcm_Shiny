@@ -88,6 +88,7 @@ myReactiveValues <- reactiveValues(dataLoaded = FALSE,
                                    regexData_availableValues = NA,
                                    regexData_columnsToCalcDistributions = "regexMatch",
                                    regexData_columnsToCalcNumericInfos = "numericValue",
+                                   regexData_performNumericTransformation = T,
                                    
                                    idsAllDataInCommon = NA
                                    
@@ -334,14 +335,17 @@ observeEvent(input$performRegexMatching,{
   fulltextData <- select(fullDocData, id_doc, title, body, areaId)
   
   # params
-  regexStr <- input$regexInput # "[0-9]{1,3}(,[0-9]{3})*(\\.[0-9]+)?"   # TODO: show link to regex specifics in R in UI to user: https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html
+  regexStr <- input$regexInput # "[0-9]{1,3}(,[0-9]{3})*(\\.[0-9]+)?"   
   useParenthesizedSubexpressions <- F # TODO: make this selectable via UI (needs to be implemented first! see below)
   performNumericTransformation <- input$regex_tranformToNumeric
+  myReactiveValues$regexData_performNumericTransformation <- performNumericTransformation # needed to know which column to analyze (regexMatch or numericValue) when createing infos
+  
   separatorForThousandsUsedInTextData <- input$regex_separatorForThousandsUsedInTextData
   separatorForDecimalUsedInTextData <- input$regex_separatorForDecimalUsedInTextData
   includeTitleForRegExMatching <- input$regex_includeTitleForRegExMatching
   
   showDistr <- input$regex_filterAndResults_showDistributions
+  #browser()
   if(showDistr){
     if(performNumericTransformation){
       myReactiveValues$regexData_columnsToCalcDistributions <- c("numericValue")
@@ -468,13 +472,25 @@ output$regExInfo <- reactive({
   regexData <- myReactiveValues$regexData_dataLoaded
   dataIsAvailable <- (myReactiveValues$regexData_performRegExMatching && dim(regexData)[1]>0)
   validate(need(dataIsAvailable, message = "Enter a regular expression an hit apply."))
-  dataWithMatches <- regexData[which(regexData$regexMatch != nameEmptyStringInStatsAs),]
-  numberOfDocsWithMatches <- length(unique(dataWithMatches$areaId))
+  getTextualInfoOnRegexMatches(regexData,"regexMatch")
+}) 
+
+getTextualInfoOnRegexMatches <- function(inputData, columnToUse){
+  
+  dataWithMatches <- inputData[which(inputData[[columnToUse]] != nameEmptyStringInStatsAs & !is.na(inputData[[columnToUse]])),]
+  docsWithMatches <- unique(dataWithMatches$areaId)
+  
+  numberOfDocsWithoutMatches <- length(which(!(unique(inputData$areaId) %in% docsWithMatches)))
+  numberOfDocsWithMatches <- length(docsWithMatches)
+  
   numberOfMatchesPerDoc <- dataWithMatches %>% count(areaId)
   meanNumberOfMatchesPerDoc <- mean(numberOfMatchesPerDoc$n)
-  textToDisplay <- paste0("The given regex has ", length(dataWithMatches$areaId), " matches in ", numberOfDocsWithMatches, " different documents. ",
-                            "In average, there are ", meanNumberOfMatchesPerDoc, " matches per doc with a minimum of ", min(numberOfMatchesPerDoc$n), " and a maximum of ", max(numberOfMatchesPerDoc$n))
-}) 
+  
+  textToDisplay <- paste0("The given regex has ", length(dataWithMatches$areaId), " matches in ", numberOfDocsWithMatches, " different documents. ", numberOfDocsWithoutMatches ," documents had no match. ",
+                          "In average, there are ", meanNumberOfMatchesPerDoc, " matches per doc with a minimum of ", min(numberOfMatchesPerDoc$n), " and a maximum of ", max(numberOfMatchesPerDoc$n))
+  
+  return(textToDisplay)
+}
 
 # some example output for the regex matches
 output$regexResults <- renderRHandsontable({
@@ -682,6 +698,15 @@ output$metaData_numberOfResults1 <- reactive({
 output$geocodingResult_numberOfResults1 <- reactive({
   text <- paste("There are", dim(geocodingResult_filtered())[1], "results for geo location data.")
 })
+output$regexData_numberOfResults1 <- reactive({
+  validate(need(myReactiveValues$regexData_performRegExMatching, message = "no infos about regex matching as regex matching is not activated. You can do this under 'RegEx'."))
+  columnToUse <- "regexMatch"
+  if(myReactiveValues$regexData_performNumericTransformation == T){
+    columnToUse <- "numericValue"
+  }
+  text <- getTextualInfoOnRegexMatches(regexData_filtered(),columnToUse)
+})
+
 # number of results 2 (needed twice, becasue should be displayed for stats and for map, but shiny doesn't allow displaying same output object twice in UI )
 output$metaData_numberOfResults2 <- reactive({
   text <- paste("There are", dim(metaData_filtered())[1], "results for document meta data.")
@@ -693,11 +718,18 @@ output$geocodingResult_numberOfResults2 <- reactive({
 output$geoDataToUse_numberOfResults <- reactive({
   text <- paste("There are", dim(geoDataToUseForMap_filtered())[1], "results for geoData to use.")
 })
-
+output$regexData_numberOfResults2 <- reactive({
+  validate(need(myReactiveValues$regexData_performRegExMatching, message = "no infos about regex matching as regex matching is not activated. You can do this under 'RegEx'."))
+  columnToUse <- "regexMatch"
+  if(myReactiveValues$regexData_performNumericTransformation == T){
+    columnToUse <- "numericValue"
+  }
+  text <- getTextualInfoOnRegexMatches(regexData_filtered(),columnToUse)
+})
 
 
 output$metaData_stats_distributions_plots <- renderUI({# this a bit complicated looking construct is used here for correct display of stats AND correct error message when no fields selected (and the error message doesn't slide down over the other outputs). This was the working solution I found, might be improved for nicer/better code
-  #browser()
+  
   validate(need(length(myReactiveValues$metaData_columnsToCalcDistributions)>0, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'"))
   tablesToCreate <- c("MetaData_distribution_plots")
   lapply(tablesToCreate, function(nameToUse) {
@@ -707,7 +739,7 @@ output$metaData_stats_distributions_plots <- renderUI({# this a bit complicated 
 })
 
 output$geocodingResult_stats_distributions_plots <-  renderUI({# this a bit complicated looking construct is used here for correct display of stats AND correct error message when no fields selected (and the error message doesn't slide down over the other outputs). This was the working solution I found, might be improved for nicer/better code
-  #browser()
+  
   validate(need(length(myReactiveValues$geocodingResult_columnsToCalcDistributions)>0, message = "GeocodingResult: Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'"))
   tablesToCreate <- c("GeocodingResult_distribution_plots")
   lapply(tablesToCreate, function(nameToUse) {
@@ -719,13 +751,14 @@ output$geocodingResult_stats_distributions_plots <-  renderUI({# this a bit comp
 })
 
 output$regexData_stats_distributions_plots <- renderUI({# this a bit complicated looking construct is used here for correct display of stats AND correct error message when no fields selected (and the error message doesn't slide down over the other outputs). This was the working solution I found, might be improved for nicer/better code
-  #browser()
+  
   dataIsAvailable <- myReactiveValues$regexData_performRegExMatching && length(myReactiveValues$regexData_columnsToCalcDistributions)>0
-  validate(need(dataIsAvailable, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'"))
+  validate(need(dataIsAvailable, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'RegEx'"))
   tablesToCreate <- c("RegexData_distribution_plots")
   lapply(tablesToCreate, function(nameToUse) {
     id <- paste0("regexData_stats_distributions_plots","_", nameToUse)
-    output[[id]] <- renderPlotly(createPlotsForDistributionData(regexData_stats()$distributions, statsOfdistributions_sortByValueDesc))
+    dataToUseHere <- regexData_stats()$distributions
+    output[[id]] <- renderPlotly(createPlotsForDistributionData(dataToUseHere, statsOfdistributions_sortByValueDesc))
   })
 })  
   
@@ -743,7 +776,7 @@ geocodingResult_stats_numeric <- reactive({# needed for user error message when 
 regexData_stats_numeric <- reactive({# needed for user error message when no columns selected for calculation distributions
   
   dataIsAvailable <- myReactiveValues$regexData_performRegExMatching && length(myReactiveValues$regexData_columnsToCalcNumericInfos)>0
-  validate(need(dataIsAvailable, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'Configuration'"))
+  validate(need(dataIsAvailable, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'RegEx' by clicking the check boxes for transformToNumeric and show numeric stats. "))
   regexData_stats()$numericInfos
 })
 
