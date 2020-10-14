@@ -50,9 +50,10 @@ tabPanel("GeoExplorer", fluid = TRUE,
                                            wellPanel(id = "tPanel",style = "overflow-y:scroll; max-height: 600px",
                                                      h3("Configuration of regular expression to search in text"),
                                                      h5("For more information on regular expressions see https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html"),
-                                                     h5("The default regEx shown here ('[0-9]{1,3}(,[0-9]{3})*(\.[0-9]+)?') extracts numbers - with optional decimal separator using a dot ('.') and optional thousands separator comma (',')."),
+                                                     h5("The default regEx shown here ('[0-9]{1,3}(,[0-9]{3})*(\\.[0-9]+)?') extracts numbers - with optional decimal separator using a dot ('.') and optional thousands separator comma (',')."),
                                                      textInput(inputId = "regexInput", label = "regular expression to apply", value = "[0-9]{1,3}(,[0-9]{3})*(\\.[0-9]+)?"),
-                                                    
+                                                     
+                                                     h4("params for regex matching"),
                                                      column(6,checkboxInput(inputId = "regex_includeTitleForRegExMatching", label = "include title for regex matching (additionally to text)", value = F)),
                                                      column(6, 
                                                             checkboxInput(inputId = "regex_tranformToNumeric", label = "transformToNumeric", value = TRUE),
@@ -60,10 +61,15 @@ tabPanel("GeoExplorer", fluid = TRUE,
                                                             textInput(inputId = "regex_separatorForDecimalUsedInTextData", label = "separator for decimal used in text data", value = ".")
                                                      ),
                                                      br(),
-                                                    
+                                                     h4("params for output display here"),
                                                      column(4, numericInput(inputId = "regex_showMatches_topX", label = "Show matches of the first ", value = 20)),
                                                      column(4, radioButtons(inputId = "regex_showMatches_typeDocsOrDocsWithMatches", choices = c("documents","documents with matches"), selected = "documents", label = NULL)),
                                                      column(4, textInput(inputId = "regex_separatorForMatchesDisplay", label = "separate matches by", value = " - ")),
+                                                     
+                                                     h4("params for showing results under tab filtering & results"),
+                                                     checkboxInput(inputId = "regex_filterAndResults_showDistributions", label = "show distributions", value = TRUE),
+                                                     checkboxInput(inputId = "regex_filterAndResults_showNumericInfos", label = "show numeric infos (will be only performed if transformToNumeric is selected, else disregarded)", value = TRUE),
+                                                     
                                                      
                                                      actionButton(inputId = "performRegexMatching","APPLY and perform regex matching"),
                                                      actionButton(inputId = "resetRegexMatching","RESET (do not apply any regex)"),
