@@ -1139,7 +1139,7 @@ getAvailableValuesForGivenColumns <- function(dataToUse, columnNames, columnName
 #' Covenience function to calculate distributions of values. Works also for multi-value data.
 #'
 #' @param inputData data frame with columnNames, meaning names(inputData) is set
-#' @param columnNamesOfColumnsToUse which column names to consider for calculation, if null all are taken
+#' @param columnNamesOfColumnsToUse which column names to consider for calculation, if NULL all are taken. if length(columnNamesOfColumnsToUse)==0 (e.g. by providing columnNamesOfColumnsToUse=vector(), no stats will be calculated, meaning dim(stats)[1]==0)
 #' @param dataWithColumnNamesAndAvailableValues available/possible values to check (can be retrieved via fuction getAvailableValues above)
 #' @param includeValuesNotUsed if false, values from dataWithColumnNamesAndAvailableValues which do not occur in the data will be removed
 #' @param columnsWithMultiValues a list with columnNames which contain multi values
@@ -1148,6 +1148,7 @@ getAvailableValuesForGivenColumns <- function(dataToUse, columnNames, columnName
 #'
 #' @return a named list with columnNames as names of the list, list entry: dataframe with columns: valueName, frequency, percent 
 calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesAndAvailableValues, includeValuesNotUsed, columnsWithMultiValues, separatorsForMultiValues, nameEmptyStringInStatsAs){
+  
   
   if(is.null(columnNamesOfColumnsToUse)){
     columnNamesOfColumnsToUse <- names(inputData)
@@ -1265,7 +1266,7 @@ calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesA
 #' Convenience function to calc different numeric values (sum,min,max,mean,median) for columns of given data
 #'
 #' @param inputData a data frame with columnNames, meaning names(inputData) is set
-#' @param columnsToUseWithNumericContent Specify which columns to use. If NULL, automatcially all columns used which are numeric (is.numeric ==T)
+#' @param columnsToUseWithNumericContent Specify which columns to use. If NULL, automatcially all columns used which are numeric (is.numeric ==T). if length(columnsToUseWithNumericContent)==0 (e.g. by providing columnsToUseWithNumericContent=vector(), no stats will be calculated/dim(stats)[1]==0)
 #'
 #' @return a dataframe with given columnNames as columnNames, the results (like sum,min,max,..) as rows
 #' @export
@@ -1273,14 +1274,17 @@ calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesA
 #' @examples
 calcStatsForNumeric <- function(inputData, columnsToUseWithNumericContent){
   if(is.null(columnsToUseWithNumericContent)){
-    columnsToUseWithNumericContent <- c()
+    columnsToUseWithNumericContent <- vector()
     availableColumns <- names(inputData)
     for(columnName in availableColumns){
       if(is.numeric(inputData[[columnName]])){
         columnsToUseWithNumericContent <- c(columnsToUseWithNumericContent,columnName)
       }
     }
-    columnsToUseWithNumericContent 
+    #columnsToUseWithNumericContent 
+  }
+  if(length(columnsToUseWithNumericContent)==0){
+    return (data.frame())
   }
   
   namesOfCalculations <- c("sum","min","max","mean","median")
