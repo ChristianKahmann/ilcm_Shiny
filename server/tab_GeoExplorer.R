@@ -614,6 +614,8 @@ geocodingResult_filtered <- reactive({
 })
 
 regexData_filtered <- reactive({
+  dataIsAvailable <- myReactiveValues$dataLoaded & myReactiveValues$regexData_performRegExMatching
+  validate(need(dataIsAvailable, message = "no regex data available. You can configure this under 'RegEx'"))
   result <- myReactiveValues$regexData_dataToUse
   result <- result[which(result[[regexData_columnNameForMatchWithOtherData]] %in% idsAfterFiltering()),] 
 })
@@ -673,7 +675,7 @@ geocodingResult_stats <- reactive({
 
 regexData_stats <- reactive({
   
-  dataIsAvaialable <- myReactiveValues$regexData_performRegExMatching && regexData_filtered()[1]>0 
+  dataIsAvaialable <- myReactiveValues$regexData_performRegExMatching && dim(regexData_filtered())[1]>0 
   validate(need(dataIsAvaialable, message = "There is no data available to calculate stats for regex. You might try to adjust the filters or the regex under configuration."))
   dataForStats <- regexData_filtered()
   stats <- calcStatsGeneralData(inputData = dataForStats, 
@@ -825,7 +827,6 @@ observe({
   clickedMarker_geocodingResult <- geocodingResult_filtered()[which(geocodingResult_filtered()[["latlon"]] %in% clickedMarker_geoData[["latlon"]]),]
   clickedMarker_metaData <- metaData_filtered()[which(metaData_filtered()[[metaData_columnNameForMatchWithOtherData]] %in% clickedMarker_geoData[[geoDataToUseForMap_columnNameForMatchWithOtherData]]),]
   
-  
   if(dim(clickedMarker_metaData)[1]==0 & dim(clickedMarker_geocodingResult)[1]==0){
     displayClickedMarkerInfos <- F
   }else{
@@ -930,6 +931,43 @@ observe({
     #----------------------------------
     # output of regEx infos (distributions and numeric) infos about regex matches found in doc text
     #-----------------------------------
+    if(myReactiveValues$regexData_performRegExMatching){
+      clickedMarker_regexData <- data.frame()
+      if(dim(regexData_filtered())[1]>0){
+        clickedMarker_regexData <- regexData_filtered()[which(regexData_filtered()[[regexData_columnNameForMatchWithOtherData]] %in% clickedMarker_geoData[[geoDataToUseForMap_columnNameForMatchWithOtherData]]),]
+      }
+      clickedMarker_regexData_distributions_tables <- renderUI({
+        
+        dataAvailable <- length(myReactiveValues$regexData_columnsToCalcDistributions)>0 & dim(clickedMarker_regexData)[1] >0
+        validate(need(dataAvailable, message = "Calculation of stats (distributions): There is either nor regex data available for clicked marker or no fields are configured. You can adjust this under 'RegEX'"))
+        
+        clickedMarker_stats_regexData_distributions <- calcStats(clickedMarker_regexData, myReactiveValues$regexData_columnsToCalcDistributions, myReactiveValues$regexData_availableValues, includeValuesNotUsed = F, columnsWithMultiValues = vector(), separatorsForMultiValues = vector(), nameEmptyStringInStatsAs = nameEmptyStringInStatsAs)
+        clickedMarker_stats_regexData_distributions_aspects <- names(clickedMarker_stats_regexData_distributions)
+        
+        lapply(clickedMarker_stats_regexData_distributions_aspects, function(aspectName) {# lapply needed because else only last table is used due to: The expressions passed into render functions are captured in closures and not evaluated immediately (See https://community.rstudio.com/t/shiny-app-with-dynamic-number-of-datatables/2405/7)
+          
+          id <- paste0("clickedMarker_regexData_distributions_tables","_", aspectName)
+          tableToUse <- clickedMarker_stats_regexData_distributions[[aspectName]]
+          names(tableToUse) <- c(aspectName,"frequency","percent")
+          output[[id]] <- renderTable(tableToUse)
+        })
+      })
+      
+      clickedMarker_regexData_numeric_tables <- renderUI({
+        dataAvailable <- length(myReactiveValues$regexData_columnsToCalcDistributions)>0 & dim(clickedMarker_regexData)[1] >0
+        validate(need(dataAvailable, message = "Calculation of stats (numeric): There is either nor regex data available for clicked marker or no fields are configured. You can adjust this under 'RegEX'"))
+        clickedMarker_stats_regexData_numericStats <- calcStatsForNumeric(clickedMarker_regexData, myReactiveValues$regexData_columnsToCalcNumericInfos)
+        
+        tablesToCreate <- c("regexDataNumeric")
+        lapply(tablesToCreate, function(nameToUse) {
+          id <- paste0("clickedMarker_regexData_numeric_tables","_", nameToUse)
+          tableToUse <- clickedMarker_stats_regexData_numericStats
+          output[[id]] <- renderTable(tableToUse, rownames = T)
+        })
+        
+      })
+      
+    }
     
     
     # put all clicked marker infos in one object
@@ -944,7 +982,24 @@ observe({
         h4("meta data info for docs containing this marker"),
         clickedMarker_metaData_distributions_tables,
         clickedMarker_metaData_numeric_tables
-      )
+        )
+      if(myReactiveValues$regexData_performRegExMatching){
+        result <- tagList(
+          # clicked marker infos is not included here but used separatetely because verbatimTextOutput should be used for nicer output
+          h4("In which documents this marker was found:"),
+          clickedMarkerDistribution,
+          h4("geocodingResult info about this marker"),
+          clickedMarker_geocodingResult_distributions_tables,
+          clickedMarker_geocodingResult_numeric_tables,
+          h4("meta data info for docs containing this marker"),
+          clickedMarker_metaData_distributions_tables,
+          clickedMarker_metaData_numeric_tables,
+          h4("regex data info for docs containing this marker"),
+          clickedMarker_regexData_distributions_tables,
+          clickedMarker_regexData_numeric_tables
+        )
+      }
+       
       return (result)
     }
     )
