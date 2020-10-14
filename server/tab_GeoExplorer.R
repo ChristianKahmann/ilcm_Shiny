@@ -967,6 +967,19 @@ observe({
         
       })
       
+      # extend info about the docs of the clicked marker by including regeex match infos
+      docInfos <- clickedMarker_stats$geocodingResult_distributionInDocs # doc infos now
+      separatorForRegexMatches <- input$regex_separatorForMatchesDisplay
+      if(myReactiveValues$regexData_performNumericTransformation){
+        matchesByDoc <- aggregate(clickedMarker_regexData$numericValue ~ areaId, data = clickedMarker_regexData, paste, collapse = separatorForRegexMatches)
+      }else{
+        matchesByDoc <- aggregate(clickedMarker_regexData$regexMatch ~ areaId, data = clickedMarker_regexData, paste, collapse = separatorForRegexMatches)
+      }
+      colnames(matchesByDoc) <- c("areaId", "regexMatch")
+      mergedDocInfos <- merge(x=docInfos, y =matchesByDoc, by.x = "docsContainingLocation", by.y = "areaId" )
+      clickedMarkerDistribution <- renderTable(mergedDocInfos,rownames = T)
+      
+      
     }
     
     
