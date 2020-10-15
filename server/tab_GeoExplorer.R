@@ -17,14 +17,16 @@ library(stringr)
 # this is the server code, for UI see ui/tab_GeoExplorer.R
 
 # TODO: ideas for further features / improvements:
-# general:
+# GENERAL (data):
 # -  include option: load geolocation from meta data / from georesults (for data where geolocations are already included in meta data of docs)
-# regex:
+# FILTERING: 
+# - now it is filtering based on available values regardless the type. Nicer might be filtering based on type (e.g. from/to filter for numeric, date filter for dates etc.) As meta data names and types are not known before this needs to be flexible.
+# REGEX:
 # - parenthesizedSubexpressions: UI checkbox useParenthesizedSubexpressions & implement dealing with parentesized sub expressions (prepared but not finished)
 # - specific UI to test regex on first X docs (now regex is immediately applied to all docs, even if only first x are shown)
 # - catch & deal if regex set by user causes problems (or e.g. not allowing '*' as regex), print warnings like "This results in this, do you really want this?"
-# - in Tab Filtering: beside meta data and geocoding filter possibilities: also filter possibilities for regex (only selected values /  within a certain numeric range)
-# - now the regex doesn't reduce the shown docs / geolocation but just shows if and which regexes matched in the given docs (This is intented behaviour. Only showing those docs where the given regex matches can be obtained via the proposed filter above.)
+# - side note: now the regex doesn't reduce the shown docs / geolocation but just shows if and which regexes matched in the given docs - if a doc doesn't have a match, "EMPTY (no values set)" is shown. (This is intented behaviour. Only showing those docs where the given regex matches can be obtained via the filter)
+# - regex filter: make it easier to filter for docs with matches (select all values except "EMPTY (nothing set)"
 
 #######################
 # general config
@@ -44,6 +46,7 @@ nameEmptyStringInStatsAs = "EMPTY (no value set)"
 
 metaData_prefixFoUniqueIdentificationInInputFilters <- "metaData_"
 geocodingResult_prefixFoUniqueIdentificationInInputFilters <- "geocodingResult_"
+regexData_prefixFoUniqueIdentificationInInputFilters <- "regexData_"
 metaData_columnNameForMatchWithOtherData <- "areaId" # see code below how areaId is composed for documents
 geocodingResult_columnNameForMatchWithOtherData <- "areaId"
 regexData_columnNameForMatchWithOtherData <- "areaId"
@@ -91,9 +94,11 @@ myReactiveValues <- reactiveValues(dataLoaded = FALSE,
                                    metaData_columnsToCalcNumericInfos = NA,
                                    metaData_availableValues = NA,
                                    
-                                   regexData_performRegExMatching = FALSE,
+                                   regexData_performRegexMatching = FALSE,
                                    regexData_dataLoaded = NA,
                                    regexData_dataToUse = NA, # intersect with meta data and geocoding data 
+                                   regexData_columnNames = NA,
+                                   regexData_columnNamesToUseForFiltering = NA,
                                    regexData_availableValues = NA,
                                    regexData_columnsToCalcDistributions = "regexMatch",
                                    regexData_columnsToCalcNumericInfos = "numericValue",
@@ -329,7 +334,7 @@ setValuesBasedOnConfig <- function(){
 
 observeEvent(input$performRegexMatching,{
   
-  myReactiveValues$regexData_performRegExMatching <- T
+  myReactiveValues$regexData_performRegexMatching <- T
   
   # get fulltext data (for regex matching)
   collectionInfoForGeocodingResult <- myReactiveValues$geocodingResult_furtherMetaData$collectionInfoForGeocodingResult
@@ -348,7 +353,6 @@ observeEvent(input$performRegexMatching,{
   includeTitleForRegExMatching <- input$regex_includeTitleForRegExMatching
   
   showDistr <- input$regex_filterAndResults_showDistributions
-  #browser()
   if(showDistr){
     if(performNumericTransformation){
       myReactiveValues$regexData_columnsToCalcDistributions <- c("numericValue")
@@ -445,14 +449,15 @@ observeEvent(input$performRegexMatching,{
     }
   }
   
-  
+  myReactiveValues$regexData_columnNames <- names(regexData)
+  myReactiveValues$regexData_columnNamesToUseForFiltering <- names(regexData)
   
   myReactiveValues$regexData_dataLoaded <- regexData
   
   #---------------------
   # calc ids in common and data to use (intersect)
   #---------------------
-  # the follwing lines are not necessary, as the regexData contains all docs (even if the regex doesn't match. In this case they are listed as "EMPTY (nothing set)"). Thus, the ids in common are not further reduced by the regex data. If docs/areaIds will be exlcuded in future if regex doesn't match, the following lineshave to be performed
+  # the follwing lines are not necessary, as the regexData contains all docs (even if the regex doesn't match. In this case they are listed as "EMPTY (nothing set)"). Thus, the ids in common are not further reduced by the regex data. If docs/areaIds will be exlcuded in future if regex doesn't match, the following lines have to be performed
   # myReactiveValues$idsAllDataInCommon <- intersect(
   #   myReactiveValues$idsAllDataInCommon, 
   #   myReactiveValues$regexData_dataLoaded[[regexData_columnNameForMatchWithOtherData]]) 
@@ -464,16 +469,20 @@ observeEvent(input$performRegexMatching,{
   myReactiveValues$regexData_dataToUse <-   myReactiveValues$regexData_dataLoaded[which(myReactiveValues$regexData_dataLoaded[[regexData_columnNameForMatchWithOtherData]] %in% myReactiveValues$idsAllDataInCommon),]
 
   # retrieve available values (needed later for stats)
-  myReactiveValues$regexData_availableValues <- getAvailableValuesForGivenColumns(dataToUse = myReactiveValues$regexData_dataToUse, columnNames = c("regexMatch", "numericValue"),columnNamesContainingMultiValues = NULL, separatorsToUseForColumnsWithMultivalues = NULL)
+  myReactiveValues$regexData_availableValues <- getAvailableValuesForGivenColumns(dataToUse = myReactiveValues$regexData_dataToUse, columnNames = myReactiveValues$regexData_columnNames,columnNamesContainingMultiValues = NULL, separatorsToUseForColumnsWithMultivalues = NULL)
   
   
 })
+
+output$performRegexMatching <- reactive({ myReactiveValues$regexData_performRegexMatching })
+outputOptions(output, "performRegexMatching", suspendWhenHidden = FALSE)
+
 
 # some infos about the regex matches
 output$regExInfo <- reactive({
   
   regexData <- myReactiveValues$regexData_dataLoaded
-  dataIsAvailable <- (myReactiveValues$regexData_performRegExMatching && dim(regexData)[1]>0)
+  dataIsAvailable <- (myReactiveValues$regexData_performRegexMatching && dim(regexData)[1]>0)
   validate(need(dataIsAvailable, message = "Enter a regular expression an hit apply."))
   getTextualInfoOnRegexMatches(regexData,"regexMatch")
 }) 
@@ -499,7 +508,7 @@ getTextualInfoOnRegexMatches <- function(inputData, columnToUse){
 output$regexResults <- renderRHandsontable({
   
   regexData <- myReactiveValues$regexData_dataLoaded
-  dataIsAvaialble <- (myReactiveValues$regexData_performRegExMatching && dim(regexData)[1]>0)
+  dataIsAvaialble <- (myReactiveValues$regexData_performRegexMatching && dim(regexData)[1]>0)
   validate(need(dataIsAvaialble, message = ""))
 
   #aggregate
@@ -535,7 +544,7 @@ output$regexResults <- renderRHandsontable({
 
 
 observeEvent(input$resetRegexMatching,{
-  myReactiveValues$regexData_performRegExMatching <- F
+  myReactiveValues$regexData_performRegexMatching <- F
   myReactiveValues$regexData_dataLoaded <- myReactiveValues$regexData_dataLoaded[0,]
 })
 
@@ -548,9 +557,13 @@ selectInputListForMetaData <- reactive({createSelectInputsForColumnsAndValues(my
 output$selectInputListForMetaData <- renderUI(selectInputListForMetaData())
 selectInputListForGeocodingResult <- reactive({createSelectInputsForColumnsAndValues(myReactiveValues$geocodingResult_columnNamesToUseForFiltering, myReactiveValues$geocodingResult_availableValues, prefixForUniqueIdentification = geocodingResult_prefixFoUniqueIdentificationInInputFilters)})
 output$selectInputListForGeocodingResult <- renderUI(selectInputListForGeocodingResult()) 
+selectInputListForRegexData <- reactive({createSelectInputsForColumnsAndValues(myReactiveValues$regexData_columnNamesToUseForFiltering,  myReactiveValues$regexData_availableValues, prefixForUniqueIdentification = regexData_prefixFoUniqueIdentificationInInputFilters)})
+output$selectInputListForRegexData <- renderUI(selectInputListForRegexData())
+
 
 metaData_uiInputFilterNames <- reactive({paste(metaData_prefixFoUniqueIdentificationInInputFilters,names(myReactiveValues$metaData_availableValues), sep="")})
 geocodingResult_uiInputFilterNames <- reactive({paste(geocodingResult_prefixFoUniqueIdentificationInInputFilters,names(myReactiveValues$geocodingResult_availableValues), sep="")})
+regexData_uiInputFilterNames <- reactive({paste(regexData_prefixFoUniqueIdentificationInInputFilters,names(myReactiveValues$regexData_availableValues), sep="")})
 
 
 #################
@@ -561,7 +574,6 @@ geocodingResult_uiInputFilterNames <- reactive({paste(geocodingResult_prefixFoUn
 # check if any filters set
 #----------------------------
 metaData_isFilterSet <- reactive({
-  #print("is meta data filter set?")
   for(filterName in metaData_uiInputFilterNames()){
     if(length(input[[filterName]])>0 && startsWith(x = filterName, prefix = metaData_prefixFoUniqueIdentificationInInputFilters)){
       return (TRUE)
@@ -571,9 +583,20 @@ metaData_isFilterSet <- reactive({
 })
 
 geocodingResult_isFilterSet <- reactive({
-  #print("is geocodingResult filter set?")
   for(filterName in geocodingResult_uiInputFilterNames()){
     if(length(input[[filterName]])>0 && startsWith(x = filterName, prefix = geocodingResult_prefixFoUniqueIdentificationInInputFilters)){
+      return (TRUE)
+    }
+  }
+  return(FALSE)
+})
+
+regexData_isFilterSet <- reactive({
+  #dataIsAvailable <- myReactiveValues$dataLoaded & myReactiveValues$regexData_performRegexMatching
+  #validate(need(dataIsAvailable, message = "no regex data available. You can configure this under 'RegEx'"))
+  
+  for(filterName in regexData_uiInputFilterNames()){
+    if(length(input[[filterName]])>0 && startsWith(x = filterName, prefix = regexData_prefixFoUniqueIdentificationInInputFilters)){
       return (TRUE)
     }
   }
@@ -587,6 +610,8 @@ idsAfterFiltering <- reactive({
   result <- myReactiveValues$idsAllDataInCommon
   metaData_filtered <- myReactiveValues$metaData_dataToUse
   geocodingResult_filtered <- myReactiveValues$geocodingResult_dataToUse
+  regexData_filtered <- myReactiveValues$regexData_dataToUse
+  
   # filter meta data
   if(metaData_isFilterSet()){
     metaData_filtered <- filterDataBasedOnInputFilterFields(dataToFilter = myReactiveValues$metaData_dataToUse, columnNamesOfDataToFilter = myReactiveValues$metaData_columnNames,columnsNamesWithMultiValueData = myReactiveValues$metaData_columnsWithMultiValueData,filterInput = input,prefixInFilterNameForUniqueIdentification = metaData_prefixFoUniqueIdentificationInInputFilters)
@@ -595,9 +620,18 @@ idsAfterFiltering <- reactive({
   if(geocodingResult_isFilterSet()){
     geocodingResult_filtered <- filterDataBasedOnInputFilterFields(dataToFilter = myReactiveValues$geocodingResult_dataToUse,columnNamesOfDataToFilter = myReactiveValues$geocodingResult_columnNames,columnsNamesWithMultiValueData = myReactiveValues$geocodingResult_columnsWithMultiValueData,filterInput = input,prefixInFilterNameForUniqueIdentification = geocodingResult_prefixFoUniqueIdentificationInInputFilters)
   }
+  # filter regex data
+  if(myReactiveValues$regexData_performRegexMatching & regexData_isFilterSet()){
+    regexData_columnNames = myReactiveValues$regexData_columnNames # or names(myReactiveValues$regexData-dataLoaded)
+    regexData_filtered <- filterDataBasedOnInputFilterFields(dataToFilter = myReactiveValues$regexData_dataToUse, columnNamesOfDataToFilter = regexData_columnNames,columnsNamesWithMultiValueData = c(),filterInput = input,prefixInFilterNameForUniqueIdentification = regexData_prefixFoUniqueIdentificationInInputFilters)
+  }
   
   # take only those ids in common (which means filters are applied to meta data AND geoResult)
   result <- intersect(metaData_filtered[[metaData_columnNameForMatchWithOtherData]], geocodingResult_filtered[[geocodingResult_columnNameForMatchWithOtherData]]) 
+  regexDataAvailable <- myReactiveValues$regexData_performRegexMatching
+  if(regexDataAvailable){
+    result <- intersect(result, regexData_filtered[[regexData_columnNameForMatchWithOtherData]]) 
+  }
   
   return(result)
 })
@@ -617,10 +651,12 @@ geocodingResult_filtered <- reactive({
 })
 
 regexData_filtered <- reactive({
-  dataIsAvailable <- myReactiveValues$dataLoaded & myReactiveValues$regexData_performRegExMatching
+  dataIsAvailable <- myReactiveValues$dataLoaded & myReactiveValues$regexData_performRegexMatching
   validate(need(dataIsAvailable, message = "no regex data available. You can configure this under 'RegEx'"))
   result <- myReactiveValues$regexData_dataToUse
-  result <- result[which(result[[regexData_columnNameForMatchWithOtherData]] %in% idsAfterFiltering()),] 
+  result <- result[which(result[[regexData_columnNameForMatchWithOtherData]] %in% idsAfterFiltering()),] # this just filters for certain docs. As a doc might include several regEx matches, the filter of regex is not applied yet correctly and needs to be re-applied to the given docs
+  result <- filterDataBasedOnInputFilterFields(dataToFilter = result, columnNamesOfDataToFilter = myReactiveValues$regexData_columnNames,columnsNamesWithMultiValueData = c(), filterInput = input,prefixInFilterNameForUniqueIdentification = regexData_prefixFoUniqueIdentificationInInputFilters)
+
 })
 
 geoDataToUseForMap_filtered <- reactive({
@@ -678,7 +714,7 @@ geocodingResult_stats <- reactive({
 
 regexData_stats <- reactive({
   
-  dataIsAvaialable <- myReactiveValues$regexData_performRegExMatching && dim(regexData_filtered())[1]>0 
+  dataIsAvaialable <- myReactiveValues$regexData_performRegexMatching && dim(regexData_filtered())[1]>0 
   validate(need(dataIsAvaialable, message = "There is no data available to calculate stats for regex. You might try to adjust the filters or the regex under configuration."))
   dataForStats <- regexData_filtered()
   stats <- calcStatsGeneralData(inputData = dataForStats, 
@@ -704,7 +740,7 @@ output$geocodingResult_numberOfResults1 <- reactive({
   text <- paste("There are", dim(geocodingResult_filtered())[1], "results for geo location data.")
 })
 output$regexData_numberOfResults1 <- reactive({
-  validate(need(myReactiveValues$regexData_performRegExMatching, message = "no infos about regex matching as regex matching is not activated. You can do this under 'RegEx'."))
+  validate(need(myReactiveValues$regexData_performRegexMatching, message = "no infos about regex matching as regex matching is not activated. You can do this under 'RegEx'."))
   columnToUse <- "regexMatch"
   if(myReactiveValues$regexData_performNumericTransformation == T){
     columnToUse <- "numericValue"
@@ -724,7 +760,7 @@ output$geoDataToUse_numberOfResults <- reactive({
   text <- paste("There are", dim(geoDataToUseForMap_filtered())[1], "results for geoData to use.")
 })
 output$regexData_numberOfResults2 <- reactive({
-  validate(need(myReactiveValues$regexData_performRegExMatching, message = "no infos about regex matching as regex matching is not activated. You can do this under 'RegEx'."))
+  validate(need(myReactiveValues$regexData_performRegexMatching, message = "no infos about regex matching as regex matching is not activated. You can do this under 'RegEx'."))
   columnToUse <- "regexMatch"
   if(myReactiveValues$regexData_performNumericTransformation == T){
     columnToUse <- "numericValue"
@@ -757,7 +793,7 @@ output$geocodingResult_stats_distributions_plots <-  renderUI({# this a bit comp
 
 output$regexData_stats_distributions_plots <- renderUI({# this a bit complicated looking construct is used here for correct display of stats AND correct error message when no fields selected (and the error message doesn't slide down over the other outputs). This was the working solution I found, might be improved for nicer/better code
   
-  dataIsAvailable <- myReactiveValues$regexData_performRegExMatching && length(myReactiveValues$regexData_columnsToCalcDistributions)>0
+  dataIsAvailable <- myReactiveValues$regexData_performRegexMatching && length(myReactiveValues$regexData_columnsToCalcDistributions)>0
   validate(need(dataIsAvailable, message = "Calculation of stats (distributions): There are no fields configured. You can do this under 'RegEx'"))
   tablesToCreate <- c("RegexData_distribution_plots")
   lapply(tablesToCreate, function(nameToUse) {
@@ -780,7 +816,7 @@ geocodingResult_stats_numeric <- reactive({# needed for user error message when 
 
 regexData_stats_numeric <- reactive({# needed for user error message when no columns selected for calculation distributions
   
-  dataIsAvailable <- myReactiveValues$regexData_performRegExMatching && length(myReactiveValues$regexData_columnsToCalcNumericInfos)>0
+  dataIsAvailable <- myReactiveValues$regexData_performRegexMatching && length(myReactiveValues$regexData_columnsToCalcNumericInfos)>0
   validate(need(dataIsAvailable, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'RegEx' by clicking the check boxes for transformToNumeric and show numeric stats. "))
   regexData_stats()$numericInfos
 })
@@ -934,7 +970,7 @@ observe({
     #----------------------------------
     # output of regEx infos (distributions and numeric) infos about regex matches found in doc text
     #-----------------------------------
-    if(myReactiveValues$regexData_performRegExMatching){
+    if(myReactiveValues$regexData_performRegexMatching){
       clickedMarker_regexData <- data.frame()
       if(dim(regexData_filtered())[1]>0){
         clickedMarker_regexData <- regexData_filtered()[which(regexData_filtered()[[regexData_columnNameForMatchWithOtherData]] %in% clickedMarker_geoData[[geoDataToUseForMap_columnNameForMatchWithOtherData]]),]
@@ -999,7 +1035,7 @@ observe({
         clickedMarker_metaData_distributions_tables,
         clickedMarker_metaData_numeric_tables
         )
-      if(myReactiveValues$regexData_performRegExMatching){
+      if(myReactiveValues$regexData_performRegexMatching){
         result <- tagList(
           # clicked marker infos is not included here but used separatetely because verbatimTextOutput should be used for nicer output
           h4("In which documents this marker was found:"),

@@ -93,7 +93,7 @@ tabPanel("GeoExplorer", fluid = TRUE,
                         sidebarPanel(h5("", width=2),
                                      
                                      tabsetPanel(
-                                       tabPanel("Meta Data",
+                                       tabPanel("Doc Meta Data",
                                                 wellPanel(id = "tPanel",style = "overflow-y:scroll; max-height: 800px",
                                                   h3("filter based on the meta data of the documents"),
                                                   br(),
@@ -106,6 +106,21 @@ tabPanel("GeoExplorer", fluid = TRUE,
                                                   br(),
                                                   uiOutput("selectInputListForGeocodingResult")
                                                 )
+                                       ),
+                                       
+                                       tabPanel("RegEx",
+                                                  wellPanel(id = "tPanel",style = "overflow-y:scroll; max-height: 800px",
+                                                            h3("filter based on the found regex matches within documents"),
+                                                            br(),
+                                                            conditionalPanel(condition = "output.performRegexMatching",  
+                                                              uiOutput("selectInputListForRegexData")
+                                                            ),
+                                                            conditionalPanel(condition = "!output.performRegexMatching",
+                                                                     h4("No Regex configured. You can do this under RegEx")             
+                                                            )
+                                                  )
+                                                
+                                                
                                        )
                                      )
                                      
