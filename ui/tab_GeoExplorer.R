@@ -114,60 +114,59 @@ tabPanel("GeoExplorer", fluid = TRUE,
                           fluidRow(
                             
                             tabsetPanel(
-                              wellPanel(id = "tPanel",style = "overflow-y:scroll; max-height: 800px",
-                                tabPanel("Stats", fluid = T,
-                                         # how many results
-                                         textOutput("metaData_numberOfResults1"),
-                                         textOutput("geocodingResult_numberOfResults1"),
-                                         textOutput("regexData_numberOfResults1"),
-                                         
-                                         
-                                         # stats meta data
-                                         h3("Stats meta data"),
-                                         uiOutput("metaData_stats_distributions_plots"),
-                                         tableOutput("metaData_stats_numeric_table"),
-  
-                                         # stats geocodingResult
-                                         h3("Stats GeocodingResult"),
-                                         uiOutput("geocodingResult_stats_distributions_plots"),
-                                         tableOutput("geocodingResult_stats_numeric_table"),
-  
-                                         # stats regexData
-                                         h3("Stats RegEx Data"),
-                                         uiOutput("regexData_stats_distributions_plots"),
-                                         tableOutput("regexData_stats_numeric_table")
-                                         
-  
-                                )
-                              ,
-                                tabPanel("Map", fluid = T,
-                                         # how many results
-                                         textOutput("metaData_numberOfResults2"),
-                                         textOutput("geocodingResult_numberOfResults2"),
-                                         textOutput("geoDataToUse_numberOfResults"),
-                                         textOutput("regexData_numberOfResults2"),
-                                         
-                                         # # map
-                                         leafletOutput(outputId="lmap"),
-
-                                         # clicked marker
-                                         verbatimTextOutput("clickedMarker_infos"),
-                                         uiOutput("clickedMarkerAllOutput")
-
-                                )
-                               )
-                            )
-                            
-                            
-                            
-                          )
-                        ) 
-                      )
-                      
-                      
-             )
-             
-           )
-         )
+                              tabPanel("Overview",fluid = TRUE,
+                                       wellPanel(id = "tPanel",style = "overflow-y:scroll; max-height: 800px",
+                                                 tabPanel("Stats", fluid = T,
+                                                          # how many results
+                                                          textOutput("metaData_numberOfResults1"),
+                                                          textOutput("geocodingResult_numberOfResults1"),
+                                                          textOutput("regexData_numberOfResults1"),
+                                                          
+                                                          
+                                                          # stats meta data
+                                                          h3("Stats meta data"),
+                                                          uiOutput("metaData_stats_distributions_plots"),
+                                                          tableOutput("metaData_stats_numeric_table"),
+                                                          
+                                                          # stats geocodingResult
+                                                          h3("Stats GeocodingResult"),
+                                                          uiOutput("geocodingResult_stats_distributions_plots"),
+                                                          tableOutput("geocodingResult_stats_numeric_table"),
+                                                          
+                                                          # stats regexData
+                                                          h3("Stats RegEx Data"),
+                                                          uiOutput("regexData_stats_distributions_plots"),
+                                                          tableOutput("regexData_stats_numeric_table")
+                                                          
+                                                          
+                                                 )
+                                       )
+                              ),
+                              tabPanel("Map",fluid = TRUE,
+                                       wellPanel(id = "tPanel",style = "overflow-y:scroll; max-height: 800px",
+                                         tabPanel("Map", fluid = T,
+                                                  # how many results
+                                                  textOutput("metaData_numberOfResults2"),
+                                                  textOutput("geocodingResult_numberOfResults2"),
+                                                  textOutput("geoDataToUse_numberOfResults"),
+                                                  textOutput("regexData_numberOfResults2"),
+                                                  
+                                                  # # map
+                                                  leafletOutput(outputId="lmap"),
+                                                  
+                                                  # clicked marker
+                                                  verbatimTextOutput("clickedMarker_infos"),
+                                                  uiOutput("clickedMarkerAllOutput")
+                                                  
+                                         )
+                                       )
+                              )
+                            )# end tabsetPanel
+                          )#end fluidRow  
+                        )# end mainPanel
+                      ) # end condition = "output.dataLoaded"
+                    ) # end tabPanel "Filtering & Results"
+              ) # end tabsetPanel
+           )# end tagList
 )
 
