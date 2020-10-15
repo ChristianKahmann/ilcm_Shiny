@@ -16,6 +16,16 @@ library(stringr)
 
 # this is the server code, for UI see ui/tab_GeoExplorer.R
 
+# TODO: ideas for further features / improvements:
+# general:
+# -  include option: load geolocation from meta data / from georesults (for data where geolocations are already included in meta data of docs)
+# regex:
+# - parenthesizedSubexpressions: UI checkbox useParenthesizedSubexpressions & implement dealing with parentesized sub expressions (prepared but not finished)
+# - specific UI to test regex on first X docs (now regex is immediately applied to all docs, even if only first x are shown)
+# - catch & deal if regex set by user causes problems (or e.g. not allowing '*' as regex), print warnings like "This results in this, do you really want this?"
+# - in Tab Filtering: beside meta data and geocoding filter possibilities: also filter possibilities for regex (only selected values /  within a certain numeric range)
+# - now the regex doesn't reduce the shown docs / geolocation but just shows if and which regexes matched in the given docs (This is intented behaviour. Only showing those docs where the given regex matches can be obtained via the proposed filter above.)
+
 #######################
 # general config
 #######################
@@ -52,7 +62,6 @@ geocodingResult_columnsToCalcNumericInfos_default <- c("frequencyInArea","place_
 geocodingResult_columnsToUseForFiltering_default <- c("entityName", "frequencyInArea", "query", "osm_type", "place_rank", "display_name", "class", "type", "importance", "countryName", "countryCode")
 
 
-# TODO: include option: load geolocation from meta data / from georesults
 
 
 metaData <- NULL
@@ -317,12 +326,6 @@ setValuesBasedOnConfig <- function(){
 #######################
 # optinal Regex process
 #######################
-# TODO: own own section within Configuration for "RegEx"
-# TODO: inside regEx Config: checkbox: transformRegexResultsToNumeric, checkbox useParenthesizedSubexpressions, 
-# TODO: idea: show aggregated results of matches (e.g. how many per doc, distribution of values, first 20 docs with matches etc.), use another button to say: yes, apply these regex results
-# TODO: idea: in Tab Filtering: beside meta data and geocoding filter possibilities: filter possibilities for regex (only selected values /  within a certain numeric range)
-# TODO: implement dealing with parentesized sub expressions
-#load(file = "play/temp/fulltextData.RData")
 
 observeEvent(input$performRegexMatching,{
   
@@ -376,7 +379,7 @@ observeEvent(input$performRegexMatching,{
   }
   
   # apply only to text or also to title
-  dataToApplyRegExOn <- fulltextData$body # TODO: remove restriction "[1:10]"
+  dataToApplyRegExOn <- fulltextData$body 
   if(includeTitleForRegExMatching){
     dataToApplyRegExOn <- paste(fulltextData$title, fulltextData$body, sep = " ")
   }
