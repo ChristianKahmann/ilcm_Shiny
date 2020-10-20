@@ -332,6 +332,8 @@ output$Det_von_Sub<-renderUI({
   if(length(remove)>0){
     dates<-dates[-remove,]
   }
+  #remove everything that does not look like a date
+  dates<-dates[IsDate(dates[,1]),1,drop=F]
   dates2<-dates
   #if only years available add "-01-01" to make input work
   for(i in 1:length(dates)){
@@ -366,6 +368,8 @@ output$Det_zu_Sub<-renderUI({
   if(length(remove)>0){
     dates<-dates[-remove,]
   }
+  #remove everything that does not look like a date
+  dates<-dates[IsDate(dates[,1]),1,drop=F]
   dates2<-dates
   #if only years available add "-01-01" to make input work
   for(i in 1:length(dates)){

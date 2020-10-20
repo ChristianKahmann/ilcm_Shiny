@@ -337,6 +337,8 @@ output$Det_von<-renderUI({
   if(length(remove)>0){
     dates<-dates[-remove,]
   }
+  #remove everything that does not look like a date
+  dates<-dates[IsDate(dates[,1]),1,drop=F]
   dates2<-dates
   for(i in 1:length(dates)){
     if(nchar(dates2[1,1])==4){
@@ -366,6 +368,8 @@ output$Det_zu<-renderUI({
   if(length(remove)>0){
     dates<-dates[-remove,]
   }
+  #remove everything that does not look like a date
+  dates<-dates[IsDate(dates[,1]),1,drop=F]
   dates2<-dates
   for(i in 1:length(dates)){
     if(nchar(dates2[1,1])==4){

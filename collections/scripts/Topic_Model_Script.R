@@ -240,10 +240,18 @@ error<-try(expr = {
     log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating topic model",file = logfile)
     
     log_to_file(message = "<b>Step 12/13: Create Variables for Visulization</b>",file = logfile)
-    model<-t$get_model()
-    theta<-model$theta
-    phi<-model$phi
-    
+    if(parameters$tm_method == "stm"){
+      model<-t$get_model()
+      theta<-model$theta
+      phi<-model$phi
+      model$stm_model<-t$.__enclos_env__$self$.__enclos_env__$private$tm_machine$.__enclos_env__$private$model
+      
+    }
+    else{
+      model<-t$get_model()
+      theta<-model$theta
+      phi<-model$phi
+    }
     #set column names and row names for theta and phi
     if(is.null(colnames(theta))){colnames(theta) <- sapply(seq(1:parameters$tm_number_of_topics), function(x) x)} # topic names
     if(is.null(rownames(theta))){rownames(theta) <- dtm@Dimnames$docs} # doc names

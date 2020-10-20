@@ -89,6 +89,7 @@ source("global/refi/io.R")
 source("global/refi/plaintext_selection.R")
 source("global/refi/xml.R")
 source("global/refi/modals.R")
+source("global/is_date.R")
 source("global/change_annotation_offset_methods.R")
 source("global/relative_number_of_shared_elements.R")
 source("global/mixed_assoc.R")
@@ -174,7 +175,7 @@ server <- function(input, output, session) {
       "Starting your iLCM instance"
     )
   )
-  # create main reactive value called values
+  #create main reactive value called values
   values<-reactiveValues()
   # specify inital reactive values from entries in config file
   values$solr_url<-url
