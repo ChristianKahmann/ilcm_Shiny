@@ -480,20 +480,28 @@ tabPanel("Importer",
              tags$br(),
              withBusyIndicatorUI(
                shinyBS::bsButton(
-                 inputId = "Upload_Data",
-                 label = "Upload selected data to DB",
-                 icon = icon("database"),
-                 style = "default"
-               )
+                     inputId = "Upload_Data_DB_and_Solr",
+                     label = "Upload selected data to DB and import to Solr",
+                     icon = icon("upload"),
+                     style = "default"
+                   )
              ),
-             withBusyIndicatorUI(
-               shinyBS::bsButton(
-                 inputId = "Import_to_solr",
-                 label = "Import data to solr",
-                 icon = icon("upload"),
-                 style = "default"
-               )
-             ),
+             # withBusyIndicatorUI(
+             #   shinyBS::bsButton(
+             #     inputId = "Upload_Data",
+             #     label = "Upload selected data to DB",
+             #     icon = icon("database"),
+             #     style = "default"
+             #   )
+             # ),
+             # withBusyIndicatorUI(
+             #   shinyBS::bsButton(
+             #     inputId = "Import_to_solr",
+             #     label = "Import data to solr",
+             #     icon = icon("upload"),
+             #     style = "default"
+             #   )
+             # ),
              shinyBS::bsButton(
                inputId = "Import_delete",
                label = "Delete",
