@@ -1095,7 +1095,7 @@ output$Fac_Entities_abs<-renderUI({
   )
   #get data from solr facet to collect words
   data<-matrix(unlist(facet_meta(q = values$q,base = values$url,fq=values$fq,facet.field = "entities_txt_en_noStemming",facet.limit = 250)[[2]]),ncol=2)
-  #delete numbers, stopwords and one-char words
+    #delete numbers, stopwords and one-char words
   toDelete<-which(str_detect(string = data[,1],pattern = "[0-9]+"))
   toDelete<-union(toDelete,which(data[,1]%in%tm::stopwords("en")))
   toDelete<-union(toDelete,which(nchar(data[,1])<2))
@@ -1106,6 +1106,12 @@ output$Fac_Entities_abs<-renderUI({
   if(dim(data)[1]>75){
     data<-data[1:75,]
   }
+  
+  values$Fac_Ent_abs<-NULL
+  #ensure entities were found
+  validate(
+    need(nrow(data)>1,message="no entries found!")
+  )
   #get counts based on facet.query for chosen terms
   data<-matrix(unlist(facet_meta(q = values$q,base = values$url,fq=values$fq,facet.field = "entities_txt_en_noStemming",facet.limit = 75,facet.query = data[,1])[[1]]),ncol=2)
   if(dim(data)[1]>1){
@@ -1134,7 +1140,8 @@ output$Fac_Entities_abs<-renderUI({
 output$Fac_Entities_rel<-renderUI({
   #check wheather search parameters were specified
   validate(
-    need(!is.null(values$url),"no search to calculate facets for")
+    need(!is.null(values$url),"no search to calculate facets for"),
+    need(!is.null(values$Fac_Ent_abs),"no entries found")
   )
   #get data from solr facet using facet.query parameter based on the words used in absolute entities plot
   if(length(isolate(input$dataset))==0){
