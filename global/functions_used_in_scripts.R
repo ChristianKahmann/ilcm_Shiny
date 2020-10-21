@@ -3,19 +3,40 @@ get_token_meta_and_language_from_db<-function(get_meta=T,get_language=T,get_glob
   meta=NULL
   language=NULL
   global_doc_ids<-NULL
+  options(scipen=999)
   #getting data from db
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=port)
   rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
   d<-data.frame(id=id,dataset=dataset)
   for(i in 1:length(unique(d[,2]))){
-    ids<-paste(d[which(d[,2]==unique(d[,2])[i]),1],collapse = " ")
-    ids<-stringr::str_replace_all(string = as.character(ids),pattern = " ",",")
-    token<-rbind(token,RMariaDB::dbGetQuery(mydb, paste("select * from token where dataset='",unique(d[,2])[i],"' and id in (",ids,");",sep="")))
-    if(get_meta==T){
-      meta<-rbind(meta,RMariaDB::dbGetQuery(mydb, paste("select id_doc ,date from documents where dataset='",unique(d[,2])[i],"' and id_doc in (",ids,");",sep="")))
-    }
-    if(get_global_doc_ids==T){
-      global_doc_ids<-c(global_doc_ids,RMariaDB::dbGetQuery(mydb, paste("select id from documents where dataset='",unique(d[,2])[i],"' and id_doc in (",ids,");",sep="")))
+    id_vector<-d[which(d[,2]==unique(d[,2])[i]),1]
+    #ids<-paste(id_vector,collapse = " ")
+    #ids<-stringr::str_replace_all(string = as.character(ids),pattern = " ",",")
+    # chunking of documents in chunks of 10k documents per chunk
+    splitsize=10000
+    split<-split(id_vector, ceiling(seq_along(id_vector)/splitsize))
+    log_to_file(message = paste0("&emsp; split ids (" ,length(id_vector), ") in ",length(split)," chunks"),logfile)
+    loghelper<-floor(seq(1,length(split),length.out = 11))[2:11]
+    names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+    for(j in 1:length(split)){
+      ids<-paste(split[[j]],collapse = " ")
+      ids<-stringr::str_replace_all(string = as.character(ids),pattern = " ",",")
+      token<-rbind(token,RMariaDB::dbGetQuery(mydb, paste("select * from token where dataset='",unique(d[,2])[i],"' and id in (",ids,");",sep="")))
+      if(get_meta==T){
+        meta<-rbind(meta,RMariaDB::dbGetQuery(mydb, paste("select id_doc ,date from documents where dataset='",unique(d[,2])[i],"' and id_doc in (",ids,");",sep="")))
+      }
+      if(get_global_doc_ids==T){
+        global_doc_ids<-c(global_doc_ids,RMariaDB::dbGetQuery(mydb, paste("select id from documents where dataset='",unique(d[,2])[i],"' and id_doc in (",ids,");",sep="")))
+      }
+      if(j %in% loghelper){
+        gc()
+        if(length(split)>10){
+          log_to_file(message = paste0("&emsp; ",names(which(loghelper==j)),"% of documents imported (",splitsize*j,")"),logfile)
+        }
+        else{
+          log_to_file(message = paste0("&emsp; ","chunk:",j," imported"),logfile)
+        }
+      } 
     }
   }
   
@@ -708,7 +729,7 @@ calculate_diachron_frequencies<-function(dtm,meta){
   )
 }
 
-
+  
 
 
 
