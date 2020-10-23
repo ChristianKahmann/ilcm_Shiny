@@ -1,18 +1,20 @@
+#' render page for editing vocabulary lists in section 'scripts'
 output$UI_files_vocabulary<-renderUI({
   values$invalidate_vocabularies
   validate(
     need(length(list.files("collections/vocabularies/"))>0,message="no lists found")
   )
+  # find existing vocabulary listd
   shinyWidgets::prettyRadioButtons(inputId = "files_vocabulary",label = "available vocabularies",
                                    choices = stringr::str_replace_all(string = list.files("collections/vocabularies/"),pattern = ".RDS",replacement = ""),
                                    fill=T,animation = "tada",selected = NULL)
 })
-
+#' observe event of adding a new vocabulary list
 observeEvent(input$new_vocabulary_list,{
   values$vocabulary_text<-""
   updateTextAreaInput(session = session,inputId = "vocabulary_textarea",value = "")
 })
-
+#' observe event of editing a existing vocabulary list
 observeEvent(input$change_vocabulary_list,{
   if(is.null(input$files_vocabulary)){
     shinyWidgets::sendSweetAlert(type = "warning",session = session,title = "No list to update")
@@ -24,7 +26,7 @@ observeEvent(input$change_vocabulary_list,{
 })
 
 
-# show modal if vocab should be imported from tasks
+#' show modal if vocab should be imported from tasks
 observeEvent(input$vocabulary_import_vocab_from_task,{
   
   showModal(
@@ -58,7 +60,8 @@ observeEvent(input$vocabulary_import_vocab_from_task,{
   )  
 })
 
-# move vocabulary from analysis to preset vocabulary
+#' move vocabulary from analysis to preset vocabulary
+#'  input$vocabulary_import_found_tasks: list of tasks where a vocabulary was found
  observeEvent(input$vocabulary_import_start_import,{
 
    file.copy(from = list.files(input$vocabulary_import_found_tasks,pattern = "vocab_[a-z0-9]+\\.RDS$",full.names = T)[1],to = "collections/vocabularies/",overwrite = T)
@@ -77,7 +80,8 @@ observeEvent(input$vocabulary_import_vocab_from_task,{
 
 
 
-# try to locate vocab file and show buttons to start import if vocabulary found
+#' start importing vocabulary lists from former tasks
+#' input$vocabulary_import_found_tasks: list of tasks where a vocabulary was found
 output$vocabulary_import_start_import_UI<-renderUI({
   validate(
     need(!is.null(input$vocabulary_import_found_tasks),message=F)
@@ -98,14 +102,17 @@ output$vocabulary_import_start_import_UI<-renderUI({
 })
 
 
-# show active learning schema if active learning is chosen
+#' show active learning schema if active learning is chosen
 output$vocabulary_import_classification_active_learning_scheme_UI<-renderUI({
   selectInput(inputId="vocabulary_import_classification_active_learning_scheme",label="annotation Scheme",choices=list.files(path = paste0("collections/results/classification/",input$vocabulary_import_classification_type,"/")))
   
 })
 
 
-# show available tasks depending on chosen analysis
+#' option to export vocabulary lists from certain analysis results
+#' input$vocabulary_import_type_of_analysis: to specifiy from witch type of analysis the vocabulary should be used
+#' input$vocabulary_import_classification_type: some classifications have subcategories you can choose a vocabulary from
+#' input$vocabulary_import_classification_active_learning_scheme: option to specify which active learning scheme was used
 output$vocabulary_import_found_tasks_UI<-renderUI({
   validate(
     need(!is.null(input$vocabulary_import_type_of_analysis),message=F)
@@ -141,7 +148,8 @@ output$vocabulary_import_found_tasks_UI<-renderUI({
 
 
 
-
+#' add input to write down the words of a new vocabulary list
+#' values$vocabulary_text: collection of words building the vocabular
 output$UI_vocabulary_textarea<-renderUI({
   if(is.null(values$vocabulary_text)){
     values$vocabulary_text<-""
@@ -149,7 +157,8 @@ output$UI_vocabulary_textarea<-renderUI({
   textAreaInput(inputId = "vocabulary_textarea",label = "specify terms comma-seperated",cols = 300,rows=10,value = values$vocabulary_text)
 })
 
-
+#' saving new vocabulary list
+#' input$save_vocabulary_list: button for saving the list
 observeEvent(input$save_vocabulary_list,{ 
   showModal(
     modalDialog(
@@ -164,7 +173,10 @@ observeEvent(input$save_vocabulary_list,{
   ) 
 }
 )
-
+#' confirm that the new vocabulary list was saved
+#' input$Save_vocabularie_name: textifield for the vocabulary list name
+#' input$vocabulary_textarea: textfield containing words of vocabulary list
+#' input$TM_fixed_vocab: button inpit to update options in Task Scheduler
 observeEvent(input$Save_vocabulary_confirm,{
   shiny::removeModal()
   path<-paste0("collections/vocabularies/",input$Save_vocabularie_name,".RDS")

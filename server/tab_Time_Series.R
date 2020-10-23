@@ -1,11 +1,11 @@
-#object to save TS results in
+#' object to save TS results in
 values$TS_memory<-list()
-#reactive value used to inform timeseries plot about delete or reset events
+#' reactive value used to inform timeseries plot about delete or reset events
 values$TS_delete<-0
 values$TS_delete_help<-0
-#counter for the number of solr searches
+#' counter for the number of solr searches
 values$search<-0
-#render time series plot
+#' render time series plot
 output$TS_plot<-renderPlotly({
   if(!is.null((values$url))){
     print(values$solr_query)
