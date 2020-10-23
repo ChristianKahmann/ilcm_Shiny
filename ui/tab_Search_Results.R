@@ -1,3 +1,4 @@
+#' panel for explorer page, lists certain documents of loaded database
 tabPanel("Search Results",
          shinyjs::useShinyjs(),
          div(style = 'height: 80vh; overflow-y: auto;',

@@ -1,7 +1,8 @@
 source("global/functions_used_in_scripts.R")
 
 
-#link downloadbutton for theta in Topic Models Tab
+#' link downloadbutton for theta in Topic Models Tab
+#' 
 output$download_theta<-downloadHandler(
   filename = function() {
     paste('Theta-', Sys.Date(), '.csv', sep='')
@@ -12,7 +13,7 @@ output$download_theta<-downloadHandler(
   }
 )
 
-#link downloadbutton for phi in Topic Models Tab
+#' link downloadbutton for phi in Topic Models Tab
 output$download_phi<-downloadHandler(
   filename = function() {
     paste('Phi-', Sys.Date(), '.csv', sep='')
@@ -24,7 +25,7 @@ output$download_phi<-downloadHandler(
 )  
 
 
-#link downloadbutton for lda vis in Topic Models Tab
+#' link downloadbutton for lda vis in Topic Models Tab
 output$download_ldavis<-downloadHandler(
   filename = function() {
     paste('LDAvis-', Sys.Date(), '.zip', sep='')
@@ -39,7 +40,7 @@ output$download_ldavis<-downloadHandler(
 
 
 
-#render LDA Viz plot based on the calculated topic models
+#' render LDA Viz plot based on the calculated topic models
 output$TM_LDAvis <- LDAvis::renderVis({
   #svd_tsne <- function(x) tsne::tsne(svd(x)$u)
   validate(
@@ -63,7 +64,7 @@ output$TM_LDAvis <- LDAvis::renderVis({
     }
   }
 })
-
+#' observe events to calculate word clouds 
 observeEvent(values$tm_phi,{
   relevance<-calculate_topic_relevance(lambda=0.3,phi=values$tm_phi,theta=values$tm_theta,doc.length=values$tm_doc.length)
   values$tm_relevance <- relevance
@@ -106,7 +107,7 @@ observeEvent(values$tm_phi,{
   }
 })
 
-#observe add button ins topic modeling paramters tab and when clicked add topic to timeline data
+#' observe add button in topic modeling paramters tab and when clicked add topic to timeline data
 observeEvent(values$tm_random,{
   values$observers<-lapply(
     X=1:isolate(values$tm_number_of_topics),
@@ -124,7 +125,7 @@ observeEvent(values$tm_random,{
 }
 )
 
-#render topic model timelineplot based on added topics 
+#' render topic model timelineplot based on added topics 
 output$TM_Timeline<-renderPlotly({
   validate(need(!is.null(values$tm_timeline_ids), "Add topic by a click at it's add button"))
   timeline_data<-NULL
@@ -233,7 +234,7 @@ output$TM_Timeline<-renderPlotly({
   return(p)
 })
 
-#render datatable with topics displayed by reflecting words, click rows to select for subcollections
+#' render datatable with topics displayed by reflecting words, click rows to select for subcollections
 output$TM_Subcollection_Table<-DT::renderDataTable({
   if(length(values$tm_timeline_ids)>=1){
     words<-list()
@@ -260,7 +261,7 @@ output$TM_Subcollection_Table<-DT::renderDataTable({
   }
 },server=F)
 
-
+#' render interface to manage subcollection
 output$TM_subColl_UI<-renderUI({
   validate(
     need(!is.null(values$tm_sub_selected),message=F)

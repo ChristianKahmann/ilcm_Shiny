@@ -1,4 +1,4 @@
-# specify the body; body is split into several tabs corresponding with the sidebar menus
+#' specify the body; body is split into several tabs corresponding with the sidebar menus
 output$body_UI<-renderUI({
   body<-tabItems(
     # first tab: Explorer

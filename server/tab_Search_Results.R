@@ -2,7 +2,7 @@ values$control<-0
 values$sort<-""
 values$reload_keep<-FALSE
 
-#get metadata fields for selected corpora
+#' get metadata fields for selected corpora
 observeEvent(input$dataset,{
   values$metadata_available<-NULL
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
@@ -14,7 +14,7 @@ observeEvent(input$dataset,{
 })
 
 
-#render output table for search results
+#' render output table for search results
 output$search_results_datatable<-DT::renderDataTable({
   validate(
     need(values$numFound>0,
@@ -332,7 +332,7 @@ $(".sorting_desc").on("click",function() {
 
 values$numFound<-0
 
-#slider for paging
+#' slider for paging
 output$SR_row<-renderUI({
   if(values$numFound>0){
     return(tagList(
@@ -341,7 +341,7 @@ output$SR_row<-renderUI({
   }
 })
 
-#check wheather a document is selected in Search_results datatable // if yes get data from db and switch to document view
+#' check wheather a document is selected in Search_results datatable // if yes get data from db and switch to document view
 observe({
   s = input$search_results_datatable_rows_selected
   if (length(s)) {
@@ -379,7 +379,7 @@ observe({
   }
 })
 
-#render an outputline telling the user how many results were found for the current search
+#' render an outputline telling the user how many results were found for the current search
 output$SR_Num_Found<-renderText({
   validate(
     need(values$numFound>0,
@@ -389,7 +389,7 @@ output$SR_Num_Found<-renderText({
 })
 
 
-#check which documents should be excluded from collection
+#' check which documents should be excluded from collection
 observe({
   a<-lapply(X = 1:10,FUN=function(x){return(input[[paste0("cbox_",x)]])})
   validate(
@@ -402,13 +402,13 @@ observe({
   isolate(values$delete_documents<-c(isolate(values$delete_documents),isolate(values$Search_Results[which(a==F),"id"])))
 })
 
-#reset the list for documents marked for deletion when corpus is changed
+#' reset the list for documents marked for deletion when corpus is changed
 observeEvent(input$dataset,{
   values$delete_documents<-NULL
 })
 
 
-#reset the list for documents marked for deletion when refresh button for keep is pressed and trigger a reload of the search results table
+#' reset the list for documents marked for deletion when refresh button for keep is pressed and trigger a reload of the search results table
 observeEvent(input$Search_results_reset_delete,{
   values$delete_documents<-NULL
   values$reload_keep<-TRUE
