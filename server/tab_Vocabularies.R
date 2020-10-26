@@ -1,20 +1,26 @@
 #' render page for editing vocabulary lists in section 'scripts'
+#' values$invalidate_vocabularies: check if the used vocabulary list is valid 
 output$UI_files_vocabulary<-renderUI({
   values$invalidate_vocabularies
   validate(
     need(length(list.files("collections/vocabularies/"))>0,message="no lists found")
   )
-  # find existing vocabulary listd
+  # find existing vocabulary list
   shinyWidgets::prettyRadioButtons(inputId = "files_vocabulary",label = "available vocabularies",
                                    choices = stringr::str_replace_all(string = list.files("collections/vocabularies/"),pattern = ".RDS",replacement = ""),
                                    fill=T,animation = "tada",selected = NULL)
 })
 #' observe event of adding a new vocabulary list
+#' input$new_vocabulary_list: create a new vocabulary list
+#' values$vocabulary_text: get words for vocabulary list
 observeEvent(input$new_vocabulary_list,{
   values$vocabulary_text<-""
   updateTextAreaInput(session = session,inputId = "vocabulary_textarea",value = "")
 })
 #' observe event of editing a existing vocabulary list
+#' input$change_vocabulary_list: changes on selected vocabulary list
+#' input$files_vocabulary: input for the name of the vocabulare list
+#' values$vocabulary_text: text field input for vocabulary lists
 observeEvent(input$change_vocabulary_list,{
   if(is.null(input$files_vocabulary)){
     shinyWidgets::sendSweetAlert(type = "warning",session = session,title = "No list to update")
@@ -27,6 +33,7 @@ observeEvent(input$change_vocabulary_list,{
 
 
 #' show modal if vocab should be imported from tasks
+#' 
 observeEvent(input$vocabulary_import_vocab_from_task,{
   
   showModal(
@@ -61,7 +68,13 @@ observeEvent(input$vocabulary_import_vocab_from_task,{
 })
 
 #' move vocabulary from analysis to preset vocabulary
+#' input$vocabulary_import_start_import: start importing vocabulary from other tasks
 #'  input$vocabulary_import_found_tasks: list of tasks where a vocabulary was found
+#'  input$TM_fixed_vocab: Vocabulary list from Topic Models
+#'  input$CL_fixed_vocab: Vocabulary list from Classification
+#'  input$FE_fixed_vocab: Vocabulary list from Frequency Analysis
+#'  input$CA_fixed_vocab: Vocabulary list from Cooccurrence Analysis
+#'  input$VA_fixed_vocab: Vocabulary list from Volatility Analysis
  observeEvent(input$vocabulary_import_start_import,{
 
    file.copy(from = list.files(input$vocabulary_import_found_tasks,pattern = "vocab_[a-z0-9]+\\.RDS$",full.names = T)[1],to = "collections/vocabularies/",overwrite = T)

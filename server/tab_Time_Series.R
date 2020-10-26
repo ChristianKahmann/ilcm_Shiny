@@ -6,6 +6,18 @@ values$TS_delete_help<-0
 #' counter for the number of solr searches
 values$search<-0
 #' render time series plot
+#' values$url: 
+#' values$solr_query: data from current solr search
+#' values$TS_delete: information if delete or reset event happened
+#' values$TS_delete_help: information if delete or reset event happened
+#' values$search: data from current search
+#' values$numFound: 
+#' values$q:
+#' values$fq_init:
+#' values$TS_memory: object to store the plot data
+#' input$TS_timeintervall: choosen time intervall (days, months, years)
+#' input$TS_rel_abs: get absolute number of documents from solr facets
+#' values$share_results: get results that will be shared and plotet
 output$TS_plot<-renderPlotly({
   if(!is.null((values$url))){
     print(values$solr_query)
@@ -147,6 +159,12 @@ output$TS_plot<-renderPlotly({
     return(plotly_empty())
   }
 })
+
+#' get the data of a choosen timeseries plot that was choosen by the user
+#' values$fq: 
+#' input$TS_timeintervall: choosen time intervall (days, months, years)
+#' values$numFound: parameter for the searched time
+#' values$start: start point for the searched time (=1) 
 observeEvent(event_data("plotly_click",source = "TI"),{
   #get date clicked on in timeseries plot
   date<-event_data("plotly_click",source = "TI")[1,3]
@@ -208,7 +226,9 @@ observeEvent(event_data("plotly_click",source = "TI"),{
       values$fq<-paste0('date_dt=','"',date,'" AND ',as.character(isolate(values$fq)))
     }
   }
-  #set parameters for getting Search Results for clicked time
+  #' set parameters for getting Search Results for clicked time
+  #' values$numFound:
+  #' 
   values$numFound<-as.integer(str_replace_all(string = str_extract(string =as.character(solr::solr_search(base = isolate(values$url),q = isolate(values$q),fl="id",fq=isolate(values$fq),rows="1",raw=T)),pattern = "numFound\\\":[0-9]+,"),pattern = "\\D",replacement = ""))
   updateTextInput(session = session,inputId = "SR_row_sel",value = 1)
   values$start=1
@@ -223,7 +243,9 @@ observeEvent(event_data("plotly_click",source = "TI"),{
 })
 
 
-#render select button for memorized Times Series
+#' render select button for memorized Times Series
+#' values$TS_memory: object to store the plot data
+#' values$mem
 output$TS_memory<-renderUI({
   if(length(values$TS_memory)>0){
     mem<-values$TS_memory[[1]][[3]]
@@ -242,7 +264,10 @@ output$TS_memory<-renderUI({
   selectInput(inputId = "TS_Select_Memory",label = NULL,choices = mem)
 })
 
-#check if delete was clicked, and then remove corresponding memorized time series
+#' check if delete was clicked, and then remove corresponding memorized time series
+#' input$TS_delete_memory: time series that will be deletet from the memory
+#' values$mem:
+#' input$TS_Select_Memory: selected data from memory
 observeEvent(input$TS_delete_memory,{
   values$TS_memory[[which(values$mem==input$TS_Select_Memory)]]<-NULL
   print("delete")
@@ -254,7 +279,11 @@ observeEvent(input$TS_delete_memory,{
   }
 })
 
-#check if reset was clicked, and the reset the plot 
+#' check if reset was clicked, and the reset the plot 
+#' values$TS_memory: time series from memory
+#' values$numFound:
+#' values$TS_delete_help: identify delete event
+#' values$TS_delete: identify delete event
 observeEvent(input$TS_reset,{
   values$TS_memory<-list()
   values$numFound<-0
@@ -268,7 +297,10 @@ observeEvent(input$TS_reset,{
 })
 
 
-#create download link for time series memory
+#' create download link for time series memory
+#' values$mem: 
+#' values$TS_memory: time series in memory
+#' input$TS_Select_Memory: selected time series from memory
 output$TS_download_memory<-downloadHandler(
   filename=function(){
     paste0(values$mem,".csv")
@@ -278,7 +310,13 @@ output$TS_download_memory<-downloadHandler(
   }
 )
 
-
+#' plot time series calender
+#' values$solr_query:
+#' values$numFound:
+#' values$url:
+#' values$q
+#' values$fq_init:
+#' 
 output$TS_calender<-renderUI({
     values$solr_query
     if(isolate(values$numFound)>0){
@@ -316,7 +354,8 @@ output$TS_calender<-renderUI({
     }
 })
 
-#get documents for clicked calender heatmap
+#' get documents for clicked calender heatmap
+#' input$heatmap_date: choosen heatmap document
 observe({
   print(input$heatmap_date)
 })
