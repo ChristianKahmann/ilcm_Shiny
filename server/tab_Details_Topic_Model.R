@@ -2,7 +2,7 @@ source("global/functions_used_in_scripts.R")
 
 
 #' link downloadbutton for theta in Topic Models Tab
-#' 
+#' values$tm_theta: theta in Topic Models Tab
 output$download_theta<-downloadHandler(
   filename = function() {
     paste('Theta-', Sys.Date(), '.csv', sep='')
@@ -14,6 +14,7 @@ output$download_theta<-downloadHandler(
 )
 
 #' link downloadbutton for phi in Topic Models Tab
+#' values$tm_phi: phi in Topic Models Tab
 output$download_phi<-downloadHandler(
   filename = function() {
     paste('Phi-', Sys.Date(), '.csv', sep='')
@@ -26,6 +27,7 @@ output$download_phi<-downloadHandler(
 
 
 #' link downloadbutton for lda vis in Topic Models Tab
+#' values$tm_json: json data of Topic Model 
 output$download_ldavis<-downloadHandler(
   filename = function() {
     paste('LDAvis-', Sys.Date(), '.zip', sep='')
@@ -41,6 +43,14 @@ output$download_ldavis<-downloadHandler(
 
 
 #' render LDA Viz plot based on the calculated topic models
+#' input$coll: collumn names of calculatet topic model data
+#' input$nTerms: number of words in lda vis
+#' values$tm_phi: phi in Topic Models Tab
+#' values$tm_theta: theta in Topic Models Tab
+#' values$tm_doc.length: Topic Model document length
+#' values$tm_vocab: Topic Model vocabulary
+#' values$tm_term.frequency: Topic Model term frequency
+#' values$tm_json: json file for Topic Models
 output$TM_LDAvis <- LDAvis::renderVis({
   #svd_tsne <- function(x) tsne::tsne(svd(x)$u)
   validate(
@@ -64,7 +74,11 @@ output$TM_LDAvis <- LDAvis::renderVis({
     }
   }
 })
-#' observe events to calculate word clouds 
+#' observe events to calculate word clouds
+#'  values$tm_phi: phi in Topic Models Tab
+#' values$tm_theta: theta in Topic Models Tab
+#' values$tm_doc.length: Topic Model document length
+#' values$tm_dates: dates from documents used in Topic Model 
 observeEvent(values$tm_phi,{
   relevance<-calculate_topic_relevance(lambda=0.3,phi=values$tm_phi,theta=values$tm_theta,doc.length=values$tm_doc.length)
   values$tm_relevance <- relevance
@@ -108,6 +122,9 @@ observeEvent(values$tm_phi,{
 })
 
 #' observe add button in topic modeling paramters tab and when clicked add topic to timeline data
+#' values$tm_random: random settings for Topic Model calculation
+#' values$observers: observer information for the Topic Model
+#' values$tm_timeline_ids: Topic Model timeline ids
 observeEvent(values$tm_random,{
   values$observers<-lapply(
     X=1:isolate(values$tm_number_of_topics),
@@ -126,6 +143,12 @@ observeEvent(values$tm_random,{
 )
 
 #' render topic model timelineplot based on added topics 
+#' values$tm_timeline_ids: Topic Model timeline ids
+#' values$tm_dates: Topic Model dates
+#' values$tm_theta:  theta in Topic Models Tab
+#' input$TM_Timeline_Range: Topic Model timeline range
+#' input$TM_Timeline_Rank: Topic Model timeline rank
+#' input$TM_Timeline_Measure: Topic Model timeline measure (month, year)
 output$TM_Timeline<-renderPlotly({
   validate(need(!is.null(values$tm_timeline_ids), "Add topic by a click at it's add button"))
   timeline_data<-NULL
@@ -235,6 +258,10 @@ output$TM_Timeline<-renderPlotly({
 })
 
 #' render datatable with topics displayed by reflecting words, click rows to select for subcollections
+#' values$tm_timeline_ids: Topic Models timeline ids
+#' values$tm_relevance: Topic Model relevance
+#' values$tm_sub_selected: Topic Model selected subcollection
+#' values$tm_random2: Topic Model random setting
 output$TM_Subcollection_Table<-DT::renderDataTable({
   if(length(values$tm_timeline_ids)>=1){
     words<-list()
@@ -262,6 +289,8 @@ output$TM_Subcollection_Table<-DT::renderDataTable({
 },server=F)
 
 #' render interface to manage subcollection
+#' values$tm_sub_selected: Topic Model selected subcollection
+#' values$tm_info: Topic Model information
 output$TM_subColl_UI<-renderUI({
   validate(
     need(!is.null(values$tm_sub_selected),message=F)
@@ -286,17 +315,20 @@ output$TM_subColl_UI<-renderUI({
 ##############
 # STM
 ##############
-
+#' 
+#' values$tm_method
 output$tm_method<-reactive({
   values$tm_method
 })
 
+#'
 output$tm_stm_parameters_contentFormula <- reactive({
   values$tm_stm_parameters_contentFormula
 })
 
 outputOptions(output, "tm_stm_parameters_contentFormula", suspendWhenHidden = FALSE)
 
+#'
 output$tm_stm_parameters_contentFormulaIsSet <- reactive({
   if(nchar(values$tm_stm_parameters_contentFormula)>0){
     return(TRUE)
@@ -307,8 +339,8 @@ output$tm_stm_parameters_contentFormulaIsSet <- reactive({
 outputOptions(output, "tm_stm_parameters_contentFormulaIsSet", suspendWhenHidden = FALSE)
 
 
-#stm
-# plot.STM summary
+#' stm
+#' plot.STM summary
 output$TM_stm_visu_summary <- renderPlot({
   if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
     plot.STM(x = values$tm_stm_model, type = "summary", n = input$tm_stm_visu_numberOfWordsToLabelTopic)

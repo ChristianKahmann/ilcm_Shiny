@@ -6,14 +6,14 @@ values$TS_delete_help<-0
 #' counter for the number of solr searches
 values$search<-0
 #' render time series plot
-#' values$url: 
+#' values$url: url to choosen document stack
 #' values$solr_query: data from current solr search
 #' values$TS_delete: information if delete or reset event happened
 #' values$TS_delete_help: information if delete or reset event happened
 #' values$search: data from current search
-#' values$numFound: 
-#' values$q:
-#' values$fq_init:
+#' values$numFound: number of documents in the stack
+#' values$q: selected character from dropdown menu, usually '*' selected 
+#' values$fq_init: initial time the request was made
 #' values$TS_memory: object to store the plot data
 #' input$TS_timeintervall: choosen time intervall (days, months, years)
 #' input$TS_rel_abs: get absolute number of documents from solr facets
@@ -161,7 +161,7 @@ output$TS_plot<-renderPlotly({
 })
 
 #' get the data of a choosen timeseries plot that was choosen by the user
-#' values$fq: 
+#' values$fq: time stamp of requests
 #' input$TS_timeintervall: choosen time intervall (days, months, years)
 #' values$numFound: parameter for the searched time
 #' values$start: start point for the searched time (=1) 
@@ -245,7 +245,7 @@ observeEvent(event_data("plotly_click",source = "TI"),{
 
 #' render select button for memorized Times Series
 #' values$TS_memory: object to store the plot data
-#' values$mem
+#' values$mem:
 output$TS_memory<-renderUI({
   if(length(values$TS_memory)>0){
     mem<-values$TS_memory[[1]][[3]]
@@ -281,7 +281,7 @@ observeEvent(input$TS_delete_memory,{
 
 #' check if reset was clicked, and the reset the plot 
 #' values$TS_memory: time series from memory
-#' values$numFound:
+#' values$numFound: found documents in choosen stack
 #' values$TS_delete_help: identify delete event
 #' values$TS_delete: identify delete event
 observeEvent(input$TS_reset,{
@@ -311,12 +311,11 @@ output$TS_download_memory<-downloadHandler(
 )
 
 #' plot time series calender
-#' values$solr_query:
-#' values$numFound:
-#' values$url:
-#' values$q
-#' values$fq_init:
-#' 
+#' values$solr_query: data from current solr search
+#' values$numFound: number of documents in a stack
+#' values$url: url to choosen document stack
+#' values$q: selected character from dropdown menu, usually '*' selected 
+#' values$fq_init: initial time the requests are made
 output$TS_calender<-renderUI({
     values$solr_query
     if(isolate(values$numFound)>0){
