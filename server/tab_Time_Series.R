@@ -163,7 +163,7 @@ output$TS_plot<-renderPlotly({
 #' get the data of a choosen timeseries plot that was choosen by the user
 #' values$fq: time stamp of requests
 #' input$TS_timeintervall: choosen time intervall (days, months, years)
-#' values$numFound: parameter for the searched time
+#' values$numFound:  number of documents in the stack
 #' values$start: start point for the searched time (=1) 
 observeEvent(event_data("plotly_click",source = "TI"),{
   #get date clicked on in timeseries plot
@@ -227,7 +227,7 @@ observeEvent(event_data("plotly_click",source = "TI"),{
     }
   }
   #' set parameters for getting Search Results for clicked time
-  #' values$numFound:
+  #' values$numFound:  number of documents in the stack
   #' 
   values$numFound<-as.integer(str_replace_all(string = str_extract(string =as.character(solr::solr_search(base = isolate(values$url),q = isolate(values$q),fl="id",fq=isolate(values$fq),rows="1",raw=T)),pattern = "numFound\\\":[0-9]+,"),pattern = "\\D",replacement = ""))
   updateTextInput(session = session,inputId = "SR_row_sel",value = 1)

@@ -315,20 +315,22 @@ output$TM_subColl_UI<-renderUI({
 ##############
 # STM
 ##############
-#' 
-#' values$tm_method
+#' check the selectes Topic Model method
+#' values$tm_method: selected Topic Model method
 output$tm_method<-reactive({
   values$tm_method
 })
 
-#'
+#' update the content formula for parameter 
+#' values$tm_stm_parameters_contentFormula: stm content formula with parameters
 output$tm_stm_parameters_contentFormula <- reactive({
   values$tm_stm_parameters_contentFormula
 })
 
 outputOptions(output, "tm_stm_parameters_contentFormula", suspendWhenHidden = FALSE)
 
-#'
+#' check if stm content formula is set
+#' values$tm_stm_parameters_contentFormula: stm content formula with parameters
 output$tm_stm_parameters_contentFormulaIsSet <- reactive({
   if(nchar(values$tm_stm_parameters_contentFormula)>0){
     return(TRUE)
@@ -341,6 +343,8 @@ outputOptions(output, "tm_stm_parameters_contentFormulaIsSet", suspendWhenHidden
 
 #' stm
 #' plot.STM summary
+#' values$tm_stm_model: choosen Topic Model stm
+#' input$tm_stm_visu_numberOfWordsToLabelTopic: Topic Model stm number of words and corresponding labels from visualisation
 output$TM_stm_visu_summary <- renderPlot({
   if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
     plot.STM(x = values$tm_stm_model, type = "summary", n = input$tm_stm_visu_numberOfWordsToLabelTopic)
@@ -349,7 +353,12 @@ output$TM_stm_visu_summary <- renderPlot({
     
   }
 })
-# plot.STM labels
+#' plot.STM labels
+#' values$tm_stm_parameters_contentFormula: stm content formula parameters
+#' values$tm_stm_model: Topic Model stm
+#' input$tm_stm_visu_numberOfWordsToLabelTopic: Topic Model stm number of words and corresponding labels from visualisation
+#' input$tm_stm_visu_labeltype: Topic Model stm label type from visualisation
+#' input$tm_stm_visu_frexweight: Topic Model stm weight from visualisation
 output$TM_stm_visu_labels <- renderPlot({
   if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
     plot.STM(x = values$tm_stm_model, type = "labels", n = input$tm_stm_visu_numberOfWordsToLabelTopic)
@@ -358,7 +367,14 @@ output$TM_stm_visu_labels <- renderPlot({
   }
 })
 
-# plot.STM perspectives
+#' plot.STM perspectives
+#' input$tm_stm_visu_perspectives_topic1: perspecitve Topic 1
+#' input$tm_stm_visu_perspectives_topic2: perspective Topic 2
+#' values$tm_stm_parameters_contentFormula: parameter from content formular
+#' input$tm_stm_visu_perspectives_covariateValue1: additional parameters 
+#' input$tm_stm_visu_perspectives_covariateValue2: additional parameters
+#' values$tm_stm_model: selected Topic Model stm
+#' input$tm_stm_visu_numberOfWordsToLabelTopic: Topic Model stm number of words and corresponding labels from visualisation
 output$TM_stm_visu_perspectives <- renderPlot({
   validate(
     need(!is.null(input$tm_stm_visu_perspectives_topic1),message="please select topic 1")
@@ -390,7 +406,12 @@ output$TM_stm_visu_perspectives <- renderPlot({
   
 })
 
-# plot.STM hist
+#' plot.STM hist
+#' values$tm_stm_parameters_contentFormula: content formula set in stm model
+#' input$tm_stm_visu_numberOfWordsToLabelTopic: Topic Model stm number of words and corresponding labels from visualisation
+#' values$tm_stm_model: current STM model
+#' input$tm_stm_visu_labeltype: labeltype of used visualisation from stm
+#' input$tm_stm_visu_frexweight: Topic Model stm frex-weight from visualisation
 output$TM_stm_visu_hist <- renderPlot({
   if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
     plot.STM(x = values$tm_stm_model, type = "hist", n = input$tm_stm_visu_numberOfWordsToLabelTopic)
@@ -400,15 +421,22 @@ output$TM_stm_visu_hist <- renderPlot({
 })
 
 
-# topic correlation
+#' topic correlation
+#' input$tm_stm_visu_topicCorr_start: topic correlation Startpoint for the visualisation of the stm Topic Model
+#' values$tm_stm_visu_topicCorr_show: topic correlation initiate visualisation
 observeEvent(input$tm_stm_visu_topicCorr_start,{
   values$tm_stm_visu_topicCorr_show <- TRUE
 })
 
+#' start process of displaying topic correlation
+#' values$tm_stm_visu_topicCorr_show: topic correlation initiate visualisation
 output$TM_stm_visu_topicCorr_show<-reactive({
   return(values$tm_stm_visu_topicCorr_show)
 })
 
+#' calculation of topic correlation
+#' values$tm_stm_visu_topicCorr_method: method of the used topic correlation
+#'  values$tm_stm_model: used stm model
 output$TM_stm_visu_topicCorr_calc <- renderPlot({
   values$tm_stm_visu_topicCorr_method <- "simple"
   topicCorrResult <- topicCorr(model = values$tm_stm_model, method = values$tm_stm_visu_topicCorr_method)
@@ -417,7 +445,11 @@ output$TM_stm_visu_topicCorr_calc <- renderPlot({
 outputOptions(output, "TM_stm_visu_topicCorr_show", suspendWhenHidden = FALSE)
 
 
-# estimateEffect
+#' estimateEffect
+#' input$tm_stm_visu_estimateEffect_calcButton: information if calculation button for the estimated effect was pressed
+#' input$tm_stm_visu_estimateEffect_metaVarsToConvertToFactor: convert meta Variables to factors
+#' input$tm_stm_visu_estimateEffect_metaVarsToConvertToNumeric: convert meta Variables to numerix values
+#' values$tm_stm_metaData: stm meta data
 observeEvent(input$tm_stm_visu_estimateEffect_calcButton,{
   # convert to factors and numeric
   metaVarsToConvertToFactor <- input$tm_stm_visu_estimateEffect_metaVarsToConvertToFactor
@@ -432,7 +464,13 @@ observeEvent(input$tm_stm_visu_estimateEffect_calcButton,{
     values$tm_stm_metaDataConverted[[metaName]] <-as.numeric(values$tm_stm_metaData[[metaName]])
   }
   
-  # read formula and estimate effect
+  #' read formula and estimate effect
+  #' input$tm_stm_visu_estimateEffect_calcParam_formula: user provided formula 
+  #' values$tm_stm_visu_estimateEffectResult: results from estimate effect calculation
+  #' values$tm_stm_model: used stm model
+  #' values$tm_stm_metaDataConverted: converted meta data from stm
+  #' values$tm_stm_visu_estimateEffect_show: should the calculatet estimated effect be shown
+  #' values$tm_stm_visu_estimateEffect_plot_show: should the calculatet estimated effect plot be shown 
   values$tm_stm_visu_estimateEffect_calcParam_formula <- NULL
   if(is.null(input$tm_stm_visu_estimateEffect_calcParam_formula) || nchar(input$tm_stm_visu_estimateEffect_calcParam_formula)==0) {
     shinyWidgets::sendSweetAlert(type = "warning",session = session,title = "You have to provide a formula!")
@@ -445,6 +483,7 @@ observeEvent(input$tm_stm_visu_estimateEffect_calcButton,{
   }
 })
 
+#' values$tm_stm_visu_estimateEffect_show: should the calculatet estimated effect be shown
 output$TM_stm_visu_estimateEffect_show<-reactive({
   values$tm_stm_visu_estimateEffect_show
 })
@@ -452,12 +491,14 @@ output$TM_stm_visu_estimateEffect_show<-reactive({
 outputOptions(output, "TM_stm_visu_estimateEffect_show", suspendWhenHidden = FALSE)
 
 
-# estimate effect summary
+#' estimate effect summary
+#' values$tm_stm_visu_estimateEffectResult
 output$TM_stm_visu_estimateEffect_summary <- renderPrint({
   summary(values$tm_stm_visu_estimateEffectResult)
 })
 
-# estimate effect plot
+#' estimate effect plot
+#' values$tm_stm_visu_estimateEffect_plot_show: should the calculatet estimated effect plot be shown 
 observeEvent(input$tm_stm_visu_estimateEffect_plotupdate,{
   values$tm_stm_visu_estimateEffect_plot_show <- TRUE
 })
