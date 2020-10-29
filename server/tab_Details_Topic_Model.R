@@ -262,6 +262,7 @@ output$TM_Timeline<-renderPlotly({
 #' values$tm_relevance: Topic Model relevance
 #' values$tm_sub_selected: Topic Model selected subcollection
 #' values$tm_random2: Topic Model random setting
+#'  values$tm_phi: phi in Topic Models Tab
 output$TM_Subcollection_Table<-DT::renderDataTable({
   if(length(values$tm_timeline_ids)>=1){
     words<-list()
@@ -503,10 +504,19 @@ observeEvent(input$tm_stm_visu_estimateEffect_plotupdate,{
   values$tm_stm_visu_estimateEffect_plot_show <- TRUE
 })
 
+#'values$tm_stm_visu_estimateEffect_plot_show: should the calculatet estimated effect plot be shown 
 output$TM_stm_visu_estimateEffect_plot_show<-reactive({
   values$tm_stm_visu_estimateEffect_plot_show
 })
 
+#' plot estimate Effect
+#' input$tm_stm_visu_estimateEffect_plot_difference_covValue1: changed additional parameter by the user
+#' input$tm_stm_visu_estimateEffect_plot_difference_covValue2: changed additional parameter by the user
+#'  values$tm_stm_visu_estimateEffectResult: result from estimate effect calculation
+#'  input$tm_stm_visu_estimateEffect_plot_covariate: covariate from estimate effect visualisation
+#'  input$tm_stm_visu_estimateEffect_plot_topics: topics from estimate effect visualisation
+#'  values$tm_stm_metaData: stm meta data
+#'  values$tm_stm_visu_estimateEffect_plot_show: should the calculatet estimated effect plot be shown 
 output$TM_stm_visu_estimateEffect_plot <- renderPlot({
   
   plottingMethod <- input$tm_stm_visu_estimateEffect_plot_method
@@ -563,6 +573,9 @@ outputOptions(output, "TM_stm_visu_estimateEffect_plot_show", suspendWhenHidden 
 # end of STM
 ##############
 
+#' subcollection of the Topic models
+#' values$tm_random2: random settings fr topic models
+#' values$tm_sub_selected: selected subcollection from the topic model
 observe({
   values$tm_random2
   values$tm_sub_selected<-unlist(lapply(X = 1:length(isolate(values$tm_timeline_ids)),FUN = function(x){
@@ -572,8 +585,19 @@ observe({
   #browser()
 })
 
-
-
+#' save subcollection from topic model
+#' input$TM_Subcollection_save: save subcollection
+#' values$tm_timeline_ids: ids from topic model timeline
+#' values$tm_sub_selected: selected subcollection items 
+#' input$TM_Subcollection_Name: name of the subcollection
+#' values$tm_info: topic model information
+#' values$tm_theta: topic model theta
+#' input$TM_Timeline_Rank1: topic model rank
+#' values$current_task_id: current topic model task id
+#' values$update_solr_url: updated solr url
+#' values$update_solr_port: updated solr port
+#' values$coll_saved: saved subcollection 
+#' values$num_collections: number of the collection
 observeEvent(input$TM_Subcollection_save,{
   #check wheather a topic is selected
   topics_selected<-values$tm_timeline_ids[which(values$tm_sub_selected==T)]
@@ -643,7 +667,9 @@ observeEvent(input$TM_Subcollection_save,{
     }
   }
 })
-#if reset buttin is clicked, set selected topics to NULL
+#' if reset button is clicked, set selected topics to NULL
+#' values$tm_timeline_ids: topic model timeline ids
+#' values$tm_sub_selected: selected topic model subcollection
 observeEvent(input$TM_Timeline_Reset,{
   values$tm_timeline_ids<-NULL
   values$tm_sub_selected<-NULL
@@ -655,6 +681,16 @@ observeEvent(input$TM_Timeline_Reset,{
 #                             topic coherence                                                    #
 ##################################################################################################
 
+#' intiate topic coherence
+#' input$TM_Coherence_start: start order for topic model coherence
+#' values$Details_Data_TM: topic model detailed data
+#' values$topic_intrusion_results: result of topic intrusion
+#' values$right_prediction: topic prediction - the right predicted ones
+#' values$word_intrusion_results: results of word intrusion
+#' values$right_prediction_word: word prediction - the right predicted ones
+#' values$TM_Coherence_dtm: topic model coherence- document term matrix
+#' values$TM_Coherence_documents: topic model coherence documents
+#' values$TM_Coherence_show: show the topic model coherence
 observeEvent(input$TM_Coherence_start,{
   error=try({
     load(paste0(values$Details_Data_TM,"/documents_TM.RData"))
@@ -688,7 +724,9 @@ output$TM_Coherence_show<-reactive({
 })
 outputOptions(output, "TM_Coherence_show", suspendWhenHidden = FALSE)
 
-
+#' plot toic coherence
+#' values$TM_Coherence_dtm: topic model coherence document term matrix
+#'  values$tm_phi: phi in Topic Models Tab
 output$TM_Coherence_topic_coherence<-renderPlotly({
   topic_coherence<-tmca.util::tmca_topic_coherence(DTM = values$TM_Coherence_dtm,phi = values$tm_phi)
   values$topic_coherence_results<-topic_coherence
@@ -700,13 +738,15 @@ output$TM_Coherence_topic_coherence<-renderPlotly({
   return(p)
 })
 
+#' render plot 
+#' values$topic_coherence_results: result for topic coherence
 output$TM_Coherence_topic_coherence_mean_box<-renderValueBox({
   valueBox(subtitle = "avg. coherence",icon = icon("list"),value = round(mean(values$topic_coherence_results),3))
 })
 
 
 #############topic intrusion#################
-
+#' render topic intrusion
 output$TM_Coherence_topic_intrusion<-renderUI({
   return(tagList(
     valueBoxOutput(outputId = "TM_Coherence_topic_intrusion_result_box"),
@@ -740,12 +780,16 @@ output$TM_Coherence_topic_intrusion<-renderUI({
   )
 })
 
+#' show topic model intrusion
+#' values$TM_Intrusion_show: controll if topic model intrusion is shown
 output$TM_Intrusion_show<-reactive({
   values$TM_Intrusion_show
 })
 outputOptions(output, "TM_Intrusion_show", suspendWhenHidden = FALSE)
 
-
+#' start tooic intrusion
+#' values$TM_topic_intrusion_run: information if topic intrusion is running
+#' values$TM_Intrusion_show: information if topic intrusion should be shown 
 observeEvent(input$TM_Coherence_topic_intrusion_start,{
   values$TM_topic_intrusion_run<-1
   values$TM_Intrusion_show<-TRUE
@@ -753,7 +797,11 @@ observeEvent(input$TM_Coherence_topic_intrusion_start,{
   isolate(shinyjs::runjs('Shiny.onInputChange(\"wrong_topic\",  "topic_intrusion_button_0")'))
 })
 
-
+#' reset topic intrusion
+#' values$topic_intrusion_results: current results from topic intrusion
+#' values$right_prediction: right predicted topics
+#' values$TM_Intrusion_show: show topic model intrusion
+#' values$TM_topic_intrusion_docs: show documents from topic intrusion 
 observeEvent(input$TM_Coherence_topic_intrusion_reset,{
   values$topic_intrusion_results<-data.frame(doc=numeric(0),IntruderT=numeric(0),IntruderG=numeric(0))
   values$TM_topic_intrusion_run<-NULL
@@ -762,7 +810,9 @@ observeEvent(input$TM_Coherence_topic_intrusion_reset,{
   values$TM_topic_intrusion_docs<-0
 })
 
-
+#'render tabel for cohrerence topic intrusion
+#' values$TM_Coherence_topic_intrusion_topics:
+#' input$TM_Coherence_setsize:
 output$TM_Coherence_topic_intrusion_topics<-renderDataTable({
   data<-data.frame(values$TM_Coherence_topic_intrusion_topics,
                    WrongTopic = shinyInput(
