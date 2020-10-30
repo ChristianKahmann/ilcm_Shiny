@@ -811,8 +811,8 @@ observeEvent(input$TM_Coherence_topic_intrusion_reset,{
 })
 
 #'render tabel for cohrerence topic intrusion
-#' values$TM_Coherence_topic_intrusion_topics:
-#' input$TM_Coherence_setsize:
+#' values$TM_Coherence_topic_intrusion_topics: cohrerence intrusion topics
+#' input$TM_Coherence_setsize: set the size of the topic model coherence
 output$TM_Coherence_topic_intrusion_topics<-renderDataTable({
   data<-data.frame(values$TM_Coherence_topic_intrusion_topics,
                    WrongTopic = shinyInput(
@@ -831,11 +831,27 @@ output$TM_Coherence_topic_intrusion_topics<-renderDataTable({
   datatable(data=data,options = list(dom="T"),escape=F,selection = "none",rownames = F)
 })
 
+#' display document presentatopn for topic intrusion
+#' values$TM_Coherence_topic_intrusion_documents: documents from topic intrusion
 output$TM_Coherence_topic_intrusion_documents<-renderUI({
   document<-values$TM_Coherence_topic_intrusion_documents
   return(document)
 })
 
+#' run topic intrusion and get random documents
+#' values$TM_topic_intrusion_run: run the topic intrusion
+#' input$TM_Coherence_runs: is topic model coherence running?
+#' values$tm_phi: phi in Topic Models Tab
+#' values$TM_Coherence_documents: documents for topic model coherence
+#' values$topic_intrusion_random_doc_number: random document number for topic intrusion
+#' values$host: used host
+#' values$port: used port
+#' values$tm_relevance: relvance od topic
+#' values$tm_theta: topic model theta
+#' input$TM_Coherence_setsize: set the size for topic model coherence
+#'  values$topic_intrusion_results: result from topic intrusion
+#'  values$TM_Coherence_topic_intrusion_topics: coherence topics from topic intrusion
+#'  values$TM_Coherence_topic_intrusion_documents: documents from topic intrusion
 observe({
   validate(
     need(!is.null(values$TM_topic_intrusion_run),message=FALSE),
@@ -883,6 +899,9 @@ observe({
   values$TM_Coherence_topic_intrusion_documents<-document
 })
 
+#' display topic intrusion
+#' values$TM_topic_intrusion_run: current topic intrusion run
+#' input$TM_Coherence_runs: all topic intrusion runs
 output$TM_Coherence_topic_intrusion_iteration<-renderUI({
   validate(
     need(!is.null(values$TM_topic_intrusion_run),message=FALSE)
@@ -897,7 +916,11 @@ output$TM_Coherence_topic_intrusion_iteration<-renderUI({
   return(tags$h4(text,style='color:black;'))
 })
 
-
+#' wrong topics for the intrusion
+#' input$wrong_topic: wrong topic choosen
+#' values$TM_topic_intrusion_run: current run of the topic intrusion
+#' input$TM_Coherence_runs: all runs from topic intrusion
+#' values$topic_intrusion_results: results from topic intrusion
 observeEvent(input$wrong_topic,{
   validate(
     need(!is.null(input$wrong_topic),message=FALSE),
@@ -928,7 +951,10 @@ observeEvent(input$wrong_topic,{
 })
 
 
-
+#' render result box for topic intrusion
+#' values$right_prediction: topic intrusion right predicted 
+#' input$TM_Coherence_chance_correction: topic model coherence chance correction
+#' input$TM_Coherence_setsize: set size of the topic model coherence
 output$TM_Coherence_topic_intrusion_result_box<-renderValueBox({
   performance<-values$right_prediction
   if(input$TM_Coherence_chance_correction==TRUE){
@@ -939,18 +965,27 @@ output$TM_Coherence_topic_intrusion_result_box<-renderValueBox({
   valueBox(value = paste(round(performance*100,3),"%"),subtitle = "right predictions",icon = icon("list"))
 })
 
-
+#' render document box for coherence topic intrusion
+#' values$TM_topic_intrusion_run: run topic intrusion
+#' values$TM_topic_intrusion_docs: docuemnts from topic intrusion
+#' values$topic_intrusion_results
 output$TM_Coherence_topic_intrusion_docs_box<-renderValueBox({
   values$TM_topic_intrusion_run
   values$TM_topic_intrusion_docs
   valueBox(value = length(which(isolate(values$topic_intrusion_results[,3])!=0)),subtitle = "documents assessed",icon = icon("search"),color="purple")
 })
 
-
+#' display found intruders
+#' values$topic_intrusion_results: results from topic intrusion
 output$TM_Coherence_topic_intrusion_correct_box<-renderValueBox({
   valueBox(value = length(which((apply(values$topic_intrusion_results,1,FUN = function(x){x[2]==x[3]}))==TRUE)),subtitle = "intruders found",icon = icon("thumbs-up",lib="glyphicon"),color="yellow")
 })
 
+#' observe current topic intrusion run
+#' values$TM_topic_intrusion_run: current topic intrusion run
+#' input$TM_Coherence_runs: all runs for cohrerence
+#' values$word_intrusion_results: results for word intrusion
+#' values$Details_Data_TM: topic model data details
 observeEvent(values$TM_topic_intrusion_run,{
   validate(
     need(!is.null(values$TM_topic_intrusion_run),message=FALSE)
@@ -964,7 +999,7 @@ observeEvent(values$TM_topic_intrusion_run,{
 
 ##########word intruson################
 
-
+#' render word intrusion
 output$TM_Coherence_word_intrusion<-renderUI({
   return(tagList(
     valueBoxOutput(outputId = "TM_Coherence_word_intrusion_result_box"),
@@ -994,17 +1029,27 @@ output$TM_Coherence_word_intrusion<-renderUI({
   )
 })
 
+#' show word intrusion
+#' values$TM_Intrusion_word_show: show word intrusion
 output$TM_Intrusion_word_show<-reactive({
   values$TM_Intrusion_word_show
 })
 outputOptions(output, "TM_Intrusion_word_show", suspendWhenHidden = FALSE)
 
-
+#' start word intrusion
+#' values$TM_word_intrusion_run: run word intrusion
+#' values$TM_Intrusion_word_show: show word intrusion
 observeEvent(input$TM_Coherence_word_intrusion_start,{
   values$TM_word_intrusion_run<-1
   values$TM_Intrusion_word_show<-TRUE
 })
 
+#' reset word intrusion
+#' input$TM_Coherence_word_intrusion_reset: was reset button prest?
+#' values$TM_word_intrusion_run: run word intrusion
+#' values$right_prediction_word: made word prediction
+#' values$TM_Intrusion_word_show: show word intrusion
+#' values$TM_word_intrusion_docs: documents for word intrusion
 observeEvent(input$TM_Coherence_word_intrusion_reset,{
   values$word_intrusion_results<-data.frame(doc=numeric(0),IntruderT=numeric(0),IntruderG=numeric(0))
   values$TM_word_intrusion_run<-NULL
@@ -1013,7 +1058,9 @@ observeEvent(input$TM_Coherence_word_intrusion_reset,{
   values$TM_word_intrusion_docs<-0
 })
 
-
+#' render table for coherence word intrusion 
+#' values$TM_Coherence_word_intrusion_words
+#' input$TM_Coherence_setsize: set size for coherence
 output$TM_Coherence_word_intrusion_words<-renderDataTable({
   data<-data.frame(values$TM_Coherence_word_intrusion_words,
                    WrongTopic = shinyInput(
@@ -1032,11 +1079,19 @@ output$TM_Coherence_word_intrusion_words<-renderDataTable({
   datatable(data=data,options = list(dom="T"),escape=F,selection = "none",rownames = F)
 })
 
+#' display word cloud for word intrusion
+#' values$TM_Coherence_word_intrusion_words: words from word intrusion
 output$TM_Coherence_word_intrusion_wordcloud<-renderWordcloud2({
   data = data.frame(words= values$TM_Coherence_word_intrusion_words,counts=rep(1,length(values$TM_Coherence_word_intrusion_words)),stringsAsFactors = F)
   wordcloud2(data = data,fontFamily = "Helvetica",backgroundColor = "azure",color = "random-dark",size=1.5/input$TM_Coherence_setsize,minRotation = -pi/2, maxRotation = -pi/2)
 })
 
+#' run word intrusion
+#' values$TM_word_intrusion_run: run word intrusion
+#' values$word_intrusion_random_topic_number
+#' values$tm_phi: Topic model phi
+#' values$word_intrusion_results: results from word intruision
+#' values$TM_Coherence_word_intrusion_words: words from word intrusion
 observe({
   validate(
     need(!is.null(values$TM_word_intrusion_run),message=FALSE),
@@ -1086,7 +1141,9 @@ observe({
 })
 
 
-
+#' iteration for word intrusion
+#' values$TM_word_intrusion_run: run word intrusion
+#' input$TM_Coherence_runs: all coherence runs
 output$TM_Coherence_word_intrusion_iteration<-renderUI({
   validate(
     need(!is.null(values$TM_word_intrusion_run),message=FALSE)
@@ -1100,7 +1157,13 @@ output$TM_Coherence_word_intrusion_iteration<-renderUI({
   return(tags$h4(text,style='color:black;'))
 })
 
-
+#' wrong words for intrusion
+#' input$wrong_word: wrong word in intrusion
+#' values$TM_word_intrusion_run: run the word intrusion
+#' input$TM_Coherence_runs: all the coherence runs
+#' values$word_intrusion_results: results of word intrusion
+#' values$right_prediction_word: right predicted words
+#' values$TM_word_intrusion_run: run word intrusion
 observeEvent(input$wrong_word,{
   validate(
     need(!is.null(input$wrong_word),message=FALSE),
@@ -1131,7 +1194,10 @@ observeEvent(input$wrong_word,{
 })
 
 
-
+#' display result box
+#' values$right_prediction_word: rate of right predicted words
+#' input$TM_Coherence_chance_correction: coherence correction chance
+#' input$TM_Coherence_setsize: set coherence size
 output$TM_Coherence_word_intrusion_result_box<-renderValueBox({
   performance<-values$right_prediction_word
   if(input$TM_Coherence_chance_correction==TRUE){
@@ -1142,7 +1208,7 @@ output$TM_Coherence_word_intrusion_result_box<-renderValueBox({
 })
 
 
-
+#'display   intrusion box 
 output$TM_Coherence_word_intrusion_docs_box<-renderValueBox({
   values$TM_word_intrusion_docs
   values$TM_word_intrusion_run
