@@ -1644,7 +1644,10 @@ output$Det_TM_meta_membership_heatmap<-plotly::renderPlotly({
 })
 
 
-
+#' compile table for correlation meta data
+#' depends on:
+#'    values$tm_theta: topic model theta
+#'    values$TM_meta: meta data for topic modeling
 output$Det_TM_Meta_Correlations_table_simple<-DT::renderDataTable({
   validate(
     need(!is.null(values$tm_theta),message = F),
@@ -1686,7 +1689,10 @@ output$Det_TM_Meta_Correlations_table_simple<-DT::renderDataTable({
 })
 
 
-
+#' select meta information via UI
+#' depends on:
+#'   values$TM_meta: topic model meta data
+#'   values$tm_theta: topic model theta
 output$Det_meta_select_ui<-renderUI({
   validate(
     need(!is.null(values$TM_meta),message=F
@@ -1713,6 +1719,10 @@ output$Det_meta_select_ui<-renderUI({
   )
 })
 
+#' select meta data from ui version 2
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected meta data
 output$Det_meta_select_ui2<-renderUI({
   validate(
     need(!is.null(values$TM_meta),message=F
@@ -1734,7 +1744,10 @@ output$Det_meta_select_ui2<-renderUI({
   
 })
 
-
+#' show first wordcloud of a certain topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud1<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1751,6 +1764,10 @@ output$Det_TM_meta_wordcloud1<-renderWordcloud2({
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1,minRotation = -pi/2, maxRotation = -pi/2)
 })
 
+#' show wordcloud of a second topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud2<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1766,7 +1783,10 @@ output$Det_TM_meta_wordcloud2<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
-
+#' show wordcloud of a 3th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud3<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1782,6 +1802,11 @@ output$Det_TM_meta_wordcloud3<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+
+#' show wordcloud of a 4th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud4<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1797,6 +1822,11 @@ output$Det_TM_meta_wordcloud4<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+
+#' show wordcloud of a 5th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud5<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1812,6 +1842,11 @@ output$Det_TM_meta_wordcloud5<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+
+#' show wordcloud of a 6th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud6<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1827,6 +1862,10 @@ output$Det_TM_meta_wordcloud6<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 7th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud7<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1842,6 +1881,10 @@ output$Det_TM_meta_wordcloud7<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 8th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud8<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1857,6 +1900,10 @@ output$Det_TM_meta_wordcloud8<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 9th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud9<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1872,6 +1919,10 @@ output$Det_TM_meta_wordcloud9<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 10th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud10<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1887,6 +1938,10 @@ output$Det_TM_meta_wordcloud10<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 11th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud11<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1902,6 +1957,10 @@ output$Det_TM_meta_wordcloud11<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 12th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud12<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1917,6 +1976,10 @@ output$Det_TM_meta_wordcloud12<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 13th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud13<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1932,6 +1995,10 @@ output$Det_TM_meta_wordcloud13<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 14th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud14<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1947,6 +2014,10 @@ output$Det_TM_meta_wordcloud14<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 15th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud15<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1962,6 +2033,10 @@ output$Det_TM_meta_wordcloud15<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 16th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud16<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1977,6 +2052,10 @@ output$Det_TM_meta_wordcloud16<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 17th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud17<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1992,6 +2071,10 @@ output$Det_TM_meta_wordcloud17<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 18th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud18<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -2007,7 +2090,10 @@ output$Det_TM_meta_wordcloud18<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
-
+#' show wordcloud of a 19th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud19<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -2030,7 +2116,16 @@ output$Det_TM_meta_wordcloud19<-renderWordcloud2({
 #           Detailed Metadata for selected Topic#
 #################################################
 
-#scatter Plot of meta vs topic
+#' scatter Plot of meta vs topic
+#' depends on:
+#'   input$Det_meta_topic: detailed meta data topic
+#'   values$TM_meta: topic model meta data 
+#'   values$tm_theta: topic model theta
+#'   input$TM_meta_Rank1: topic model meta data rank
+#'   input$Det_meta_select: selected detailed meta data
+#'   input$Det_meta_select2: second selected detailed meta data
+#'   input$TM_meta_Prob: probability for specific topic model meta data
+#'   alues$Det_TM_meta_scatter_data: scattered data from topic model meta data
 output$Det_TM_scatter_plot_ui<-renderUI({
   validate(
     need(!is.null(input$Det_meta_topic),message=F)
@@ -2051,6 +2146,11 @@ output$Det_TM_scatter_plot_ui<-renderUI({
   ))
 })
 
+#' plot detailes topic model scatter 
+#' depends on:
+#'    values$Det_TM_meta_scatter_data: scattred data from detailes topic model meta data
+#'    input$Det_meta_select: selected detailed meta data
+#'    input$Det_meta_select2: second selected detailed meta data
 output$Det_TM_scatter_plot<-plotly::renderPlotly({
   data<- values$Det_TM_meta_scatter_data
   meta_numeric<-all(varhandle::check.numeric(v = data$meta,exceptions = "NA"))
@@ -2071,6 +2171,18 @@ output$Det_TM_scatter_plot<-plotly::renderPlotly({
   return(p)
 })
 
+#' show first detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta1<-renderUI({
   if(colnames(values$TM_meta)[5]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2147,7 +2259,17 @@ output$Det_TM_Meta1<-renderUI({
   }
 })
 
-
+#' render second detailed topic model meta data presentation 
+#' depends on:
+#'   values$TM_meta: topic model meta data
+#'   values$tm_theta: topic model theta
+#'   input$TM_meta_Rank1: topic model meta data rank
+#'   input$Det_meta_topic: detailed meta data topic
+#'   input$TM_meta_Prob: topic model meta data probability
+#'   input$Det_meta_select: selected detaoled meta data
+#'   input$Det_TM_meta_min_occurrences_for_pie: min occurrences for detailed topic model meta data to appear in pie chart
+#'   input$Det_TM_meta_multi_valued: use multiple values from detailed topic model meta data 
+#'   input$Det_TM_meta_multi_valued_seperator: seperator for multiple values from detailed topic model
 output$Det_TM_Meta2<-renderUI({
   if(colnames(values$TM_meta)[6]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2226,7 +2348,18 @@ output$Det_TM_Meta2<-renderUI({
 })
 
 
-
+#' show 3th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta3<-renderUI({
   if(colnames(values$TM_meta)[7]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2305,7 +2438,18 @@ output$Det_TM_Meta3<-renderUI({
 })
 
 
-
+#' show 4th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta4<-renderUI({
   if(colnames(values$TM_meta)[8]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2382,7 +2526,18 @@ output$Det_TM_Meta4<-renderUI({
     return(NULL)
   }
 })
-
+#' show 5th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta5<-renderUI({
   if(colnames(values$TM_meta)[9]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2461,7 +2616,18 @@ output$Det_TM_Meta5<-renderUI({
 })
 
 
-
+#' show 6th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta6<-renderUI({
   if(colnames(values$TM_meta)[10]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2540,7 +2706,18 @@ output$Det_TM_Meta6<-renderUI({
 })
 
 
-
+#' show 7th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta7<-renderUI({
   if(colnames(values$TM_meta)[11]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2619,7 +2796,18 @@ output$Det_TM_Meta7<-renderUI({
 })
 
 
-
+#' show 8th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta8<-renderUI({
   if(colnames(values$TM_meta)[12]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2698,7 +2886,18 @@ output$Det_TM_Meta8<-renderUI({
 })
 
 
-
+#' show 9th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta9<-renderUI({
   if(colnames(values$TM_meta)[13]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2778,7 +2977,18 @@ output$Det_TM_Meta9<-renderUI({
 
 
 
-
+#' show 10th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta10<-renderUI({
   if(colnames(values$TM_meta)[14]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2856,7 +3066,18 @@ output$Det_TM_Meta10<-renderUI({
   }
 })
 
-
+#' show 11th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta11<-renderUI({
   if(colnames(values$TM_meta)[15]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2935,7 +3156,18 @@ output$Det_TM_Meta11<-renderUI({
 })
 
 
-
+#' show 12th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta12<-renderUI({
   if(colnames(values$TM_meta)[16]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -3015,7 +3247,18 @@ output$Det_TM_Meta12<-renderUI({
 })
 
 
-
+#' show 13th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta13<-renderUI({
   if(colnames(values$TM_meta)[17]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -3094,7 +3337,18 @@ output$Det_TM_Meta13<-renderUI({
   }
 })
 
-
+#' show 14th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta14<-renderUI({
   if(colnames(values$TM_meta)[18]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -3173,7 +3427,18 @@ output$Det_TM_Meta14<-renderUI({
   }
 })
 
-
+#' show 15th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta15<-renderUI({
   if(colnames(values$TM_meta)[19]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -3252,7 +3517,18 @@ output$Det_TM_Meta15<-renderUI({
   }
 })
 
-
+#' show 16th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta16<-renderUI({
   if(colnames(values$TM_meta)[20]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -3330,7 +3606,18 @@ output$Det_TM_Meta16<-renderUI({
     return(NULL)
   }
 })
-
+#' show 17th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta17<-renderUI({
   if(colnames(values$TM_meta)[21]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -3409,7 +3696,18 @@ output$Det_TM_Meta17<-renderUI({
   }
 })
 
-
+#' show 18th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta18<-renderUI({
   if(colnames(values$TM_meta)[22]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -3487,7 +3785,18 @@ output$Det_TM_Meta18<-renderUI({
     return(NULL)
   }
 })
-
+#' show 19th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta19<-renderUI({
   if(colnames(values$TM_meta)[23]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -3567,7 +3876,13 @@ output$Det_TM_Meta19<-renderUI({
 })
 
 
-
+#' render meta data table
+#' depends on: 
+#'   input$TM_meta_Rank1: topic model meta data rank
+#'   input$Det_meta_topic: detailed topic modle meta data topic
+#'   input$TM_meta_Prob: topic model meta data probability
+#'   values$TM_meta: topic model meta data
+#'   input$Det_meta_select: selected detailed meta data 
 output$Det_TM_Meta_Table<-DT::renderDataTable({
   validate(
     need(!is.null(input$TM_meta_Rank1),message=F),
@@ -3592,7 +3907,8 @@ output$Det_TM_Meta_Table<-DT::renderDataTable({
   datatable(data = meta,escape = F,class = 'cell-border stripe',rownames=T)
 })
 
-
+#' render datatable for detailed topic model meta data quantiles
+#' depends on: input$Det_meta_select: selected detailed meta data
 output$Det_TM_meta_quantiles<-renderTable({
   meta<-values$TM_meta[,input$Det_meta_select]
   validate(
@@ -3610,7 +3926,10 @@ output$Det_TM_meta_quantiles<-renderTable({
 ######################################################
 
 
-
+#' plot estimated word frequencies in bar chart
+#' deoends on:
+#'   input$Det_TM_ewf_word: word for estimated word frequencies 
+#'   values$tm_rel_counts: topic model word count
 output$TM_ewf_bar<-renderPlotly({
   validate(
     need(!is.null(input$Det_TM_ewf_word),message="specify at least one word")
@@ -3633,7 +3952,11 @@ output$TM_ewf_bar<-renderPlotly({
   return(p)
 })
 
-
+#' table for estimated word frequency from topic model
+#' depends on:
+#'   input$Det_TM_ewf_word: word top calculate estimated word frequence
+#'   input$Det_TM_emf_rel: relative distribution over topics for choosen word
+#'   values$tm_counts: topic model counts
 output$TM_ewf_table<-DT::renderDataTable({
   validate(
     need(!is.null(input$Det_TM_ewf_word),message=FALSE)
