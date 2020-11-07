@@ -3976,7 +3976,8 @@ output$TM_ewf_table<-DT::renderDataTable({
 })
 
 
-
+#'  start downloading real counts for estimated word frequency
+#'  depends on: values$tm_counts: count of words from topic model
 output$download_rel_counts<-downloadHandler(
   filename = function() {
     paste('estimated_counts', Sys.Date(), '.csv', sep='')
@@ -3987,7 +3988,11 @@ output$download_rel_counts<-downloadHandler(
   }
 )  
 
-
+#' UI validation of detailed topic model meta data
+#' depends on:
+#'    input$Det_TM_validation_document: validate documents from detailed topic model
+#'    values$host: used host 
+#'    values$port: used port
 output$Det_TM_validation_metadata_UI<-renderUI({
   validate(
     need(
@@ -4013,7 +4018,24 @@ output$Det_TM_validation_metadata_UI<-renderUI({
 })
 
 
-# plot for topic validation tab showing the document with the words highlighted, which are relevant in the chosen topic
+#' plot for topic validation tab showing the document with the words highlighted, which are relevant in the chosen topic
+#' depends on:
+#'   input$Det_TM_validation_document: document from topic model with validation
+#'   values$host: used host
+#'   values$port: used port
+#'   values$Details_Data_TM: details of topic model data
+#'   values$tm_phi: topic model phi
+#'   input$Det_TM_validation_relevance_measure: relebance measurement for detailed topic model validation
+#'   values$tm_rel_counts: topic model relative counts
+#'   values$Det_TM_validation_topic: validation of topics from detailed topic model
+#'   input$Det_TM_validation_lambda: lambda validation from detailed topic model 
+#'   values$tm_theta: topic model theta
+#'   values$tm_doc.length: topic model document length
+#'   input$Det_TM_validation_minmax_gobal: global minimum and maximum for detailed topic model validation
+#'   input$Det_TM_validation_color_least_important: detailed topic model validation colour for least important values
+#'   input$Det_TM_validation_color_most_important: detailed topic model validation colour for most important values
+#'   input$Det_TM_validation_color_use_pie_colors: validation color to use in pie chart for detailed topic models 
+#'   
 output$TM_validation_UI<-renderUI({
   validate(
     need(
@@ -4156,7 +4178,8 @@ output$TM_validation_UI<-renderUI({
 })
 
 
-# wordcloud showing the relevant words for the chosen topic
+#' wordcloud showing the relevant words for the chosen topic
+#' depends on: input$Det_TM_validation_topic: choosen topic from detailed topic models for validation
 output$Det_TM_validation_wordcloud <- wordcloud2::renderWordcloud2({
   # @values$tm_relevance calculated with lamda= 0.3
   data <- values$tm_relevance[,input$Det_TM_validation_topic]
@@ -4171,8 +4194,10 @@ output$Det_TM_validation_wordcloud <- wordcloud2::renderWordcloud2({
 
 
 
-# pie chart showing the topic distribution of a selected topic 
-# @input$Det_TM_validation_document: chosen document using doc_id as identifier
+#' pie chart showing the topic distribution of a selected topic 
+#' depends on:
+#'   input$Det_TM_validation_document: chosen document using doc_id as identifier
+#'   values$tm_theta: topic model theta
 output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
   validate(
     need(
@@ -4202,7 +4227,7 @@ click_pie_tm_validation<-reactive({
   currentEcentData<-event_data(event = "plotly_click", source = "tm_validation_pie",session = session)
 })
 
-# change selected topic if user click on a tpic in the pie chart
+#' change selected topic if user click on a tpic in the pie chart
 observe({
   validate(
     need(!is.null(click_pie_tm_validation()),message = F)
@@ -4212,7 +4237,7 @@ observe({
 
 
 
-# output object for topic dispersion 
+#' output object for topic dispersion 
 output$TM_dispersion_ui<-renderUI({
   return(tagList(
     tabsetPanel(type="tabs",
@@ -4231,7 +4256,8 @@ output$TM_dispersion_ui<-renderUI({
 
 
 
-# summary table for topic dispersion
+#' summary table for topic dispersion
+#' depends on: values$tm_theta
 output$Det_TM_dispersion_summary_table<-DT::renderDataTable({
   validate(
     need(!is.null(values$tm_theta),message=F)
@@ -4292,7 +4318,11 @@ output$Det_TM_dispersion_summary_table<-DT::renderDataTable({
 })
 
 
-# detailed dispersion plot; multiple histograms
+#' detailed dispersion plot; multiple histograms
+#' depends on:
+#'    input$Det_TM_dispersion_topic: topic for dispersion from detailed topic model
+#'    input$Det_TM_dispersion_probability_threshold: probability threshold for detailed topic model dispersion
+#'    values$tm_theta: topic model theta
 output$Det_TM_dispersion_detailed_plot<-plotly::renderPlotly({
   validate(
     need(length(input$Det_TM_dispersion_topic)>0,message="Please choose at least one topic")
@@ -4314,7 +4344,10 @@ output$Det_TM_dispersion_detailed_plot<-plotly::renderPlotly({
 })
 
 
-# detailed dispersion plot with a single histogram
+#' detailed dispersion plot with a single histogram
+#' depends on:
+#'    input$Det_TM_dispersion_topic: topic from detailed topic model for dispersion
+#'    input$Det_TM_dispersion_probability_threshold: threshold of probabilties from dispersion
 output$Det_TM_dispersion_detailed_single_hist<-plotly::renderPlotly({
   validate(
     need(length(input$Det_TM_dispersion_topic)>0,message="Please choose at least one topic")
@@ -4345,7 +4378,7 @@ output$Det_TM_dispersion_detailed_single_hist<-plotly::renderPlotly({
 ##       Document Comparison           #
 ########################################
 
-#UI for document compariosn tab in visualisation of topic models
+#' UI for document compariosn tab in visualisation of topic models
 output$TM_document_comparison_UI<-renderUI({
   tabsetPanel(type="tabs",id = "tabBox_TM_document_comparison",
               tabPanel(title = "Table",
@@ -4371,7 +4404,13 @@ output$TM_document_comparison_UI<-renderUI({
 })
 
 
-# table showing the topic distributions for chosen words
+#' table showing the topic distributions for chosen words
+#' depends on: 
+#'    input$Det_TM_document_comparison_document: documents for comparison from detailed topic model
+#'    values$tm_theta: topic model theta
+#'    values$tm_meta: meta data from topic model
+#'    
+#'    
 output$Det_TM_document_comparison_table<-DT::renderDataTable({
   validate(
     need(length(input$Det_TM_document_comparison_document)>0,message = "Choose at least one document!")
@@ -4393,7 +4432,11 @@ output$Det_TM_document_comparison_table<-DT::renderDataTable({
   )
 })
 
-
+#' pie chart for document comparison
+#' depends on:
+#'    input$Det_TM_document_comparison_document: documents for comparision from detailed topic model
+#'    values$tm_theta: topic model theta
+#'    values$tm_meta: meta data from topic model
 output$Det_TM_document_comparison_pie<-plotly::renderPlotly({
   validate(
     need(length(input$Det_TM_document_comparison_document)>0,message = "Choose at least one document!")
@@ -4433,7 +4476,14 @@ output$Det_TM_document_comparison_pie<-plotly::renderPlotly({
 })
 
 
-
+#' heatmap for comparison correlation of documents:
+#' depends on:
+#'    input$Det_TM_document_comparison_document: documents for comparison from detailed topic model
+#'    values$tm_meta: meta data from topic model
+#'    input$Det_TM_document_comparison_correlation_method: comparison correlation method for documents from detailed topic model
+#'    values$tm_theta: topic model theta
+#'    input$Det_TM_document_comparison_color_low: color for low impact values from document comparision
+#'    input$Det_TM_document_comparison_color_high: color for high impact values from document comparision
 output$Det_TM_document_comparison_correlation_heatmap_correlation<-plotly::renderPlotly({
   validate(
     need(length(input$Det_TM_document_comparison_document)>1,message = "Choose at least two documents!")
@@ -4451,7 +4501,12 @@ output$Det_TM_document_comparison_correlation_heatmap_correlation<-plotly::rende
   return(heatmap)
 })
 
-
+#' heatmap fo document comparision correlation calculated with cosine similarity
+#' depends on:
+#'    input$Det_TM_document_comparison_document: documents for comparison
+#'    values$tm_meta: topic model meta data
+#'    input$Det_TM_document_comparison_color_low: color for low impact values from document comparision
+#'    input$Det_TM_document_comparison_color_high: color for high impact values from document comparision
 output$Det_TM_document_comparison_correlation_heatmap_cosine_similarity<-plotly::renderPlotly({
   validate(
     need(length(input$Det_TM_document_comparison_document)>1,message = "Choose at least two documents!")
@@ -4470,7 +4525,13 @@ output$Det_TM_document_comparison_correlation_heatmap_cosine_similarity<-plotly:
   return(heatmap)
 })
 
-
+#' render heatmap with euclidean distance correlations
+#' depends on:
+#'    input$Det_TM_document_comparison_document: document for comparison from detailed topic model 
+#'    values$tm_theta: topic model theta
+#'    values$tm_meta: topic model meta data
+#'    input$Det_TM_document_comparison_color_low: color for low impact values from document comparison
+#'    input$Det_TM_document_comparison_color_high: color for high impact values from document comparison
 output$Det_TM_document_comparison_correlation_heatmap_euclidean_distance<-plotly::renderPlotly({
   validate(
     need(length(input$Det_TM_document_comparison_document)>1,message = "Choose at least two documents!")
@@ -4496,6 +4557,8 @@ output$Det_TM_document_comparison_correlation_heatmap_euclidean_distance<-plotly
 ###    document outlier   ###
 #############################
 
+#' render document outlier
+
 output$TM_document_outlier_UI<-renderUI({
   return(tagList(
     tags$h4("Average document similarity"),
@@ -4506,7 +4569,11 @@ output$TM_document_outlier_UI<-renderUI({
   )
 })
 
-
+#' show heatmap from document outlier
+#' depends on:
+#'    values$TM_document_outlier_tabledata: datatable information for document outlier of the topic model 
+#'    input$Det_TM_document_outlier_table_rows_selected: selected rows from document outlier datable
+#'    values$Det_TM_document_outlier_comparison_matrix: matrix for document outlier comparison
 output$Det_TM_document_outlier_heatmap<-plotly::renderPlotly({
   selected_ids<-values$TM_document_outlier_tabledata[input$Det_TM_document_outlier_table_rows_selected,"id_doc"]
   titles<-values$TM_document_outlier_tabledata[input$Det_TM_document_outlier_table_rows_selected,"title"]
@@ -4529,7 +4596,14 @@ output$Det_TM_document_outlier_heatmap<-plotly::renderPlotly({
   return(heatmap)
 })
 
-
+#' render datatable for document outlier
+#' depends on:
+#'    values$tm_theta: topic model theta
+#'    values$tm_meta: topic model meta data
+#'    input$Det_TM_document_outlier_measure: measures for detailed topic model document outlier
+#'    input$Det_TM_document_outlier_correlation_method: correlation method for document outlier
+#'    values$Det_TM_document_outlier_comparison_matrix: comparison matrix for document outlier
+#'    values$TM_document_outlier_tabledata: datatable information for document outlier
 output$Det_TM_document_outlier_table<-DT::renderDataTable({
   data<-t(values$tm_theta)
   titles<-values$tm_meta[,c("id_doc","title"),drop=F]
@@ -4571,7 +4645,10 @@ output$Det_TM_document_outlier_table<-DT::renderDataTable({
   datatable(data=data,escape = F,rownames = F)
 })
 
-
+#' download for document similarity matrix
+#' depends on:
+#'   values$Det_TM_document_outlier_comparison_matrix: matrix of document outliers
+#'   input$Det_TM_document_outlier_measure: measures for document outlier
 output$Det_TM_outlier_download_document_document_similarity_matrix<-downloadHandler(
   filename = function() {
     paste('outlier_similarity_matrix_',input$Det_TM_document_outlier_measure,"_",  Sys.Date(), '.csv', sep='')
@@ -4582,7 +4659,10 @@ output$Det_TM_outlier_download_document_document_similarity_matrix<-downloadHand
   }
 )
 
-
+#' download the list of outliers
+#' depends on: 
+#'    input$Det_TM_document_outlier_measure: measures for document outlier from detailed topic model 
+#'    values$TM_document_outlier_tabledata: datatable information from document outlier
 output$Det_TM_outlier_download_list_of_outliers<-downloadHandler(
   filename = function() {
     paste('outlier_avg_similarity_',input$Det_TM_document_outlier_measure,"_", Sys.Date(), '.csv', sep='')
@@ -4604,6 +4684,15 @@ output$Det_TM_outlier_download_list_of_outliers<-downloadHandler(
 #############################
 #        Clustering         #
 #############################
+#' show UI for document clustering 
+#' depends on:
+#'   values$tm_theta: topic model theta
+#'   values$tm_meta: topic model meta data
+#'   input$Det_TM_document_clustering_k: choosen parameter k (k-means) for document clustering
+#'   input$Det_TM_document_clustering_max_iterations: choosen maximal number of iterations for document clustering
+#'   input$Det_TM_document_clustering_n_start: choosen start point n for random sets for document clustering
+#'   values$Det_TM_document_clustering_cluster_data: cluster data from document clustering
+#'   values$Det_TM_document_clustering_titles: titles of documents from document clustering 
 output$TM_document_clustering_UI<-renderUI({
   data<-t(values$tm_theta)
   titles<-values$tm_meta[,c("id_doc","title"),drop=F]
@@ -4634,6 +4723,10 @@ output$TM_document_clustering_UI<-renderUI({
   )
 })
 
+#' show kmeans clustering of docuemnts from detailed topic model
+#' depends on:
+#'   values$Det_TM_document_clustering_cluster_data: cluster data from document clustering
+#'   values$Det_TM_document_clustering_titles:
 output$Det_TM_document_clustering_kmeans<-plotly::renderPlotly({
   validate(
     need(!is.null(values$Det_TM_document_clustering_cluster_data),message=F)
@@ -4653,7 +4746,8 @@ output$Det_TM_document_clustering_kmeans<-plotly::renderPlotly({
 })
 
 
-
+#' download document clustering results
+#' depends on: values$Det_TM_document_clustering_cluster_summary: summary of cluster from document clustering
 output$Det_TM_document_clustering_download_clustering_result<-downloadHandler(
   filename = function() {
     paste('cluster_result', Sys.Date(), '.csv', sep='')
@@ -4665,6 +4759,8 @@ output$Det_TM_document_clustering_download_clustering_result<-downloadHandler(
 )
 
 
+#' show meta data from document clustering
+#' depends on: values$tm_meta: topic model meta data
 output$Det_TM_document_clustering_metadata_UI<-renderUI({
   eventdata<-event_data("plotly_click",source = "Det_TM_document_clustering_kmeans")
   validate(
@@ -4703,7 +4799,10 @@ output$Det_TM_document_clustering_metadata_UI<-renderUI({
   )
 })
 
-
+#' view cluster datatable from current document clustering
+#' depends on:
+#'   values$Det_TM_document_clustering_cluster_summary: summary of clusters from current document clustering
+#'   values$Det_TM_document_clustering_titles: titles of the documents in currenct document clustering
 output$Det_TM_document_clustering_table<-DT::renderDataTable({
   cluster_result<-values$Det_TM_document_clustering_cluster_summary
   cluster_result<-cbind(cluster_result,values$Det_TM_document_clustering_titles)
@@ -4729,7 +4828,7 @@ output$Det_TM_document_clustering_table<-DT::renderDataTable({
 ###                Document Grouping             ###
 ####################################################
 
-
+#' show page for document grouping
 output$TM_document_grouping_UI<-renderUI({
   
   
@@ -4783,7 +4882,12 @@ output$TM_document_grouping_UI<-renderUI({
     ))
 })
 
-
+#' grouping correlations from detailed topic models
+#' depends on:
+#'   values$TM_meta: topic model meta data
+#'   input$Det_TM_grouping_group1_rows_all: all rows from group1 elements
+#'   values$tm_theta: topic model theta
+#'   input$Det_TM_grouping_group2_rows_all: all rows from group2 elements
 output$Det_TM_grouping_correlation<-renderUI(({
   correlation<-cor(x = colMeans(values$tm_theta[values$TM_meta[input$Det_TM_grouping_group1_rows_all,"id_doc"],,drop=F]),y = colMeans(values$tm_theta[values$TM_meta[input$Det_TM_grouping_group2_rows_all,"id_doc"],,drop=F]))
   text<-HTML(paste0("Correlation: <b>",correlation,"</b>"))
@@ -4791,6 +4895,12 @@ output$Det_TM_grouping_correlation<-renderUI(({
 }))
 
 
+#' show average topic from grouped documents of the detailed topic model
+#' depends on:
+#'   values$TM_meta: topic model meta data
+#'   input$Det_TM_grouping_group1_rows_all: all rows of documents from group 1
+#'   input$Det_TM_grouping_group2_rows_all: all rows of documents from group 2
+#'   values$tm_theta: topic model theta
 output$Det_TM_grouping_avg_topic_distribution_plot<-plotly::renderPlotly({
   validate(
     need(!is.null(input$Det_TM_grouping_group1_rows_all),message=F)
@@ -4806,7 +4916,12 @@ output$Det_TM_grouping_avg_topic_distribution_plot<-plotly::renderPlotly({
   return(p)
 })
 
-
+#' average topic distribution datatable from documents from grouping
+#' depends on:
+#'   input$Det_TM_grouping_group1_rows_all: all rows of documents from group 1
+#'   input$Det_TM_grouping_group2_rows_all: all rows of documents from group 2
+#'   values$TM_meta: topic model meta data
+#'   values$tm_theta: topic model theta
 output$Det_TM_grouping_avg_topic_distribution_table<-DT::renderDataTable({
   validate(
     need(!is.null(input$Det_TM_grouping_group1_rows_all),message=F)
@@ -4831,7 +4946,11 @@ output$Det_TM_grouping_avg_topic_distribution_table<-DT::renderDataTable({
   )
 })
 
-
+#' datatable of documents in group 1
+#' depends on:
+#'   input$Det_TM_grouping_group1_columns: possible parameters to group documents found in columns of the document information
+#'   values$TM_meta: topic model meta data
+#'   input$Det_TM_grouping_quantile_group1: quantiles for group 1
 output$Det_TM_grouping_group1<-DT::renderDataTable({
   validate(
     need(length(input$Det_TM_grouping_group1_columns)>0,message="Select atleast one column for filtering")
@@ -4867,6 +4986,8 @@ output$Det_TM_grouping_group1<-DT::renderDataTable({
   )
 })
 
+#' datatable for quantiles for group 1
+#' depends on: values$Det_TM_grouping_quantiles_group1: quantiles for group one
 output$Det_TM_grouping_quantile_group1_quantiles<-DT::renderDataTable({
   validate(
     need(
@@ -4879,7 +5000,10 @@ output$Det_TM_grouping_quantile_group1_quantiles<-DT::renderDataTable({
 
 
 
-
+#' datatable for elements of group 2
+#' depends on:
+#'   input$Det_TM_grouping_group2_columns: possible parameters to group documents found in columns of the document information
+#'   input$Det_TM_grouping_quantile_group2: quantiles to group documents 
 output$Det_TM_grouping_group2<-renderDataTable({
   validate(
     need(length(input$Det_TM_grouping_group2_columns)>0,message="Select atleast one column for filtering")
@@ -4915,6 +5039,8 @@ output$Det_TM_grouping_group2<-renderDataTable({
   )
 })
 
+#' datatable for quantiles for group 2
+#' depends on: values$Det_TM_grouping_quantiles_group2: quantiles for group 2
 output$Det_TM_grouping_quantile_group2_quantiles<-DT::renderDataTable({
   validate(
     need(
@@ -4926,7 +5052,8 @@ output$Det_TM_grouping_quantile_group2_quantiles<-DT::renderDataTable({
 })
 
 
-
+#' render word cloud depending of elements of group1
+#' depends on: input$Det_TM_grouping_group1_rows_all: all rows of docuements from group 1
 output$Det_TM_grouping_wc_group1<-renderWordcloud2({
   validate(
     need(!is.null(input$Det_TM_grouping_group1_rows_all),message=F)
@@ -4935,6 +5062,9 @@ output$Det_TM_grouping_wc_group1<-renderWordcloud2({
   wordcloud2(data = data.frame(word=titles,freq=rep(1,length(titles))),size = 0.15,color = "random-light", backgroundColor = "black",fontFamily = "Helvetica", minRotation = -pi/2, maxRotation = -pi/2)
   
 })
+
+#' render word cloud depending of elements of group2
+#' depends on: input$Det_TM_grouping_group2_rows_all: all rows of docuements from group 2
 output$Det_TM_grouping_wc_group2<-renderWordcloud2({
   validate(
     need(!is.null(input$Det_TM_grouping_group2_rows_all),message=F)
@@ -4952,7 +5082,10 @@ output$Det_TM_grouping_wc_group2<-renderWordcloud2({
 #               Model Reproducibility                     #
 ###########################################################
 
-
+#' show model reproducibility
+#' depends on: 
+#'   values$tm_phi: topic model phi
+#'   input$Det_TM_reproducibility_models: topic model information for reproducibility of the models
 output$TM_model_reproducibility_UI<-renderUI({
   
   
@@ -4984,7 +5117,14 @@ output$TM_model_reproducibility_UI<-renderUI({
   
 })
 
-
+#' datatable for specific reproducibility of the topic model 
+#' depends on:
+#'   values$Det_TM_model_reproducibility_top_words_per_result_per_topic: top words per topic of all results for model reproducibility
+#'   input$Det_TM_reproducibility_models: choosen models for reproducability calculation 
+#'   input$Det_TM_model_reproducibility_specific_resultset: reproducibility for specific sets of results
+#'   input$Det_TM_reproducibility_number_of_words: reproducibility of the number of words
+#'   values$Det_TM_model_reproducibility_specific_number_of_reference_topics: reproducibility of a specific number of reference topics
+#'   values$Det_TM_model_reproducibility_top_words_per_result_per_topic: top words of topics per result 
 output$Det_TM_model_reproducibility_specific_table<-DT::renderDataTable({
   validate(
     need(!is.null(values$Det_TM_model_reproducibility_top_words_per_result_per_topic),"Please calculate the Average Values first"),
@@ -5013,7 +5153,8 @@ output$Det_TM_model_reproducibility_specific_table<-DT::renderDataTable({
                 backgroundPosition = 'center')
 })
 
-
+#' show reproducibility of a referenced specific topic
+#' depends on: values$Det_TM_model_reproducibility_specific_number_of_reference_topics: reproducibility of a specific number of referenced topics
 output$Det_TM_model_reproducibility_specific_topic_reference_UI<-renderUI({
   validate(
     need(!is.null(values$Det_TM_model_reproducibility_specific_number_of_reference_topics),message=F)
@@ -5030,7 +5171,15 @@ output$Det_TM_model_reproducibility_specific_topic_reference_UI<-renderUI({
   ))
 }) 
 
-
+#' wordcloud for specific model reproducibility
+#' input$Det_TM_model_reproducibility_specific_topic_reference: model reproducibility of a specific topic for reference reasons
+#' values$Det_TM_model_reproducibility_calculated: calculated model reproducibility for the detailed topic model
+#' values$Det_TM_model_reproducibility_top_words_per_result_per_topic: reproducibility of the top words per topic of the different results
+#' input$Det_TM_model_reproducibility_specific_topic: reproducibility of a specific topic
+#' input$Det_TM_reproducibility_models: models for reproducability calculation
+#' input$Det_TM_model_reproducibility_specific_resultset: reproducibilitx for a specific set of results
+#' input$Det_TM_reproducibility_number_of_words: reproducibility of number of words
+#' input$Det_TM_model_reproducibility_specific_wordcloud_size: reproducibility of specific wordcloud size
 output$Det_TM_model_reproducibility_specific_wordcloud<-wordcloud2::renderWordcloud2({
   validate(
     need(!is.null(input$Det_TM_model_reproducibility_specific_topic_reference),message=F),
@@ -5052,6 +5201,17 @@ output$Det_TM_model_reproducibility_specific_wordcloud<-wordcloud2::renderWordcl
   return(wc)
 })
 
+#' observe reproducibility calculation
+#' depends on:
+#'   input$Det_TM_reproducibility_calculate:
+#'   values$Details_Data_TM: details of topic model data
+#'   input$Det_TM_reproducibility_models: reproducibility of choosen models
+#'   input$Det_TM_reproducibility_lambda: parameter lambda for reproducibility calculation 
+#'   input$Det_TM_reproducibility_number_of_words: reproducibility for number of words
+#'   values$Det_TM_model_reproducibility_top_words_per_result_per_topic: reproducibility for top words per topic of different results
+#'   values$Det_TM_model_reproducibility_calculated: calculated model reprocucibility
+#'   input$Det_TM_reproducibility_overlap: overlapping elements in reproduciblity calculation 
+#'   values$Det_TM_model_reproducibility_found_match_percentage: reproducibility for found matches in percentage
 observeEvent(input$Det_TM_reproducibility_calculate,ignoreNULL = F,{
   output$Det_TM_model_reproducibility_avg_overlap<-renderUI({
     top_words_per_result_per_topic<-list()
@@ -5099,7 +5259,11 @@ observeEvent(input$Det_TM_reproducibility_calculate,ignoreNULL = F,{
   
   
   
-  
+ #' obsereve datatable for results of model reproducibility calculation
+ #' depends on:
+ #'   values$Det_TM_model_reproducibility_top_words_per_result_per_topic: reproducibility of top words per topic of different results
+ #'   values$Det_TM_model_reproducibility_found_match_percentage: reproducibility of found matches in percentage
+ #'   values$tm_phi: topic model parameter phi
   output$Det_TM_model_reproducibility_result_table<-DT::renderDataTable({
     validate(
       need(!is.null(isolate(values$Det_TM_model_reproducibility_top_words_per_result_per_topic)),message=F),
@@ -5117,7 +5281,8 @@ observeEvent(input$Det_TM_reproducibility_calculate,ignoreNULL = F,{
   })
 })
 
-# change selected topic, if user selects a row in the overview table
+#' change selected topic, if user selects a row in the overview table
+#' depends on: input$Det_TM_model_reproducibility_result_table_rows_selected: selected rows in data table of the results of model reproducibility
 observe({
   s = input$Det_TM_model_reproducibility_result_table_rows_selected
   if (length(s)) {
@@ -5126,7 +5291,8 @@ observe({
 })
 
 
-# change selected comparison topic, if user selects a row in the overview table
+#' change selected comparison topic, if user selects a row in the overview table
+#' depends on: input$Det_TM_model_reproducibility_specific_table_cells_selected: selected cells from data table of specific model reproducibility
 observe({
   s = input$Det_TM_model_reproducibility_specific_table_cells_selected
   if (length(s)) {

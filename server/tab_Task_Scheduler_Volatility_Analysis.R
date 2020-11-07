@@ -1,5 +1,5 @@
 
-#render the parameter set for volatility analysis
+#' render the parameter set for volatility analysis
 output$Analysis_Parameter_VA<-renderUI({
   tagList(
     tags$hr(),
@@ -507,7 +507,67 @@ With the window based approaches, the dispersion of the available values within 
 
 
 
-#start volatility analysis script, if submit button is clicked
+#' start volatility analysis script, if submit button is clicked
+#' depends on:
+#'   input$VA_Submit_Script: 
+#'   input$VA_min_termfreq_c:
+#'   input$VA_max_termfreq_c:
+#'   input$VA_min_termfreq_p:
+#'   input$VA_max_termfreq_p:
+#'   input$VA_min_termfreq_r:
+#'   input$VA_max_termfreq_r:
+#'   input$VA_min_termfreq_q:
+#'   input$VA_max_termfreq_q:
+#'   input$VA_min_docfreq_c:
+#'   input$VA_max_docfreq_c:
+#'   input$VA_min_docfreq_p:
+#'   input$VA_max_docfreq_p:
+#'   input$VA_min_docfreq_r:
+#'   input$VA_max_docfreq_r:
+#'   input$VA_min_docfreq_q:
+#'   input$VA_max_docfreq_q:
+#'   input$VA_use_fixed_vocab:
+#'   input$VA_fixed_vocab:
+#'   input$VA_termfreq_type:
+#'   input$VA_baseform:
+#'   input$VA_min_char:
+#'   input$VA_ngram:
+#'   input$VA_remove_stopwords:
+#'   input$VA_lowercase:
+#'   input$VA_remove_numbers:
+#'   input$VA_remove_numbers_all:
+#'   input$VA_remove_punctuation:
+#'   input$VA_remove_hyphenation:
+#'   input$VA_min_Cooc_Freq:
+#'   input$VA_timeintervall:
+#'   input$VA_history:
+#'   input$VA_method:
+#'   input$VA_Cooc_Measure:
+#'   input$VA_cooc_type:
+#'   input$VA_remove_custom:
+#'   input$VA_consolidate_entities:
+#'   input$VA_blacklist:
+#'   input$VA_POS_TYPES:
+#'   input$VA_POS_TYPES_exclude:
+#'   input$VA_ENTITY_TYPES:
+#'   input$VA_ENTITY_TYPES_exclude:
+#'   input$VA_docfreq_type:
+#'   input$VA_rank_significance:
+#'   input$VA_reference_window:
+#'   input$VA_rank
+#'   input$VA_window_var:
+#'   input$VA_sig_reference_dist
+#'   input$VA_sig_reference_weightfactor:
+#'   input$VA_rank_minmax_beta:
+#'   input$VA_keep_custom:
+#'   input$VA_use_custom_blacklist:
+#'   input$VA_use_custom_whitelist:
+#'   input$VA_whitelist:
+#'   input$VA_whitelist_only:
+#'   input$VA_whitelist_expand:
+#'   input$VA_whitelist_only_results:
+#'   input$VA_use_fixed_vocab:
+#'   input$VA_fixed_vocab:
 observeEvent(input$VA_Submit_Script,{
   valid<-check_pruning_parameters(min_t_c = input$VA_min_termfreq_c,max_t_c = input$VA_max_termfreq_c,min_t_p =input$VA_min_termfreq_p,max_t_p =  input$VA_max_termfreq_p
                                   ,min_t_r =input$VA_min_termfreq_r,max_t_r = input$VA_max_termfreq_r,min_t_q = input$VA_min_termfreq_q, max_t_q = input$VA_max_termfreq_q
