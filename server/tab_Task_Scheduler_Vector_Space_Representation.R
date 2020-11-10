@@ -156,7 +156,7 @@ output$Analysis_Parameter_VS<-renderUI({
 #'   input$VS_threads: set a number of threads to run the trainingsprocess on
 #'   input$VS_window: set the window size used in training
 #'   input$VS_iter: number of passes to make over the corpus during training
-#'   input$VS_neg_samples:
+#'   input$VS_neg_samples:negative sectioned samples ??
 #'   input$VS_use_model:
 #'   input$VS_model:
 #'   input$VS_train_dim_reduction:
