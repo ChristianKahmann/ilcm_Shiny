@@ -1,5 +1,5 @@
 
-#parameters for sentiment analysis
+#' parameters for sentiment analysis
 output$Analysis_Parameter_SA<-renderUI({
   tagList(
     tags$hr(),
@@ -72,7 +72,19 @@ output$Analysis_Parameter_SA<-renderUI({
 
 
 
-#start Sentiment analysis script, if submit button is clicked
+#' start Sentiment analysis script, if submit button is clicked
+#' depends on:
+#'   input$SA_Submit_Script: submit sentiment analysis script
+#'   input$collection_selected: selected collection
+#'   input$SA_baseform: should the baseform of words be used?
+#'   input$SA_ngram: size of N-grams
+#'   input$SA_lowercase: should the words be completely in lowercase
+#'   input$SA_sentiment_dictionary: choose sentiment dictionary (depends on language of the text)
+#'   input$SA_avg: selected document score aggregation
+#'   input$SA_remove_custom: remove custome words
+#'   input$analysis_selected: what analysis model is selected
+#'   input$use_custom_script: use a custome script?
+#'   input$custom_script_options: option for a customed script
 observeEvent(input$SA_Submit_Script,{
   #save needed parameters
   parameters<-list(collection=input$collection_selected,

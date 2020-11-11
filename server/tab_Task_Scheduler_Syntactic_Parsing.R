@@ -1,5 +1,5 @@
 
-#parameters for sentiment analysis
+#' parameters for syntactic parsing
 output$Analysis_Parameter_SP<-renderUI({
   tagList(
     #specific parameters
@@ -17,7 +17,14 @@ output$Analysis_Parameter_SP<-renderUI({
 
 
 
-#start Sentiment analysis script, if submit button is clicked
+#' start Syntactic Parsing script, if submit button is clicked
+#' depends on:
+#'   input$SP_Submit_Script:  submit the syntactic parsing script
+#'   input$collection_selected: selected collection
+#'   input$SP_cores: number of cores to use for parsing
+#'   input$analysis_selected: selected analysis
+#'   input$use_custom_script: should a custome script be used
+#'   input$custom_script_options: show possible custom script options
 observeEvent(input$SP_Submit_Script,{
   #save needed parameters
   parameters<-list(
