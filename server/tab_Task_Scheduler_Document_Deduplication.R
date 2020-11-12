@@ -1,5 +1,5 @@
 
-#parameters for sentiment analysis
+#' parameters for document deduplication
 output$Analysis_Parameter_DD<-renderUI({
   tagList(
     tags$hr(),
@@ -74,7 +74,16 @@ output$Analysis_Parameter_DD<-renderUI({
 
 
 
-#start Sentiment analysis script, if submit button is clicked
+#' start Sentiment analysis script, if submit button is clicked
+#' depends on:
+#'   input$DD_Submit_Script: submited script
+#'   input$DD_similarity_measure: picl similarity measurement (jaccard similarity, jaccard bag similarity)
+#'   input$DD_threshold: treshold for document deduplication
+#'   input$DD_strategy: strategy for document deduplication
+#'   input$collection_selected: selected collection
+#'   input$analysis_selected: selected analysis model
+#'   input$use_custom_script: use a custom script?
+#'   input$custom_script_options: options for the custom script
 observeEvent(input$DD_Submit_Script,{
   #save needed parameters
   parameters<-list(collection=input$collection_selected,
