@@ -410,7 +410,7 @@ observeEvent(ignoreNULL = T,input$CA_use_custom_blacklist,{
 
 #' start cooccurrence analysis script, if submit button is clicked
 #' depends on:
-#'   input$CA_Submit_Script: sumbited script for cooccurrence analysis
+#'   input$CA_Submit_Script: submited script for cooccurrence analysis
 #'   input$CA_min_termfreq_c: minimum term frequency (count)
 #'   input$CA_max_termfreq_c: maximum term frequency (count)
 #'   input$CA_min_termfreq_p: minimum term probability
@@ -430,7 +430,7 @@ observeEvent(ignoreNULL = T,input$CA_use_custom_blacklist,{
 #'   input$CA_use_fixed_vocab: should a fixed vocabulary be used?
 #'   input$CA_fixed_vocab: fixed vocabulary
 #'   input$CA_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
-#'   input$CA_docfreq_type: choosen document frequence type
+#'   input$CA_docfreq_type: choosen document frequency type
 #'   input$collection_selected: selected collection
 #'   input$CA_baseform: should words be reduced to their baseform?
 #'   input$CA_min_char: select minimum of characters
@@ -578,57 +578,55 @@ observeEvent(input$CA_Submit_Script,{
 
 #' start script after continue anyway is clicked even though pruning settings seem to be wrong
 #' depends on:
-#'   input$CA_pruning_continue:
-#'   input$CA_termfreq_type:
-#'   input$CA_docfreq_type:
-#'   input$CA_min_termfreq_c:
-#'   input$CA_max_termfreq_c:
-#'   input$CA_min_docfreq_c:
-#'   input$CA_max_docfreq_c:
-#'   input$CA_min_termfreq_r:
-#'   input$CA_max_termfreq_r:
-#'   input$CA_min_docfreq_r:
-#'   input$CA_max_docfreq_r:
-#'   input$CA_min_termfreq_p:
-#'   input$CA_max_termfreq_p:
-#'   input$CA_min_docfreq_p:
-#'   input$CA_max_docfreq_p:
-#'   input$CA_min_termfreq_q:
-#'   input$CA_max_termfreq_q:
-#'   input$CA_min_docfreq_q:
-#'   input$CA_max_docfreq_q:
-#'   input$collection_selected:
-#'   input$CA_baseform:
-#'   input$CA_min_char:
-#'   input$CA_ngram:
-#'   input$CA_remove_stopwords:
-#'   input$CA_lowercase:
-#'   input$CA_remove_numbers:
-#'   input$CA_remove_numbers_all:
-#'   input$CA_remove_punctuation:
-#'   input$CA_remove_hyphenation:
-#'   input$CA_min_Cooc_Freq:
-#'   input$CA_cooc_type:
-#'   input$CA_remove_custom:
-#'   input$CA_consolidate_entities:
-#'   input$CA_blacklist:
-#'   input$CA_POS_TYPES:
-#'   input$CA_POS_TYPES_exclude:
-#'   input$CA_ENTITY_TYPES:
-#'   input$CA_ENTITY_TYPES_exclude,:
-#'   input$CA_termfreq_type:
-#'   input$CA_docfreq_type:
-#'   input$CA_keep_custom:
-#'   input$CA_use_custom_blacklist:
-#'   input$CA_use_custom_whitelist:
-#'   input$CA_whitelist:
-#'   input$CA_whitelist_expand:
-#'   input$CA_whitelist_only:
-#'   input$CA_use_fixed_vocab:
-#'   input$CA_fixed_vocab:
-#'   input$analysis_selected:
-#'   input$use_custom_script:
-#'   input$custom_script_options:
+#'   input$CA_pruning_continue:continue pruning?
+#'   input$CA_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
+#'   input$CA_docfreq_type: choosen document frequency type
+#'   input$CA_min_termfreq_c: minimum term frequency (count)
+#'   input$CA_max_termfreq_c: maximum term frequency (count)
+#'   input$CA_min_docfreq_c: minimum document frequency (count)
+#'   input$CA_max_docfreq_c: maximum document frequency (count)
+#'   input$CA_min_termfreq_r: minimum term rank
+#'   input$CA_max_termfreq_r: maximum term rank
+#'   input$CA_min_docfreq_r: minimum document rank
+#'   input$CA_max_docfreq_r: maximum document rank
+#'   input$CA_min_termfreq_p: minimum term probability
+#'   input$CA_max_termfreq_p: maximum term probalility
+#'   input$CA_min_docfreq_p: minimum document probability
+#'   input$CA_max_docfreq_p: maximum document probability
+#'   input$CA_min_termfreq_q: minimum term quantile
+#'   input$CA_max_termfreq_q: maximum document quantile
+#'   input$CA_min_docfreq_q: minimum document quantile
+#'   input$CA_max_docfreq_q: maximum document quantile
+#'   input$collection_selected: selected collection
+#'   input$CA_baseform: should words be reduced to their baseform?
+#'   input$CA_min_char: select minimum of characters
+#'   input$CA_ngram: choose size of n-grams
+#'   input$CA_remove_stopwords: should stopwords be removed
+#'   input$CA_lowercase: should all words be put in lowercase
+#'   input$CA_remove_numbers: should numbers in the documents be removed?
+#'   input$CA_remove_numbers_all: should all words containing number be removed?
+#'   input$CA_remove_punctuation: should the punctuation be removed?
+#'   input$CA_remove_hyphenation: should hyphenation be removed?
+#'   input$CA_min_Cooc_Freq: select a minimum frequence for words for cooccurrence calculation
+#'   input$CA_cooc_type: which type of cooccurrence analysis should be used? 
+#'   input$CA_remove_custom: should custome words be reduced?
+#'   input$CA_consolidate_entities: should entities be consolidated?
+#'   input$CA_blacklist: blacklist of words that should be removed from the texts
+#'   input$CA_POS_TYPES: select part of speech types that should be used
+#'   input$CA_POS_TYPES_exclude: select part of speech types that should be excluded
+#'   input$CA_ENTITY_TYPES: select entity (NER) types that should be used
+#'   input$CA_ENTITY_TYPES_exclude: select entity (NER) types that should be excluded
+#'   input$CA_keep_custom: costume words to keep in analysis
+#'   input$CA_use_custom_blacklist: should a custome blacklist be used?
+#'   input$CA_use_custom_whitelist: should a custome whitelist be used?
+#'   input$CA_whitelist: selected whitelist of words to keep in analysis
+#'   input$CA_whitelist_expand: expand current whitelist
+#'   input$CA_whitelist_only: just use words on whitelist
+#'   input$CA_use_fixed_vocab: should a fixed vocabulary be used?
+#'   input$CA_fixed_vocab: fixed vocabulary
+#'   input$analysis_selected: selected analysis type
+#'   input$use_custom_script: should a customed script be used?
+#'   input$custom_script_options: options for the custom script
 observeEvent(input$CA_pruning_continue,ignoreInit = T,{
   validate(
     need(isTRUE(input$CA_pruning_continue),message=F)
