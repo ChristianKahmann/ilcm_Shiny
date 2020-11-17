@@ -3502,8 +3502,7 @@ output$TM_validation_UI<-renderUI({
     }
   }
   
-  
-  
+
   m<-merge(x = token,y=data,by="features",all.x=TRUE)
   m<-m[order(m[,2]),]
   getPalette = colorRampPalette(brewer.pal(12, "Paired"))

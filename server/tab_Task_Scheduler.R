@@ -1,5 +1,5 @@
 # select Input to choose a collection
-# choices: check files in "colelctions/collections"
+# choices: check files in "collections/collections"
 # @ values$coll_saved: reactive variable that invalidates when a new collection is saved
 output$Task_Scheduler_Collection<-renderUI({
   values$coll_saved
