@@ -1,4 +1,4 @@
-
+#' render the parameter set for classification
 output$Analysis_Parameter_CL<-renderUI({
   tagList(
     tags$hr(),
@@ -410,6 +410,10 @@ output$Analysis_Parameter_CL<-renderUI({
   )
 })
 
+#' start ckassification
+#' depends on:
+#'   input$CL_Context_Unit: select context unit (e.g. sentence)
+#'   input$CL_Mode: select mode
 observeEvent(input$CL_Context_Unit,ignoreInit = T,{
   selected<-input$CL_Mode
   if(input$CL_Context_Unit=="Sentence"){
@@ -433,7 +437,9 @@ observeEvent(input$CL_Context_Unit,ignoreInit = T,{
 })
 
 
-#render categories for chosen project
+#' render categories for chosen project
+#' depends on:
+#'   input$CL_Project: render classification project
 output$CL_UI_Category<-renderUI({
   if(length(input$CL_Project)>0){
     load(paste0("collections/annotation_schemes/",input$CL_Project,".RData"))
@@ -455,7 +461,7 @@ output$CL_UI_Category<-renderUI({
 })
 
 
-# radio Buttons for dictionaries found in /collections/dictionaries
+#' radio Buttons for dictionaries found in /collections/dictionaries
 output$CL_dict_ui<-renderUI({
   if(length(list.files("collections/dictionaries//"))==0){
     return(HTML("No dictionaries available. You can create dictionaries in the Scripts-Dictionaries Tab"))
@@ -471,8 +477,11 @@ output$CL_dict_ui<-renderUI({
 })
 
 
-# show dictionaries options when mode = "Produce 50 new active learning examples
-# and use dictionary checkbox is set to TRUE
+#' show dictionaries options when mode = "Produce 50 new active learning examples
+#' and use dictionary checkbox is set to TRUE
+#' depends on:
+#'   input$CL_use_dict: used dictionary from classification
+#'   input$CL_Mode: classification mode
 observe({
   if(isTRUE(input$CL_use_dict) && input$CL_Mode=="Produce 50 new active learning examples"){
     shinyjs::show(id = "CL_dict")
@@ -482,7 +491,7 @@ observe({
   }
 })
 
-# show whitelists stored in collections/whitelists
+#' show whitelists stored in collections/whitelists
 output$CL_whitelist_UI<-renderUI({
   if(length(list.files("collections/whitelists/"))==0){
     return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
@@ -496,7 +505,9 @@ output$CL_whitelist_UI<-renderUI({
   }
 })
 
-# show whitelist options when whitelist checkbox is TRUE
+#' show whitelist options when whitelist checkbox is TRUE
+#' depends on:
+#'   input$CL_use_custom_whitelist: use a custom whitelist?
 observeEvent(ignoreNULL=T,input$CL_use_custom_whitelist,{
   if(isTRUE(input$CL_use_custom_whitelist)){
     shinyjs::show(id = "CL_whitelist")
@@ -506,7 +517,7 @@ observeEvent(ignoreNULL=T,input$CL_use_custom_whitelist,{
   }
 })
 
-# show blacklists stored in collections/blacklists
+#' show blacklists stored in collections/blacklists
 output$CL_blacklist_UI<-renderUI({
   if(length(list.files("collections/blacklists/"))==0){
     return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
@@ -520,7 +531,9 @@ output$CL_blacklist_UI<-renderUI({
   }
 })
 
-# show blacklist options when blacklist checkbox is TRUE
+#' show blacklist options when blacklist checkbox is TRUE
+#' depend on:
+#'   input$CL_use_custom_blacklist: use a custome blacklist
 observeEvent(ignoreNULL=T,input$CL_use_custom_blacklist,{
   if(isTRUE(input$CL_use_custom_blacklist)){
     shinyjs::show(id = "CL_blacklist")
@@ -532,7 +545,68 @@ observeEvent(ignoreNULL=T,input$CL_use_custom_blacklist,{
 
 
 
-#start classification script, if submit button is clicked
+#' start classification script, if submit button is clicked
+#' depends on:
+#'   input$CL_Submit_Script: submited script for cooccurrence analysis
+#'   input$CL_dict: dictionary for classification
+#'   input$CL_min_termfreq_c: minimum term frequency (count)
+#'   input$CL_max_termfreq_c: maximum term frequency (count)
+#'   input$CL_min_termfreq_p: minimum term probability
+#'   input$CL_max_termfreq_p: maximum term probalility
+#'   input$CL_min_termfreq_r: minimum term rank
+#'   input$CL_max_termfreq_r: maximum term rank
+#'   input$CL_min_termfreq_q: minimum term quantile
+#'   input$CL_max_termfreq_q: maximum document quantile
+#'   input$CL_min_docfreq_c: minimum document frequency (count)
+#'   input$CL_max_docfreq_c: maximum document frequency (count)
+#'   input$CL_min_docfreq_p: minimum document probability
+#'   input$CL_max_docfreq_p: maximum document probability
+#'   input$CL_min_docfreq_r: minimum document rank
+#'   input$CL_max_docfreq_r: maximum document rank
+#'   input$CL_min_docfreq_q: minimum document quantile
+#'   input$CL_max_docfreq_q: maximum document quantile
+#'   input$CL_use_fixed_vocab:  should a fixed vocabulary be used?
+#'   input$CL_fixed_vocab: fixed vocabulary
+#'   input$CL_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
+#'   input$CL_docfreq_type: choosen document frequence type
+#'   input$collection_selected: selected collection
+#'   input$CL_baseform: should words be reduced to their baseform?
+#'   input$CL_min_char: select minimum of characters
+#'   input$CL_ngram: choose size of n-grams
+#'   input$CL_remove_stopwords: should stopwords be removed?
+#'   input$CL_lowercase: should all words be put in lowercase?
+#'   input$CL_remove_numbers: should numbers in the documents be removed?
+#'   input$CL_remove_numbers_all: should all words containing number be removed?
+#'   input$CL_remove_punctuation: should the punctuation be removed?
+#'   input$CL_remove_hyphenation: should hyphenation be removed?
+#'   input$CL_remove_custom: should custome words be reduced?
+#'   input$CL_consolidate_entities: should entities be consolidated?
+#'   input$CL_blacklist: blacklist of words that should be removed from the texts
+#'   input$CL_POS_TYPES: select part of speech types that should be used
+#'   input$CL_POS_TYPES_exclude: select part of speech types that should be excluded
+#'   input$CL_ENTITY_TYPES: select entity (NER) types that should be used
+#'   input$CL_ENTITY_TYPES_exclude: select entity (NER) types that should be excluded
+#'   nput$CL_keep_custom: costume words to keep in analysis
+#'   input$CL_use_custom_blacklist: should a custome blacklist be used?
+#'   input$CL_use_custom_whitelist: should a custome whitelist be used?
+#'   input$CL_whitelist: selected whitelist of words to keep in analysis
+#'   input$CL_whitelist_only: just use words on whitelist
+#'   input$CL_whitelist_expand: just use words on whitelist
+#'   input$CL_Context_Unit: select context unit
+#'   input$CL_Project: select project for classification
+#'   input$CL_Mode: select classification mode
+#'   input$CL_Category: classification category for generating active learning examples
+#'   input$CL_Threshold: classification threshold
+#'   input$CL_use_dict: use a dictionairy
+#'   input$CL_dict: selected dictionairy
+#'   input$CL_active_learning_strategy: selected strategy on which the document selection for active learning examples based on
+#'   input$CL_c: parameter to tell how much to avoid missclassifying each training example
+#'   input$CL_use_fixed_vocab: should a fixed vocabulary be used?
+#'   input$CL_fixed_vocab: fixed vocabulary
+#'   input$collection_selected: selected collection
+#'   input$analysis_selected:  selected analysis type
+#'   input$use_custom_script  should a customed script be used?
+#'   input$custom_script_options: options for the custom script
 observeEvent(ignoreInit = T,input$CL_Submit_Script,{
   #check if input is correct
   continue=TRUE
@@ -677,7 +751,65 @@ observeEvent(ignoreInit = T,input$CL_Submit_Script,{
 
 
 
-#start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' depends on:
+#'   input$CL_pruning_continue: continue pruning?
+#'   input$CL_Mode:  select classification mode
+#'   input$CL_Category:  classification category for generating active learning examples
+#'   input$CL_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
+#'   input$CL_docfreq_type: choosen document frequence type
+#'   input$CL_min_termfreq_c: minimum term frequency (count)
+#'   input$CL_max_termfreq_c: maximum term frequency (count)
+#'   input$CL_min_termfreq_p: minimum term probability
+#'   input$CL_max_termfreq_p: maximum term probalility
+#'   input$CL_min_termfreq_r: minimum term rank
+#'   input$CL_max_termfreq_r: maximum term rank
+#'   input$CL_min_termfreq_q: minimum term quantile
+#'   input$CL_max_termfreq_q: maximum document quantile
+#'   input$CL_min_docfreq_c: minimum document frequency (count)
+#'   input$CL_max_docfreq_c: maximum document frequency (count)
+#'   input$CL_min_docfreq_p: minimum document probability
+#'   input$CL_max_docfreq_p: maximum document probability
+#'   input$CL_min_docfreq_r: minimum document rank
+#'   input$CL_max_docfreq_r: maximum document rank
+#'   input$CL_min_docfreq_q: minimum document quantile
+#'   input$CL_max_docfreq_q: maximum document quantile
+#'   input$collection_selected: selected collection
+#'   input$CL_baseform: should words be reduced to their baseform?
+#'   input$CL_min_char: select minimum of characters
+#'   input$CL_ngram: choose size of n-grams
+#'   input$CL_remove_stopwords: should stopwords be removed?
+#'   input$CL_lowercase: should all words be put in lowercase?
+#'   input$CL_remove_numbers: should numbers in the documents be removed?
+#'   input$CL_remove_numbers_all: should all words containing number be removed?
+#'   input$CL_remove_punctuation: should the punctuation be removed?
+#'   input$CL_remove_hyphenation: should hyphenation be removed?
+#'   input$CL_remove_custom: should custome words be reduced?
+#'   input$CL_consolidate_entities: should entities be consolidated?
+#'   input$CL_blacklist: blacklist of words that should be removed from the texts
+#'   input$CL_POS_TYPES: select part of speech types that should be used
+#'   input$CL_POS_TYPES_exclude: select part of speech types that should be excluded
+#'   input$CL_ENTITY_TYPES: select entity (NER) types that should be used
+#'   input$CL_ENTITY_TYPES_exclude: select entity (NER) types that should be excluded
+#'   input$CL_keep_custom: costume words to keep in analysis
+#'   input$CL_use_custom_blacklist: should a custome blacklist be used?
+#'   input$CL_use_custom_whitelist: should a custome whitelist be used?
+#'   input$CL_whitelist: selected whitelist of words to keep in analysis
+#'   input$CL_whitelist_only: just use words on whitelist
+#'   input$CL_whitelist_expand: just use words on whitelist
+#'   input$CL_Context_Unit: select context unit
+#'   input$CL_Project: select project for classification
+#'   input$CL_Threshold: classification threshold
+#'   input$CL_use_dict: use a dictionairy
+#'   input$CL_dict: selected dictionairy
+#'   input$CL_active_learning_strategy: selected strategy on which the document selection for active learning examples based on
+#'   input$CL_c: parameter to tell how much to avoid missclassifying each training example
+#'   input$CL_use_fixed_vocab: should a fixed vocabulary be used?
+#'   input$CL_fixed_vocab: fixed vocabulary
+#'   input$collection_selected: selected collection
+#'   input$analysis_selected: selected analysis type
+#'   input$use_custom_script: should a customed script be used?
+#'   input$custom_script_options: options for the custom script
 observeEvent(ignoreInit=T,input$CL_pruning_continue,{
   validate(
     need(isTRUE(input$CL_pruning_continue),message=F)

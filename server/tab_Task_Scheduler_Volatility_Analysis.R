@@ -1,5 +1,5 @@
 
-#render the parameter set for volatility analysis
+#' render the parameter set for volatility analysis
 output$Analysis_Parameter_VA<-renderUI({
   tagList(
     tags$hr(),
@@ -507,7 +507,65 @@ With the window based approaches, the dispersion of the available values within 
 
 
 
-#start volatility analysis script, if submit button is clicked
+#' start volatility analysis script, if submit button is clicked
+#' depends on:
+#'   input$VA_Submit_Script: submission script for  volatility analysis
+#'   input$VA_min_termfreq_c: mininal term frequency (count)
+#'   input$VA_max_termfreq_c: maximal term frequency (count)
+#'   input$VA_min_termfreq_p: minimal term propability
+#'   input$VA_max_termfreq_p: maximal term propability
+#'   input$VA_min_termfreq_r: minimal term rank
+#'   input$VA_max_termfreq_r: maximal term rank 
+#'   input$VA_min_termfreq_q: minimal term quantile
+#'   input$VA_max_termfreq_q: maximal term quantile
+#'   input$VA_min_docfreq_c: minimal document frequency (count)
+#'   input$VA_max_docfreq_c: maximal document frequency (count) 
+#'   input$VA_min_docfreq_p: minimal document probability
+#'   input$VA_max_docfreq_p: maximal document probability
+#'   input$VA_min_docfreq_r: minimal document rank
+#'   input$VA_max_docfreq_r: maximal document rank
+#'   input$VA_min_docfreq_q: minimal document quantile
+#'   input$VA_max_docfreq_q: maximal document quantile
+#'   input$VA_use_fixed_vocab: should a fix vocabulary be used?
+#'   input$VA_fixed_vocab: fixed vocab that should ne used
+#'   input$VA_termfreq_type: type of term frequency (count, prob, rank, quantile can be choosed)
+#'   input$VA_baseform: should the baseforms of the words be used?
+#'   input$VA_min_char: minimum of chars a word should consist of 
+#'   input$VA_ngram: size of N-Grams used in volatility analysis
+#'   input$VA_remove_stopwords: should stopwords be removed?
+#'   input$VA_lowercase: should the words of the document be converted to lower case?
+#'   input$VA_remove_numbers: should numbers be removed?
+#'   input$VA_remove_numbers_all: should everything be removed that can contain a number?
+#'   input$VA_remove_punctuation: should the punctuation be removed?
+#'   input$VA_remove_hyphenation: should hyphenation be removed?
+#'   input$VA_min_Cooc_Freq: minimum Cooccurrence frequency
+#'   input$VA_timeintervall: which time intervall (day, month, year) should be used?
+#'   input$VA_history: how large should the memory storage be?
+#'   input$VA_method: whitch method should be used? (significance or ranks)
+#'   input$VA_Cooc_Measure:which distand measurement should be used? (manhatten distance, eucledean distance, etc.)
+#'   input$VA_cooc_type: which Co-occurrence significance measure should be used? (Dice, log likelihood, mutual information)
+#'   input$VA_remove_custom: Remove custom words?
+#'   input$VA_consolidate_entities: should entities of the texts be consolidated?
+#'   input$VA_blacklist: used blacklist (words that should be ignored in calculations)
+#'   input$VA_POS_TYPES: which POS-Types should be included
+#'   input$VA_POS_TYPES_exclude: whicht POS-Types should be excluded
+#'   input$VA_ENTITY_TYPES: which entity-types should be used
+#'   input$VA_ENTITY_TYPES_exclude: which entity-types should be excluded
+#'   input$VA_docfreq_type: type of document frequency (count, prob, rank, quantile can be choosed)
+#'   input$VA_rank_significance: selected rank significance
+#'   input$VA_reference_window: should significance be referenced or window based
+#'   input$VA_rank: selected rank as Volatility Analysis parameters
+#'   input$VA_window_var: is window based significance selected choose variation calculation (inter quartile range or variance or variance coefficent)
+#'   input$VA_sig_reference_dist: is referenced based significance selected choose distance measurement (eucledean distance, manhatten distance, etc.) 
+#'   input$VA_sig_reference_weightfactor:is referenced based significance selected choose weight factor (linear or exponential)
+#'   input$VA_rank_minmax_beta: is ranked parameter selected use minimum/maximum algorithm and choose beta parameters
+#'   input$VA_keep_custom: keep custom words
+#'   input$VA_use_custom_blacklist: should a custom blacklist be used?
+#'   input$VA_use_custom_whitelist: should a custom whitelist be used?
+#'   input$VA_whitelist: selcted whitelist (list of words that should stay in calculation)
+#'   input$VA_whitelist_only: exclude all words despite the ones on the blacklist
+#'   input$VA_whitelist_expand: expand the whitelist
+#'   input$VA_whitelist_only_results: Volatility calculation for whitelist terms only
 observeEvent(input$VA_Submit_Script,{
   valid<-check_pruning_parameters(min_t_c = input$VA_min_termfreq_c,max_t_c = input$VA_max_termfreq_c,min_t_p =input$VA_min_termfreq_p,max_t_p =  input$VA_max_termfreq_p
                                   ,min_t_r =input$VA_min_termfreq_r,max_t_r = input$VA_max_termfreq_r,min_t_q = input$VA_min_termfreq_q, max_t_q = input$VA_max_termfreq_q
@@ -636,7 +694,8 @@ observeEvent(input$VA_Submit_Script,{
 })
 
 
-# show whitelists stored in collections/whitelists
+#' show whitelists stored in collections/whitelists
+#' 
 output$VA_whitelist_UI<-renderUI({
   if(length(list.files("collections/whitelists/"))==0){
     return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
@@ -650,7 +709,9 @@ output$VA_whitelist_UI<-renderUI({
   }
 })
 
-# show whitelist options when whitelist checkbox is TRUE
+#' show whitelist options when whitelist checkbox is TRUE
+#' depends:
+#'    input$VA_use_custom_whitelist: checks if the checkbox for the usage of whitelist is ticked
 observeEvent(ignoreNULL = T,input$VA_use_custom_whitelist,{
   if(isTRUE(input$VA_use_custom_whitelist)){
     shinyjs::show(id = "VA_whitelist")
@@ -660,7 +721,7 @@ observeEvent(ignoreNULL = T,input$VA_use_custom_whitelist,{
   }
 })
 
-# show blacklists stored in collections/blacklists
+#' show blacklists stored in collections/blacklists
 output$VA_blacklist_UI<-renderUI({
   if(length(list.files("collections/blacklists/"))==0){
     return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
@@ -674,7 +735,9 @@ output$VA_blacklist_UI<-renderUI({
   }
 })
 
-# show blacklist options when blacklist checkbox is TRUE
+#' show blacklist options when blacklist checkbox is TRUE
+#' depends on:
+#'   input$VA_use_custom_blacklist: checks if checkbox for the usage of a blacklist is ticked
 observeEvent(ignoreNULL = T,input$VA_use_custom_blacklist,{
   if(isTRUE(input$VA_use_custom_blacklist)){
     shinyjs::show(id = "VA_blacklist")
@@ -686,7 +749,67 @@ observeEvent(ignoreNULL = T,input$VA_use_custom_blacklist,{
 
 
 
-#start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' depends on:
+#'   input$VA_pruning_continue: continue with data prouning?
+#'   input$VA_termfreq_type: type of term frequency (count, prob, rank, quantile can be choosed)
+#'   input$collection_selected: selected collection
+#'   input$VA_Submit_Script: submission script for  volatility analysis
+#'   input$VA_min_termfreq_c: mininal term frequency (count)
+#'   input$VA_max_termfreq_c: maximal term frequency (count)
+#'   input$VA_min_termfreq_p: minimal term propability
+#'   input$VA_max_termfreq_p: maximal term propability
+#'   input$VA_min_termfreq_r: minimal term rank
+#'   input$VA_max_termfreq_r: maximal term rank 
+#'   input$VA_min_termfreq_q: minimal term quantile
+#'   input$VA_max_termfreq_q: maximal term quantile
+#'   input$VA_min_docfreq_c: minimal document frequency (count)
+#'   input$VA_max_docfreq_c: maximal document frequency (count) 
+#'   input$VA_min_docfreq_p: minimal document probability
+#'   input$VA_max_docfreq_p: maximal document probability
+#'   input$VA_min_docfreq_r: minimal document rank
+#'   input$VA_max_docfreq_r: maximal document rank
+#'   input$VA_min_docfreq_q: minimal document quantile
+#'   input$VA_max_docfreq_q: maximal document quantile
+#'   input$VA_baseform: should the baseforms of the words be used?
+#'   input$VA_min_char: minimum of chars a word should consist of 
+#'   input$VA_ngram: size of N-Grams used in volatility analysis
+#'   input$VA_remove_stopwords: should stopwords be removed?
+#'   input$VA_lowercase: should the words of the document be converted to lower case?
+#'   input$VA_remove_numbers: should numbers be removed?
+#'   input$VA_remove_numbers_all: should everything be removed that can contain a number?
+#'   input$VA_remove_punctuation: should the punctuation be removed?
+#'   input$VA_remove_hyphenation: should hyphenation be removed?
+#'   input$VA_min_Cooc_Freq: minimum Cooccurrence frequency
+#'   input$VA_timeintervall: which time intervall (day, month, year) should be used?
+#'   input$VA_history: how large should the memory storage be?
+#'   input$VA_method: whitch method should be used? (significance or ranks)
+#'   input$VA_Cooc_Measure: which distand measurement should be used? (manhatten distance, eucledean distance, etc.)
+#'   input$VA_cooc_type: which Co-occurrence significance measure should be used? (Dice, log likelihood, mutual information)
+#'   input$VA_remove_custom: Remove custom words?
+#'   input$VA_consolidate_entities: should entities of the texts be consolidated?
+#'   input$VA_blacklist: used blacklist (words that should be ignored in calculations)
+#'   input$VA_POS_TYPES: which POS-Types should be included
+#'   input$VA_POS_TYPES_exclude: whicht POS-Types should be excluded
+#'   input$VA_ENTITY_TYPES: which entity-types should be used (NER)
+#'   input$VA_ENTITY_TYPES_exclude: which entity-types should be excluded(NER)
+#'   input$VA_docfreq_type: type of document frequency (count, prob, rank, quantile can be choosed)
+#'   input$VA_rank_significance: selected rank significance
+#'   input$VA_reference_window: should significance be referenced or window based
+#'   input$VA_rank: selected rank as Volatility Analysis parameters
+#'   input$VA_window_var: is window based significance selected choose variation calculation (inter quartile range or variance or variance coefficent)
+#'   input$VA_sig_reference_dist: is referenced based significance selected choose distance measurement (eucledean distance, manhatten distance, etc.) 
+#'   input$VA_sig_reference_weightfactor: is referenced based significance selected choose weight factor (linear or exponential)
+#'   input$VA_rank_minmax_beta: is ranked parameter selected use minimum/maximum algorithm and choose beta parameters
+#'   input$VA_keep_custom: keep custom words
+#'   input$VA_use_custom_blacklist: should a custom blacklist be used?
+#'   input$VA_use_custom_whitelist: should a custom whitelist be used?
+#'   input$VA_whitelist: selcted whitelist (list of words that should stay in calculation)
+#'   input$VA_whitelist_only: exclude all words despite the ones on the blacklist
+#'   input$VA_whitelist_expand: expand the whitelist
+#'   input$VA_whitelist_only_results: Volatility calculation for whitelist terms only
+#'   input$VA_use_fixed_vocab: should a fixed vocabulary be used?
+#'   input$VA_fixed_vocab: fixed vocabulary that should be used
 observeEvent(input$VA_pruning_continue,ignoreInit = T,{
   validate(
     need(isTRUE(input$VA_pruning_continue),message=F)

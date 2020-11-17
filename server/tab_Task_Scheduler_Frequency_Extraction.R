@@ -1,5 +1,5 @@
 
-##render the parameter set for frequency extraction
+#' render the parameter set for frequency extraction
 output$Analysis_Parameter_FE<-renderUI({
   tagList(
     tags$hr(),
@@ -328,7 +328,7 @@ output$Analysis_Parameter_FE<-renderUI({
   )
 })
 
-# show whitelists stored in collections/whitelists
+#' show whitelists stored in collections/whitelists
 output$FE_whitelist_UI<-renderUI({
   if(length(list.files("collections/whitelists/"))==0){
     return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
@@ -342,7 +342,8 @@ output$FE_whitelist_UI<-renderUI({
   }
 })
 
-# show whitelist options when whitelist checkbox is TRUE
+#' show whitelist options when whitelist checkbox is TRUE
+#' depends on: input$FE_use_custom_whitelist: should a customed withelist for the fequency extraction be used
 observeEvent(ignoreNULL = T,input$FE_use_custom_whitelist,{
   if(isTRUE(input$FE_use_custom_whitelist)){
     shinyjs::show(id = "FE_whitelist")
@@ -352,7 +353,7 @@ observeEvent(ignoreNULL = T,input$FE_use_custom_whitelist,{
   }
 })
 
-# show blacklists stored in collections/blacklists
+#' show blacklists stored in collections/blacklists
 output$FE_blacklist_UI<-renderUI({
   if(length(list.files("collections/blacklists/"))==0){
     return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
@@ -366,7 +367,8 @@ output$FE_blacklist_UI<-renderUI({
   }
 })
 
-# show blacklist options when blacklist checkbox is TRUE
+#' show blacklist options when blacklist checkbox is TRUE
+#' depends on: input$FE_use_custom_blacklist: should a customed blacklist be used for frequency extraction
 observeEvent(ignoreNULL = T,input$FE_use_custom_blacklist,{
   if(isTRUE(input$FE_use_custom_blacklist)){
     shinyjs::show(id = "FE_blacklist")
@@ -379,7 +381,54 @@ observeEvent(ignoreNULL = T,input$FE_use_custom_blacklist,{
 
 
 
-#start cooccurrence analysis script, if submit button is clicked
+#' start cooccurrence analysis script, if submit button is clicked
+#' depends on:
+#'   input$FE_min_termfreq_c: minimum term frequency (count)
+#'   input$FE_max_termfreq_c: maximum term frequency (count)
+#'   input$FE_min_termfreq_p: minimum term probability
+#'   input$FE_max_termfreq_p: maximum term probalility
+#'   input$FE_min_termfreq_r: minimum term rank
+#'   input$FE_max_termfreq_r: maximum term rank
+#'   input$FE_min_termfreq_q: minimum term quantile
+#'   input$FE_max_termfreq_q: maximum term quantile
+#'   input$FE_min_docfreq_c: minimum document frequency (count)
+#'   input$FE_max_docfreq_c: maximum document frequency (count)
+#'   input$FE_min_docfreq_p: minimum document probability
+#'   input$FE_max_docfreq_p: maximum document probability
+#'   input$FE_min_docfreq_r: minimum document rank 
+#'   input$FE_max_docfreq_r: maximum document rank
+#'   input$FE_min_docfreq_q: minimum document quantile
+#'   input$FE_max_docfreq_q: maximum document quantile
+#'   input$FE_use_fixed_vocab: should a fixed vocabulary be used?
+#'   input$FE_fixed_vocab: the fixed vocabulary list
+#'   input$FE_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
+#'   input$collection_selected: selected collection
+#'   input$FE_baseform: should words be reduced to their baseform
+#'   input$FE_min_char: select minimum of characters
+#'   input$FE_ngram: choose size of n-grams
+#'   input$FE_remove_stopwords: should stopwords be removed
+#'   input$FE_lowercase: shoult all words be put in lowercase
+#'   input$FE_remove_numbers: should numbers in the documents be removed?
+#'   input$FE_remove_numbers_all: should all words be removed that contain numbers?
+#'   input$FE_remove_punctuation: should the punctuation be removed?
+#'   input$FE_remove_hyphenation: should hyphenation be removed?
+#'   input$FE_remove_custom: should custom words be removed
+#'   input$FE_consolidate_entities: should entities be consolidated?
+#'   input$FE_blacklist: blacklist of words that should be removed from the texts 
+#'   input$FE_POS_TYPES: select part of speech types that should be used
+#'   input$FE_POS_TYPES_exclude: select part of speech types that should be excluded
+#'   input$FE_ENTITY_TYPES: select entity (NER) types that should be used
+#'   input$FE_ENTITY_TYPES_exclude: select entity (NER) types that should be excluded
+#'   input$FE_docfreq_type: choosen document frequence type 
+#'   input$FE_keep_custom: are there custome words that should stay in the documents
+#'   input$FE_use_custom_blacklist: should a custom blacklist be used
+#'   input$FE_use_custom_whitelist: should a custom whitelist be used
+#'   input$FE_whitelist: whitelist for words that should stay in the documents
+#'   input$FE_whitelist_expand: expand the whitelist?
+#'   input$FE_whitelist_only: just use words from whitelist for analysis
+#'   input$analysis_selected: selected analysis type
+#'   input$use_custom_script: should a customed script be used?
+#'   input$custom_script_options: options for the custom script
 observeEvent(input$FE_Submit_Script,{
   valid<-check_pruning_parameters(min_t_c = input$FE_min_termfreq_c,max_t_c = input$FE_max_termfreq_c,min_t_p =input$FE_min_termfreq_p,max_t_p =  input$FE_max_termfreq_p
                                   ,min_t_r =input$FE_min_termfreq_r,max_t_r = input$FE_max_termfreq_r,min_t_q = input$FE_min_termfreq_q, max_t_q = input$FE_max_termfreq_q
@@ -495,7 +544,56 @@ observeEvent(input$FE_Submit_Script,{
 
 
 
-#start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' depends on:
+#'   input$FE_pruning_continue: do you want to continue the pruning?
+#'   input$FE_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
+#'   input$FE_docfreq_type: choosen document frequence type 
+#'   input$FE_min_termfreq_c: minimum term frequency (count)
+#'   input$FE_max_termfreq_c: maximum term frequency (count)
+#'   input$FE_min_docfreq_c: minimum document frequency (count)
+#'   input$FE_max_docfreq_c: maximum document frequency (count)
+#'   input$FE_min_termfreq_r: minimum term rank
+#'   input$FE_max_termfreq_r: maximum term rank
+#'   input$FE_min_docfreq_r: minimum document rank 
+#'   input$FE_max_docfreq_r: maximum document rank
+#'   input$FE_min_termfreq_p: minimum term probability
+#'   input$FE_max_termfreq_p: maximum term probalility
+#'   input$FE_min_docfreq_p: minimum document probability
+#'   input$FE_max_docfreq_p: maximum document probability
+#'   input$FE_min_termfreq_q: minimum term quantile
+#'   input$FE_max_termfreq_q: maximum term quantile
+#'   input$FE_min_docfreq_q: minimum document quantile
+#'   input$FE_max_docfreq_q: maximum document quantile
+#'   input$collection_selected: selected collection
+#'   input$FE_baseform: should words be reduced to their baseform?
+#'   input$FE_min_char: select minimum of characters
+#'   input$FE_ngram: choose size of n-grams
+#'   input$FE_remove_stopwords: should stopwords be removed
+#'   input$FE_lowercase: shoult all words be put in lowercase
+#'   input$FE_remove_numbers: should numbers in the documents be removed?
+#'   input$FE_remove_numbers_all: should all words be removed that contain numbers?
+#'   input$FE_remove_punctuation: should the punctuation be removed?
+#'   input$FE_remove_hyphenation: should hyphenation be removed?
+#'   input$FE_cooc_type: which type of cooccurrence analysis should be used?
+#'   input$FE_remove_custom: should custom words be removed
+#'   input$FE_consolidate_entities: should entities be consolidated?
+#'   input$FE_blacklist: blacklist of words that should be removed from the texts 
+#'   input$FE_POS_TYPES: select part of speech types that should be used
+#'   input$FE_POS_TYPES_exclude: select part of speech types that should be excluded
+#'   input$FE_ENTITY_TYPES: select entity (NER) types that should be used
+#'   input$FE_ENTITY_TYPES_exclude: select entity (NER) types that should be excluded
+#'   input$FE_keep_custom: are there custome words that should stay in the documents?
+#'   input$FE_use_custom_blacklist: should a custom blacklist be used?
+#'   input$FE_use_custom_whitelist: should a custom whitelist be used?
+#'   input$FE_whitelist: whitelist for words that should stay in the documents
+#'   input$FE_whitelist_expand: expand the whitelist?
+#'   input$FE_whitelist_only: just use words from whitelist for analysis
+#'   input$FE_use_fixed_vocab: should a fixed vocabulary be used?
+#'   input$FE_fixed_vocab: the fixed vocabulary list
+#'   input$analysis_selected: selected analysis type
+#'   input$use_custom_script: should a customed script be used?
+#'   input$custom_script_options: options for the custom script
 observeEvent(input$FE_pruning_continue,ignoreInit = T,{
   validate(
     need(isTRUE(input$FE_pruning_continue),message=F)

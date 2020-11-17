@@ -1,5 +1,6 @@
 
-#render the parameter set for topic modeling
+#' render the parameter set for topic modeling
+#' 
 output$Analysis_Parameter_TM<-renderUI({
   tagList(
     tags$hr(),
@@ -538,7 +539,7 @@ output$Analysis_Parameter_TM<-renderUI({
 })
 
 
-# show whitelists stored in collections/whitelists
+#' show whitelists stored in collections/whitelists
 output$TM_whitelist_UI<-renderUI({
   if(length(list.files("collections/whitelists/"))==0){
     return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
@@ -552,7 +553,8 @@ output$TM_whitelist_UI<-renderUI({
   }
 })
 
-# show whitelist options when whitelist checkbox is TRUE
+#' show whitelist options when whitelist checkbox is TRUE
+#' depends on: input$TM_use_custom_whitelist: check if whitlist checkbox is ticked 
 observeEvent(ignoreNULL = T,input$TM_use_custom_whitelist,{
   if(isTRUE(input$TM_use_custom_whitelist)){
     shinyjs::show(id = "TM_whitelist")
@@ -562,7 +564,7 @@ observeEvent(ignoreNULL = T,input$TM_use_custom_whitelist,{
   }
 })
 
-# show blacklists stored in collections/blacklists
+#' show blacklists stored in collections/blacklists
 output$TM_blacklist_UI<-renderUI({
   if(length(list.files("collections/blacklists/"))==0){
     return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
@@ -576,7 +578,8 @@ output$TM_blacklist_UI<-renderUI({
   }
 })
 
-# show blacklist options when blacklist checkbox is TRUE
+#' show blacklist options when blacklist checkbox is TRUE
+#' depends on: input$TM_use_custom_blacklist: is blacklist checkbox ticked?
 observeEvent(ignoreNULL = T,input$TM_use_custom_blacklist,{
   if(isTRUE(input$TM_use_custom_blacklist)){
     shinyjs::show(id = "TM_blacklist")
@@ -587,7 +590,70 @@ observeEvent(ignoreNULL = T,input$TM_use_custom_blacklist,{
 })
 
 
-#start topic model analysis script, if submit button is clicked
+#' start topic model analysis script, if submit button is clicked
+#' depends on: 
+#'   input$TM_Submit_Script: topic model script
+#'   input$TM_min_termfreq_c: set minimum for term frequency (count)
+#'   input$TM_max_termfreq_c: set maximum for term freqeuncy (count)
+#'   input$TM_min_termfreq_p: set minimum for term probability
+#'   input$TM_max_termfreq_p: set maximum for term probability
+#'   input$TM_min_termfreq_r: set minimum for term rank
+#'   input$TM_max_termfreq_r: set maximum for term rank
+#'   input$TM_min_termfreq_q: set minimum for term quantile
+#'   input$TM_max_termfreq_q: set maximum for term quantile
+#'   input$TM_min_docfreq_c: set minimum for document frequency (count)
+#'   input$TM_max_docfreq_c: set maximum for document frequency (count)
+#'   input$TM_min_docfreq_p: set minimum for document probability
+#'   input$TM_max_docfreq_p: set maximum for document probability
+#'   input$TM_min_docfreq_r: set minimum for document rank 
+#'   input$TM_max_docfreq_r: set maximum for document rank
+#'   input$TM_min_docfreq_q: set minimum for document quantile
+#'   input$TM_max_docfreq_q: set maximum for document quantile
+#'   input$TM_use_fixed_vocab: should a fixed vocabulary be used?
+#'   input$TM_fixed_vocab: fixed vocabulary for topic modeling
+#'   input$TM_termfreq_type: which type of termfrequency analysis should be used (count, probability, rank, quantile)
+#'   input$collection_selected: which collection was selected for topic modeling
+#'   input$TM_baseform: should the words be reduced to their baseform
+#'   input$TM_min_char: set minimum for characters
+#'   input$TM_ngram: which size of N-grams should be used?
+#'   input$TM_remove_stopwords: should the stopwords be removed?
+#'   input$TM_lowercase: should uppercase words be turned into lower case words? 
+#'   input$TM_remove_numbers: should numbers be removed?
+#'   input$TM_remove_numbers_all: should all words be  removed that contain of a number
+#'   input$TM_remove_punctuation: should the puntation be removed?
+#'   input$TM_remove_hyphenation: should hyphenations be removed?
+#'   input$TM_min_Cooc_Freq: set minimum Frequence for co-occurrence calculation 
+#'   input$TM_remove_custom: should customed words be removed
+#'   input$TM_consolidate_entities: should entities be consolidated for the topic model calculation?
+#'   input$TM_blacklist: used blacklist of words that should be removed from all documents befor the topic model analysis
+#'   input$TM_POS_TYPES: which part of speech types should be used?
+#'   input$TM_POS_TYPES_exclude: which part of speech types should be removed?
+#'   input$TM_ENTITY_TYPES: which entity (NER) types should be used?
+#'   input$TM_ENTITY_TYPES_exclude: which entity (NER) types should be used?
+#'   input$TM_docfreq_type: which type of document frequency analysis should be used (count, probability, rank, quantile)
+#'   input$TM_keep_custom: are there any custome words to keep in the document?
+#'   input$TM_use_custom_blacklist: should a customed blacklist be used?
+#'   input$TM_use_custom_whitelist should a customed whitelist be used?
+#'   input$TM_whitelist: customed whitelist for topic modeling
+#'   input$TM_whitelist_expand: expanded whitelist for topic modeling
+#'   input$TM_whitelist_only: should only the words from the whitelist be used?
+#'   input$TM_number_of_topics: how many topics should be calculated?
+#'   input$TM_alpha: set document topic density
+#'   input$TM_method: choose a backend method to calculate the topic models
+#'   input$TM_detailed_meta_dist: choose a distance masurement for detailed meta data analysis
+#'   input$TM_use_precalculated_topic_model: should a pre-calculated topic model be used?
+#'   input$TM_precalculated_topic_model: the selected pre-calculated topic model
+#'   input$stm_prevalenceFormula: formula with no response variable or a matrix containing topic prevalence covariates
+#'   input$stm_contentFormula: formula containing a single variable or something which can be coerced to a factor indicating the category of the content variable for each document
+#'   input$stm_init_type: choose method of initialization (spectral or LDA or custom or random option possible)
+#'   input$stm_max_em_its: maximum number of EM iterations
+#'   input$stm_emtol: convergence tolerance - EM stops when the relatice change in the approximate bound drops below this level
+#'   input$stm_LDAbeta: is LDAbeta selected? automatically ticket when there are no content covariates
+#'   input$stm_interactions: are the interactions between content covariates and the latent topic activated?
+#'   input$stm_ngroups: Number of groups for memorized inference
+#'   input$stm_gamma_prior: set the prior estimation method for the prevalence covariate model (pooled or L1)
+#'   input$stm_sigma_prior: set a value for the strength of regularization toward a diagonalized covariance matrix
+#'   input$stm_kappa_prior: set method for structural topic modeling (L1 or Jeffreys)
 observeEvent(input$TM_Submit_Script,{
   valid_pruning<-check_pruning_parameters(min_t_c = input$TM_min_termfreq_c,max_t_c = input$TM_max_termfreq_c,min_t_p =input$TM_min_termfreq_p,max_t_p =  input$TM_max_termfreq_p
                                   ,min_t_r =input$TM_min_termfreq_r,max_t_r = input$TM_max_termfreq_r,min_t_q = input$TM_min_termfreq_q, max_t_q = input$TM_max_termfreq_q
@@ -730,7 +796,70 @@ observeEvent(input$TM_Submit_Script,{
 
 
 
-#start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' depends on:
+#'   input$TM_pruning_continue: topic model -should the pruning continues?
+#'   input$TM_termfreq_type: which type of termfrequency analysis should be used (count, probability, rank, quantile)
+#'   input$TM_min_termfreq_c: set minimum for term frequency (count)
+#'   input$TM_max_termfreq_c: set maximum for term freqeuncy (count)
+#'   input$TM_min_docfreq_c: set minimum for document frequency (count)
+#'   input$TM_max_docfreq_c: set maximum for document frequency (count)
+#'   input$TM_min_termfreq_r: set minimum for term rank
+#'   input$TM_max_termfreq_r: set maximum for term rank
+#'   input$TM_min_docfreq_r: set minimum for document rank
+#'   input$TM_max_docfreq_r: set maximum for document rank
+#'   input$TM_min_termfreq_p: set minimum for term probability
+#'   input$TM_max_termfreq_p: set maximum for term probability
+#'   input$TM_min_termfreq_q: set minimum for term quantile
+#'   input$TM_max_termfreq_q: set maximum for term quantile
+#'   input$TM_min_docfreq_q: set minimum for document quantile
+#'   input$TM_max_docfreq_q: set maximum for document quantile
+#'   input$collection_selected: which collection was selected for topic modeling
+#'   input$TM_baseform: should the words be reduced to their baseform
+#'   input$TM_min_char: set minimum for characters
+#'   input$TM_ngram: which size of N-grams should be used?
+#'   input$TM_remove_stopwords: should the stopwords be removed?
+#'   input$TM_lowercase: should uppercase words be turned into lower case words? 
+#'   input$TM_remove_numbers: should numbers be removed?
+#'   input$TM_remove_numbers_all: should all words be  removed that contain of a number?
+#'   input$TM_remove_punctuation: should the puntation be removed?
+#'   input$TM_remove_hyphenation: should hyphenations be removed?
+#'   input$TM_min_Cooc_Freq: set minimum Frequence for co-occurrence calculation 
+#'   input$TM_remove_custom: should customed words be removed
+#'   input$TM_consolidate_entities: should entities be consolidated for the topic model calculation?
+#'   input$TM_blacklist: used blacklist of words that should be removed from all documents befor the topic model analysis
+#'   input$TM_POS_TYPES:  which part of speech types should be used?
+#'   input$TM_POS_TYPES_exclude: which part of speech types should be removed?
+#'   input$TM_ENTITY_TYPES: which entity (NER) types should be used?
+#'   input$TM_ENTITY_TYPES_exclude: which entity (NER) types should be used?
+#'   input$TM_docfreq_type: which type of document frequency analysis should be used (count, probability, rank, quantile)
+#'   input$TM_keep_custom: are there any custome words to keep in the document?
+#'   input$TM_use_custom_blacklist: should a customed blacklist be used?
+#'   input$TM_use_custom_whitelist: should a customed whitelist be used?
+#'   input$TM_whitelist: customed whitelist for topic modeling
+#'   input$TM_whitelist_expand: expanded whitelist for topic modeling
+#'   input$TM_whitelist_only: should only the words from the whitelist be used?
+#'   input$TM_number_of_topics: how many topics should be calculated?
+#'   input$TM_alpha: set document topic density
+#'   input$TM_method: choose a backend method to calculate the topic models
+#'   input$TM_detailed_meta_dist: choose a distance masurement for detailed meta data analysis
+#'   input$TM_use_fixed_vocab: shpuld a fixed vocabulary be used?
+#'   input$TM_fixed_vocab: choose a fixed vocabulary
+#'   input$TM_use_precalculated_topic_model: should a pre-calculated topic model be used?
+#'   input$TM_precalculated_topic_model: the selected pre-calculated topic model
+#'   input$stm_prevalenceFormula: formula with no response variable or a matrix containing topic prevalence covariates
+#'   input$stm_contentFormula: formula containing a single variable or something which can be coerced to a factor indicating the category of the content variable for each document
+#'   input$stm_init_type: choose method of initialization (spectral or LDA or custom or random option possible)
+#'   input$stm_max_em_its: maximum number of EM iterations
+#'   input$stm_emtol: convergence tolerance - EM stops when the relatice change in the approximate bound drops below this level
+#'   input$stm_LDAbeta: is LDAbeta selected? automatically ticket when there are no content covariates
+#'   input$stm_interactions: are the interactions between content covariates and the latent topic activated?
+#'   input$stm_ngroups: Number of groups for memorized inference
+#'   input$stm_gamma_prior: set the prior estimation method for the prevalence covariate model (pooled or L1)
+#'   input$stm_sigma_prior: set a value for the strength of regularization toward a diagonalized covariance matrix
+#'   input$stm_kappa_prior: set method for structural topic modeling (L1 or Jeffreys)
+#'   input$analysis_selected: selected analysis model
+#'   input$collection_selected: selected collection
 observeEvent(input$TM_pruning_continue,ignoreInit = T,{
   validate(
     need(isTRUE(input$TM_pruning_continue),message=F)
@@ -832,7 +961,12 @@ observeEvent(input$TM_pruning_continue,ignoreInit = T,{
   }
   
   
-  #create process ID
+  #' create process ID
+  #' depends on:
+  #'   input$analysis_selected: selected analysis model
+  #'   input$collection_selected: selected collection
+  #'   input$use_custom_script: is a customed script used?
+  #'   input$custom_script_options: options for custom scripts
   ID<-get_task_id_counter()+1
   set_task_id_counter(ID)
   #save metadata for process

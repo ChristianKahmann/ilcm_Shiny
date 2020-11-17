@@ -1,5 +1,5 @@
 
-#parameters for sentiment analysis
+#' parameters for sentiment analysis
 output$Analysis_Parameter_KE<-renderUI({
   tagList(
     tags$hr(),
@@ -111,7 +111,21 @@ O: other elements  ', placement = "right"
 
 
 
-#start Sentiment analysis script, if submit button is clicked
+#' start Keyword extraction script, if submit button is clicked
+#' depends on:
+#'   input$KE_Submit_Script: submit keyword extraction script
+#'   input$collection_selected: selected collection
+#'   input$KE_baseform: should the words be reduced to their baseform?
+#'   input$KE_Mode: select keyword extraction mode (RAKE, PMI collocation, phrase sequence, text rank)
+#'   input$KE_no_ref_method: referenced methods
+#'   input$KE_no_ref_n_min: referenced minimal n
+#'   input$KE_no_ref_ngram_max: referenced n-gram maximum
+#'   input$KE_filter: choosen key extraction filter
+#'   input$KE_phrase: choosen phrase pattern 
+#'   input$KE_seperator: choosen seperator for phrases
+#'   input$analysis_selected: selected analysis model
+#'   input$use_custom_script: use custom script
+#'   input$custom_script_options: options for a custom script
 observeEvent(input$KE_Submit_Script,{
   #save needed parameters
   parameters<-list(collection=input$collection_selected,

@@ -1,7 +1,8 @@
 source("global/functions_used_in_scripts.R")
 
 
-#link downloadbutton for theta in Topic Models Tab
+#' link downloadbutton for theta in Topic Models Tab
+#'  depends on: values$tm_theta: theta in Topic Models Tab
 output$download_theta<-downloadHandler(
   filename = function() {
     paste('Theta-', Sys.Date(), '.csv', sep='')
@@ -12,7 +13,8 @@ output$download_theta<-downloadHandler(
   }
 )
 
-#link downloadbutton for phi in Topic Models Tab
+#' link downloadbutton for phi in Topic Models Tab
+#' depends on: values$tm_phi: phi in Topic Models Tab
 output$download_phi<-downloadHandler(
   filename = function() {
     paste('Phi-', Sys.Date(), '.csv', sep='')
@@ -24,7 +26,8 @@ output$download_phi<-downloadHandler(
 )  
 
 
-#link downloadbutton for lda vis in Topic Models Tab
+#' link downloadbutton for lda vis in Topic Models Tab
+#' depends on: values$tm_json: json data of Topic Model 
 output$download_ldavis<-downloadHandler(
   filename = function() {
     paste('LDAvis-', Sys.Date(), '.zip', sep='')
@@ -39,7 +42,16 @@ output$download_ldavis<-downloadHandler(
 
 
 
-#render LDA Viz plot based on the calculated topic models
+#' render LDA Viz plot based on the calculated topic models
+#' depends on:
+#'   input$coll: collumn names of calculatet topic model data
+#'   input$nTerms: number of words in lda vis
+#'   values$tm_phi: phi in Topic Models Tab
+#'   values$tm_theta: theta in Topic Models Tab
+#'   values$tm_doc.length: Topic Model document length
+#'   values$tm_vocab: Topic Model vocabulary
+#'   values$tm_term.frequency: Topic Model term frequency
+#'   values$tm_json: json file for Topic Models
 output$TM_LDAvis <- LDAvis::renderVis({
   #svd_tsne <- function(x) tsne::tsne(svd(x)$u)
   validate(
@@ -63,7 +75,12 @@ output$TM_LDAvis <- LDAvis::renderVis({
     }
   }
 })
-
+#' observe events to calculate word clouds
+#' depends on:
+#'   values$tm_phi: phi in Topic Models Tab
+#'   values$tm_theta: theta in Topic Models Tab
+#'   values$tm_doc.length: Topic Model document length
+#'   values$tm_dates: dates from documents used in Topic Model 
 observeEvent(values$tm_phi,{
   relevance<-calculate_topic_relevance(lambda=0.3,phi=values$tm_phi,theta=values$tm_theta,doc.length=values$tm_doc.length)
   values$tm_relevance <- relevance
@@ -106,7 +123,11 @@ observeEvent(values$tm_phi,{
   }
 })
 
-#observe add button ins topic modeling paramters tab and when clicked add topic to timeline data
+#' observe add button in topic modeling paramters tab and when clicked add topic to timeline data
+#' depends:
+#'   values$tm_random: random settings for Topic Model calculation
+#'   values$observers: observer information for the Topic Model
+#'   values$tm_timeline_ids: Topic Model timeline ids
 observeEvent(values$tm_random,{
   values$observers<-lapply(
     X=1:isolate(values$tm_number_of_topics),
@@ -124,7 +145,14 @@ observeEvent(values$tm_random,{
 }
 )
 
-#render topic model timelineplot based on added topics 
+#' render topic model timelineplot based on added topics 
+#' depends on:
+#'   values$tm_timeline_ids: Topic Model timeline ids
+#'   values$tm_dates: Topic Model dates
+#'   values$tm_theta:  theta in Topic Models Tab
+#'   input$TM_Timeline_Range: Topic Model timeline range
+#'   input$TM_Timeline_Rank: Topic Model timeline rank
+#'   input$TM_Timeline_Measure: Topic Model timeline measure (month, year)
 output$TM_Timeline<-renderPlotly({
   validate(need(!is.null(values$tm_timeline_ids), "Add topic by a click at it's add button"))
   timeline_data<-NULL
@@ -233,7 +261,13 @@ output$TM_Timeline<-renderPlotly({
   return(p)
 })
 
-#render datatable with topics displayed by reflecting words, click rows to select for subcollections
+#' render datatable with topics displayed by reflecting words, click rows to select for subcollections
+#' depends on:
+#'   values$tm_timeline_ids: Topic Models timeline ids
+#'   values$tm_relevance: Topic Model relevance
+#'   values$tm_sub_selected: Topic Model selected subcollection
+#'   values$tm_random2: Topic Model random setting
+#'   values$tm_phi: phi in Topic Models Tab
 output$TM_Subcollection_Table<-DT::renderDataTable({
   if(length(values$tm_timeline_ids)>=1){
     words<-list()
@@ -260,7 +294,10 @@ output$TM_Subcollection_Table<-DT::renderDataTable({
   }
 },server=F)
 
-
+#' render interface to manage subcollection
+#' depends on: 
+#'   values$tm_sub_selected: Topic Model selected subcollection
+#'   values$tm_info: Topic Model information
 output$TM_subColl_UI<-renderUI({
   validate(
     need(!is.null(values$tm_sub_selected),message=F)
@@ -285,17 +322,22 @@ output$TM_subColl_UI<-renderUI({
 ##############
 # STM
 ##############
-
+#' check the selectes Topic Model method
+#' depends on: values$tm_method: selected Topic Model method
 output$tm_method<-reactive({
   values$tm_method
 })
 
+#' update the content formula for parameter 
+#' depends on: values$tm_stm_parameters_contentFormula: stm content formula with parameters
 output$tm_stm_parameters_contentFormula <- reactive({
   values$tm_stm_parameters_contentFormula
 })
 
 outputOptions(output, "tm_stm_parameters_contentFormula", suspendWhenHidden = FALSE)
 
+#' check if stm content formula is set
+#' depends on: values$tm_stm_parameters_contentFormula: stm content formula with parameters
 output$tm_stm_parameters_contentFormulaIsSet <- reactive({
   if(nchar(values$tm_stm_parameters_contentFormula)>0){
     return(TRUE)
@@ -306,8 +348,11 @@ output$tm_stm_parameters_contentFormulaIsSet <- reactive({
 outputOptions(output, "tm_stm_parameters_contentFormulaIsSet", suspendWhenHidden = FALSE)
 
 
-#stm
-# plot.STM summary
+#' stm
+#' plot.STM summary
+#' depends on:
+#'   values$tm_stm_model: choosen Topic Model stm
+#'   input$tm_stm_visu_numberOfWordsToLabelTopic: Topic Model stm number of words and corresponding labels from visualisation
 output$TM_stm_visu_summary <- renderPlot({
   if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
     plot.STM(x = values$tm_stm_model, type = "summary", n = input$tm_stm_visu_numberOfWordsToLabelTopic)
@@ -316,7 +361,13 @@ output$TM_stm_visu_summary <- renderPlot({
     
   }
 })
-# plot.STM labels
+#' plot.STM labels
+#' depends on:
+#'   values$tm_stm_parameters_contentFormula: stm content formula parameters
+#'   values$tm_stm_model: Topic Model stm
+#'   input$tm_stm_visu_numberOfWordsToLabelTopic: Topic Model stm number of words and corresponding labels from visualisation
+#'   input$tm_stm_visu_labeltype: Topic Model stm label type from visualisation
+#'   input$tm_stm_visu_frexweight: Topic Model stm weight from visualisation
 output$TM_stm_visu_labels <- renderPlot({
   if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
     plot.STM(x = values$tm_stm_model, type = "labels", n = input$tm_stm_visu_numberOfWordsToLabelTopic)
@@ -325,7 +376,15 @@ output$TM_stm_visu_labels <- renderPlot({
   }
 })
 
-# plot.STM perspectives
+#' plot.STM perspectives
+#' depends on:
+#'   input$tm_stm_visu_perspectives_topic1: perspecitve Topic 1
+#'   input$tm_stm_visu_perspectives_topic2: perspective Topic 2
+#'   values$tm_stm_parameters_contentFormula: parameter from content formular
+#'   input$tm_stm_visu_perspectives_covariateValue1: additional parameters 
+#'   input$tm_stm_visu_perspectives_covariateValue2: additional parameters
+#'   values$tm_stm_model: selected Topic Model stm
+#'   input$tm_stm_visu_numberOfWordsToLabelTopic: Topic Model stm number of words and corresponding labels from visualisation
 output$TM_stm_visu_perspectives <- renderPlot({
   validate(
     need(!is.null(input$tm_stm_visu_perspectives_topic1),message="please select topic 1")
@@ -357,7 +416,13 @@ output$TM_stm_visu_perspectives <- renderPlot({
   
 })
 
-# plot.STM hist
+#' plot.STM hist
+#' depends on:
+#'   values$tm_stm_parameters_contentFormula: content formula set in stm model
+#'   input$tm_stm_visu_numberOfWordsToLabelTopic: Topic Model stm number of words and corresponding labels from visualisation
+#'   values$tm_stm_model: current STM model
+#'   input$tm_stm_visu_labeltype: labeltype of used visualisation from stm
+#'   input$tm_stm_visu_frexweight: Topic Model stm frex-weight from visualisation
 output$TM_stm_visu_hist <- renderPlot({
   if(nchar(values$tm_stm_parameters_contentFormula)>0){# if content formula was set in stm model, the label type is not selectable
     plot.STM(x = values$tm_stm_model, type = "hist", n = input$tm_stm_visu_numberOfWordsToLabelTopic)
@@ -367,15 +432,24 @@ output$TM_stm_visu_hist <- renderPlot({
 })
 
 
-# topic correlation
+#' topic correlation
+#' depends on:
+#'   input$tm_stm_visu_topicCorr_start: topic correlation Startpoint for the visualisation of the stm Topic Model
+#'   values$tm_stm_visu_topicCorr_show: topic correlation initiate visualisation
 observeEvent(input$tm_stm_visu_topicCorr_start,{
   values$tm_stm_visu_topicCorr_show <- TRUE
 })
 
+#' start process of displaying topic correlation
+#' depends on: values$tm_stm_visu_topicCorr_show: topic correlation initiate visualisation
 output$TM_stm_visu_topicCorr_show<-reactive({
   return(values$tm_stm_visu_topicCorr_show)
 })
 
+#' calculation of topic correlation
+#' depends on: 
+#'   values$tm_stm_visu_topicCorr_method: method of the used topic correlation
+#'   values$tm_stm_model: used stm model
 output$TM_stm_visu_topicCorr_calc <- renderPlot({
   values$tm_stm_visu_topicCorr_method <- "simple"
   topicCorrResult <- topicCorr(model = values$tm_stm_model, method = values$tm_stm_visu_topicCorr_method)
@@ -384,7 +458,18 @@ output$TM_stm_visu_topicCorr_calc <- renderPlot({
 outputOptions(output, "TM_stm_visu_topicCorr_show", suspendWhenHidden = FALSE)
 
 
-# estimateEffect
+#' estimateEffect
+#' depends on:
+#'   input$tm_stm_visu_estimateEffect_calcButton: information if calculation button for the estimated effect was pressed
+#'   input$tm_stm_visu_estimateEffect_metaVarsToConvertToFactor: convert meta Variables to factors
+#'   input$tm_stm_visu_estimateEffect_metaVarsToConvertToNumeric: convert meta Variables to numerix values
+#'   input$tm_stm_visu_estimateEffect_calcParam_formula: user provided formula 
+#'   values$tm_stm_visu_estimateEffectResult: results from estimate effect calculation
+#'   values$tm_stm_model: used stm model
+#'   values$tm_stm_metaDataConverted: converted meta data from stm
+#'   values$tm_stm_visu_estimateEffect_show: should the calculatet estimated effect be shown
+#'   values$tm_stm_visu_estimateEffect_plot_show: should the calculatet estimated effect plot be shown 
+#'   values$tm_stm_metaData: stm meta data
 observeEvent(input$tm_stm_visu_estimateEffect_calcButton,{
   # convert to factors and numeric
   metaVarsToConvertToFactor <- input$tm_stm_visu_estimateEffect_metaVarsToConvertToFactor
@@ -412,6 +497,9 @@ observeEvent(input$tm_stm_visu_estimateEffect_calcButton,{
   }
 })
 
+#' visualization of estimate effect
+#' depends on:
+#'    values$tm_stm_visu_estimateEffect_show: should the calculatet estimated effect be shown
 output$TM_stm_visu_estimateEffect_show<-reactive({
   values$tm_stm_visu_estimateEffect_show
 })
@@ -419,20 +507,33 @@ output$TM_stm_visu_estimateEffect_show<-reactive({
 outputOptions(output, "TM_stm_visu_estimateEffect_show", suspendWhenHidden = FALSE)
 
 
-# estimate effect summary
+#' estimate effect summary
+#' depends on: values$tm_stm_visu_estimateEffectResult
 output$TM_stm_visu_estimateEffect_summary <- renderPrint({
   summary(values$tm_stm_visu_estimateEffectResult)
 })
 
-# estimate effect plot
+#' estimate effect plot
+#' depends on: values$tm_stm_visu_estimateEffect_plot_show: should the calculatet estimated effect plot be shown 
 observeEvent(input$tm_stm_visu_estimateEffect_plotupdate,{
   values$tm_stm_visu_estimateEffect_plot_show <- TRUE
 })
 
+#' plot the vizualisation of estimate effect
+#' depends on: values$tm_stm_visu_estimateEffect_plot_show: should the calculatet estimated effect plot be shown 
 output$TM_stm_visu_estimateEffect_plot_show<-reactive({
   values$tm_stm_visu_estimateEffect_plot_show
 })
 
+#' plot estimate Effect
+#' depends on:
+#'   input$tm_stm_visu_estimateEffect_plot_difference_covValue1: changed additional parameter by the user
+#'   input$tm_stm_visu_estimateEffect_plot_difference_covValue2: changed additional parameter by the user
+#'   values$tm_stm_visu_estimateEffectResult: result from estimate effect calculation
+#'   input$tm_stm_visu_estimateEffect_plot_covariate: covariate from estimate effect visualisation
+#'   input$tm_stm_visu_estimateEffect_plot_topics: topics from estimate effect visualisation
+#'   values$tm_stm_metaData: stm meta data
+#'   values$tm_stm_visu_estimateEffect_plot_show: should the calculatet estimated effect plot be shown 
 output$TM_stm_visu_estimateEffect_plot <- renderPlot({
   
   plottingMethod <- input$tm_stm_visu_estimateEffect_plot_method
@@ -489,6 +590,10 @@ outputOptions(output, "TM_stm_visu_estimateEffect_plot_show", suspendWhenHidden 
 # end of STM
 ##############
 
+#' subcollection of the Topic models
+#' depends on:
+#'   values$tm_random2: random settings fr topic models
+#'   values$tm_sub_selected: selected subcollection from the topic model
 observe({
   values$tm_random2
   values$tm_sub_selected<-unlist(lapply(X = 1:length(isolate(values$tm_timeline_ids)),FUN = function(x){
@@ -498,8 +603,20 @@ observe({
   #browser()
 })
 
-
-
+#' save subcollection from topic model
+#' depends on:
+#'   input$TM_Subcollection_save: save subcollection
+#'   values$tm_timeline_ids: ids from topic model timeline
+#'   values$tm_sub_selected: selected subcollection items 
+#'   input$TM_Subcollection_Name: name of the subcollection
+#'   values$tm_info: topic model information
+#'   values$tm_theta: topic model theta
+#'   input$TM_Timeline_Rank1: topic model rank
+#'   values$current_task_id: current topic model task id
+#'   values$update_solr_url: updated solr url
+#'   values$update_solr_port: updated solr port
+#'   values$coll_saved: saved subcollection 
+#'   values$num_collections: number of the collection
 observeEvent(input$TM_Subcollection_save,{
   #check wheather a topic is selected
   topics_selected<-values$tm_timeline_ids[which(values$tm_sub_selected==T)]
@@ -569,7 +686,10 @@ observeEvent(input$TM_Subcollection_save,{
     }
   }
 })
-#if reset buttin is clicked, set selected topics to NULL
+#' if reset button is clicked, set selected topics to NULL
+#' depends on:
+#'   values$tm_timeline_ids: topic model timeline ids
+#'   values$tm_sub_selected: selected topic model subcollection
 observeEvent(input$TM_Timeline_Reset,{
   values$tm_timeline_ids<-NULL
   values$tm_sub_selected<-NULL
@@ -581,6 +701,17 @@ observeEvent(input$TM_Timeline_Reset,{
 #                             topic coherence                                                    #
 ##################################################################################################
 
+#' intiate topic coherence
+#' depends on:
+#'   input$TM_Coherence_start: start order for topic model coherence
+#'   values$Details_Data_TM: topic model detailed data
+#'   values$topic_intrusion_results: result of topic intrusion
+#'   values$right_prediction: topic prediction - the right predicted ones
+#'   values$word_intrusion_results: results of word intrusion
+#'   values$right_prediction_word: word prediction - the right predicted ones
+#'   values$TM_Coherence_dtm: topic model coherence- document term matrix
+#'   values$TM_Coherence_documents: topic model coherence documents
+#'   values$TM_Coherence_show: show the topic model coherence
 observeEvent(input$TM_Coherence_start,{
   error=try({
     load(paste0(values$Details_Data_TM,"/documents_TM.RData"))
@@ -608,13 +739,17 @@ observeEvent(input$TM_Coherence_start,{
   values$TM_Coherence_show<-TRUE
 })
 
-
+#' show topic model coherence
+#' depends on: values$TM_Coherence_show: initiate showing the coherence
 output$TM_Coherence_show<-reactive({
   values$TM_Coherence_show
 })
 outputOptions(output, "TM_Coherence_show", suspendWhenHidden = FALSE)
 
-
+#' plot toic coherence
+#' depends on:
+#'   values$TM_Coherence_dtm: topic model coherence document term matrix
+#'   values$tm_phi: phi in Topic Models Tab
 output$TM_Coherence_topic_coherence<-renderPlotly({
   topic_coherence<-tmca.util::tmca_topic_coherence(DTM = values$TM_Coherence_dtm,phi = values$tm_phi)
   values$topic_coherence_results<-topic_coherence
@@ -626,13 +761,16 @@ output$TM_Coherence_topic_coherence<-renderPlotly({
   return(p)
 })
 
+#' render plot 
+#' depends on: values$topic_coherence_results: result for topic coherence
 output$TM_Coherence_topic_coherence_mean_box<-renderValueBox({
   valueBox(subtitle = "avg. coherence",icon = icon("list"),value = round(mean(values$topic_coherence_results),3))
 })
 
 
 #############topic intrusion#################
-
+#' render coherence topic intrusion
+#' depends on: values$topic_intrusion_random_doc_number: choose random doc number for topic intrsusion
 output$TM_Coherence_topic_intrusion<-renderUI({
   return(tagList(
     valueBoxOutput(outputId = "TM_Coherence_topic_intrusion_result_box"),
@@ -666,12 +804,17 @@ output$TM_Coherence_topic_intrusion<-renderUI({
   )
 })
 
+#' show topic model intrusion
+#' depends on: values$TM_Intrusion_show: controll if topic model intrusion is shown
 output$TM_Intrusion_show<-reactive({
   values$TM_Intrusion_show
 })
 outputOptions(output, "TM_Intrusion_show", suspendWhenHidden = FALSE)
 
-
+#' start tooic intrusion
+#' depends on:
+#'   values$TM_topic_intrusion_run: information if topic intrusion is running
+#'   values$TM_Intrusion_show: information if topic intrusion should be shown 
 observeEvent(input$TM_Coherence_topic_intrusion_start,{
   values$TM_topic_intrusion_run<-1
   values$TM_Intrusion_show<-TRUE
@@ -679,7 +822,12 @@ observeEvent(input$TM_Coherence_topic_intrusion_start,{
   isolate(shinyjs::runjs('Shiny.onInputChange(\"wrong_topic\",  "topic_intrusion_button_0")'))
 })
 
-
+#' reset topic intrusion
+#' depends on:
+#'   values$topic_intrusion_results: current results from topic intrusion
+#'   values$right_prediction: right predicted topics
+#'   values$TM_Intrusion_show: show topic model intrusion
+#'   values$TM_topic_intrusion_docs: show documents from topic intrusion 
 observeEvent(input$TM_Coherence_topic_intrusion_reset,{
   values$topic_intrusion_results<-data.frame(doc=numeric(0),IntruderT=numeric(0),IntruderG=numeric(0))
   values$TM_topic_intrusion_run<-NULL
@@ -688,7 +836,10 @@ observeEvent(input$TM_Coherence_topic_intrusion_reset,{
   values$TM_topic_intrusion_docs<-0
 })
 
-
+#'render tabel for cohrerence topic intrusion
+#'depends on:
+#'   values$TM_Coherence_topic_intrusion_topics: cohrerence intrusion topics
+#'   input$TM_Coherence_setsize: set the size of the topic model coherence
 output$TM_Coherence_topic_intrusion_topics<-renderDataTable({
   data<-data.frame(values$TM_Coherence_topic_intrusion_topics,
                    WrongTopic = shinyInput(
@@ -707,11 +858,28 @@ output$TM_Coherence_topic_intrusion_topics<-renderDataTable({
   datatable(data=data,options = list(dom="T"),escape=F,selection = "none",rownames = F)
 })
 
+#' display document presentatopn for topic intrusion
+#' depends on: values$TM_Coherence_topic_intrusion_documents: documents from topic intrusion
 output$TM_Coherence_topic_intrusion_documents<-renderUI({
   document<-values$TM_Coherence_topic_intrusion_documents
   return(document)
 })
 
+#' run topic intrusion and get random documents
+#' depends on:
+#'   values$TM_topic_intrusion_run: run the topic intrusion
+#'   input$TM_Coherence_runs: is topic model coherence running?
+#'   values$tm_phi: phi in Topic Models Tab
+#'   values$TM_Coherence_documents: documents for topic model coherence
+#'   values$topic_intrusion_random_doc_number: random document number for topic intrusion
+#'   values$host: used host
+#'   values$port: used port
+#'   values$tm_relevance: relvance od topic
+#'   values$tm_theta: topic model theta
+#'   input$TM_Coherence_setsize: set the size for topic model coherence
+#'   values$topic_intrusion_results: result from topic intrusion
+#'   values$TM_Coherence_topic_intrusion_topics: coherence topics from topic intrusion
+#'   values$TM_Coherence_topic_intrusion_documents: documents from topic intrusion
 observe({
   validate(
     need(!is.null(values$TM_topic_intrusion_run),message=FALSE),
@@ -759,6 +927,10 @@ observe({
   values$TM_Coherence_topic_intrusion_documents<-document
 })
 
+#' display topic intrusion
+#' depends on:
+#'   values$TM_topic_intrusion_run: current topic intrusion run
+#'   input$TM_Coherence_runs: all topic intrusion runs
 output$TM_Coherence_topic_intrusion_iteration<-renderUI({
   validate(
     need(!is.null(values$TM_topic_intrusion_run),message=FALSE)
@@ -773,7 +945,12 @@ output$TM_Coherence_topic_intrusion_iteration<-renderUI({
   return(tags$h4(text,style='color:black;'))
 })
 
-
+#' wrong topics for the intrusion
+#' depends on:
+#'   input$wrong_topic: wrong topic choosen
+#'   values$TM_topic_intrusion_run: current run of the topic intrusion
+#'   input$TM_Coherence_runs: all runs from topic intrusion
+#'   values$topic_intrusion_results: results from topic intrusion
 observeEvent(input$wrong_topic,{
   validate(
     need(!is.null(input$wrong_topic),message=FALSE),
@@ -804,7 +981,11 @@ observeEvent(input$wrong_topic,{
 })
 
 
-
+#' render result box for topic intrusion
+#' depends on:
+#'   values$right_prediction: topic intrusion right predicted 
+#'   input$TM_Coherence_chance_correction: topic model coherence chance correction
+#'   input$TM_Coherence_setsize: set size of the topic model coherence
 output$TM_Coherence_topic_intrusion_result_box<-renderValueBox({
   performance<-values$right_prediction
   if(input$TM_Coherence_chance_correction==TRUE){
@@ -815,18 +996,29 @@ output$TM_Coherence_topic_intrusion_result_box<-renderValueBox({
   valueBox(value = paste(round(performance*100,3),"%"),subtitle = "right predictions",icon = icon("list"))
 })
 
-
+#' render document box for coherence topic intrusion
+#' depends on:
+#'   values$TM_topic_intrusion_run: run topic intrusion
+#'   values$TM_topic_intrusion_docs: docuemnts from topic intrusion
+#'   values$topic_intrusion_results
 output$TM_Coherence_topic_intrusion_docs_box<-renderValueBox({
   values$TM_topic_intrusion_run
   values$TM_topic_intrusion_docs
   valueBox(value = length(which(isolate(values$topic_intrusion_results[,3])!=0)),subtitle = "documents assessed",icon = icon("search"),color="purple")
 })
 
-
+#' display found intruders
+#' depends on: values$topic_intrusion_results: results from topic intrusion
 output$TM_Coherence_topic_intrusion_correct_box<-renderValueBox({
   valueBox(value = length(which((apply(values$topic_intrusion_results,1,FUN = function(x){x[2]==x[3]}))==TRUE)),subtitle = "intruders found",icon = icon("thumbs-up",lib="glyphicon"),color="yellow")
 })
 
+#' observe current topic intrusion run
+#' depends on:
+#'   values$TM_topic_intrusion_run: current topic intrusion run
+#'   input$TM_Coherence_runs: all runs for cohrerence
+#'   values$word_intrusion_results: results for word intrusion
+#'   values$Details_Data_TM: topic model data details
 observeEvent(values$TM_topic_intrusion_run,{
   validate(
     need(!is.null(values$TM_topic_intrusion_run),message=FALSE)
@@ -840,7 +1032,7 @@ observeEvent(values$TM_topic_intrusion_run,{
 
 ##########word intruson################
 
-
+#' render word intrusion
 output$TM_Coherence_word_intrusion<-renderUI({
   return(tagList(
     valueBoxOutput(outputId = "TM_Coherence_word_intrusion_result_box"),
@@ -870,17 +1062,29 @@ output$TM_Coherence_word_intrusion<-renderUI({
   )
 })
 
+#' show word intrusion
+#' depends on: values$TM_Intrusion_word_show: show word intrusion
 output$TM_Intrusion_word_show<-reactive({
   values$TM_Intrusion_word_show
 })
 outputOptions(output, "TM_Intrusion_word_show", suspendWhenHidden = FALSE)
 
-
+#' start word intrusion
+#' depends on:
+#'   values$TM_word_intrusion_run: run word intrusion
+#'   values$TM_Intrusion_word_show: show word intrusion
 observeEvent(input$TM_Coherence_word_intrusion_start,{
   values$TM_word_intrusion_run<-1
   values$TM_Intrusion_word_show<-TRUE
 })
 
+#' reset word intrusion
+#' depends on:
+#'   input$TM_Coherence_word_intrusion_reset: was reset button prest?
+#'   values$TM_word_intrusion_run: run word intrusion
+#'   values$right_prediction_word: made word prediction
+#'   values$TM_Intrusion_word_show: show word intrusion
+#'   values$TM_word_intrusion_docs: documents for word intrusion
 observeEvent(input$TM_Coherence_word_intrusion_reset,{
   values$word_intrusion_results<-data.frame(doc=numeric(0),IntruderT=numeric(0),IntruderG=numeric(0))
   values$TM_word_intrusion_run<-NULL
@@ -889,7 +1093,10 @@ observeEvent(input$TM_Coherence_word_intrusion_reset,{
   values$TM_word_intrusion_docs<-0
 })
 
-
+#' render table for coherence word intrusion 
+#' depends on:
+#'   values$TM_Coherence_word_intrusion_words
+#'   input$TM_Coherence_setsize: set size for coherence
 output$TM_Coherence_word_intrusion_words<-renderDataTable({
   data<-data.frame(values$TM_Coherence_word_intrusion_words,
                    WrongTopic = shinyInput(
@@ -908,11 +1115,20 @@ output$TM_Coherence_word_intrusion_words<-renderDataTable({
   datatable(data=data,options = list(dom="T"),escape=F,selection = "none",rownames = F)
 })
 
+#' display word cloud for word intrusion
+#' depends on: values$TM_Coherence_word_intrusion_words: words from word intrusion
 output$TM_Coherence_word_intrusion_wordcloud<-renderWordcloud2({
   data = data.frame(words= values$TM_Coherence_word_intrusion_words,counts=rep(1,length(values$TM_Coherence_word_intrusion_words)),stringsAsFactors = F)
   wordcloud2(data = data,fontFamily = "Helvetica",backgroundColor = "azure",color = "random-dark",size=1.5/input$TM_Coherence_setsize,minRotation = -pi/2, maxRotation = -pi/2)
 })
 
+#' run word intrusion
+#' depends on:
+#'   values$TM_word_intrusion_run: run word intrusion
+#'   values$word_intrusion_random_topic_number
+#'   values$tm_phi: Topic model phi
+#'   values$word_intrusion_results: results from word intruision
+#'   values$TM_Coherence_word_intrusion_words: words from word intrusion
 observe({
   validate(
     need(!is.null(values$TM_word_intrusion_run),message=FALSE),
@@ -962,7 +1178,10 @@ observe({
 })
 
 
-
+#' iteration for word intrusion
+#' depends on:
+#'   values$TM_word_intrusion_run: run word intrusion
+#'   input$TM_Coherence_runs: all coherence runs
 output$TM_Coherence_word_intrusion_iteration<-renderUI({
   validate(
     need(!is.null(values$TM_word_intrusion_run),message=FALSE)
@@ -976,7 +1195,14 @@ output$TM_Coherence_word_intrusion_iteration<-renderUI({
   return(tags$h4(text,style='color:black;'))
 })
 
-
+#' chooses wrong words for intrusion
+#' depends on:
+#'   input$wrong_word: wrong word in intrusion
+#'   values$TM_word_intrusion_run: run the word intrusion
+#'   input$TM_Coherence_runs: all the coherence runs
+#'   values$word_intrusion_results: results of word intrusion
+#'   values$right_prediction_word: right predicted words
+#'   values$TM_word_intrusion_run: run word intrusion
 observeEvent(input$wrong_word,{
   validate(
     need(!is.null(input$wrong_word),message=FALSE),
@@ -1007,7 +1233,11 @@ observeEvent(input$wrong_word,{
 })
 
 
-
+#' display result box
+#' depens on:
+#'   values$right_prediction_word: rate of right predicted words
+#'   input$TM_Coherence_chance_correction: coherence correction chance
+#'   input$TM_Coherence_setsize: set coherence size
 output$TM_Coherence_word_intrusion_result_box<-renderValueBox({
   performance<-values$right_prediction_word
   if(input$TM_Coherence_chance_correction==TRUE){
@@ -1018,18 +1248,26 @@ output$TM_Coherence_word_intrusion_result_box<-renderValueBox({
 })
 
 
-
+#' display intrusion box 
+#' depends on:
+#'   values$TM_word_intrusion_docs: documents for word intrusion
+#'   values$TM_word_intrusion_run: run word intrusion
 output$TM_Coherence_word_intrusion_docs_box<-renderValueBox({
   values$TM_word_intrusion_docs
   values$TM_word_intrusion_run
   valueBox(value = length(which(isolate(values$word_intrusion_results[,3])!=0)),subtitle = "documents assessed",icon = icon("search"),color="purple")
 })
 
-
+#' check box for correct predicted word intrusions
+#' depends on: values$word_intrusion_results: results from word intrusion
 output$TM_Coherence_word_intrusion_correct_box<-renderValueBox({
   valueBox(value = length(which((apply(values$word_intrusion_results,1,FUN = function(x){x[2]==x[3]}))==TRUE)),subtitle = "intruders found",icon = icon("thumbs-up",lib="glyphicon"),color="yellow")
 })
 
+#' observe running process for topic model word intrusion
+#' depends on:
+#'   values$TM_word_intrusion_run: run word intrusion
+#'   values$word_intrusion_results: results from word intrusion
 observeEvent(values$TM_word_intrusion_run,{
   validate(
     need(!is.null(values$TM_word_intrusion_run),message=FALSE)
@@ -1042,13 +1280,19 @@ observeEvent(values$TM_word_intrusion_run,{
 })
 
 
-
+#' topic model dictionary of possible topics
+#' depends on: values$tm_number_of_topics: number of topics from topic model
 output$TM_dict_topics_ui<-renderUI({
   checkboxGroupInput(inputId = "TM_dict_topics",label = "Topcis",
                      choiceNames =  paste("Topic",1:values$tm_number_of_topics,sep=" ") ,inline = T,choiceValues = 1:values$tm_number_of_topics
   )
 })
 
+#' category names from topic model dictionary
+#' depends on:
+#'   input$TM_dict_topics: topics from dictionary
+#'   values$TM_dict_headers_help: header help for the dictionary
+#'   values$tm_phi: topic model phi
 output$TM_dict_categories_names<-renderUI({
   validate(
     need(!is.null(input$TM_dict_topics),message=FALSE)
@@ -1063,6 +1307,12 @@ output$TM_dict_categories_names<-renderUI({
   }))
 })
 
+#' observe potential changes in topic dictionares
+#' depends on: 
+#'   input$TM_dict_topics: topics in dictionary
+#'   values$tm_number_of_topics: number of topics in topic model
+#'   values$TM_dict_headers_help: help headers for dictionary
+#'   values$TM_dict_headers: headers from dictionary
 observe({
   validate(
     need(!is.null((input$TM_dict_topics)),message=FALSE),
@@ -1087,6 +1337,8 @@ observe({
   values$TM_dict_headers<-do.call(c,headers)
 })
 
+#' show saved topic model dictionaries
+#' depends on: input$TM_dict_topics: topic dictionaries
 output$TM_dict_save_ui<-renderUI({
   validate(
     need(!is.null(input$TM_dict_topics),message=FALSE),
@@ -1100,7 +1352,13 @@ output$TM_dict_save_ui<-renderUI({
 })
 
 
-
+#' observe saving process for topic model dictionary
+#' depends on: 
+#'   values$TM_dict_headers: dictionary headers (contains of category names)
+#'   input$TM_dict_name: name for the dictionary
+#'   input$TM_dict_topics: topics from dictionary
+#'   values$tm_phi: topic model phi
+#'   input$TM_dict_number_of_words: number of words in dictionary
 observeEvent(input$TM_dict_save,{
   if(any(nchar(values$TM_dict_headers)==0)){
     shinyWidgets::sendSweetAlert(session=session,title = "Not all categories have names!",text = "Please specify a name for every category!",type = "warning")
@@ -1136,7 +1394,7 @@ observeEvent(input$TM_dict_save,{
 #                         Metadata                                   #
 ######################################################################
 
-
+#' output for metadata information
 output$TM_meta_ui<-renderUI({
   validate(
     need(file.exists(paste0(values$Details_Data_TM,"/meta_TM.RData")),message="no detailed metadata analyis selected in task scheduler")
@@ -1195,7 +1453,16 @@ output$TM_meta_ui<-renderUI({
   ))
 })
 
-
+#' show deteministic topic model heatmap table for membership of the documents
+#' depens on:
+#'   input$Det_meta_select: selected meta data
+#'   values$tm_theta: topic model theta
+#'   values$TM_meta: topic model meta data
+#'   input$TM_meta_Rank1: rank for topic model meta data
+#'   input$TM_meta_Prob: meta data with topic probability
+#'   input$Det_TM_meta_multi_valued: multi values from meta data selected
+#'   input$Det_TM_meta_multi_valued_seperator: seperator for the selected multi values 
+#'   input$Det_TM_meta_use_quantiles: should quantiles be used?
 output$Det_TM_meta_membership_heatmap_table<-DT::renderDataTable({
   validate(
     need(!is.null(input$Det_meta_select),message=F)
@@ -1275,7 +1542,17 @@ output$Det_TM_meta_membership_heatmap_table<-DT::renderDataTable({
 })
 
 
-
+#' show meta data membership as heatmap
+#' depends on:
+#'   selected meta data
+#'   values$tm_theta: topic model theta
+#'   values$TM_meta: topic model meta data
+#'   input$TM_meta_Prob: topic model meta data for topic probability
+#'   input$Det_TM_meta_multi_valued: selected multiple values from meta data
+#'   input$Det_TM_meta_multi_valued_seperator: seperator for the multiple values from meta data
+#'   input$Det_TM_meta_use_quantiles: should quantiles be used?
+#'   tnmatrix$value: tn matrix values
+#'   tnmatrix$topic: tn matrix topics
 output$Det_TM_meta_membership_heatmap<-plotly::renderPlotly({
   validate(
     need(!is.null(input$Det_meta_select),message=F)
@@ -1367,7 +1644,10 @@ output$Det_TM_meta_membership_heatmap<-plotly::renderPlotly({
 })
 
 
-
+#' compile table for correlation meta data
+#' depends on:
+#'    values$tm_theta: topic model theta
+#'    values$TM_meta: meta data for topic modeling
 output$Det_TM_Meta_Correlations_table_simple<-DT::renderDataTable({
   validate(
     need(!is.null(values$tm_theta),message = F),
@@ -1409,7 +1689,10 @@ output$Det_TM_Meta_Correlations_table_simple<-DT::renderDataTable({
 })
 
 
-
+#' select meta information via UI
+#' depends on:
+#'   values$TM_meta: topic model meta data
+#'   values$tm_theta: topic model theta
 output$Det_meta_select_ui<-renderUI({
   validate(
     need(!is.null(values$TM_meta),message=F
@@ -1436,6 +1719,10 @@ output$Det_meta_select_ui<-renderUI({
   )
 })
 
+#' select meta data from ui version 2
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected meta data
 output$Det_meta_select_ui2<-renderUI({
   validate(
     need(!is.null(values$TM_meta),message=F
@@ -1457,7 +1744,10 @@ output$Det_meta_select_ui2<-renderUI({
   
 })
 
-
+#' show first wordcloud of a certain topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud1<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1474,6 +1764,10 @@ output$Det_TM_meta_wordcloud1<-renderWordcloud2({
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1,minRotation = -pi/2, maxRotation = -pi/2)
 })
 
+#' show wordcloud of a second topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud2<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1489,7 +1783,10 @@ output$Det_TM_meta_wordcloud2<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
-
+#' show wordcloud of a 3th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud3<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1505,6 +1802,11 @@ output$Det_TM_meta_wordcloud3<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+
+#' show wordcloud of a 4th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud4<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1520,6 +1822,11 @@ output$Det_TM_meta_wordcloud4<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+
+#' show wordcloud of a 5th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud5<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1535,6 +1842,11 @@ output$Det_TM_meta_wordcloud5<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+
+#' show wordcloud of a 6th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud6<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1550,6 +1862,10 @@ output$Det_TM_meta_wordcloud6<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 7th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud7<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1565,6 +1881,10 @@ output$Det_TM_meta_wordcloud7<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 8th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud8<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1580,6 +1900,10 @@ output$Det_TM_meta_wordcloud8<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 9th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud9<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1595,6 +1919,10 @@ output$Det_TM_meta_wordcloud9<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 10th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud10<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1610,6 +1938,10 @@ output$Det_TM_meta_wordcloud10<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 11th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud11<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1625,6 +1957,10 @@ output$Det_TM_meta_wordcloud11<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 12th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud12<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1640,6 +1976,10 @@ output$Det_TM_meta_wordcloud12<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 13th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud13<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1655,6 +1995,10 @@ output$Det_TM_meta_wordcloud13<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 14th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud14<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1670,6 +2014,10 @@ output$Det_TM_meta_wordcloud14<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 15th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud15<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1685,6 +2033,10 @@ output$Det_TM_meta_wordcloud15<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 16th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud16<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1700,6 +2052,10 @@ output$Det_TM_meta_wordcloud16<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 17th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud17<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1715,6 +2071,10 @@ output$Det_TM_meta_wordcloud17<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
+#' show wordcloud of a 18th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud18<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1730,7 +2090,10 @@ output$Det_TM_meta_wordcloud18<-renderWordcloud2({
   data$data<-data$data/max(data$data)
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1, minRotation = -pi/2, maxRotation = -pi/2)
 })
-
+#' show wordcloud of a 19th topic
+#' depends on:
+#'    values$tm_phi: topic model phi
+#'    input$Det_meta_topic: topics from meta data
 output$Det_TM_meta_wordcloud19<-renderWordcloud2({
   theta=0.25
   pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
@@ -1753,7 +2116,16 @@ output$Det_TM_meta_wordcloud19<-renderWordcloud2({
 #           Detailed Metadata for selected Topic#
 #################################################
 
-#scatter Plot of meta vs topic
+#' scatter Plot of meta vs topic
+#' depends on:
+#'   input$Det_meta_topic: detailed meta data topic
+#'   values$TM_meta: topic model meta data 
+#'   values$tm_theta: topic model theta
+#'   input$TM_meta_Rank1: topic model meta data rank
+#'   input$Det_meta_select: selected detailed meta data
+#'   input$Det_meta_select2: second selected detailed meta data
+#'   input$TM_meta_Prob: probability for specific topic model meta data
+#'   alues$Det_TM_meta_scatter_data: scattered data from topic model meta data
 output$Det_TM_scatter_plot_ui<-renderUI({
   validate(
     need(!is.null(input$Det_meta_topic),message=F)
@@ -1774,6 +2146,11 @@ output$Det_TM_scatter_plot_ui<-renderUI({
   ))
 })
 
+#' plot detailes topic model scatter 
+#' depends on:
+#'    values$Det_TM_meta_scatter_data: scattred data from detailes topic model meta data
+#'    input$Det_meta_select: selected detailed meta data
+#'    input$Det_meta_select2: second selected detailed meta data
 output$Det_TM_scatter_plot<-plotly::renderPlotly({
   data<- values$Det_TM_meta_scatter_data
   meta_numeric<-all(varhandle::check.numeric(v = data$meta,exceptions = "NA"))
@@ -1794,6 +2171,18 @@ output$Det_TM_scatter_plot<-plotly::renderPlotly({
   return(p)
 })
 
+#' show first detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta1<-renderUI({
   if(colnames(values$TM_meta)[5]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -1870,7 +2259,17 @@ output$Det_TM_Meta1<-renderUI({
   }
 })
 
-
+#' render second detailed topic model meta data presentation 
+#' depends on:
+#'   values$TM_meta: topic model meta data
+#'   values$tm_theta: topic model theta
+#'   input$TM_meta_Rank1: topic model meta data rank
+#'   input$Det_meta_topic: detailed meta data topic
+#'   input$TM_meta_Prob: topic model meta data probability
+#'   input$Det_meta_select: selected detaoled meta data
+#'   input$Det_TM_meta_min_occurrences_for_pie: min occurrences for detailed topic model meta data to appear in pie chart
+#'   input$Det_TM_meta_multi_valued: use multiple values from detailed topic model meta data 
+#'   input$Det_TM_meta_multi_valued_seperator: seperator for multiple values from detailed topic model
 output$Det_TM_Meta2<-renderUI({
   if(colnames(values$TM_meta)[6]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -1949,7 +2348,18 @@ output$Det_TM_Meta2<-renderUI({
 })
 
 
-
+#' show 3th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta3<-renderUI({
   if(colnames(values$TM_meta)[7]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2028,7 +2438,18 @@ output$Det_TM_Meta3<-renderUI({
 })
 
 
-
+#' show 4th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta4<-renderUI({
   if(colnames(values$TM_meta)[8]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2105,7 +2526,18 @@ output$Det_TM_Meta4<-renderUI({
     return(NULL)
   }
 })
-
+#' show 5th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta5<-renderUI({
   if(colnames(values$TM_meta)[9]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2184,7 +2616,18 @@ output$Det_TM_Meta5<-renderUI({
 })
 
 
-
+#' show 6th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta6<-renderUI({
   if(colnames(values$TM_meta)[10]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2263,7 +2706,18 @@ output$Det_TM_Meta6<-renderUI({
 })
 
 
-
+#' show 7th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta7<-renderUI({
   if(colnames(values$TM_meta)[11]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2342,7 +2796,18 @@ output$Det_TM_Meta7<-renderUI({
 })
 
 
-
+#' show 8th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta8<-renderUI({
   if(colnames(values$TM_meta)[12]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2421,7 +2886,18 @@ output$Det_TM_Meta8<-renderUI({
 })
 
 
-
+#' show 9th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta9<-renderUI({
   if(colnames(values$TM_meta)[13]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2501,7 +2977,18 @@ output$Det_TM_Meta9<-renderUI({
 
 
 
-
+#' show 10th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta10<-renderUI({
   if(colnames(values$TM_meta)[14]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2579,7 +3066,18 @@ output$Det_TM_Meta10<-renderUI({
   }
 })
 
-
+#' show 11th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta11<-renderUI({
   if(colnames(values$TM_meta)[15]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2658,7 +3156,18 @@ output$Det_TM_Meta11<-renderUI({
 })
 
 
-
+#' show 12th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta12<-renderUI({
   if(colnames(values$TM_meta)[16]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2738,7 +3247,18 @@ output$Det_TM_Meta12<-renderUI({
 })
 
 
-
+#' show 13th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta13<-renderUI({
   if(colnames(values$TM_meta)[17]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2817,7 +3337,18 @@ output$Det_TM_Meta13<-renderUI({
   }
 })
 
-
+#' show 14th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta14<-renderUI({
   if(colnames(values$TM_meta)[18]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2896,7 +3427,18 @@ output$Det_TM_Meta14<-renderUI({
   }
 })
 
-
+#' show 15th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta15<-renderUI({
   if(colnames(values$TM_meta)[19]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -2975,7 +3517,18 @@ output$Det_TM_Meta15<-renderUI({
   }
 })
 
-
+#' show 16th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta16<-renderUI({
   if(colnames(values$TM_meta)[20]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -3053,7 +3606,18 @@ output$Det_TM_Meta16<-renderUI({
     return(NULL)
   }
 })
-
+#' show 17th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta17<-renderUI({
   if(colnames(values$TM_meta)[21]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -3132,7 +3696,18 @@ output$Det_TM_Meta17<-renderUI({
   }
 })
 
-
+#' show 18th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta18<-renderUI({
   if(colnames(values$TM_meta)[22]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -3210,7 +3785,18 @@ output$Det_TM_Meta18<-renderUI({
     return(NULL)
   }
 })
-
+#' show 19th detailed topic model meta data
+#' depends on:
+#'    values$TM_meta: topic model meta data
+#'    input$Det_meta_select: selected detailed meta data 
+#'    input$TM_meta_Rank1: topic model meta data rank
+#'    values$tm_theta: topic model theta 
+#'    input$Det_meta_topic: detailed meta data topic
+#'    input$TM_meta_Prob: topic model meta data probability
+#'    input$Det_TM_meta_use_quantiles: used quantiles for detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued: multiple values selcted from detailed topic model meta data
+#'    input$Det_TM_meta_multi_valued_seperator: seprator for choosen values from meta data
+#'    input$Det_TM_meta_min_occurrences_for_pie: minimal occurence for topic model meta data to apperar in the pie chart
 output$Det_TM_Meta19<-renderUI({
   if(colnames(values$TM_meta)[23]%in%input$Det_meta_select){
     theta<-values$tm_theta
@@ -3290,7 +3876,13 @@ output$Det_TM_Meta19<-renderUI({
 })
 
 
-
+#' render meta data table
+#' depends on: 
+#'   input$TM_meta_Rank1: topic model meta data rank
+#'   input$Det_meta_topic: detailed topic modle meta data topic
+#'   input$TM_meta_Prob: topic model meta data probability
+#'   values$TM_meta: topic model meta data
+#'   input$Det_meta_select: selected detailed meta data 
 output$Det_TM_Meta_Table<-DT::renderDataTable({
   validate(
     need(!is.null(input$TM_meta_Rank1),message=F),
@@ -3315,7 +3907,8 @@ output$Det_TM_Meta_Table<-DT::renderDataTable({
   datatable(data = meta,escape = F,class = 'cell-border stripe',rownames=T)
 })
 
-
+#' render datatable for detailed topic model meta data quantiles
+#' depends on: input$Det_meta_select: selected detailed meta data
 output$Det_TM_meta_quantiles<-renderTable({
   meta<-values$TM_meta[,input$Det_meta_select]
   validate(
@@ -3333,7 +3926,10 @@ output$Det_TM_meta_quantiles<-renderTable({
 ######################################################
 
 
-
+#' plot estimated word frequencies in bar chart
+#' deoends on:
+#'   input$Det_TM_ewf_word: word for estimated word frequencies 
+#'   values$tm_rel_counts: topic model word count
 output$TM_ewf_bar<-renderPlotly({
   validate(
     need(!is.null(input$Det_TM_ewf_word),message="specify at least one word")
@@ -3356,7 +3952,11 @@ output$TM_ewf_bar<-renderPlotly({
   return(p)
 })
 
-
+#' table for estimated word frequency from topic model
+#' depends on:
+#'   input$Det_TM_ewf_word: word top calculate estimated word frequence
+#'   input$Det_TM_emf_rel: relative distribution over topics for choosen word
+#'   values$tm_counts: topic model counts
 output$TM_ewf_table<-DT::renderDataTable({
   validate(
     need(!is.null(input$Det_TM_ewf_word),message=FALSE)
@@ -3376,7 +3976,8 @@ output$TM_ewf_table<-DT::renderDataTable({
 })
 
 
-
+#'  start downloading real counts for estimated word frequency
+#'  depends on: values$tm_counts: count of words from topic model
 output$download_rel_counts<-downloadHandler(
   filename = function() {
     paste('estimated_counts', Sys.Date(), '.csv', sep='')
@@ -3387,7 +3988,11 @@ output$download_rel_counts<-downloadHandler(
   }
 )  
 
-
+#' UI validation of detailed topic model meta data
+#' depends on:
+#'    input$Det_TM_validation_document: validate documents from detailed topic model
+#'    values$host: used host 
+#'    values$port: used port
 output$Det_TM_validation_metadata_UI<-renderUI({
   validate(
     need(
@@ -3413,7 +4018,24 @@ output$Det_TM_validation_metadata_UI<-renderUI({
 })
 
 
-# plot for topic validation tab showing the document with the words highlighted, which are relevant in the chosen topic
+#' plot for topic validation tab showing the document with the words highlighted, which are relevant in the chosen topic
+#' depends on:
+#'   input$Det_TM_validation_document: document from topic model with validation
+#'   values$host: used host
+#'   values$port: used port
+#'   values$Details_Data_TM: details of topic model data
+#'   values$tm_phi: topic model phi
+#'   input$Det_TM_validation_relevance_measure: relebance measurement for detailed topic model validation
+#'   values$tm_rel_counts: topic model relative counts
+#'   values$Det_TM_validation_topic: validation of topics from detailed topic model
+#'   input$Det_TM_validation_lambda: lambda validation from detailed topic model 
+#'   values$tm_theta: topic model theta
+#'   values$tm_doc.length: topic model document length
+#'   input$Det_TM_validation_minmax_gobal: global minimum and maximum for detailed topic model validation
+#'   input$Det_TM_validation_color_least_important: detailed topic model validation colour for least important values
+#'   input$Det_TM_validation_color_most_important: detailed topic model validation colour for most important values
+#'   input$Det_TM_validation_color_use_pie_colors: validation color to use in pie chart for detailed topic models 
+#'   
 output$TM_validation_UI<-renderUI({
   validate(
     need(
@@ -3555,7 +4177,8 @@ output$TM_validation_UI<-renderUI({
 })
 
 
-# wordcloud showing the relevant words for the chosen topic
+#' wordcloud showing the relevant words for the chosen topic
+#' depends on: input$Det_TM_validation_topic: choosen topic from detailed topic models for validation
 output$Det_TM_validation_wordcloud <- wordcloud2::renderWordcloud2({
   # @values$tm_relevance calculated with lamda= 0.3
   data <- values$tm_relevance[,input$Det_TM_validation_topic]
@@ -3570,8 +4193,10 @@ output$Det_TM_validation_wordcloud <- wordcloud2::renderWordcloud2({
 
 
 
-# pie chart showing the topic distribution of a selected topic 
-# @input$Det_TM_validation_document: chosen document using doc_id as identifier
+#' pie chart showing the topic distribution of a selected topic 
+#' depends on:
+#'   input$Det_TM_validation_document: chosen document using doc_id as identifier
+#'   values$tm_theta: topic model theta
 output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
   validate(
     need(
@@ -3601,7 +4226,7 @@ click_pie_tm_validation<-reactive({
   currentEcentData<-event_data(event = "plotly_click", source = "tm_validation_pie",session = session)
 })
 
-# change selected topic if user click on a tpic in the pie chart
+#' change selected topic if user click on a tpic in the pie chart
 observe({
   validate(
     need(!is.null(click_pie_tm_validation()),message = F)
@@ -3611,7 +4236,7 @@ observe({
 
 
 
-# output object for topic dispersion 
+#' output object for topic dispersion 
 output$TM_dispersion_ui<-renderUI({
   return(tagList(
     tabsetPanel(type="tabs",
@@ -3630,7 +4255,8 @@ output$TM_dispersion_ui<-renderUI({
 
 
 
-# summary table for topic dispersion
+#' summary table for topic dispersion
+#' depends on: values$tm_theta
 output$Det_TM_dispersion_summary_table<-DT::renderDataTable({
   validate(
     need(!is.null(values$tm_theta),message=F)
@@ -3691,7 +4317,11 @@ output$Det_TM_dispersion_summary_table<-DT::renderDataTable({
 })
 
 
-# detailed dispersion plot; multiple histograms
+#' detailed dispersion plot; multiple histograms
+#' depends on:
+#'    input$Det_TM_dispersion_topic: topic for dispersion from detailed topic model
+#'    input$Det_TM_dispersion_probability_threshold: probability threshold for detailed topic model dispersion
+#'    values$tm_theta: topic model theta
 output$Det_TM_dispersion_detailed_plot<-plotly::renderPlotly({
   validate(
     need(length(input$Det_TM_dispersion_topic)>0,message="Please choose at least one topic")
@@ -3713,7 +4343,10 @@ output$Det_TM_dispersion_detailed_plot<-plotly::renderPlotly({
 })
 
 
-# detailed dispersion plot with a single histogram
+#' detailed dispersion plot with a single histogram
+#' depends on:
+#'    input$Det_TM_dispersion_topic: topic from detailed topic model for dispersion
+#'    input$Det_TM_dispersion_probability_threshold: threshold of probabilties from dispersion
 output$Det_TM_dispersion_detailed_single_hist<-plotly::renderPlotly({
   validate(
     need(length(input$Det_TM_dispersion_topic)>0,message="Please choose at least one topic")
@@ -3744,7 +4377,7 @@ output$Det_TM_dispersion_detailed_single_hist<-plotly::renderPlotly({
 ##       Document Comparison           #
 ########################################
 
-#UI for document compariosn tab in visualisation of topic models
+#' UI for document compariosn tab in visualisation of topic models
 output$TM_document_comparison_UI<-renderUI({
   tabsetPanel(type="tabs",id = "tabBox_TM_document_comparison",
               tabPanel(title = "Table",
@@ -3770,7 +4403,13 @@ output$TM_document_comparison_UI<-renderUI({
 })
 
 
-# table showing the topic distributions for chosen words
+#' table showing the topic distributions for chosen words
+#' depends on: 
+#'    input$Det_TM_document_comparison_document: documents for comparison from detailed topic model
+#'    values$tm_theta: topic model theta
+#'    values$tm_meta: meta data from topic model
+#'    
+#'    
 output$Det_TM_document_comparison_table<-DT::renderDataTable({
   validate(
     need(length(input$Det_TM_document_comparison_document)>0,message = "Choose at least one document!")
@@ -3792,7 +4431,11 @@ output$Det_TM_document_comparison_table<-DT::renderDataTable({
   )
 })
 
-
+#' pie chart for document comparison
+#' depends on:
+#'    input$Det_TM_document_comparison_document: documents for comparision from detailed topic model
+#'    values$tm_theta: topic model theta
+#'    values$tm_meta: meta data from topic model
 output$Det_TM_document_comparison_pie<-plotly::renderPlotly({
   validate(
     need(length(input$Det_TM_document_comparison_document)>0,message = "Choose at least one document!")
@@ -3832,7 +4475,14 @@ output$Det_TM_document_comparison_pie<-plotly::renderPlotly({
 })
 
 
-
+#' heatmap for comparison correlation of documents:
+#' depends on:
+#'    input$Det_TM_document_comparison_document: documents for comparison from detailed topic model
+#'    values$tm_meta: meta data from topic model
+#'    input$Det_TM_document_comparison_correlation_method: comparison correlation method for documents from detailed topic model
+#'    values$tm_theta: topic model theta
+#'    input$Det_TM_document_comparison_color_low: color for low impact values from document comparision
+#'    input$Det_TM_document_comparison_color_high: color for high impact values from document comparision
 output$Det_TM_document_comparison_correlation_heatmap_correlation<-plotly::renderPlotly({
   validate(
     need(length(input$Det_TM_document_comparison_document)>1,message = "Choose at least two documents!")
@@ -3850,7 +4500,12 @@ output$Det_TM_document_comparison_correlation_heatmap_correlation<-plotly::rende
   return(heatmap)
 })
 
-
+#' heatmap fo document comparision correlation calculated with cosine similarity
+#' depends on:
+#'    input$Det_TM_document_comparison_document: documents for comparison
+#'    values$tm_meta: topic model meta data
+#'    input$Det_TM_document_comparison_color_low: color for low impact values from document comparision
+#'    input$Det_TM_document_comparison_color_high: color for high impact values from document comparision
 output$Det_TM_document_comparison_correlation_heatmap_cosine_similarity<-plotly::renderPlotly({
   validate(
     need(length(input$Det_TM_document_comparison_document)>1,message = "Choose at least two documents!")
@@ -3869,7 +4524,13 @@ output$Det_TM_document_comparison_correlation_heatmap_cosine_similarity<-plotly:
   return(heatmap)
 })
 
-
+#' render heatmap with euclidean distance correlations
+#' depends on:
+#'    input$Det_TM_document_comparison_document: document for comparison from detailed topic model 
+#'    values$tm_theta: topic model theta
+#'    values$tm_meta: topic model meta data
+#'    input$Det_TM_document_comparison_color_low: color for low impact values from document comparison
+#'    input$Det_TM_document_comparison_color_high: color for high impact values from document comparison
 output$Det_TM_document_comparison_correlation_heatmap_euclidean_distance<-plotly::renderPlotly({
   validate(
     need(length(input$Det_TM_document_comparison_document)>1,message = "Choose at least two documents!")
@@ -3895,6 +4556,8 @@ output$Det_TM_document_comparison_correlation_heatmap_euclidean_distance<-plotly
 ###    document outlier   ###
 #############################
 
+#' render document outlier
+
 output$TM_document_outlier_UI<-renderUI({
   return(tagList(
     tags$h4("Average document similarity"),
@@ -3905,7 +4568,11 @@ output$TM_document_outlier_UI<-renderUI({
   )
 })
 
-
+#' show heatmap from document outlier
+#' depends on:
+#'    values$TM_document_outlier_tabledata: datatable information for document outlier of the topic model 
+#'    input$Det_TM_document_outlier_table_rows_selected: selected rows from document outlier datable
+#'    values$Det_TM_document_outlier_comparison_matrix: matrix for document outlier comparison
 output$Det_TM_document_outlier_heatmap<-plotly::renderPlotly({
   selected_ids<-values$TM_document_outlier_tabledata[input$Det_TM_document_outlier_table_rows_selected,"id_doc"]
   titles<-values$TM_document_outlier_tabledata[input$Det_TM_document_outlier_table_rows_selected,"title"]
@@ -3928,7 +4595,14 @@ output$Det_TM_document_outlier_heatmap<-plotly::renderPlotly({
   return(heatmap)
 })
 
-
+#' render datatable for document outlier
+#' depends on:
+#'    values$tm_theta: topic model theta
+#'    values$tm_meta: topic model meta data
+#'    input$Det_TM_document_outlier_measure: measures for detailed topic model document outlier
+#'    input$Det_TM_document_outlier_correlation_method: correlation method for document outlier
+#'    values$Det_TM_document_outlier_comparison_matrix: comparison matrix for document outlier
+#'    values$TM_document_outlier_tabledata: datatable information for document outlier
 output$Det_TM_document_outlier_table<-DT::renderDataTable({
   data<-t(values$tm_theta)
   titles<-values$tm_meta[,c("id_doc","title"),drop=F]
@@ -3970,7 +4644,10 @@ output$Det_TM_document_outlier_table<-DT::renderDataTable({
   datatable(data=data,escape = F,rownames = F)
 })
 
-
+#' download for document similarity matrix
+#' depends on:
+#'   values$Det_TM_document_outlier_comparison_matrix: matrix of document outliers
+#'   input$Det_TM_document_outlier_measure: measures for document outlier
 output$Det_TM_outlier_download_document_document_similarity_matrix<-downloadHandler(
   filename = function() {
     paste('outlier_similarity_matrix_',input$Det_TM_document_outlier_measure,"_",  Sys.Date(), '.csv', sep='')
@@ -3981,7 +4658,10 @@ output$Det_TM_outlier_download_document_document_similarity_matrix<-downloadHand
   }
 )
 
-
+#' download the list of outliers
+#' depends on: 
+#'    input$Det_TM_document_outlier_measure: measures for document outlier from detailed topic model 
+#'    values$TM_document_outlier_tabledata: datatable information from document outlier
 output$Det_TM_outlier_download_list_of_outliers<-downloadHandler(
   filename = function() {
     paste('outlier_avg_similarity_',input$Det_TM_document_outlier_measure,"_", Sys.Date(), '.csv', sep='')
@@ -4003,6 +4683,15 @@ output$Det_TM_outlier_download_list_of_outliers<-downloadHandler(
 #############################
 #        Clustering         #
 #############################
+#' show UI for document clustering 
+#' depends on:
+#'   values$tm_theta: topic model theta
+#'   values$tm_meta: topic model meta data
+#'   input$Det_TM_document_clustering_k: choosen parameter k (k-means) for document clustering
+#'   input$Det_TM_document_clustering_max_iterations: choosen maximal number of iterations for document clustering
+#'   input$Det_TM_document_clustering_n_start: choosen start point n for random sets for document clustering
+#'   values$Det_TM_document_clustering_cluster_data: cluster data from document clustering
+#'   values$Det_TM_document_clustering_titles: titles of documents from document clustering 
 output$TM_document_clustering_UI<-renderUI({
   data<-t(values$tm_theta)
   titles<-values$tm_meta[,c("id_doc","title"),drop=F]
@@ -4033,6 +4722,10 @@ output$TM_document_clustering_UI<-renderUI({
   )
 })
 
+#' show kmeans clustering of docuemnts from detailed topic model
+#' depends on:
+#'   values$Det_TM_document_clustering_cluster_data: cluster data from document clustering
+#'   values$Det_TM_document_clustering_titles:
 output$Det_TM_document_clustering_kmeans<-plotly::renderPlotly({
   validate(
     need(!is.null(values$Det_TM_document_clustering_cluster_data),message=F)
@@ -4052,7 +4745,8 @@ output$Det_TM_document_clustering_kmeans<-plotly::renderPlotly({
 })
 
 
-
+#' download document clustering results
+#' depends on: values$Det_TM_document_clustering_cluster_summary: summary of cluster from document clustering
 output$Det_TM_document_clustering_download_clustering_result<-downloadHandler(
   filename = function() {
     paste('cluster_result', Sys.Date(), '.csv', sep='')
@@ -4064,6 +4758,8 @@ output$Det_TM_document_clustering_download_clustering_result<-downloadHandler(
 )
 
 
+#' show meta data from document clustering
+#' depends on: values$tm_meta: topic model meta data
 output$Det_TM_document_clustering_metadata_UI<-renderUI({
   eventdata<-event_data("plotly_click",source = "Det_TM_document_clustering_kmeans")
   validate(
@@ -4102,7 +4798,10 @@ output$Det_TM_document_clustering_metadata_UI<-renderUI({
   )
 })
 
-
+#' view cluster datatable from current document clustering
+#' depends on:
+#'   values$Det_TM_document_clustering_cluster_summary: summary of clusters from current document clustering
+#'   values$Det_TM_document_clustering_titles: titles of the documents in currenct document clustering
 output$Det_TM_document_clustering_table<-DT::renderDataTable({
   cluster_result<-values$Det_TM_document_clustering_cluster_summary
   cluster_result<-cbind(cluster_result,values$Det_TM_document_clustering_titles)
@@ -4128,7 +4827,7 @@ output$Det_TM_document_clustering_table<-DT::renderDataTable({
 ###                Document Grouping             ###
 ####################################################
 
-
+#' show page for document grouping
 output$TM_document_grouping_UI<-renderUI({
   
   
@@ -4182,7 +4881,12 @@ output$TM_document_grouping_UI<-renderUI({
     ))
 })
 
-
+#' grouping correlations from detailed topic models
+#' depends on:
+#'   values$TM_meta: topic model meta data
+#'   input$Det_TM_grouping_group1_rows_all: all rows from group1 elements
+#'   values$tm_theta: topic model theta
+#'   input$Det_TM_grouping_group2_rows_all: all rows from group2 elements
 output$Det_TM_grouping_correlation<-renderUI(({
   correlation<-cor(x = colMeans(values$tm_theta[values$TM_meta[input$Det_TM_grouping_group1_rows_all,"id_doc"],,drop=F]),y = colMeans(values$tm_theta[values$TM_meta[input$Det_TM_grouping_group2_rows_all,"id_doc"],,drop=F]))
   text<-HTML(paste0("Correlation: <b>",correlation,"</b>"))
@@ -4190,6 +4894,12 @@ output$Det_TM_grouping_correlation<-renderUI(({
 }))
 
 
+#' show average topic from grouped documents of the detailed topic model
+#' depends on:
+#'   values$TM_meta: topic model meta data
+#'   input$Det_TM_grouping_group1_rows_all: all rows of documents from group 1
+#'   input$Det_TM_grouping_group2_rows_all: all rows of documents from group 2
+#'   values$tm_theta: topic model theta
 output$Det_TM_grouping_avg_topic_distribution_plot<-plotly::renderPlotly({
   validate(
     need(!is.null(input$Det_TM_grouping_group1_rows_all),message=F)
@@ -4205,7 +4915,12 @@ output$Det_TM_grouping_avg_topic_distribution_plot<-plotly::renderPlotly({
   return(p)
 })
 
-
+#' average topic distribution datatable from documents from grouping
+#' depends on:
+#'   input$Det_TM_grouping_group1_rows_all: all rows of documents from group 1
+#'   input$Det_TM_grouping_group2_rows_all: all rows of documents from group 2
+#'   values$TM_meta: topic model meta data
+#'   values$tm_theta: topic model theta
 output$Det_TM_grouping_avg_topic_distribution_table<-DT::renderDataTable({
   validate(
     need(!is.null(input$Det_TM_grouping_group1_rows_all),message=F)
@@ -4230,7 +4945,11 @@ output$Det_TM_grouping_avg_topic_distribution_table<-DT::renderDataTable({
   )
 })
 
-
+#' datatable of documents in group 1
+#' depends on:
+#'   input$Det_TM_grouping_group1_columns: possible parameters to group documents found in columns of the document information
+#'   values$TM_meta: topic model meta data
+#'   input$Det_TM_grouping_quantile_group1: quantiles for group 1
 output$Det_TM_grouping_group1<-DT::renderDataTable({
   validate(
     need(length(input$Det_TM_grouping_group1_columns)>0,message="Select atleast one column for filtering")
@@ -4266,6 +4985,8 @@ output$Det_TM_grouping_group1<-DT::renderDataTable({
   )
 })
 
+#' datatable for quantiles for group 1
+#' depends on: values$Det_TM_grouping_quantiles_group1: quantiles for group one
 output$Det_TM_grouping_quantile_group1_quantiles<-DT::renderDataTable({
   validate(
     need(
@@ -4278,7 +4999,10 @@ output$Det_TM_grouping_quantile_group1_quantiles<-DT::renderDataTable({
 
 
 
-
+#' datatable for elements of group 2
+#' depends on:
+#'   input$Det_TM_grouping_group2_columns: possible parameters to group documents found in columns of the document information
+#'   input$Det_TM_grouping_quantile_group2: quantiles to group documents 
 output$Det_TM_grouping_group2<-renderDataTable({
   validate(
     need(length(input$Det_TM_grouping_group2_columns)>0,message="Select atleast one column for filtering")
@@ -4314,6 +5038,8 @@ output$Det_TM_grouping_group2<-renderDataTable({
   )
 })
 
+#' datatable for quantiles for group 2
+#' depends on: values$Det_TM_grouping_quantiles_group2: quantiles for group 2
 output$Det_TM_grouping_quantile_group2_quantiles<-DT::renderDataTable({
   validate(
     need(
@@ -4325,7 +5051,8 @@ output$Det_TM_grouping_quantile_group2_quantiles<-DT::renderDataTable({
 })
 
 
-
+#' render word cloud depending of elements of group1
+#' depends on: input$Det_TM_grouping_group1_rows_all: all rows of docuements from group 1
 output$Det_TM_grouping_wc_group1<-renderWordcloud2({
   validate(
     need(!is.null(input$Det_TM_grouping_group1_rows_all),message=F)
@@ -4334,6 +5061,9 @@ output$Det_TM_grouping_wc_group1<-renderWordcloud2({
   wordcloud2(data = data.frame(word=titles,freq=rep(1,length(titles))),size = 0.15,color = "random-light", backgroundColor = "black",fontFamily = "Helvetica", minRotation = -pi/2, maxRotation = -pi/2)
   
 })
+
+#' render word cloud depending of elements of group2
+#' depends on: input$Det_TM_grouping_group2_rows_all: all rows of docuements from group 2
 output$Det_TM_grouping_wc_group2<-renderWordcloud2({
   validate(
     need(!is.null(input$Det_TM_grouping_group2_rows_all),message=F)
@@ -4351,7 +5081,10 @@ output$Det_TM_grouping_wc_group2<-renderWordcloud2({
 #               Model Reproducibility                     #
 ###########################################################
 
-
+#' show model reproducibility
+#' depends on: 
+#'   values$tm_phi: topic model phi
+#'   input$Det_TM_reproducibility_models: topic model information for reproducibility of the models
 output$TM_model_reproducibility_UI<-renderUI({
   
   
@@ -4383,7 +5116,14 @@ output$TM_model_reproducibility_UI<-renderUI({
   
 })
 
-
+#' datatable for specific reproducibility of the topic model 
+#' depends on:
+#'   values$Det_TM_model_reproducibility_top_words_per_result_per_topic: top words per topic of all results for model reproducibility
+#'   input$Det_TM_reproducibility_models: choosen models for reproducability calculation 
+#'   input$Det_TM_model_reproducibility_specific_resultset: reproducibility for specific sets of results
+#'   input$Det_TM_reproducibility_number_of_words: reproducibility of the number of words
+#'   values$Det_TM_model_reproducibility_specific_number_of_reference_topics: reproducibility of a specific number of reference topics
+#'   values$Det_TM_model_reproducibility_top_words_per_result_per_topic: top words of topics per result 
 output$Det_TM_model_reproducibility_specific_table<-DT::renderDataTable({
   validate(
     need(!is.null(values$Det_TM_model_reproducibility_top_words_per_result_per_topic),"Please calculate the Average Values first"),
@@ -4412,7 +5152,8 @@ output$Det_TM_model_reproducibility_specific_table<-DT::renderDataTable({
                 backgroundPosition = 'center')
 })
 
-
+#' show reproducibility of a referenced specific topic
+#' depends on: values$Det_TM_model_reproducibility_specific_number_of_reference_topics: reproducibility of a specific number of referenced topics
 output$Det_TM_model_reproducibility_specific_topic_reference_UI<-renderUI({
   validate(
     need(!is.null(values$Det_TM_model_reproducibility_specific_number_of_reference_topics),message=F)
@@ -4429,7 +5170,15 @@ output$Det_TM_model_reproducibility_specific_topic_reference_UI<-renderUI({
   ))
 }) 
 
-
+#' wordcloud for specific model reproducibility
+#' input$Det_TM_model_reproducibility_specific_topic_reference: model reproducibility of a specific topic for reference reasons
+#' values$Det_TM_model_reproducibility_calculated: calculated model reproducibility for the detailed topic model
+#' values$Det_TM_model_reproducibility_top_words_per_result_per_topic: reproducibility of the top words per topic of the different results
+#' input$Det_TM_model_reproducibility_specific_topic: reproducibility of a specific topic
+#' input$Det_TM_reproducibility_models: models for reproducability calculation
+#' input$Det_TM_model_reproducibility_specific_resultset: reproducibilitx for a specific set of results
+#' input$Det_TM_reproducibility_number_of_words: reproducibility of number of words
+#' input$Det_TM_model_reproducibility_specific_wordcloud_size: reproducibility of specific wordcloud size
 output$Det_TM_model_reproducibility_specific_wordcloud<-wordcloud2::renderWordcloud2({
   validate(
     need(!is.null(input$Det_TM_model_reproducibility_specific_topic_reference),message=F),
@@ -4451,6 +5200,17 @@ output$Det_TM_model_reproducibility_specific_wordcloud<-wordcloud2::renderWordcl
   return(wc)
 })
 
+#' observe reproducibility calculation
+#' depends on:
+#'   input$Det_TM_reproducibility_calculate:
+#'   values$Details_Data_TM: details of topic model data
+#'   input$Det_TM_reproducibility_models: reproducibility of choosen models
+#'   input$Det_TM_reproducibility_lambda: parameter lambda for reproducibility calculation 
+#'   input$Det_TM_reproducibility_number_of_words: reproducibility for number of words
+#'   values$Det_TM_model_reproducibility_top_words_per_result_per_topic: reproducibility for top words per topic of different results
+#'   values$Det_TM_model_reproducibility_calculated: calculated model reprocucibility
+#'   input$Det_TM_reproducibility_overlap: overlapping elements in reproduciblity calculation 
+#'   values$Det_TM_model_reproducibility_found_match_percentage: reproducibility for found matches in percentage
 observeEvent(input$Det_TM_reproducibility_calculate,ignoreNULL = F,{
   output$Det_TM_model_reproducibility_avg_overlap<-renderUI({
     top_words_per_result_per_topic<-list()
@@ -4498,7 +5258,11 @@ observeEvent(input$Det_TM_reproducibility_calculate,ignoreNULL = F,{
   
   
   
-  
+ #' obsereve datatable for results of model reproducibility calculation
+ #' depends on:
+ #'   values$Det_TM_model_reproducibility_top_words_per_result_per_topic: reproducibility of top words per topic of different results
+ #'   values$Det_TM_model_reproducibility_found_match_percentage: reproducibility of found matches in percentage
+ #'   values$tm_phi: topic model parameter phi
   output$Det_TM_model_reproducibility_result_table<-DT::renderDataTable({
     validate(
       need(!is.null(isolate(values$Det_TM_model_reproducibility_top_words_per_result_per_topic)),message=F),
@@ -4516,7 +5280,8 @@ observeEvent(input$Det_TM_reproducibility_calculate,ignoreNULL = F,{
   })
 })
 
-# change selected topic, if user selects a row in the overview table
+#' change selected topic, if user selects a row in the overview table
+#' depends on: input$Det_TM_model_reproducibility_result_table_rows_selected: selected rows in data table of the results of model reproducibility
 observe({
   s = input$Det_TM_model_reproducibility_result_table_rows_selected
   if (length(s)) {
@@ -4525,7 +5290,8 @@ observe({
 })
 
 
-# change selected comparison topic, if user selects a row in the overview table
+#' change selected comparison topic, if user selects a row in the overview table
+#' depends on: input$Det_TM_model_reproducibility_specific_table_cells_selected: selected cells from data table of specific model reproducibility
 observe({
   s = input$Det_TM_model_reproducibility_specific_table_cells_selected
   if (length(s)) {

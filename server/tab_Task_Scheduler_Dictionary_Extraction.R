@@ -1,5 +1,5 @@
 
-##render the parameter set for dictionary extraction
+#' render the parameter set for dictionary extraction
 output$Analysis_Parameter_DE<-renderUI({
   tagList(
     tags$hr(),
@@ -370,7 +370,7 @@ output$Analysis_Parameter_DE<-renderUI({
   )
 })
 
-# radio Buttons for dictionaries found in /collections/dictionaries
+#' radio Buttons for dictionaries found in /collections/dictionaries
 output$DE_dict_ui<-renderUI({
   if(length(list.files("collections/dictionaries//"))==0){
     return(HTML("No dictionaries available. You can create dictionaries in the Scripts-Dictionaries Tab"))
@@ -386,8 +386,9 @@ output$DE_dict_ui<-renderUI({
 })
 
 
-# show dictionaries options when mode = "Produce 50 new active learning examples
-# and use dictionary checkbox is set to TRUE
+#' show dictionaries options when mode = "Produce 50 new active learning examples
+#' and use dictionary checkbox is set to TRUE
+#' depends on: input$DE_use_reg_exp: use regular expressions?
 observe({
   if(isFALSE(input$DE_use_reg_exp)){
     shinyjs::show(id = "DE_dict")
@@ -398,7 +399,7 @@ observe({
 })
 
 
-# show whitelists stored in collections/whitelists
+#' show whitelists stored in collections/whitelists
 output$DE_whitelist_UI<-renderUI({
   if(length(list.files("collections/whitelists/"))==0){
     return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
@@ -412,7 +413,9 @@ output$DE_whitelist_UI<-renderUI({
   }
 })
 
-# show whitelist options when whitelist checkbox is TRUE
+#' show whitelist options when whitelist checkbox is TRUE
+#' depends on:
+#'  input$DE_use_custom_whitelist: use a custom whitelist?
 observeEvent(ignoreNULL = T,input$DE_use_custom_whitelist,{
   if(isTRUE(input$DE_use_custom_whitelist)){
     shinyjs::show(id = "DE_whitelist")
@@ -422,7 +425,7 @@ observeEvent(ignoreNULL = T,input$DE_use_custom_whitelist,{
   }
 })
 
-# show blacklists stored in collections/blacklists
+#' show blacklists stored in collections/blacklists
 output$DE_blacklist_UI<-renderUI({
   if(length(list.files("collections/blacklists/"))==0){
     return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
@@ -436,7 +439,9 @@ output$DE_blacklist_UI<-renderUI({
   }
 })
 
-# show blacklist options when blacklist checkbox is TRUE
+#' show blacklist options when blacklist checkbox is TRUE
+#' depends on:
+#'   input$DE_use_custom_blacklist: use a custom blacklist?
 observeEvent(ignoreNULL = T,input$DE_use_custom_blacklist,{
   if(isTRUE(input$DE_use_custom_blacklist)){
     shinyjs::show(id = "DE_blacklist")
@@ -448,7 +453,58 @@ observeEvent(ignoreNULL = T,input$DE_use_custom_blacklist,{
 
 
 
-#start cooccurrence analysis script, if submit button is clicked
+#' start cooccurrence analysis script, if submit button is clicked
+#' depends on:
+#'   input$DE_Submit_Script: submited script
+#'   input$DE_min_termfreq_c: minimum term frequency (count)
+#'   input$DE_max_termfreq_c: maximum term frequency (count)
+#'   input$DE_min_termfreq_p: minimum term probability
+#'   input$DE_max_termfreq_p: maximum term probability
+#'   input$DE_min_termfreq_r: minimum term rank
+#'   input$DE_max_termfreq_r: maximum term rank
+#'   input$DE_min_termfreq_q: minimum term quantile
+#'   input$DE_max_termfreq_q: maximum term quantile
+#'   input$DE_min_docfreq_c: minimum document frequency (count)
+#'   input$DE_max_docfreq_c: maximum document frequency (count)
+#'   input$DE_min_docfreq_p: minimum document probability
+#'   input$DE_max_docfreq_p: maximum document probability
+#'   input$DE_min_docfreq_r: minimum document rank
+#'   input$DE_max_docfreq_r: maximum document rank
+#'   input$DE_min_docfreq_q: minimum document quantile 
+#'   input$DE_max_docfreq_q: maximum document quantile
+#'   input$DE_termfreq_type: term frequency type (count, rank, probability, quantile)
+#'   input$DE_docfreq_type: docuement frequency type
+#'   input$collection_selected: selected collection
+#'   input$DE_baseform: should the words be reduced to their baseform?
+#'   input$DE_min_char: select minimum of characters
+#'   input$DE_ngram: select size of n-grams
+#'   input$DE_remove_stopwords: remove stopwords
+#'   input$DE_lowercase: put all words to lower case?
+#'   input$DE_remove_numbers: should the numbers be reduced?
+#'   input$DE_remove_numbers_all: should all words containing numbers be reduced
+#'   input$DE_remove_punctuation: should the punctutation be removed?
+#'   input$DE_remove_hyphenation: should the hyphentitcation be removed?
+#'   input$DE_remove_custom: should custom words be removed?
+#'   input$DE_consolidate_entities: consolidate found entities?
+#'   input$DE_blacklist: blacklist of words 
+#'   input$DE_POS_TYPES: part of speech types that should be used
+#'   input$DE_POS_TYPES_exclude: part of speech types that should be excluded
+#'   input$DE_ENTITY_TYPES: entity (NER) types that should be used
+#'   input$DE_ENTITY_TYPES_exclude: entity (NER) types that should be excluded
+#'   input$DE_keep_custom: keep customed words
+#'   input$DE_use_custom_blacklist: use a customed blacklist?
+#'   input$DE_use_custom_whitelist: use a customed whitelist?
+#'   input$DE_whitelist: used whitelist of words to keep
+#'   input$DE_whitelist_expand: expand whitelist?
+#'   input$DE_reg_exp: use regular expression
+#'   input$DE_context_unit: specify the window within the specific context has to co-occure within dictionary terms (sentence or document)
+#'   input$DE_Context_Filter: use context filter to just count occurrence of dictionary term 
+#'   input$DE_use_context_filter: should a context filter be used?
+#'   input$DE_use_reg_exp: use regular expressions?
+#'   input$DE_regexp_input: input for regular expressions
+#'   input$DE_dict: use a dictionary?
+#'   input$collection_selected:
+#'   
 observeEvent(input$DE_Submit_Script,{
   valid<-check_pruning_parameters(min_t_c = input$DE_min_termfreq_c,max_t_c = input$DE_max_termfreq_c,min_t_p =input$DE_min_termfreq_p,max_t_p =  input$DE_max_termfreq_p
                                   ,min_t_r =input$DE_min_termfreq_r,max_t_r = input$DE_max_termfreq_r,min_t_q = input$DE_min_termfreq_q, max_t_q = input$DE_max_termfreq_q

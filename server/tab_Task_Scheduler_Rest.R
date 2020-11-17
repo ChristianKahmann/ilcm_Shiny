@@ -1,7 +1,11 @@
 
 
 
-#render parameters for downloading a collection
+#' render parameters for downloading a collection
+#' depends on:
+#'   input$collection_selected: selected document collection
+#'   input$download_batch_size: batch size for download
+#'   values$number_of_buttons:  number of buttons
 output$Analysis_Parameter_DL<-renderUI({
   #browser()
   load(paste0("collections/collections/",input$collection_selected,".RData"))
@@ -26,7 +30,12 @@ output$Analysis_Parameter_DL<-renderUI({
 })
 
 
-#get documents from database
+#' get documents from database
+#' depends on:
+#'  input$Prepare_Documents: prepared documents
+#'  values$host: used host for upload/download of database
+#'  values$db_port: used database port
+#'  values$token_tmp: temporary tokens
 observeEvent(input$Prepare_Documents,{
   load(paste0("collections/collections/",input$collection_selected,".RData"))
   #token object
@@ -55,7 +64,11 @@ observeEvent(input$Prepare_Documents,{
 
 
 
-#create download functionality for downloading token objects
+#' create download functionality for downloading token objects
+#' depends on:
+#'   values$number_of_buttons: number of buttons
+#'   input$collection_selected: selected collection
+#'   values$token_tmp: temporary token
 observe({
   validate(
     need(!is.null(values$number_of_buttons),message=FALSE)
@@ -78,7 +91,11 @@ observe({
 })
 
 
-#create download functionality for downloading meta objects
+#' create download functionality for downloading meta objects
+#' depends on:
+#'   values$number_of_buttons: number of buttons
+#'   input$collection_selected: selected colletion
+#'   values$meta_tmp: temporary meta data
 observe({
   validate(
     need(!is.null(values$number_of_buttons),message=FALSE)
@@ -100,7 +117,11 @@ observe({
   })
 })
 
-
+#' start saving the tokens
+#' depends on:
+#'   input$start_token_saving: initiate the start to save the tokens
+#'   values$host: used host
+#'   values$db_port: used databank port
 observeEvent(input$start_token_saving,{
   load(paste0("collections/collections/",input$collection_selected,".RData"))
   token<-NULL
@@ -118,7 +139,12 @@ observeEvent(input$start_token_saving,{
   shinyWidgets::sendSweetAlert(session=session,title = "Token object saved to results",text = "accessible in RStudio-Server",type = "success")
 })
 
-
+#' start saving the meta data
+#' depends on:
+#'   input$start_meta_saving: start saving of the meta data 
+#'   values$host: used host
+#'   values$db_port: port of databank
+#'   input$collection_selected: selected collection
 observeEvent(input$start_meta_saving,{
   load(paste0("collections/collections/",input$collection_selected,".RData"))
   #getting data from db
