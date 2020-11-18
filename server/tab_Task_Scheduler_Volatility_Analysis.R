@@ -783,7 +783,7 @@ observeEvent(ignoreNULL = T,input$VA_use_custom_blacklist,{
 #'   input$VA_min_Cooc_Freq: minimum Cooccurrence frequency
 #'   input$VA_timeintervall: which time intervall (day, month, year) should be used?
 #'   input$VA_history: how large should the memory storage be?
-#'   input$VA_method: whitch method should be used? (significance or ranks)
+#'   input$VA_method: which method should be used? (significance or ranks)
 #'   input$VA_Cooc_Measure: which distand measurement should be used? (manhatten distance, eucledean distance, etc.)
 #'   input$VA_cooc_type: which Co-occurrence significance measure should be used? (Dice, log likelihood, mutual information)
 #'   input$VA_remove_custom: Remove custom words?
@@ -799,7 +799,7 @@ observeEvent(ignoreNULL = T,input$VA_use_custom_blacklist,{
 #'   input$VA_rank: selected rank as Volatility Analysis parameters
 #'   input$VA_window_var: is window based significance selected choose variation calculation (inter quartile range or variance or variance coefficent)
 #'   input$VA_sig_reference_dist: is referenced based significance selected choose distance measurement (eucledean distance, manhatten distance, etc.) 
-#'   input$VA_sig_reference_weightfactor: is referenced based significance selected choose weight factor (linear or exponential)
+#'   input$VA_sig_reference_weightfactor: it's referenced based significance selected choose weight factor (linear or exponential)
 #'   input$VA_rank_minmax_beta: is ranked parameter selected use minimum/maximum algorithm and choose beta parameters
 #'   input$VA_keep_custom: keep custom words
 #'   input$VA_use_custom_blacklist: should a custom blacklist be used?
