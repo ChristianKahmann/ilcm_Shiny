@@ -1,6 +1,16 @@
 IO_unpack_project <- function(qdpx_file) {
   temporary_working_directory <- IO_create_tempdir(parent_dir = "data_import/refi/")
   unzip(zipfile = qdpx_file, exdir = temporary_working_directory)
+  # check if qde file and sources directory are positioned directly inside temporary_working_directorry
+  files<-list.files(temporary_working_directory)
+  if(any(grepl(pattern = ".qde",x = files))&& dir.exists(paste0(temporary_working_directory,"/Sources"))){
+    dir.create(path = paste0(temporary_working_directory,"/help_directory/"))
+    for(i in 1:length(files)){
+      file.copy(from = paste0(temporary_working_directory,"/",files[i]),to = paste0(temporary_working_directory,"/help_directory/"),recursive = T)
+      unlink(paste0(temporary_working_directory,"/",files[i]),recursive = T)
+    }
+    
+  }
   temporary_working_directory <- list.dirs(temporary_working_directory,recursive = F)
   return(temporary_working_directory)
 }

@@ -398,6 +398,7 @@ output$details_parameter<-renderUI({
       values$tm_vocab<-vocab
       values$tm_json<-json
       values$tm_term.frequency<-term.frequency
+
       values$tm_meta<-meta
       mde_use<-colnames(meta_names[1,2:dim(meta_names)[2]])[which(!is.na(meta_names[1,2:dim(meta_names)[2]]))]
       meta<-meta[,c("id","dataset","title","id_doc","token","language",mde_use)]

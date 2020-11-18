@@ -34,7 +34,6 @@ error<-try(expr = {
   
   spacy_initialize(model = language)
   log_to_file(message = "spacy initialized",logfile)
-  
   # write import csv for meta and token information
   preprocess_data(text = metadata[,"body"],metadata = metadata,process_id = process_info[[1]],offset = (min(as.numeric(metadata[,"id_doc"]))-1),logfile = logfile,date_format = date_format)
   # write meta metadata csv
@@ -235,7 +234,6 @@ error<-try(expr = {
       
       # 1. codebook importieren, da annotations sich darauf beziehen
       xml_document<-xml2::as_xml_document(xml_document)
-      
       codebook <- xml_find_first(xml_document, "//d1:CodeBook")
       import_codebook(codebook, name = dataset)
       
@@ -261,7 +259,12 @@ error<-try(expr = {
               text_source_content <- ""
               if (stringr::str_detect(plaintext_path, "internal://")) {
                 text_source_filename <- strsplit(plaintext_path, "://")[[1]][2]
-                text_source_filepath <- file.path(import_directory, "sources", text_source_filename)
+                if("Sources"%in% list.files(import_directory)){
+                  text_source_filepath <- file.path(import_directory, "Sources", text_source_filename)
+                }
+                else{
+                  text_source_filepath <- file.path(import_directory, "sources", text_source_filename)
+                }
                 text_source_content <- readr::read_file(text_source_filepath)
               }
               
@@ -315,7 +318,7 @@ error<-try(expr = {
               , to = to
               , Annotation = code_name
               , color = code_color
-              , Annotation_Date = anno_date
+              , Annotation_Date = substr(anno_date,1,min(19,nchar(anno_date)))
               , Anno_set = dataset
               , collection = dataset
               , global_doc_id = global_doc_id
@@ -324,7 +327,7 @@ error<-try(expr = {
               ,stringsAsFactors = F
             )
             print(id_doc)
-            db_data<-get_token_meta_and_language_from_db(host=host,port=db_port,id=id_doc,dataset=dataset)
+            db_data<-get_token_meta_and_language_from_db_refi(host=host,port=db_port,id=id_doc,dataset=dataset)
             # change character offset annotations to word offsets
             anno <- transform_character_offset_to_word_offset(annotations = anno, token = db_data$token)
             # check if document_annotation==T

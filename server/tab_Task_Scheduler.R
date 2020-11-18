@@ -1,8 +1,6 @@
-#' select Input to choose a collection
-#' choices: check files in "colelctions/collections"
-#' depends on:
-#'   values$coll_saved: reactive variable that invalidates when a new collection is saved
-#'   values$new_script_saved: reactive variable that invalidates when a new custom script got saved
+# select Input to choose a collection
+# choices: check files in "collections/collections"
+# @ values$coll_saved: reactive variable that invalidates when a new collection is saved
 output$Task_Scheduler_Collection<-renderUI({
   values$coll_saved
   selectizeInput(inputId = "collection_selected",label = "Collection:",choices = stringr::str_replace_all(string = list.files(path ="collections/collections/"),pattern = ".RData",replacement = ""))
@@ -31,10 +29,8 @@ output$custom_script_options_UI<-renderUI({
   }
 })
 
-#' select input showing the available parameter presets with option to save the current setting as preset
-#' depends on:
-#'    values$reload_presets: reactive variable that invalidates if a new parameter preset got saved
-#'    input$analysis_selected: selected analysis method
+# select input showing the available parameter presets with option to save the current setting as preset
+# @values$reload_presets: reactive variable that invalidates if a new parameter preset got saved
 output$parameter_preset_UI<-renderUI({
   values$reload_presets
   available_presets<-stringr::str_remove(string = list.files(paste0("collections/parameter_settings/",input$analysis_selected)),pattern = ".RData")
@@ -63,105 +59,7 @@ output$parameter_preset_UI<-renderUI({
 })
 
 
-#' save current parameter setting as a parameter preset
-#' depends on:
-#'   input$parameter_preset_save
-#'   input$analysis_selected: sellected analysis 
-#'   values$preset_parameter: preset parameters
-#'   parameter for Cooccurrence Analysis
-#'     input$CA_baseform: should the baseform of all words be used
-#'     input$CA_min_char: select a minimum character size
-#'     input$CA_ngram: select the size of the N-grams
-#'     input$CA_remove_custom: should customed words be removed?
-#'     input$CA_keep_custom: shoult customed words be kept?
-#'     input$CA_remove_stopwords: should stopwords be removed?
-#'     input$CA_lowercase: should all words get transformed to lower case?
-#'     input$CA_remove_numbers: should all numbers be removed?
-#'     input$CA_remove_numbers_all: should all words containing a number be removed?
-#'     input$CA_remove_punctuation: should the punctuation be removed?
-#'     input$CA_remove_hyphenation: should hyphenation be removed?
-#'     input$CA_consolidate_entities: should entities be consolidated?
-#'     input$CA_use_custom_blacklist: should a customed blacklist be used?
-#'     input$CA_use_custom_whitelist: should a customed whitelist be used?
-#'     input$CA_blacklist: blacklist for words to be removed from the documents
-#'     input$CA_whitelist: whitelist of words to be kept in all documents?
-#'     input$CA_whitelist_only: only use whitelist words do the analysis 
-#'     input$CA_whitelist_expand: expand the whitelist
-#'     input$CA_termfreq_type: what term frequency type should be used?
-#'     input$CA_min_termfreq_c: minimum term frequency (count) 
-#'     input$CA_max_termfreq_c: maximum term frequency (count)
-#'     input$CA_min_termfreq_p: minimum term probability 
-#'     input$CA_max_termfreq_p: maximum term probability
-#'     input$CA_min_termfreq_r: minimum term rank
-#'     input$CA_max_termfreq_r: maximum term rank
-#'     input$CA_min_termfreq_q: minimum term quantile
-#'     input$CA_max_termfreq_q: maximum term quantile
-#'     input$CA_docfreq_type: type for document frequency calculation
-#'     input$CA_min_docfreq_c: minimum document frequnecy (count)
-#'     input$CA_max_docfreq_c: maximum document frequency (count)
-#'     input$CA_min_docfreq_p: minimum document probability 
-#'     input$CA_max_docfreq_p: maximum document probability 
-#'     input$CA_min_docfreq_r: minimum document rank
-#'     input$CA_max_docfreq_r: maximum document rank
-#'     input$CA_min_docfreq_q: minimum document quantile
-#'     input$CA_max_docfreq_q: maximum document quantile
-#'     input$CA_cooc_type: type of cooccurrence analysis
-#'     input$CA_min_Cooc_Freq: minimum for cooccurrence frequency
-#'     input$CA_POS_TYPES: part of speech types to keep
-#'     input$CA_ENTITY_TYPES: entity (NER) types to keep 
-#' parameter for Classification (only new paramerte mentioned)
-#'   input$CL_Context_Unit: select a context unit
-#'   input$CL_Project: select a project
-#'   input$CL_Mode: select a mode
-#'   input$CL_c: parameter to tell how much to avoid missclassifying each training example
-#'   input$CL_Threshold: classification threshold
-#'   input$CL_active_learning_strategy:  selected strategy on which the document selection for active learning examples based on
-#'   input$CL_use_dict: should a dictionary be used
-#'   input$CL_Category: classification category for generating active learning examples
-#'   input$CL_dict: selected dictionary
-#' parameter for Dictionary Extraction(only new parameter mentioned)
-#'  input$DE_use_reg_exp: should a regular expression be used?
-#'  input$DE_regexp_input: input for the regular expression
-#'  input$DE_use_context_filter: should a context filter be used?
-#'  input$DE_Context_Filter: selected context filter
-#'  input$DE_reg_exp: used regular expression 
-#'  input$DE_context_unit: used context unit 
-#' parameter for volatility analysis (only new parameter mentioned)
-#'  input$VA_min_Cooc_Freq: minimum for cooccurrence frequency
-#'  input$VA_Cooc_Measure: selected cooccurrence measurement
-#'  input$VA_timeintervall: selected time-intervall
-#'  input$VA_history: how large should the memory storage be?
-#'  input$VA_method:  whitch method should be used? (significance or ranks)
-#'  input$VA_weightfactor: it's referenced based significance selected choose weight factor (linear or exponential)
-#' parameter for keyword extraction (only new parameter mentioned)  
-#'  input$KE_no_ref_method: used extraction method
-#'  input$KE_no_ref_n_min: referenced minimal n
-#'  input$KE_no_ref_ngram_max: referenced maximum of used n-grams
-#'  input$KE_seperator: choosen seperator
-#'  input$KE_filter: selected filter 
-#'  input$KE_phrase: choosen Phrase pattern
-#' parameter for sentiment analysis (only new parameter mentioned)
-#'  input$SA_sentiment_dictionary: select dictionary for sentiment analysis
-#'  input$SA_avg: select average values
-#' parameter for document deduplication (only new parameter mentioned)
-#'  input$DD_similarity_measure: select similarity measurement
-#' parameter for syntactic parsing (only new parameter mentioned)
-#'  input$SP_cores: number of cores for calculation
-#' parameter for Vector_Space_Representation (only new parameter mentioned) 
-#'  input$VS_use_model: selected model
-#'  input$VS_model:
-#'  input$VS_lowercase:
-#'  input$VS_ngram:
-#'  input$VS_stopwords:
-#'  input$VS_punctuation:
-#'  input$VS_min_occ:
-#'  input$VS_vectors:
-#'  input$VS_threads:
-#'  input$VS_window:
-#'  input$VS_iter:
-#'  input$VS_neg_samples:
-#'  input$VS_train_dim_reduction
-#' 
+# save current parameter setting as a parameter preset
 observeEvent(input$parameter_preset_save,{
   chosen_analysis<-input$analysis_selected
   if(input$analysis_selected=="Cooccurrence_Analysis"){
@@ -589,5 +487,3 @@ observeEvent(input$analysis_help,ignoreInit = T,{
   }
   
 })
-
-

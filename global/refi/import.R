@@ -8,8 +8,9 @@ refi_to_collection <- function(qdpx_file, dataset){
   
   if (!IO_is_valid_qde_file(qde_file)) {
     message(".qde-file is does not corrospond to the REFI-scheme file!")
-    return()
+    #return()
   }
+  
   
   xml_document <- read_xml(qde_file)
   project_node <- xml_name(xml_document)
@@ -19,7 +20,7 @@ refi_to_collection <- function(qdpx_file, dataset){
   sets <- xml_find_all(xml_document, "//d1:Set")
   plaintext_selections <- xml_find_all(xml_document, "//d1:PlainTextSelection")
   data <- import_text_sources(text_sources, unpacked_dir, dataset)
-
+  
   # unlink(unpacked_dir, recursive = TRUE)  
   
   r <- list("data" = data, "xmlDoc" = xml_document, "importDirectory" = unpacked_dir)
@@ -50,7 +51,12 @@ import_text_sources <- function(text_sources, unpacked_dir, dataset){
     id_doc <- id_doc + 1
     if (xml_has_attr(text_source, 'plainTextPath')) {
       plain_text_path <- xml_attr(text_source, 'plainTextPath')
-      body_file <- file.path(unpacked_dir, "sources", str_replace(plain_text_path, 'internal://', ""))
+      if("Sources"%in% list.files(unpacked_dir)){
+        body_file <- file.path(unpacked_dir, "Sources", str_replace(plain_text_path, 'internal://', ""))
+      }
+      else{
+        body_file <- file.path(unpacked_dir, "sources", str_replace(plain_text_path, 'internal://', ""))
+      }
       if (!file_ext(body_file) == "txt") {
         message(paste0("Skipping TextSource. Could not open file extension ", file_ext(body_file), "!"))
         next
@@ -80,7 +86,6 @@ import_text_sources <- function(text_sources, unpacked_dir, dataset){
     ts_body <- trimws(ts_body)
     
     ts_body <- gsub("'", "\'", ts_body)
-    
     df <- data.frame(
       dataset = dataset
       , id_doc = id_doc
@@ -88,7 +93,7 @@ import_text_sources <- function(text_sources, unpacked_dir, dataset){
       , body = as.character(ts_body)
       , date = ts_date
       , token = as.numeric(sapply(strsplit(as.character(ts_body), " "), length))
-      , language = "en"
+      , language = cld2::detect_language(text = as.character(ts_body))
       , mde1 = ""
       , mde2 = ""
       , mde3 = ""
@@ -162,7 +167,7 @@ add_category <- function(edit_list, name = NULL, color = NULL, description = NUL
   tmp[[hash]] <- list(
     name = name,
     color = color,
-    isDocumentAnnotation = TRUE,
+    isDocumentAnnotation = F,
     sublist = list(),
     description = description
   )
@@ -335,10 +340,10 @@ import_function <- function(){
         
       }
       RMariaDB::dbDisconnect(mydb)
-        }
+    }
     log_to_file(message = "Finished preprocessing. Restart App to work with the new data",logfile)
     system(paste("mv ",logfile," collections/logs/finished/",sep=""))
     
-}) 
+  }) 
 }
 

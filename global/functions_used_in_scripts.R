@@ -61,6 +61,65 @@ get_token_meta_and_language_from_db<-function(get_meta=T,get_language=T,get_glob
 
 
 
+get_token_meta_and_language_from_db_refi<-function(get_meta=T,get_language=T,get_global_doc_ids=F,host=NULL,port=NULL,id,dataset){
+  token<-NULL
+  meta=NULL
+  language=NULL
+  global_doc_ids<-NULL
+  #getting data from db
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=port)
+  rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+  RMariaDB::dbClearResult(rs)
+  d<-data.frame(id=id,dataset=dataset)
+  for(i in 1:length(unique(d[,2]))){
+    print("token")
+    ids<-paste(d[which(d[,2]==unique(d[,2])[i]),1],collapse = " ")
+    ids<-stringr::str_replace_all(string = as.character(ids),pattern = " ",",")
+    res<-RMariaDB::dbSendQuery(mydb, paste("select * from token where dataset='",unique(d[,2])[i],"' and id in (",ids,");",sep=""))
+    result<-RMariaDB::dbFetch(res = res)
+    token<-rbind(token,result)
+    RMariaDB::dbClearResult(res)
+    if(get_meta==T){
+      print("meta")
+      res<-RMariaDB::dbSendQuery(mydb, paste("select id_doc ,date from documents where dataset='",unique(d[,2])[i],"' and id_doc in (",ids,");",sep=""))
+      result<-RMariaDB::dbFetch(res = res)
+      RMariaDB::dbClearResult(res)
+      meta<-rbind(meta,result)
+    }
+    if(get_global_doc_ids==T){
+      print("glob")
+      res<-RMariaDB::dbSendQuery(mydb, paste("select id from documents where dataset='",unique(d[,2])[i],"' and id_doc in (",ids,");",sep=""))
+      result<-RMariaDB::dbFetch(res = res)
+      RMariaDB::dbClearResult(res)
+      global_doc_ids<-c(global_doc_ids,result)
+    }
+  }
+  
+  #x<-as.numeric(factor(paste(token[,1],token[,2],sep="_")))
+  x<-paste(token[,1],token[,2],sep="_")
+  token[,2]<-x
+  
+  if(get_meta==T){
+    meta[,2]<-as.character(as.Date(meta[,2]))
+    meta[,1]<-unique(x)
+  }
+  #get language // so far just use language of first document for all
+  if(get_language==T){
+    res<-RMariaDB::dbSendQuery(mydb, paste("select language from documents where dataset='",d[1,2],"' and id_doc =",d[1,1],";",sep=""))
+    result<-RMariaDB::dbFetch(res = res)
+    RMariaDB::dbClearResult(res)
+    language<-as.character(result)
+  }
+  RMariaDB::dbDisconnect(mydb)
+  if(language=="eng"){
+    language<-"en"
+  }
+  return(list(token=token,meta=meta,language=language,global_doc_ids=global_doc_ids))
+}
+
+
+
+
 prepare_input_parameters<-function(param){
   #stemming?
   param$stemming<-FALSE

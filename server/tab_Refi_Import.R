@@ -20,7 +20,7 @@ output$refi_import_table_annotation_scheme <- DT::renderDataTable({
   )
   DT::datatable(
     reactive_data$data
-    , selection = list(mode = 'single', selected = c(1))
+    , selection = list(mode = 'single')
     , escape = FALSE
     , class = "compact"
     , rownames = FALSE
@@ -33,6 +33,7 @@ output$annotation_scheme_list_import <- renderUI({
   if (!is.null(input$selectedAnnotationSchemeImport)) {
     anno_file_name <- list.files(ANNO_SCHEME_HOME, pattern = paste0(input$selectedAnnotationSchemeImport, ".RData"))
     anno_file <- file.path(ANNO_SCHEME_HOME, anno_file_name)
+    print(anno_file)
     html_content <- HTML_get_annotation_scheme(anno_file)
     HTML(html_content)
   }
@@ -101,7 +102,9 @@ process_import <- function(dataset, data, xml_document, import_directory){
   #create meta metadata vector
   meta_metadata<-data.frame(dataset = c(dataset))
   #save needed parameters
-  parameters<-list(data, db = TRUE, lang = data[1, "language"], "%Y-%m-%d", meta_metadata,save_annotations=T)
+  # use most used lagnuage for spacy preprocessing
+  lang<-names(table(data[,"language"])[1])
+  parameters<-list(data, db = TRUE, lang = lang, "%Y-%m-%d", meta_metadata,save_annotations=T)
   #create process ID
   ID<-get_task_id_counter()+1
   set_task_id_counter(ID)
