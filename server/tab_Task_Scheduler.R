@@ -1,13 +1,15 @@
-# select Input to choose a collection
-# choices: check files in "collections/collections"
-# @ values$coll_saved: reactive variable that invalidates when a new collection is saved
+#' select Input to choose a collection
+#' choices: check files in "collections/collections"
+#' depends on: values$coll_saved: reactive variable that invalidates when a new collection is saved
 output$Task_Scheduler_Collection<-renderUI({
   values$coll_saved
   selectizeInput(inputId = "collection_selected",label = "Collection:",choices = stringr::str_replace_all(string = list.files(path ="collections/collections/"),pattern = ".RData",replacement = ""))
 })
 
-# if the user wants to use a custom script, show select statement with existing custom scripts
-# @values$new_script_saved: reactive variable that invalidates when a new custom script got saved
+#' if the user wants to use a custom script, show select statement with existing custom scripts
+#' depends on: 
+#'   values$new_script_saved: reactive variable that invalidates when a new custom script got saved
+#'   input$analysis_selected: selected analysis method
 output$custom_script_options_UI<-renderUI({
   values$new_script_saved
   if(input$analysis_selected==""){
@@ -29,8 +31,9 @@ output$custom_script_options_UI<-renderUI({
   }
 })
 
-# select input showing the available parameter presets with option to save the current setting as preset
-# @values$reload_presets: reactive variable that invalidates if a new parameter preset got saved
+#' select input showing the available parameter presets with option to save the current setting as preset
+#' depends on:
+#'   values$reload_presets: reactive variable that invalidates if a new parameter preset got saved
 output$parameter_preset_UI<-renderUI({
   values$reload_presets
   available_presets<-stringr::str_remove(string = list.files(paste0("collections/parameter_settings/",input$analysis_selected)),pattern = ".RData")
@@ -59,7 +62,117 @@ output$parameter_preset_UI<-renderUI({
 })
 
 
-# save current parameter setting as a parameter preset
+#' save current parameter setting as a parameter preset
+#' depends on:
+#'   input$parameter_preset_save: saved preset parameter for analysis
+#'   input$analysis_selected: selected analysis method
+#'   values$preset_parameter: list of preset parameters for choosen analysis method
+#'  parameter for Cooccurrence analysis:
+#'    input$CA_baseform: should words be reduced to their baseform?
+#'    input$CA_min_char: select minimum of characters a word needs to contain 
+#'    input$CA_ngram: choose size of n-grams 
+#'    input$CA_remove_custom: remove custom words? 
+#'    input$CA_keep_custom: keep customed words? 
+#'    input$CA_remove_stopwords:  should stopwords be removed? 
+#'    input$CA_lowercase: should all words be put in lowercase
+#'    input$CA_remove_numbers: should numbers in the documents be removed?
+#'    input$CA_remove_numbers_all: should all words containing number be removed?
+#'    input$CA_remove_punctuation: should the punctuation be removed?
+#'    input$CA_remove_hyphenation: should hyphenation be removed?
+#'    input$CA_consolidate_entities: should entities be consolidated?
+#'    input$CA_use_custom_blacklist: should a custome blacklist be used?
+#'    input$CA_use_custom_whitelist: should a custome whitelist be used?
+#'    input$CA_blacklist: blacklist of words that should be removed from the texts
+#'    input$CA_whitelist: selected whitelist of words to keep in analysis
+#'    input$CA_whitelist_only: just use words on whitelist
+#'    input$CA_whitelist_expand: expand current whitelist
+#'    input$CA_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
+#'    input$CA_min_termfreq_c: minimum term frequency (count)
+#'    input$CA_max_termfreq_c: maximum term frequency (count)
+#'    input$CA_min_termfreq_p: minimum term probability
+#'    input$CA_max_termfreq_p: maximum term probalility
+#'    input$CA_min_termfreq_r: minimum term rank
+#'    input$CA_max_termfreq_r: maximum term rank
+#'    input$CA_min_termfreq_q: minimum term quantile
+#'    input$CA_max_termfreq_q: maximum document quantile
+#'    input$CA_docfreq_type: choosen document frequency type
+#'    input$CA_min_docfreq_c: minimum document frequency (count)
+#'    input$CA_max_docfreq_c: maximum document frequency (count)
+#'    input$CA_min_docfreq_p: minimum document probability
+#'    input$CA_max_docfreq_p: maximum document probability
+#'    input$CA_min_docfreq_r: minimum document rank
+#'    input$CA_max_docfreq_r: maximum document rank
+#'    input$CA_min_docfreq_q: minimum document quantile
+#'    input$CA_max_docfreq_q: maximum document quantile
+#'    input$CA_cooc_type: which type of cooccurrence analysis should be used? 
+#'    input$CA_min_Cooc_Freq: select a minimum frequence for words for cooccurrence calculation
+#'    input$CA_POS_TYPES: select part of speech types that should be used
+#'    input$CA_ENTITY_TYPES:  select entity (NER) types that should be used
+#'  parameter for classification (only new parameter mentioned)
+#'    input$CL_Context_Unit: select context unit
+#'    input$CL_Project: select project for classification
+#'    input$CL_Mode: select classification mode
+#'    input$CL_c: parameter to tell how much to avoid missclassifying each training example
+#'    input$CL_Threshold: classification threshold
+#'    input$CL_active_learning_strategy: selected strategy on which the document selection for active learning examples based on
+#'    input$CL_use_dict: use a dictionary?
+#'    input$CL_Category: classification category for generating active learning examples
+#'    input$CL_dict: selected dictionary
+#'  parameter for dictionary extraction (only new parameter mentioned)
+#'    input$DE_use_reg_exp: use regular expressions?
+#'    input$DE_regexp_input: input for regular expressions
+#'    input$DE_use_context_filter: should a context filter be used?
+#'    input$DE_Context_Filter: use context filter to just count occurrence of dictionary term 
+#'    input$DE_reg_exp: use regular expressions?
+#'    input$DE_context_unit: specify the window within the specific context has to co-occure within dictionary terms (sentence or document)
+#'  parameter for volatility analysis (only new parameter mentioned)
+#'    input$VA_min_Cooc_Freq: minimum cooccurrence frequency
+#'    input$VA_Cooc_Measure:  which distand measurement should be used? (manhatten distance, eucledean distance, etc.)
+#'    input$VA_timeintervall: which time intervall (day, month, year) should be used?
+#'    input$VA_history: how large should the memory storage be?
+#'    input$VA_method: which method should be used? (significance or ranks)
+#'    input$VA_cooc_type: which Co-occurrence significance measure should be used? (Dice, log likelihood, mutual information)
+#'    input$VA_weightfactor: selected weight factor
+#'  parameter for keyword extraction (only new parameter mentioned)
+#'    input$KE_Mode: select keyword extraction mode (RAKE, PMI collocation, phrase sequence, text rank)
+#'    input$KE_no_ref_method: referenced methods
+#'    input$KE_no_ref_n_min: referenced minimal n
+#'    input$KE_no_ref_ngram_max: referenced n-gram maximum
+#'    input$KE_seperator: choosen seperator for phrases
+#'    input$KE_filter: choosen key extraction filter
+#'    input$KE_phrase: choosen phrase pattern 
+#'  parameter for sentiment analysis (only new mentioned)
+#'    input$SA_sentiment_dictionary: choose sentiment dictionary (depends on language of the text)
+#'    input$SA_avg:  selected document score aggregation
+#'  parameter for document deduplication  
+#'    input$DD_similarity_measure: selected similarity measurement
+#'  parameter for syntactic parsing (only new mentioned)
+#'    input$SP_cores: select a number of cores to start the calculation
+#'  parameter for vector space representation (only new mentioned)
+#'    input$VS_min_occ: set minimum occurrence for words
+#'    input$VS_vectors: set number of vectors for the output
+#'    input$VS_threads: set a number of threads to run the trainingsprocess on
+#'    input$VS_window: set the window size used in training
+#'    input$VS_iter: number of passes to make over the corpus during training
+#'    input$VS_neg_samples:negative sectioned samples
+#'    input$VS_train_dim_reduction: reduction of vector dimension for training 
+#'  parameter for topic analysis
+#'    input$TM_number_of_topics: how many topics should be calculated?
+#'    input$TM_method: choose a backend method to calculate the topic models
+#'    input$TM_alpha: set document topic density
+#'    input$TM_detailed_meta_dist: choose a distance masurement for detailed meta data analysis
+#'    input$stm_prevalenceFormula: formula with no response variable or a matrix containing topic prevalence covariates
+#'    input$stm_contentFormula: formula containing a single variable or something which can be coerced to a factor indicating the category of the content variable for each document
+#'    input$stm_init_type: choose method of initialization (spectral or LDA or custom or random option possible)
+#'    input$stm_max_em_its: maximum number of EM iterations
+#'    input$stm_emtol: convergence tolerance - EM stops when the relatice change in the approximate bound drops below this level
+#'    input$stm_ngroups: Number of groups for memorized inference
+#'    input$stm_LDAbeta: is LDAbeta selected? automatically ticket when there are no content covariates
+#'    input$stm_interactions: are the interactions between content covariates and the latent topic activated?
+#'    input$stm_gamma_prior: set the prior estimation method for the prevalence covariate model (pooled or L1)
+#'    input$stm_sigma_prior: set a value for the strength of regularization toward a diagonalized covariance matrix
+#'    input$stm_kappa_prior: set method for structural topic modeling (L1 or Jeffreys)
+#'          
 observeEvent(input$parameter_preset_save,{
   chosen_analysis<-input$analysis_selected
   if(input$analysis_selected=="Cooccurrence_Analysis"){
@@ -408,8 +521,14 @@ observeEvent(input$parameter_preset_save,{
   )
 })
 
-# check whether file name is already used; if no file with that name exists: save file
-# else ask user to confirm overwrite
+#' check whether file name is already used; if no file with that name exists: save file
+#' else ask user to confirm overwrite
+#' depends on:
+#'   input$parameters_preset_save_file: preset parameter to save an file
+#'   input$analysis_selected: selected analysis method
+#'   input$parameter_preset_name: preset name for the file
+#'   values$preset_parameter: preset parameter for calculation
+#'   values$reload_presets: reload presets
 observeEvent(input$parameters_preset_save_file,{
   filename<-paste0("collections/parameter_settings/",input$analysis_selected,"/",input$parameter_preset_name,".RData")
   preset_parameter<-values$preset_parameter
@@ -425,7 +544,7 @@ observeEvent(input$parameters_preset_save_file,{
   }
 })
 
-# if user wants to overwrite existing parameter preset --> overwrite existing preset with current setting
+#' if user wants to overwrite existing parameter preset --> overwrite existing preset with current setting
 observeEvent(input$parameter_preset_confirm_overwrite,{
   validate(
     need(isTRUE(input$parameter_preset_confirm_overwrite),message=F)
