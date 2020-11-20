@@ -545,6 +545,12 @@ observeEvent(input$parameters_preset_save_file,{
 })
 
 #' if user wants to overwrite existing parameter preset --> overwrite existing preset with current setting
+#' depends on:
+#'   input$parameter_preset_confirm_overwrite: confirm to overwrite the preset parameters
+#'   input$analysis_selected: selected analysis model
+#'   input$parameter_preset_name: preset parameter names
+#'   values$preset_parameter: preset parameter (with values)
+#'   values$reload_presets: reload the preset parameters
 observeEvent(input$parameter_preset_confirm_overwrite,{
   validate(
     need(isTRUE(input$parameter_preset_confirm_overwrite),message=F)
@@ -559,7 +565,9 @@ observeEvent(input$parameter_preset_confirm_overwrite,{
 
 
 
-# try to update parameters corresponding to chosen preset
+#' try to update parameters corresponding to chosen preset
+#' depends on:
+#'   input$parameter_preset_set: set of preset parameters
 observeEvent(input$parameter_preset_set,{
   if(input$parameter_preset==""){
     shinyWidgets::sendSweetAlert(session = session,title = "No preset found for this analysis!",text = "You need to create at least one parameter preset before you can apply presets",
@@ -590,7 +598,10 @@ source(file.path("server","tab_Task_Scheduler_Keyword_Extraction.R"),local = T)$
 source(file.path("server","tab_Task_Scheduler_Syntactic_Parsing.R"),local = T)$value
 
 
-#check if analysis help button was clicked, if yes,open modal with rmd.files
+#' check if analysis help button was clicked, if yes,open modal with rmd.files
+#' depends on:
+#'   input$analysis_help: help files with information about analysis
+#'   input$analysis_selected: selected analysis method
 observeEvent(input$analysis_help,ignoreInit = T,{
   path_to_tutorial<-paste0("Tutorials/",input$analysis_selected,".md")
   if(file.exists(path_to_tutorial)){
