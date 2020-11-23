@@ -1,6 +1,13 @@
 
 
-#render table with finished results for vectorility analysis
+#' render table with finished results for vectorility analysis
+#' depends on:
+#'   values$reload_vector_result: relord vector space representation results
+#'   values$collection_selected: selected collection
+#'    values$Vector_Results_Files: result files for vector space representation
+#'    values$tasks_vector: taks from vector space representation 
+#'    values$results_vector: results from vector space representation
+#'    
 output$Vector_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_vector_result
@@ -167,6 +174,11 @@ observeEvent(input$more_details_vector_results,{
   }
 })
 
+#' details for vector space representation results
+#' depends on:
+#'   values$vector_selected_row: selected row of resltlist for vector space representation
+#'   values$tasks_vector: vector representation tasks 
+#'   
 output$more_details_vector_table<-DT::renderDataTable({
   validate(
     need(values$vector_selected_row>0,message=F)

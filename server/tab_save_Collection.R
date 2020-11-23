@@ -1,3 +1,22 @@
+#' observe the saving process of a new collection of documents
+#' depends on:
+#'   input$save_Collection: collection to save
+#'   values$numFound: number of selected documents/elements to save in a collection
+#'   input$Collection_Name: name of the new collection
+#'   values$host: used host to save collection to the database
+#'   values$db_port: used port for saving the collection to the database
+#'   values$custom: are there customed information for the collection?
+#'   values$custom_inputtext: customed input text
+#'   input$Collection_limit_binary: are there binary limits for the collection
+#'   input$Collection_limit_method: limit method (e.g.: most relevant documents, random sample)
+#'   values$solr_url: url to solr
+#'   values$q: parameter q
+#'   values$fq: parameter fq
+#'   input$Collection_limit: limit for collection
+#'   values$delete_documents: deleted documents
+#'   values$user: user who wants to save a collection:
+#'   values$update_solr_port: used solr port 
+#'   
 observeEvent(input$save_Collection,{
   withBusyIndicatorServer("save_Collection", {
     #check if collection name is still avaiable
@@ -94,7 +113,8 @@ observeEvent(input$save_Collection,{
   })
 })
 
-
+#' show collection limitation
+#'  values$numFound: number of found docuemnts for collection
 output$Collection_limit_UI<-renderUI({
   validate(
     need(values$numFound>0,message = "no document in result set")

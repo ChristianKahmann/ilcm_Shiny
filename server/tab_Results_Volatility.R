@@ -1,6 +1,10 @@
-
-
-#render table with finished results for volatility analysis
+#' render table with finished results for volatility analysis
+#' depends on:
+#'   values$reload_volat_result: reload result of valatility analysis
+#'   values$collection_selected: selected collection
+#'   values$Volat_Results_Files: volatility analysis result files
+#'   values$tasks_volat: volatitlity analysis tasks
+#'   
 output$Volat_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_volat_result
@@ -119,7 +123,13 @@ output$Volat_Results <- renderDataTable({
 })
 
 
-#check wheather a certain result was clicked and then switch with needed information to details tab
+#' check wheather a certain result was clicked and then switch with needed information to details tab
+#' depends on:
+#'   input$Volat_Results_rows_selected: selected rows of volatility analysis results
+#'   values$Details_Analysis: details of volatolity analysis
+#'   values$Details_Data: data details
+#'   values$Volat_Results_Files: result files of volatility analysis
+#'   values$Details_Data_VA : details of data from volatility analysis
 observe({
   s = input$Volat_Results_rows_selected
   if (length(s)) {
@@ -139,7 +149,11 @@ observe({
 
 
 
-#if delete volatility analysis result is clicked delete files and db entry
+#' if delete volatility analysis result is clicked delete files and db entry
+#' depends on:
+#'   input$delete_volat_results: should volatility analysis results be deleded
+#'   values$Volat_Results_Files: volatility analysis result files
+#'   values$reload_volat_result: reload volatility results
 observeEvent(input$delete_volat_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_volat_results, "_")[[1]][5])
@@ -152,7 +166,10 @@ observeEvent(input$delete_volat_results, {
 })
 
 
-#if more details button is clicked open modal showing all parameters
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   input$more_details_volat_results: detals for volatility analysis results
+#'   values$volat_selected_row: selected rows of possible volatility analysis results
 observeEvent(input$more_details_volat_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_volat_results, "_")[[1]][6])
@@ -168,7 +185,10 @@ observeEvent(input$more_details_volat_results,{
   }
 })
 
-
+#' details from volatility analysis result table 
+#' depends on:
+#'   values$volat_selected_row: selected rows from volatility analysis
+#'   values$tasks_volat: volatility analysis tasks
 output$more_details_volat_table<-DT::renderDataTable({
   validate(
     need(values$volat_selected_row>0,message=F)
