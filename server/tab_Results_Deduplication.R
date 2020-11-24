@@ -1,6 +1,6 @@
 
 
-#render table with finished results for vectorility analysis
+#' render table with finished results for vectorility analysis
 output$Deduplication_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_deduplication_result
