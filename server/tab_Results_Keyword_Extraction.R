@@ -1,6 +1,12 @@
 
 
-#render table with finished results for vectorility analysis
+#' render table with finished results for vectorility analysis
+#' depends on:
+#'   values$reload_keyword_result: reload keyword extraction results
+#'   values$collection_selected: selected collection
+#'   values$tasks_keyword: keyword extraction tasks
+#'   values$Keyword_Results_Files: keyword extraction result files
+#'   values$results_keyword: keyword extraction results
 output$Keyword_Extraction_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_keyword_result
@@ -116,7 +122,12 @@ output$Keyword_Extraction_Results <- renderDataTable({
   })
 
 
-#check wheather a certain result was clicked and then switch with needed information to details tab
+#' check wheather a certain result was clicked and then switch with needed information to details tab
+#' depends on:
+#'   input$Keyword_Extraction_Results_rows_selected: selected rows from result list of keyword extraction
+#'   values$Details_Analysis: keyword extraction analysis details
+#'   values$Details_Data_KE: data details from keyword extraction
+#'   values$Keyword_Results_Files: keyword extraction result files
 observeEvent(ignoreInit = T,input$Keyword_Extraction_Results_rows_selected,{
   s = input$Keyword_Extraction_Results_rows_selected
   if (length(s)) {
@@ -134,7 +145,11 @@ observeEvent(ignoreInit = T,input$Keyword_Extraction_Results_rows_selected,{
 
 
 
-#if delete vectorility analysis result is clicked delete files and db entry
+#' if delete vectorility analysis result is clicked delete files and db entry
+#' depends on:
+#'   input$delete_keyword_results: reload result list after keyword extraction file was deleted 
+#'   values$Keyword_Results_Files: keyword extraction result files
+#'   
 observeEvent(input$delete_keyword_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_keyword_results, "_")[[1]][5])
@@ -147,7 +162,13 @@ observeEvent(input$delete_keyword_results, {
 })
 
 
-#if more details button is clicked open modal showing all parameters
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   input$more_details_keyword_results: more details on keyword extraction results
+#'   values$keyword_selected_row: selected row from result list
+#'   values$Det_KE_data: detailes keyword extraction data 
+#'   values$tasks_keyword: keyword extraction tasks
+#'   
 observeEvent(input$more_details_keyword_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_keyword_results, "_")[[1]][6])
@@ -164,6 +185,11 @@ observeEvent(input$more_details_keyword_results,{
   }
 })
 
+#'  if more details button is clicked open modal showing all parameters
+#'  depends on:
+#'    values$keyword_selected_row: selected rows from keyword extraction result list
+#'    values$tasks_keyword: keyword extraction tasks
+#'    
 output$more_details_keyword_table<-DT::renderDataTable({
   validate(
     need(values$keyword_selected_row>0,message=F)

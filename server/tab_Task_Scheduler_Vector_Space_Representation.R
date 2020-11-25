@@ -156,13 +156,13 @@ output$Analysis_Parameter_VS<-renderUI({
 #'   input$VS_threads: set a number of threads to run the trainingsprocess on
 #'   input$VS_window: set the window size used in training
 #'   input$VS_iter: number of passes to make over the corpus during training
-#'   input$VS_neg_samples:negative sectioned samples ??
-#'   input$VS_use_model:
-#'   input$VS_model:
-#'   input$VS_train_dim_reduction:
-#'   input$use_custom_script:
-#'   input$analysis_selected:
-#'   input$custom_script_options:
+#'   input$VS_neg_samples:negative sectioned samples
+#'   input$VS_use_model: use an existing model?
+#'   input$VS_model: selected model
+#'   input$VS_train_dim_reduction: reduction of vector dimension for training 
+#'   input$use_custom_script: should a customed script be used?
+#'   input$analysis_selected: selected analysis method
+#'   input$custom_script_options: should a customed script be used?
 observeEvent(input$VS_Submit_Script,{
   #VSve needed parameters
   parameters<-list(input$collection_selected,input$VS_lowercase,input$VS_ngram,input$VS_stopwords,input$VS_punctuation,input$VS_min_occ,
