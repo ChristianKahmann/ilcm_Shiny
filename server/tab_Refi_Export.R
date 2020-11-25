@@ -1,9 +1,12 @@
 
-
+#' selected collections
+#' depends on:
+#'   input$refi_export_select_collection: refine selected collection for export
 get_collection <- reactive({
   DB_get_collections(input$refi_export_select_collection)
 })
 
+#' refine collection table for export
 output$refi_export_collection_table <- DT::renderDataTable({
   collection <- get_collection()
   num_collections <- seq(nrow(collection))
@@ -28,10 +31,19 @@ output$refi_export_collection_table <- DT::renderDataTable({
   )
 }, server = FALSE)
 
+#' observe collections
+#' depends on:
+#'   input$collection: selected collection
 observeEvent(input$collection, {
   showModal(dialog_collection_export())
 })
 
+#' export collection model
+#' depends on:
+#'   input$export_collection_modal_ok: collection model for export
+#'   input$collection: selected collection
+#'   input$modal_export_collection_project_name: project name for export
+#'   values$refi_download_collection_name: download collection name
 observeEvent(input$export_collection_modal_ok, {
   withBusyIndicatorServer("export_collection_modal_ok", {
     output_directory <- "collections/tmp/refi"
@@ -56,6 +68,10 @@ observeEvent(input$export_collection_modal_ok, {
   }
 })
 
+#' export collection - download handler
+#' depends on:
+#'   values$refi_download_collection_name: collection name for download
+#'   
 output$refi_export_collection<-downloadHandler(
   filename = function() {
     files_found<-list.files(paste0("collections/tmp/refi/",values$refi_download_collection_name),full.names = T)
@@ -79,11 +95,20 @@ output$refi_export_collection<-downloadHandler(
   }
 )  
 
-
+#' annotation scheme
+#' depends on:
+#'   input$collectionAnnoScheme: annotation scheme of collection
+#'   
 observeEvent(input$collectionAnnoScheme, {
   showModal(dialog_collection_with_annotation_scheme_export())
 })
 
+#' export collection and annotation scheme
+#' depends on:
+#'   input$export_collection_with_annotation_scheme_modal_ok: annotation scheme modal and collection for export
+#'    input$refi_export_select_collection: export selected collection
+#'    input$modal_export_collection_with_annotation_scheme_project_name: project name of annotatiom scheme and collection
+#'    
 observeEvent(input$export_collection_with_annotation_scheme_modal_ok, {
   withBusyIndicatorServer("export_collection_with_annotation_scheme_modal_ok", {
     output_directory <- "collections/tmp/refi"
@@ -109,7 +134,7 @@ observeEvent(input$export_collection_with_annotation_scheme_modal_ok, {
 })
 
 
-
+#' getter for important parameters to export a collection
 
 get_collection_names <- reactive({
   DB_get_collection_names()
@@ -135,28 +160,43 @@ get_classifications <- reactive({
   IO_get_classifications(input$refi_export_select_collection)
 })
 
-#update collections and results if button is clicked
+#' update collections and results if button is clicked
+#' depends on:
+#'   input$refi_export_reset: refine reset for export
+#'   values$refi_export_update: refine update for export  
 observeEvent(input$refi_export_reset,{
   values$refi_export_update<-runif(1,0,1)
 })
 
 
-
+#' update collections and results if button is clicked
+#' depends on:
+#'   values$refi_export_update: refine update for export
 observe({
   values$refi_export_update
   updateSelectInput(session, inputId = "refi_export_select_collection", choices = DB_get_collection_names())
 })
 
+#' update collections and results if button is clicked
+#' depends on:
+#'   values$refi_export_update: refine update for export
 observe({
   values$refi_export_update
   updateSelectInput(session, inputId = "refi_export_classification_select_input", choices = IO_get_classification_projects())
 })
 
+#' update collections and results if button is clicked
+#' depends on:
+#'   values$refi_export_update: refine update for export
 observe({
   values$refi_export_update
   updateSelectInput(session, inputId = "refi_export_select_analysis", label = paste0("Analysis of collection '", input$refi_export_select_collection, "'"))
 })
 
+#' update collections and results if button is clicked
+#' depends on:
+#'   values$refi_export_update: refine update for export
+#'   input$refi_export_select_collection: refine selected collection for export 
 output$refi_export_detected_annotation_schemes_label <- renderText({
   values$refi_export_update
   schemes <- get_used_annotation_schemes()

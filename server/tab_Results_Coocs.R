@@ -1,4 +1,9 @@
-#render table with finished results for co-occurrence analysis
+#' render table with finished results for co-occurrence analysis
+#' depends on:
+#'   values$reload_coocs_result: reload result list after element was deleted
+#'   values$collection_selected: selected collection for cooccurrence analysis
+#'   values$Coocs_Results_Files: result files from cooccurrence analysis
+#'   values$results_coocs: results from cooccurrence analysis
 output$Coocs_Results <- DT::renderDataTable({
   #reload table if a result was deleted
   values$reload_coocs_result
@@ -124,7 +129,13 @@ output$Coocs_Results <- DT::renderDataTable({
   )
 })
 
-#check wheather a certain rresult was clicked and then switch with needed information to details tab
+#' check wheather a certain rresult was clicked and then switch with needed information to details tab
+#' depends on:
+#'   input$Coocs_Results_rows_selected: selected rows from result list
+#'   values$Details_Analysis: details of cooccurrence analysis 
+#'   values$Details_Data_CO: details of cooccurrence analysis data
+#'   values$Coocs_Results_Files: result files for cooccurrence analysis
+#'   
 observe({
   s = input$Coocs_Results_rows_selected
   if (length(s)) {
@@ -139,7 +150,11 @@ observe({
 })
 
 
-#if delete co-occurrence analysis result is clicked, delete files and db entry
+#' if delete co-occurrence analysis result is clicked, delete files and db entry
+#' depends on:  
+#'   input$delete_coocs_results: deleted results from result list
+#'   values$Coocs_Results_Files: cooccurrence analysis result files
+#'   values$reload_coocs_result: reload cooccurrence analysis result list after element was deleted
 observeEvent(input$delete_coocs_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_coocs_results, "_")[[1]][5])
@@ -152,7 +167,11 @@ observeEvent(input$delete_coocs_results, {
 })
 
 
-#if more details button is clicked open modal showing all parameters
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   input$more_details_coocs_results: details on cooccurrence analysis results
+#'   values$coocs_selected_row: selected rows from cooccurrence result list
+#'   
 observeEvent(input$more_details_coocs_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_coocs_results, "_")[[1]][6])
@@ -168,6 +187,11 @@ observeEvent(input$more_details_coocs_results,{
   }
 })
 
+#' if more details button is clicked open modal showing all parameters
+#' depends on:  
+#'   values$coocs_selected_row: selected rows from cooccurrence result list
+#'   values$tasks_coocs: cooccurrence tasks
+#'   
 output$more_details_coocs_table<-DT::renderDataTable({
   validate(
     need(values$coocs_selected_row>0,message=F)
