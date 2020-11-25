@@ -245,6 +245,47 @@ observeEvent(input$parameter_preset_save,{
       FE_ENTITY_TYPES=input$FE_ENTITY_TYPES
     )
   }  
+  if(input$analysis_selected=="Dynamic_Topic_Model"){
+    values$preset_parameter=list(
+      DTM_baseform=input$DTM_baseform,
+      DTM_min_char=input$DTM_min_char,
+      DTM_ngram=input$DTM_ngram,
+      DTM_remove_custom=input$DTM_remove_custom,
+      DTM_keep_custom=input$DTM_keep_custom,
+      DTM_remove_stopwords=input$DTM_remove_stopwords,
+      DTM_lowercase=input$DTM_lowercase,
+      DTM_remove_numbers=input$DTM_remove_numbers,
+      DTM_remove_numbers_all=input$DTM_remove_numbers_all,
+      DTM_remove_punctuation=input$DTM_remove_punctuation,
+      DTM_remove_hyphenation=input$DTM_remove_hyphenation,
+      DTM_consolidate_entities=input$DTM_consolidate_entities,
+      DTM_use_custom_blacklist=input$DTM_use_custom_blacklist,
+      DTM_blacklist=input$DTM_blacklist,
+      DTM_use_custom_whitelist=input$DTM_use_custom_whitelist,
+      DTM_whitelist=input$DTM_whitelist,
+      DTM_whitelist_expand=input$DTM_whitelist_expand,
+      DTM_termfreq_type=input$DTM_termfreq_type,
+      DTM_min_termfreq_c=input$DTM_min_termfreq_c,
+      DTM_max_termfreq_c=input$DTM_max_termfreq_c,
+      DTM_min_termfreq_p=input$DTM_min_termfreq_p,
+      DTM_max_termfreq_p=input$DTM_max_termfreq_p,
+      DTM_min_termfreq_r=input$DTM_min_termfreq_r,
+      DTM_max_termfreq_r=input$DTM_max_termfreq_r,
+      DTM_min_termfreq_q=input$DTM_min_termfreq_q,
+      DTM_max_termfreq_q=input$DTM_max_termfreq_q,
+      DTM_docfreq_type=input$DTM_docfreq_type,
+      DTM_min_docfreq_c=input$DTM_min_docfreq_c,
+      DTM_max_docfreq_c=input$DTM_max_docfreq_c,
+      DTM_min_docfreq_p=input$DTM_min_docfreq_p,
+      DTM_max_docfreq_p=input$DTM_max_docfreq_p,
+      DTM_min_docfreq_r=input$DTM_min_docfreq_r,
+      DTM_max_docfreq_r=input$DTM_max_docfreq_r,
+      DTM_min_docfreq_q=input$DTM_min_docfreq_q,
+      DTM_max_docfreq_q=input$DTM_max_docfreq_q,
+      DTM_POS_TYPES=input$DTM_POS_TYPES,
+      DTM_ENTITY_TYPES=input$DTM_ENTITY_TYPES
+    )
+  }  
   if(input$analysis_selected=="Volatility_Analysis"){
     values$preset_parameter=list(
       VA_baseform=input$VA_baseform,
@@ -469,6 +510,7 @@ source(file.path("server","tab_Task_Scheduler_Vector_Space_Representation.R"),lo
 source(file.path("server","tab_Task_Scheduler_Document_Deduplication.R"),local = T)$value
 source(file.path("server","tab_Task_Scheduler_Keyword_Extraction.R"),local = T)$value
 source(file.path("server","tab_Task_Scheduler_Syntactic_Parsing.R"),local = T)$value
+source(file.path("server","tab_Task_Scheduler_Dynamic_Topic_Modeling.R"),local=T)$value
 
 
 #check if analysis help button was clicked, if yes,open modal with rmd.files
