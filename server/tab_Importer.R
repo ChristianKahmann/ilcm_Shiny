@@ -25,7 +25,7 @@ eval_script <- function(script_text, input_data, script_label, script_nr, import
   }
   result
 }
-
+ 
 script_events <- function(name, import_type, script_nr, split_script = FALSE) {
   input_label <- sprintf("data_%s", import_type)
   script_event_name <- sprintf("Import_script_%s_%s", name, import_type)

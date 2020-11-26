@@ -1,3 +1,7 @@
+#' render presentation of meta data
+#' depends on:
+#'    values$metadata_available: available meta data
+#'    
 output$Fac_meta_UI<-renderUI({
   ava<-(values$metadata_available)
   empty_metadata<-names(which(apply(ava,MARGIN = 2,function(x){all(is.na(x))})))
@@ -119,7 +123,14 @@ output$Fac_meta_UI<-renderUI({
 
 
 
-###mde1 facets
+#' mde1 facets absolute values
+#' depends on:
+#'   values$url: url
+#'   values$Fac_mde1_abs: facets of mde1 
+#'   values$q: parameter q
+#'   values$fq: parameter fq
+#'   input$Fac_mde1_minOcc: facets mde1 of minimal Occurrence
+#'   
 output$Fac_mde1_abs<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -164,7 +175,14 @@ output$Fac_mde1_abs<-renderUI({
   return(plot_output_list)
 })
 
-
+#' facets of mde1 relative values
+#' depends on:
+#'   values$url: url parameter
+#'   values$Fac_mde1_abs: facets of mde1 absolute values
+#'   input$dataset: used dataset
+#'   input$Fac_mde1_minOcc: facets of mde1 from minimal occurrence
+#'   values$Fac_mde1_rel: facets odf mde1 - relative values
+#'   values$facet_names: facet names
 output$Fac_mde1_rel<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -220,7 +238,14 @@ output$Fac_mde1_rel<-renderUI({
 })
 
 
-###mde2 facets
+#' mde2 facets
+#' depends on:
+#'   values$Fac_mde2_abs: absolute values of facets mde2
+#'   values$url: used url
+#'   values$q: parameter q
+#'   values$fq: parameter fq
+#'   input$Fac_mde2_minOcc: facets of mde2 for minimal Occurrence
+#'   values$facet_names: facet names
 output$Fac_mde2_abs<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -265,7 +290,12 @@ output$Fac_mde2_abs<-renderUI({
   return(plot_output_list)
 })
 
-
+#' facets of mde2 relative values
+#' depends on:
+#'   values$url: selected url
+#'   values$Fac_mde2_abs: absolute values of facets mde2
+#'   input$dataset: used dataset
+#'   values$facet_names: names of facets
 output$Fac_mde2_rel<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -321,7 +351,13 @@ output$Fac_mde2_rel<-renderUI({
 })
 
 
-###mde3 facets
+#' mde3 facets
+#' depends on:
+#'   values$url: selected url
+#'   values$Fac_mde3_abs: absolute values of facets from mde3
+#'   values$q: parameter q
+#'   values$fq: parameter fq
+#'   input$Fac_mde3_minOcc: facets of mde3 for minimal occurrence
 output$Fac_mde3_abs<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -370,7 +406,14 @@ output$Fac_mde3_abs<-renderUI({
   return(plot_output_list)
 })
 
-
+#' relative values of facets from mde3
+#' depends on:
+#'   values$url: selected url
+#'   values$Fac_mde3_abs: facets mde3 - absolute values
+#'   input$dataset: selected dataset
+#'   input$Fac_mde3_minOcc: facets mde3 for minimal occurrence
+#'   values$Fac_mde3_rel: facets mde3 relative values
+#'   values$facet_names: facet names
 output$Fac_mde3_rel<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -430,7 +473,13 @@ output$Fac_mde3_rel<-renderUI({
 })
 
 
-###mde4 facets
+#' mde4 facets
+#' depends on:
+#'   values$url: selected url
+#'   values$Fac_mde4_abs: absolute values of facets mde4
+#'   values$q: parameter q
+#'   values$fq: parameter fq
+#'   input$Fac_mde4_minOcc: facets mde4 for minimal Occurrence
 output$Fac_mde4_abs<-renderUI({
   #check wheather search parameters were specified
   validate(

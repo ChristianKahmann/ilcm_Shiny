@@ -1,4 +1,7 @@
-# show available projects/annotations schemata
+#' show available projects/annotations schemata
+#' depends on:
+#'   values$newschema: reactive variable changing if annotation schemata changes
+#'   values$classification_project: classification project
 output$projects<-renderUI({
   # @values$newschema reactive variable changing if annotation schemata change
   values$newscheme
@@ -11,7 +14,10 @@ output$projects<-renderUI({
 })
 
 
-# select Input to filter available categories when investigating present annotations
+#' select Input to filter available categories when investigating present annotations
+#' depends on:
+#'   input$project_selected: selected project
+#'   
 output$annotation_filterUI<-renderUI({
   validate(
     need(!is.null(input$project_selected),"choose a project to apply category filters")

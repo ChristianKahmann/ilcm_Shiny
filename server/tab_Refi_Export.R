@@ -108,6 +108,7 @@ observeEvent(input$collectionAnnoScheme, {
 #'   input$export_collection_with_annotation_scheme_modal_ok: annotation scheme modal and collection for export
 #'    input$refi_export_select_collection: export selected collection
 #'    input$modal_export_collection_with_annotation_scheme_project_name: project name of annotatiom scheme and collection
+#'    values$refi_download_collection_name: name of downloaded collecton
 #'    
 observeEvent(input$export_collection_with_annotation_scheme_modal_ok, {
   withBusyIndicatorServer("export_collection_with_annotation_scheme_modal_ok", {
@@ -208,6 +209,10 @@ output$refi_export_detected_annotation_schemes_label <- renderText({
   label_text
 })
 
+#' detected annotation schemes for export
+#' depends on:
+#'   values$refi_export_update: refine update for export 
+#'   
 output$refi_export_detected_annotation_schemes_table <- DT::renderDataTable({
   values$refi_export_update
   schemes <- get_used_annotation_schemes()
@@ -231,6 +236,8 @@ output$refi_export_detected_annotation_schemes_table <- DT::renderDataTable({
   }
 })
 
+#' refine table annotation scheme for export
+
 output$refi_export_table_annotation_scheme <- DT::renderDataTable({
   schemes <- get_annotation_schemes()
   num_schemes <- seq(length(schemes))
@@ -251,6 +258,10 @@ output$refi_export_table_annotation_scheme <- DT::renderDataTable({
   )
 })
 
+#' refine topic model table for export 
+#' depends on:
+#'   values$refi_topics: refine topics
+#'   
 output$refi_export_topic_model_table <- DT::renderDataTable({
   analysis <- get_analysis()
   values$refi_topics<-analysis
@@ -273,6 +284,8 @@ output$refi_export_topic_model_table <- DT::renderDataTable({
     , options = list(dom = 'tp')
   )
 }, server = FALSE)
+
+#' reinfe classification table
 
 output$refi_export_classification_table <- DT::renderDataTable({
   analysis <- get_analysis()
@@ -300,6 +313,9 @@ output$refi_export_classification_table <- DT::renderDataTable({
   )
 }, server = FALSE)
 
+#' refine number of topics in table for exporting topic model
+#' depends on:
+#'   input$refi_export_topic_model_table_rows_selected: refine selected rows from table for topic model export
 output$refi_export_topic_model_number_of_topics_table <- DT::renderDataTable({
   session$sendCustomMessage("getSelectedTopicModel", input$refi_export_topic_model_table_rows_selected)
   topics <- get_topics()
@@ -326,6 +342,8 @@ output$refi_export_topic_model_number_of_topics_table <- DT::renderDataTable({
   )
 }, server = FALSE)
 
+#' refine classification table for export
+
 output$refi_export_classification_table <- DT::renderDataTable({
   classifications <- get_classifications()
   req(classifications)
@@ -347,6 +365,13 @@ output$refi_export_classification_table <- DT::renderDataTable({
   )
 }, server = FALSE)
 
+#' export annotation scheme modal
+#' depends on:
+#'   input$export_annotation_scheme_modal_ok: annotation scheme modal for export
+#'   input$modal_export_annotation_scheme_project_name: project name for export annotation scheme modal
+#'   input$annotationScheme: annotation scheme
+#'   values$refi_download_codebook_name: codebook name for annotation scheme
+#'   
 observeEvent(input$export_annotation_scheme_modal_ok, {
   withBusyIndicatorServer("export_annotation_scheme_modal_ok", {
     output_directory <- "collections/tmp/refi"
@@ -370,6 +395,10 @@ observeEvent(input$export_annotation_scheme_modal_ok, {
   }
 })
 
+#' refine exported codebook
+#' depends on:
+#'   values$refi_download_codebook_name: refine codebook name
+#'    
 output$refi_export_codebook<-downloadHandler(
   filename = function() {
     files_found<-list.files(paste0("collections/tmp/refi/",values$refi_download_codebook_name),full.names = T)
@@ -396,11 +425,18 @@ output$refi_export_codebook<-downloadHandler(
 
 
 
-
+#' observe classification input
 observeEvent(input$classification, {
   showModal(dialog_classification_export())
 })
 
+#' export for classification modal
+#' depends on:
+#'   input$modal_export_classification_project_name: classification project name
+#'   input$refi_export_select_collection: refine export of selected collection
+#'   input$classification: input for classification
+#'   values$refi_download_collection_name: refine collection name for download
+#'     
 observeEvent(input$export_classification_modal_ok, {
   withBusyIndicatorServer("export_classification_modal_ok", {
     output_directory <- "collections/tmp/refi"
@@ -426,6 +462,13 @@ observeEvent(input$export_classification_modal_ok, {
   }
 })
 
+#' export topic model modal
+#' depends on:
+#'   input$refi_export_select_collection: refine selected collection for export
+#'   input$modal_export_topic_model_project_name: project name for topic model export
+#'   values$refi_download_collection_name: refine collection name for download
+#'   input$topicModel: input for topic model
+#'   
 observeEvent(input$export_topic_model_modal_ok, {
   withBusyIndicatorServer("export_topic_model_modal_ok", {
     topic_model_file <- file.path(ANALYSIS_RESULTS_HOME, "topic-model", input$topicModel, "data_TM.RData")
@@ -451,15 +494,26 @@ observeEvent(input$export_topic_model_modal_ok, {
   }
 })
 
+#' observe topic model
+#' depends on:
+#'   input$topicModel: topic model
+#'   input$refi_export_topic_model_number_of_topics_table_rows_selected: selected rows from topic model table with number of topics for export
+#'   
 observeEvent(input$topicModel, {
   session$sendCustomMessage("getTopics", input$refi_export_topic_model_number_of_topics_table_rows_selected)
   showModal(dialog_topic_model_export())
 })
 
+#' annotation scheme
+#' depends on:
+#'   input$annotationScheme: annotation scheme
 observeEvent(input$annotationScheme, {
   showModal(dialog_annotation_scheme_export())
 })
 
+#' list of annotation schemes:
+#' depends on:
+#'   input$refi_export_table_annotation_scheme_rows_selected: selected rows from table of annotation schemes
 output$annotation_scheme_list <- renderUI({
   session$sendCustomMessage("getSelectedAnnotationScheme", input$refi_export_table_annotation_scheme_rows_selected)
   if (!is.null(input$selectedAnnotationScheme)) {
