@@ -17,6 +17,7 @@ tabPanel("Task Scheduler",
                                                                  "Classification"="Classification",
                                                                  "Sentiment Analysis"="Sentiment_Analysis",
                                                                  "Document Deduplication"="Document_Deduplication",
+                                                                 "Dynamic Topic Model"="Dynamic_Topic_Model",
                                                                  "Keyword Extraction"="Keyword_Extraction", 
                                                                  "Syntactic Parsing"="Syntactic_Parsing",
                                                                  #"Factorial Analysis"="Factorial_Analysis",
@@ -84,6 +85,9 @@ tabPanel("Task Scheduler",
                                        ),
                                        conditionalPanel(condition = "input.analysis_selected=='Syntactic_Parsing'",
                                                         uiOutput(outputId = "Analysis_Parameter_SP") 
+                                       ),
+                                       conditionalPanel(condition = "input.analysis_selected=='Dynamic_Topic_Model'",
+                                                        uiOutput(outputId = "Analysis_Parameter_DTM") 
                                        ),
                                        a("Show Script", onclick = "openTab('Scripts')"),
                                        tags$script(HTML("
