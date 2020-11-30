@@ -1,17 +1,32 @@
 values$Doc_anno_loaded<-FALSE
-#render title of document
+#' render title of document
+#' depends on: 
+#'   values$Doc_meta$title: document titel meta data
 output$Doc_DV_title<-renderText({
   title<- values$Doc_meta$title
   return(title)
 })
 
-#create reactive object, which stores the made annotations in the document
+#' create reactive object, which stores the made annotations in the document
 values$Doc_annotations_marked<-matrix(c(0),0,13)
 values$Doc_annotations_show<-matrix(c(0),0,13)
 
 
 
-#render the document
+#' render the document
+#' depends on:
+#'   values$Doc_Doc_reload: reload documents
+#'   values$Doc_token: document token
+#'   input$Doc_anno_scheme_selected: selected document annotation scheme
+#'   input$Doc_anno_id: document annotation id
+#'   values$Doc_anno_deleted: deleted document annotation
+#'   values$Doc_new: new document
+#'   values$host: selected host
+#'   values$db_port: selected database port
+#'   values$Doc_annotations_show: show document annotation
+#'   values$Doc_show: show document
+#'   input$Doc_anno_tag: document annotation tag
+#'   ...
 output$Doc_document<-renderUI({
   values$Doc_Doc_reload
   validate(

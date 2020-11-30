@@ -269,7 +269,13 @@ output$Export_Analysis_Parameter_DL<-renderUI({
 
 
 
-#get documents from database
+#' get documents from database
+#' depends on:
+#'   input$Export_Prepare_Documents: prepare documents for export
+#'   values$host: host for export
+#'   values$db_port: database port
+#'   values$export_token_tmp: temporary token for export
+#'   values$export_meta_tmp: temporary meta data for export
 observeEvent(input$Export_Prepare_Documents,{
   load(paste0("collections/collections/",input$export_collection,".RData"))
   #token object
@@ -297,7 +303,13 @@ observeEvent(input$Export_Prepare_Documents,{
 
 
 
-#create download functionality for downloading token objects
+#' create download functionality for downloading token objects
+#' depends on:
+#'   values$export_number_of_buttons: number of buttons for export
+#'   values$export_chosen_collection: choosen collection for export
+#'   values$export_token_tmp: temporary token for export
+#'   values$export_meta_tmp: temporary meta data for export
+#'   
 observe({
   validate(
     need(!is.null(values$export_number_of_buttons),message=FALSE)
@@ -322,7 +334,12 @@ observe({
 })
 
 
-#create download functionality for downloading meta objects
+#' create download functionality for downloading meta objects
+#' depends on:
+#'   values$export_number_of_buttons: export number of buttons
+#'   values$export_chosen_collection: choosen collection for export
+#'   values$export_meta_tmp: temporary meta data for export
+#'   
 observe({
   validate(
     need(!is.null(values$export_number_of_buttons),message=FALSE)
@@ -346,7 +363,10 @@ observe({
   })
 })
 
-# download functionality for downloading collection meta objects as RData
+#' download functionality for downloading collection meta objects as RData
+#' depends on:
+#'   input$export_collection: export collection
+#'   -values$export_meta_tmp: temporary meta data for export
 output$download_export_RData_meta <- downloadHandler(
   filename = function(){
     paste0(input$export_collection,"_meta.RData")
@@ -357,7 +377,10 @@ output$download_export_RData_meta <- downloadHandler(
   }
 )
 
-# download functionality for downloading collection token objects as RData
+#' download functionality for downloading collection token objects as RData
+#' depends on:
+#'   input$export_collection: export collection
+#'   values$export_token_tmp: temporary token for export
 output$download_export_RData_token <- downloadHandler(
   filename = function(){
     paste0(input$export_collection,"_token.RData")
@@ -370,7 +393,9 @@ output$download_export_RData_token <- downloadHandler(
 
 
 
-# update select input for collections (input$export_collection), when a new collection is created
+#' update select input for collections (input$export_collection), when a new collection is created
+#' depends on:
+#'   values$coll_saved: saved collection
 observe({
   values$coll_saved
   updateSelectInput(session = session,inputId = "export_collection", choices = stringr::str_remove(string = list.files("collections/collections/"),pattern = ".RData"))
@@ -383,7 +408,10 @@ observe({
 
 
 
-
+#' start export of all data
+#' depends on:
+#'   input$file: file input
+#'   
 output$download_export_all <- downloadHandler(
   filename = function(){
     if( dim(parseFilePaths(volumes, input$file))[1]>1){
