@@ -4124,7 +4124,7 @@ output$TM_validation_UI<-renderUI({
     }
   }
   
-
+  
   m<-merge(x = token,y=data,by="features",all.x=TRUE)
   m<-m[order(m[,2]),]
   getPalette = colorRampPalette(brewer.pal(12, "Paired"))
@@ -5258,11 +5258,11 @@ observeEvent(input$Det_TM_reproducibility_calculate,ignoreNULL = F,{
   
   
   
- #' obsereve datatable for results of model reproducibility calculation
- #' depends on:
- #'   values$Det_TM_model_reproducibility_top_words_per_result_per_topic: reproducibility of top words per topic of different results
- #'   values$Det_TM_model_reproducibility_found_match_percentage: reproducibility of found matches in percentage
- #'   values$tm_phi: topic model parameter phi
+  #' obsereve datatable for results of model reproducibility calculation
+  #' depends on:
+  #'   values$Det_TM_model_reproducibility_top_words_per_result_per_topic: reproducibility of top words per topic of different results
+  #'   values$Det_TM_model_reproducibility_found_match_percentage: reproducibility of found matches in percentage
+  #'   values$tm_phi: topic model parameter phi
   output$Det_TM_model_reproducibility_result_table<-DT::renderDataTable({
     validate(
       need(!is.null(isolate(values$Det_TM_model_reproducibility_top_words_per_result_per_topic)),message=F),
@@ -5303,8 +5303,160 @@ observe({
 
 
 
+######################################################################################################################################################
+#                                                          Topic Proportions                                                                         #
+######################################################################################################################################################
 
+#' create figure showing topic proportions over time
+#' depends on:
+#'   input$Det_TM_proportions_lambda: lambda value for calculating topic labels
+#'   input$Det_TM_proportions_Date_Split_How: how to split given documents by their date information
+#'   input$Det_TM_proportions_Chunksize: number of chunks
+#'   input$Det_TM_proportions_ByDate_Type: what kind of time intervall should be used
+#'   input$Det_TM_proportions_ByDate_n: should multiple time intervalls be aggregated
+#'   input$Det_TM_proportions_number_of_words: number of words per topic label
+#'   values$tm_meta: metadata for given documents
+#'   values$tm_theta: document-topic distribution
+#'   values$tm_phi: topic-word distributions
+#'   values$tm_doc.length: documents length
+output$TM_topic_proportions_UI<-renderUI({
+  meta<-values$tm_meta
+  theta<-values$tm_theta
+  phi<-values$tm_phi
+  
+  #create time slices
+  dates<-meta$date
+  
+  if(input$Det_TM_proportions_ByDate_Type=="Year"){
+    dates<-substr(dates,0,4)
+  }
+  if(input$Det_TM_proportions_ByDate_Type=="Month"){
+    dates<-substr(dates,0,7)
+  }
+  if(input$Det_TM_proportions_ByDate_Type=="Week"){
+    dates<-strftime(as.character(dates),format="%Y-%V")
+  }
+  if(input$Det_TM_proportions_ByDate_Type=="Day"){
+    dates<-substr(dates,0,11)
+  }
+  unique_dates <- unique(dates)
+  doc_belongings_to_time_slices<-rep(0,nrow(theta))
+  time_slices <- NULL 
+  time_slice_names<-NULL
+  if(input$Det_TM_proportions_Date_Split_How=="By Date"){
+    n<-input$Det_TM_proportions_ByDate_n
+    for (i in 1:ceiling(length(unique_dates)/n)){
+      date_start<-unique_dates[(((i-1)*n)+1)]
+      date_end<-unique_dates[min(length(unique_dates),(((i)*n)))]
+      if(n==1){
+        time_slice_names<-c(time_slice_names,date_start)
+      }
+      else{
+        if(date_start==date_end){
+          time_slice_names<-c(time_slice_names,date_start)
+        }
+        else{
+          time_slice_names<-c(time_slice_names,paste0(date_start," - ",date_end))
+        }
+        
+      }
+      time_slices<-c(time_slices,length(which(dates%in%unique_dates[(i*n):min(length(unique_dates),(((i+1)*n)-1))])))
+      doc_belongings_to_time_slices[which(dates%in%unique_dates[(((i-1)*n)+1):min(length(unique_dates),(((i)*n)))])]<-i
+    }
+  }
+  else{
+    n<-input$Det_TM_proportions_Chunksize
+    validate(
+      need(n<=length(unique_dates),"The number of chunks can't be bigger than the number of unique dates")
+    )
+    dates_table<-data.frame(table(dates),stringsAsFactors = F)
+    dates_table<-data.frame(min_date=dates_table$dates,max_date=dates_table$dates,count=dates_table$Freq,all_dates=as.character(dates_table$dates),stringsAsFactors = F)
+    if(nrow(dates_table)>n){
+      repeat{
+        min<-which.min(unlist(lapply(1:(nrow(dates_table)-1),FUN = function(x){
+          sum(as.numeric(dates_table$count[c(x,(x+1))]))
+        })
+        )
+        )
+        ind<-c(min,(min+1))
+        min_date<-min(as.character(dates_table$min_date[ind]))
+        max_date<-max(as.character(dates_table$max_date[ind]))
+        count_new<-sum(as.numeric(dates_table$count[ind]))
+        all_dates_in_this_chunk<-paste0(unique(union(dates_table$all_dates[ind[1]],dates_table$all_dates[ind[2]])),collapse = ",")
+        dates_table<-rbind(dates_table,c(min_date,max_date,count_new,all_dates_in_this_chunk))
+        dates_table<-dates_table[-ind,]
+        dates_table<-dates_table[order(dates_table$min_date,decreasing = F),]
+        if(nrow(dates_table)==n){
+          break
+        }
+      }
+    }
+    time_slices<-as.numeric(dates_table$count)
+    time_slice_names<-unlist(lapply(X = 1:nrow(dates_table),FUN = function(x){
+      min_date<-as.character(dates_table$min_date[x])
+      max_date<-as.character(dates_table$max_date[x])
+      if(min_date==max_date){
+        return(max_date) 
+      }
+      else{
+        return(paste(min_date,"-",max_date))
+      }
+    })
+    )
+    for(i in 1:nrow(dates_table)){
+      doc_belongings_to_time_slices[which(dates%in%stringr::str_split(string = dates_table$all_dates[i],pattern = ",",simplify = T))]<-i
+    }
+    
+  }
+  time_slice_names<-paste0(time_slice_names," (",time_slices,")")
+  
+  time<-doc_belongings_to_time_slices
+  # get mean topic proportions per decade
+  topic_proportion_per_time_intervall <- aggregate(theta, by = list(time = time), mean)
+  # set topic names to aggregated columns
+  topicNames<-unlist(lapply(1:nrow(phi),FUN = function(x){
+    relevance<-calculate_topic_relevance(lambda = input$Det_TM_proportions_lambda,phi = phi,theta = theta,doc.length = values$tm_doc.length)
+    paste(names(sort(calculate_topic_relevance(lambda = input$Det_TM_proportions_lambda,phi = phi,theta = theta,doc.length = values$tm_doc.length)[,x],decreasing = T)[1:input$Det_TM_proportions_number_of_words]),collapse = ", ")
+  }))
+  colnames(topic_proportion_per_time_intervall)[2:(nrow(phi)+1)] <- topicNames
+  
+  # reshape data frame
+  vizDataFrame <- melt(topic_proportion_per_time_intervall, id.vars = "time")
+  
+  # plot topic proportions per deacde as bar plot
+  values$Det_TM_vizDataFrame<-vizDataFrame
+  values$Det_TM_time_slice_names<-time_slice_names
+  return(tagList(
+    div(style = "height: 68vh;",
+        plotlyOutput(outputId = "Det_TM_proportion_plot",height = "95%")
+    ))
+  )
+  
+})
 
-
-
+#' render plot showing topic proportions over time
+#' depends on:
+#'   values$Det_TM_vizDataFrame: dataframe containing nec. information for plot
+#'   values$Det_TM_time_slice_names: names of time slices
+output$Det_TM_proportion_plot<-renderPlotly({
+  require(pals)
+  data_real<-values$Det_TM_vizDataFrame
+  #reshape data
+  n_dates<-length(unique(data_real$time))
+  data_t<-data_real[1:n_dates,c(1,3)]
+  colnames(data_t)[2]<-as.character(data_real[1,2])
+  for(i in 2:length(unique(data_real$variable))){
+    data_t<-cbind(data_t,data_real[(((i-1)*n_dates)+1):(i*n_dates),3])
+    colnames(data_t)[ncol(data_t)]<-as.character(data_real[(i*n_dates),2])
+  }
+  getPalette = colorRampPalette(RColorBrewer::brewer.pal(12, "Paired"))
+  colors<-getPalette((ncol(data_t)-1))
+  
+  p<-plot_ly(x=values$Det_TM_time_slice_names,y=data_t[,2],type="bar",name=colnames(data_t)[2],marker=list(color = colors[1]))
+  for(i in 3:ncol(data_t)){
+    p<-add_trace(p=p, y=data_t[,i],name=colnames(data_t)[i],marker=list(color=colors[(i-1)]))  
+  }
+  p <- layout(p,barmode="stack",legend=list(orientation="h",yanchor="bottom",xanchor="center",x=0.5,y=1))
+  p
+})
 

@@ -396,7 +396,14 @@ observeEvent(input$parameter_preset_save,{
       DTM_min_docfreq_q=input$DTM_min_docfreq_q,
       DTM_max_docfreq_q=input$DTM_max_docfreq_q,
       DTM_POS_TYPES=input$DTM_POS_TYPES,
-      DTM_ENTITY_TYPES=input$DTM_ENTITY_TYPES
+      DTM_ENTITY_TYPES=input$DTM_ENTITY_TYPES,
+      DTM_number_of_topics=input$DTM_number_of_topics,
+      DTM_alpha=input$DTM_alpha,
+      DTM_chain_variance=input$DTM_chain_variance,
+      DTM_Date_Split_How=input$DTM_Date_Split_How,
+      DTM_Chunksize=input$DTM_Chunksize,
+      DTM_ByDate_Type=input$DTM_ByDate_Type,
+      DTM_ByDate_n=input$DTM_ByDate_n
     )
   }  
   if(input$analysis_selected=="Volatility_Analysis"){

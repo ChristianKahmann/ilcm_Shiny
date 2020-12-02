@@ -322,7 +322,86 @@ output$Analysis_Parameter_DTM<-renderUI({
                                     )
                                 )
                        )
+                     ),
+                     fluidRow(
+                       column(1,
+                              numericInput(inputId = "DTM_alpha",label = "alpha",value=0.05,min=0.01,max=2,step=0.001)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Alpha represents document-topic density - with a higher alpha, documents are made up of more topics, and with lower alpha, documents contain fewer topics.",
+                                      placement = "right"
+                                    )
+                                )
+                       ),
+                       column(1,
+                              numericInput(inputId = "DTM_number_of_topics",label = "number of topics",value=10,min = 2,step = 1)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Set the number of topics.",
+                                      placement = "right"
+                                    )
+                                )
+                       ),
+                       column(1,
+                              numericInput(inputId = "DTM_chain_variance",label = "chain variance",value=0.5,step = 0.1)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "This hyperparameter controls one of the key aspect of topic evolution which is the speed at which these topics evolve.
+                                      A smaller chain vairance leads to similar word distributions over multiple timeslice.",
+                                      placement = "right"
+                                    )
+                                )
+                       ),
+                       
+                       
+                       column(2,
+                              selectInput(inputId = "DTM_Date_Split_How",label = "How to split the dates?",choices=c("By Date","Automatic Chunking"))%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "In Dynamic Topic Modeling multiple timespans need to be specified.
+                                      They can either be splitted using a certain time interval or create the timestamps automatically based on the number of given documents. The second option will lead to chunks of balanced time intervalls that represent compareable number of documents.",
+                                      placement = "right"
+                                    )
+                                )
+                       ),
+                       column(2,
+                              conditionalPanel(condition = 'input.DTM_Date_Split_How=="Automatic Chunking"',
+                                               numericInput(inputId = "DTM_Chunksize",label="Number of Chunks",value=5,min=1,step=1)%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "Here you can specify the number of chunks the dates for the given documents will be splitted into. The fewer chunks, the more documents are present in each chunk.",
+                                                       placement = "right"
+                                                     )
+                                                 )
+                              ),
+                              conditionalPanel(condition = 'input.DTM_Date_Split_How=="By Date"',
+                                               selectInput(inputId = "DTM_ByDate_Type",label="Time Intervall",choices=c("Year","Month","Week","Day"))%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "What timeintervall shall be used to split the data?",
+                                                       placement = "right"
+                                                     )
+                                                 ),
+                                               numericInput(inputId = "DTM_ByDate_n",label="number of specified time intervalls per used period",value=1,min=1,step=1)%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "Shall multiple specified time units be aggregated? E.G. 6 months as half year time span.",
+                                                       placement = "right"
+                                                     )
+                                                 )
+                              )
+                              
+                       )
                      )
+                     
+                     
     ),
     bsButton(inputId = "DTM_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
@@ -451,7 +530,7 @@ observeEvent(input$DTM_Submit_Script,{
       max_t<-input$DTM_max_termfreq_c
     }
     if(input$DTM_docfreq_type=="count"){
-      min_d<-input$DTM_min_docfreq_c
+      min_d<-input$DTM_min_docfreq_cgens
       max_d<-input$DTM_max_docfreq_c
     }
     if(input$DTM_termfreq_type=="rank"){
@@ -513,7 +592,14 @@ observeEvent(input$DTM_Submit_Script,{
                      whitelist_expand=input$DTM_whitelist_expand,
                      whitelist_only=input$DTM_whitelist_only,
                      use_fixed_vocab=input$DTM_use_fixed_vocab,
-                     fixed_vocab=input$DTM_fixed_vocab
+                     fixed_vocab=input$DTM_fixed_vocab,
+                     tm_number_of_topics=input$DTM_number_of_topics,
+                     tm_alpha=input$DTM_alpha,
+                     dtm_chain_vairance=input$DTM_chain_variance,
+                     dtm_split_how=input$DTM_Date_Split_How,
+                     dtm_chunksize=input$DTM_Chunksize,
+                     dtm_Date_Type=input$DTM_ByDate_Type,
+                     dtm_Date_n=input$DTM_ByDate_n
     )
     #create process ID
     ID<-get_task_id_counter()+1
@@ -667,7 +753,14 @@ observeEvent(input$DTM_pruning_continue,ignoreInit = T,{
                    whitelist_expand=input$DTM_whitelist_expand,
                    whitelist_only=input$DTM_whitelist_only,
                    use_fixed_vocab=input$DTM_use_fixed_vocab,
-                   fixed_vocab=input$DTM_fixed_vocab
+                   fixed_vocab=input$DTM_fixed_vocab,
+                   tm_number_of_topics=input$DTM_number_of_topics,
+                   tm_alpha=input$DTM_alpha,
+                   dtm_chain_vairance=input$DTM_chain_variance,
+                   dtm_split_how=input$DTM_Date_Split_How,
+                   dtm_chunksize=input$DTM_Chunksize,
+                   dtm_Date_Type=input$DTM_ByDate_Type,
+                   dtm_Date_n=input$DTM_ByDate_n
   )
   #create process ID
   ID<-get_task_id_counter()+1

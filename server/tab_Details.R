@@ -398,7 +398,7 @@ output$details_parameter<-renderUI({
       values$tm_vocab<-vocab
       values$tm_json<-json
       values$tm_term.frequency<-term.frequency
-
+      
       values$tm_meta<-meta
       mde_use<-colnames(meta_names[1,2:dim(meta_names)[2]])[which(!is.na(meta_names[1,2:dim(meta_names)[2]]))]
       meta<-meta[,c("id","dataset","title","id_doc","token","language",mde_use)]
@@ -564,6 +564,40 @@ output$details_parameter<-renderUI({
                                                 checkboxGroupInput(inputId = "Det_TM_grouping_group1_columns",label = "Columns for filtering Group 1",choices = colnames(values$TM_meta)),
                                                 checkboxGroupInput(inputId = "Det_TM_grouping_group2_columns",label = "Columns for filtering Group 2",choices = colnames(values$TM_meta))
       )
+      panelTopicProportions <-  conditionalPanel(condition = 'input.tabBox_tm=="Topic Proportions over time"',
+                                                 sliderInput(inputId = "Det_TM_proportions_lambda",label="Lambda Value for Topic Labeling",min=0,max=1,value=0.5,step=0.1),
+                                                 sliderInput(inputId = "Det_TM_proportions_number_of_words",label="Number of Words per Topic Label",min=1,max=25,value=5,step=1),
+                                                 selectInput(inputId = "Det_TM_proportions_Date_Split_How",label = "How to split the dates?",choices=c("By Date","Automatic Chunking")),
+                                                 conditionalPanel(condition = 'input.Det_TM_proportions_Date_Split_How=="Automatic Chunking"',
+                                                                  numericInput(inputId = "Det_TM_proportions_Chunksize",label="Number of Chunks",value=5,min=1,step=1)%>%
+                                                                    shinyInput_label_embed(
+                                                                      shiny_iconlink() %>%
+                                                                        bs_embed_popover(
+                                                                          title = "Here you can specify the number of chunks the dates for the given documents will be splitted into. The fewer chunks, the more documents are present in each chunk.",
+                                                                          placement = "right"
+                                                                        )
+                                                                    )
+                                                 ),
+                                                 conditionalPanel(condition = 'input.Det_TM_proportions_Date_Split_How=="By Date"',
+                                                                  selectInput(inputId = "Det_TM_proportions_ByDate_Type",label="Time Intervall",choices=c("Year","Month","Week","Day"))%>%
+                                                                    shinyInput_label_embed(
+                                                                      shiny_iconlink() %>%
+                                                                        bs_embed_popover(
+                                                                          title = "What timeintervall shall be used to split the data?",
+                                                                          placement = "right"
+                                                                        )
+                                                                    ),
+                                                                  numericInput(inputId = "Det_TM_proportions_ByDate_n",label="number of specified time intervalls per used period",value=1,min=1,step=1)%>%
+                                                                    shinyInput_label_embed(
+                                                                      shiny_iconlink() %>%
+                                                                        bs_embed_popover(
+                                                                          title = "Shall multiple specified time units be aggregated? E.G. 6 months as half year time span.",
+                                                                          placement = "right"
+                                                                        )
+                                                                    )
+                                                 )
+      )      
+      
       if(length(list.files("collections/results/topic-model/"))>1){
         panelModelReproducibility <- conditionalPanel(condition = 'input.tabBox_tm=="Model Reproducibility"',
                                                       selectInput(inputId = "Det_TM_reproducibility_models",label = "Models to compare",multiple=T,
@@ -638,6 +672,7 @@ output$details_parameter<-renderUI({
           panelDocumentClustering,
           panelDocumentGrouping,
           panelModelReproducibility,
+          panelTopicProportions,
           panelSTM
         )
       }else{
@@ -656,7 +691,8 @@ output$details_parameter<-renderUI({
           panelDocumentOutlier,
           panelDocumentClustering,
           panelDocumentGrouping,
-          panelModelReproducibility
+          panelModelReproducibility,
+          panelTopicProportions
         )
       }
       return (returnValue)
@@ -750,6 +786,10 @@ output$details_visu<-renderUI({
       )
       tabPanelGrouping <- tabPanel("Document Grouping",
                                    uiOutput("TM_document_grouping_UI")
+      )
+      tabPanelTopic_Proportions <- tabPanel("Topic Proportions over time",
+                                            uiOutput(("TM_topic_proportions_UI"))%>%withSpinner()
+        
       )
       if(length(list.files("collections/results/topic-model/"))>1){
         tabPanelReproducibility <- tabPanel("Model Reproducibility",
@@ -901,6 +941,7 @@ output$details_visu<-renderUI({
           tabBox(id="tabBox_tm",width = 12,
                  tabPanelLDAVis,
                  tabPanelEstWordFrequencies,
+                 tabPanelTopic_Proportions,
                  tabPanelDateDistribution,
                  tabPanelCoherence,
                  tabPanelExtractDictionaries,
@@ -923,6 +964,7 @@ output$details_visu<-renderUI({
           tabBox(id="tabBox_tm",width = 12,
                  tabPanelLDAVis,
                  tabPanelEstWordFrequencies,
+                 tabPanelTopic_Proportions,
                  tabPanelDateDistribution,
                  tabPanelCoherence,
                  tabPanelExtractDictionaries,

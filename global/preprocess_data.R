@@ -108,7 +108,7 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format){
   # for(j in unique(token[,2])){
   #   count=count+1
   #   toks<-token[which(token[,2]==j),c("doc_id"  ,    "sentence_id", "token_id"  ,  "token"    ,   "lemma"     ,  "pos"    ,     "entity",  "idx")]
-  #   class(toks)<-c("spacyr_parsed","data.frame")
+  #   class(toks)<-c("spacyr_parsed","data.frame")  
   #   entities<-unique(spacyr::entity_extract(toks,type = "named")[,3])
   #   entities<-stringr::str_replace_all(string = entities,pattern = " ",replacement = "_")
   #   entities<-paste(entities,collapse=" ")

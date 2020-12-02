@@ -374,7 +374,7 @@ output$refi_export_codebook<-downloadHandler(
   filename = function() {
     files_found<-list.files(paste0("collections/tmp/refi/",values$refi_download_codebook_name),full.names = T)
     if(length(files_found)==1){
-      file_name<-paste(values$refi_download_codebook_name,'qdc', sep='')
+      file_name<-paste(values$refi_download_codebook_name,'.qdc', sep='')
     }
     if(length(files_found)>1){
       file_name<- paste(values$refi_download_codebook_name,'.zip', sep='')
