@@ -1,17 +1,48 @@
 values$Doc_anno_loaded<-FALSE
-#render title of document
+#' render title of document
+#' depends on: 
+#'   values$Doc_meta$title: document titel meta data
 output$Doc_DV_title<-renderText({
   title<- values$Doc_meta$title
   return(title)
 })
 
-#create reactive object, which stores the made annotations in the document
+#' create reactive object, which stores the made annotations in the document
 values$Doc_annotations_marked<-matrix(c(0),0,13)
 values$Doc_annotations_show<-matrix(c(0),0,13)
 
 
 
-#render the document
+#' render the document
+#' depends on:
+#'   values$Doc_Doc_reload: reload documents
+#'   values$Doc_token: document token
+#'   input$Doc_anno_scheme_selected: selected document annotation scheme
+#'   input$Doc_anno_id: document annotation id
+#'   values$Doc_anno_deleted: deleted document annotation
+#'   values$Doc_new: new document
+#'   values$host: selected host
+#'   values$db_port: selected database port
+#'   values$Doc_annotations_show: show document annotation
+#'   values$Doc_show: show document
+#'   input$Doc_anno_tag: document annotation tag
+#'   values$Doc_annos: docuemnt annotations
+#'   input$Doc_anno_start: start of document annotation
+#'   input$Doc_anno_end: end of document annotation
+#'   values$Doc_annos_documentwide: documentwide annotations
+#'   values$Doc_meta: meta data of document
+#'   values$Doc_selected: selected document
+#'   values$user: current program used
+#'   input$Doc_anno_scheme_selected: selected annotation scheme
+#'   values$current_collection: currently selected collection
+#'   values$Doc_annotations_marked: marked annotations
+#'   input$Doc_DV_POS: check if POS tags are chosen
+#'   values$Doc_mark_pos: marke that POS-Tags are selected
+#'   input$Doc_DV_Entity: check if Entity (NER) Tags are chosen
+#'   values$Doc_mark_ner: mark that Entity-Tags are selected
+#'   input$Doc_Doc_View_paragraph: should the document be shown with paragraphs
+#'   values$Doc_mark_space: mark spaces between paragraphs
+#'   
 output$Doc_document<-renderUI({
   values$Doc_Doc_reload
   validate(
@@ -166,7 +197,9 @@ output$Doc_document<-renderUI({
   
 })
 
-#render metadata 
+#' render metadata 
+#' depends on:
+#'   values$Doc_meta: meta data of documents
 output$Doc_DV_metadata_UI<-renderUI({
   validate(
     need(!is.null(values$Doc_meta),message=F)
@@ -182,13 +215,17 @@ output$Doc_DV_metadata_UI<-renderUI({
 })
 
 
-#render select options for POS Tags
+#' render select options for POS Tags
+#' depends on:
+#'  values$Doc_token: selected token type 
 output$Doc_DV_POS<-renderUI({
   options<-c("None",unique(values$Doc_token[,"pos"]))
   radioButtons(inputId = "Doc_DV_POS",label = "POS-TAGS",choices = options,selected = "None")
 })
 
-#render select options for Entity Tags
+#' render select options for Entity Tags
+#' depends on:
+#'   values$Doc_token: selected token type
 output$Doc_DV_Entity<-renderUI({
   options<-c("None",unique(values$Doc_token[,"entity"]))
   options<-options[-which(nchar(options)<2)]
@@ -197,6 +234,10 @@ output$Doc_DV_Entity<-renderUI({
   radioButtons(inputId = "Doc_DV_Entity",label = "Entity-TAGS",choices = options,selected = "None")
 })
 
+#' obeserve annotation scheme
+#' depends on:
+#'   input$Doc_anno_scheme_selected: selected document annotation scheme
+#'   values$Doc_new: new document
 observeEvent(eventExpr = input$Doc_anno_scheme_selected,handlerExpr = {
   values$Doc_new<-NULL
 },ignoreInit = T,priority = 1)
@@ -205,7 +246,10 @@ observeEvent(eventExpr = input$Doc_anno_scheme_selected,handlerExpr = {
 ###########################
 #      Annotations        #
 ###########################
-
+#' render annotation schemes
+#' depends on:
+#'   values$newscheme: create a new scheme
+#'   
 output$Doc_DV_Annotation_Schemes<-renderUI({
   values$newscheme
   validate(validate(need(
@@ -214,7 +258,15 @@ output$Doc_DV_Annotation_Schemes<-renderUI({
   selectizeInput(inputId = "Doc_anno_scheme_selected",label="Which Annotation Scheme?",choices=stringr::str_replace_all(list.files("collections/annotation_schemes/"),".RData","")) 
 })
 
-
+#' save annotations
+#' depends on:
+#'   input$Doc_save_annotations: save annotations for document
+#'   values$Doc_annotations_marked: marked annotations for document
+#'   values$Doc_token: document tokens
+#'   values$host: selected host
+#'   values$db_port: selected database port
+#'   values$Doc_anno_loaded: loaded annotation for document
+#'   
 observeEvent(input$Doc_save_annotations,{
   if(dim(isolate(values$Doc_annotations_marked))[1]==0){
     shinyWidgets::sendSweetAlert(session = session,title = "no annotations found",type = "warning")
@@ -245,6 +297,10 @@ observeEvent(input$Doc_save_annotations,{
   }
 })
 
+#' render data table to show document legend
+#' depends on:
+#'   input$Doc_anno_scheme_selected: selected Document annotation scheme
+#'   
 output$Doc_Legend_Table<-renderDataTable({
   try({
     load(paste("collections/annotation_schemes/",input$Doc_anno_scheme_selected,sep=""))
@@ -257,11 +313,20 @@ output$Doc_Legend_Table<-renderDataTable({
   
 })
 
+#' view document legend
 output$Doc_Legend<-renderUI({
   dataTableOutput(outputId = "Doc_Legend_Table")
 })
 
 s_alt<-0
+#' render data table to show more information
+#' depends on:
+#'   input$Doc_Legend_Table_rows_selected: selected rows from legend data table
+#'   input$Doc_anno_scheme_selected: selected annotation scheme for docuemnts
+#'   values$Doc_anno_all: all annotations from document
+#'   values$Doc_anno: chosen document annotation
+#'   values$Doc_new: new document
+#'   values$Doc_Legend_new: new document legend
 output$Doc_p2<-renderDataTable({ 
   s = input$Doc_Legend_Table_rows_selected
   
@@ -282,7 +347,9 @@ output$Doc_p2<-renderDataTable({
 })
 
 
-
+#' render annotation components
+#' depends on:
+#'   input$Doc_anno_scheme_selected: selected annotation scheme
 output$annotationComponents2<-renderUI({
   validate(
     need(!is.null(input$Doc_anno_scheme_selected),message=FALSE)
@@ -293,7 +360,12 @@ output$annotationComponents2<-renderUI({
 
 
 
-
+#' make annotations and show them
+#' depends on:
+#'  values$Doc_annotations_show: show annotations in documents
+#'  input$Doc_anno_scheme_selected: selected annotation scheme for document
+#'  values$Doc_highlight_annos: highlight annotation in docuement
+#'  values$Doc_delete_Doc_box_id: id for box to delete document
 output$Doc_made_annotations<-renderUI({
   validate(
     need(dim(values$Doc_annotations_show)[1]>0,message=FALSE)
@@ -331,7 +403,10 @@ output$Doc_made_annotations<-renderUI({
   }
 })
 
-#check whether an annotation box was drop in the trash div, if this is
+#' check whether an annotation box was drop in the trash div, if this is
+#' depends on:
+#'   input$Doc_delete_annotation_box: check if delete box for annotation is ticked
+#'   
 observe({
   validate(
     need(!is.null(input$Doc_delete_annotation_box),message=FALSE)
@@ -339,7 +414,18 @@ observe({
   shinyWidgets::confirmSweetAlert(session = session,inputId = "Doc_confirm_delete_Doc_box",type = "warning",title = "Are you sure you want to delete this annotation",danger_mode = T)
 })
 
-#if user has confiremd to delete annotation, delete the annotation in the database and also the annotation matrices
+#' if user has confiremd to delete annotation, delete the annotation in the database and also the annotation matrices
+#' depends on:
+#'  input$Doc_confirm_delete_Doc_box: confirm to delete documnt
+#'  values$Doc_annotations_marked: marked annotations
+#'  values$Doc_annotations_show: show annotation for document
+#'  values$Doc_annos_documentwide: annotations documentwide
+#'  values$Doc_annos: document annotations
+#'  values$Doc_delete_Doc_box_id: id of box to check if delete-document-box is ticked
+#'  values$Doc_delete_anno_box_id: id of box check if delete-annotation-box is ticked
+#'  values$host: selected host
+#'  values$db_port: selected database port
+#'  
 observeEvent(input$Doc_confirm_delete_Doc_box,{
   if(isTRUE(input$Doc_confirm_delete_Doc_box)){
     values$Doc_annotations_marked<-isolate(values$Doc_annotations_marked[-which(isolate(values$Doc_annotations_marked[,1]==isolate(values$Doc_delete_Doc_box_id))),,drop=F])
@@ -354,7 +440,10 @@ observeEvent(input$Doc_confirm_delete_Doc_box,{
 }
 )
 
-
+#' visualization of documentwide annotations
+#' depends on:
+#'   values$Doc_annos_documentwide: documentwide annotation
+#'   
 output$Doc_DV_documentwide_annotations<-renderUI({
   validate(
     need(

@@ -1,9 +1,14 @@
-#update logiles every 5 seconds
+#' update logiles every 5 seconds
 autoInvalidate_slow <- reactiveTimer(5000)
 autoInvalidate_normal <- reactiveTimer(500)
 autoInvalidate_fast<-reactiveTimer(50)
 
-#render logfiles for the chosen category (running, finished, failed)
+#' render logfiles for the chosen category (running, finished, failed)
+#' depends on:
+#'   input$reload_logs: reload log files
+#'   values$reload_logs_auto: reload log files (auto generated)
+#'   values$infobox: info box message
+#'   output$log_table: log table
 output$Running_Tasks<-renderUI({
   #invalidate when reload is pressed or a log file got deleted
   input$reload_logs
@@ -50,7 +55,7 @@ output$Running_Tasks<-renderUI({
   dataTableOutput("log_table")
 })
 
-#render info box for finished processes
+#' render info box for finished processes
 output$finished_box<-renderInfoBox({
   #invalidate expression every .5 seconds
   autoInvalidate_normal()
@@ -68,7 +73,7 @@ output$finished_box<-renderInfoBox({
   return(box1)
 })
 
-#render info box for running processes
+#' render info box for running processes
 output$running_box<-renderInfoBox({
   #invalidate expression every .5 seconds
   autoInvalidate_normal()
@@ -86,7 +91,7 @@ output$running_box<-renderInfoBox({
   return(box2)
 })
 
-#render info box for failed processes
+#' render info box for failed processes
 output$failed_box<-renderInfoBox({
   #invalidate expression every .5 seconds
   autoInvalidate_normal()
@@ -104,23 +109,32 @@ output$failed_box<-renderInfoBox({
   return(box3)
 })
 
-#set values$infobox if running_button is clicked
+#'set values$infobox if running_button is clicked
+#'depends on:
+#'  values$infobox: infobox-text
 observeEvent(input$button_box_running,{
   values$infobox<-"running"
 })
 
-#set values$infobox if fnished_button is clicked
+#'set values$infobox if fnished_button is clicked
+#'depends on:
+#'  values$infobox: infobox-text
 observeEvent(input$button_box_finished,{
   values$infobox<-"finished"
 })
 
-#set values$infobox if failed_button is clicked
+#' set values$infobox if failed_button is clicked
+#'depends on:
+#'  values$infobox: infobox-text
 observeEvent(input$button_box_failed,{
   values$infobox<-"failed"
 })
 
 
-#render information in logfile
+#' render information in logfile
+#' depends on:
+#'   input$log_table_rows_selected: selected rows from log table
+#'   values$log_files: log files
 output$log_text = renderUI({
   #get selected row of log_table
   autoInvalidate_fast()
@@ -141,7 +155,10 @@ output$log_text = renderUI({
   }
 })
 
-#check wheather delete button for a certain log was pressed, if yes, delete corresponding log file
+#' check wheather delete button for a certain log was pressed, if yes, delete corresponding log file
+#' depends on:
+#'   input$delete_button_logs: delete log button
+#'   values$log_files: log files
 observeEvent(input$delete_button_logs, {
   selectedRow <-as.numeric(strsplit(input$delete_button_logs, "_")[[1]][3])
   if(selectedRow>0){

@@ -13,6 +13,12 @@ default_script_decription_import<-'# The vector `result` must be specified in th
 # or for RegEx
 #  result<-str_extract(input_data[,9],regex("(3[01]|[12][0-9]|0?[1-9])\\.(1[012]|0?[1-9])\\.((?:19|20)\\d{2})"))'
 
+#' function to evaluate scripts
+#' @input_data: input data for script evaluation
+#' @script_text: text input from script
+#' @script_label: label of selected script
+#' @script_number: number (id) of selected script
+#' @import_name: name for the script
 eval_script <- function(script_text, input_data, script_label, script_nr, import_name) {
   result<-""
   values[[script_label]][script_nr]<-script_text
@@ -25,7 +31,12 @@ eval_script <- function(script_text, input_data, script_label, script_nr, import
   }
   result
 }
-
+ 
+#' function to handel possible ways to personalize the script
+#' @name: name of the script
+#' @import_type: import data types
+#' @script_nr: number of the script
+#' @split_script: should a script be splitted?
 script_events <- function(name, import_type, script_nr, split_script = FALSE) {
   input_label <- sprintf("data_%s", import_type)
   script_event_name <- sprintf("Import_script_%s_%s", name, import_type)
@@ -63,6 +74,9 @@ script_events <- function(name, import_type, script_nr, split_script = FALSE) {
   })
 }
 
+#' options to manipulate the used type
+#' @name: name of script to work with
+#' @import_type: type to manipulate
 type_events <- function(name, import_type) {
   type_event_name <- sprintf("Import_type_%s_%s", name, import_type)
   save_event_name <- sprintf("Import_type_save_%s_%s", name, import_type)
@@ -84,7 +98,9 @@ type_events <- function(name, import_type) {
     removeModal()
   })
 }
-
+#' function to observe mde
+#' @import_type: type of used import
+#' @name: name of selected import
 observe_mde <- function(name, import_type) {
   import_name <- sprintf("Import_%s_%s", import_type, name)
   data_name <- sprintf("data_%s", import_type)
@@ -120,6 +136,9 @@ default_script_decription_split<-"# You need to specify split_data
 #     split_data[[i]][j+1] <- paste(words[[i]][(j*x+1):max],collapse=' ')
 # }}"
 
+#' process to split data
+#' @type: type of data 
+#' @name: specify name 
 process_split <- function(type, name = "split") {
   data_label <- sprintf("data_%s", type)
   column_name <- sprintf("Import_%s_column_name", type)
@@ -149,6 +168,11 @@ process_split <- function(type, name = "split") {
   }
 }
 
+#' function to performe splittng
+#' @type: type of data
+#' @selected_data: selected data for splitting
+#' @file_data: file data
+#' @editor_name: editor name (split)
 perform_split <- function(type, selected_data, file_data, editor_name = "split") {
   if (length(selected_data) == 0) {
     return(NULL)
@@ -188,6 +212,8 @@ perform_split <- function(type, selected_data, file_data, editor_name = "split")
   return(split_data)
 }
 
+#' test view of splitting process
+#' @type: data type
 split_test_view <- function(type) {
   data_label <- sprintf("data_%s", type)
   column_name <- sprintf("Import_%s_column_name", type)
@@ -227,13 +253,20 @@ split_test_view <- function(type) {
   ))
 }
 
+#' observe live split test
+#' depends on:
+#'   input$Import_live_split_test: import information for live split test
+#'   values$live_method_regex_label: regex label for live method
+#'   
 observeEvent(input$Import_live_split_test,{
   updateTextInput(session, values$live_method_regex_label, value = input[[paste0(values$live_method_regex_label, "2")]])
 })
 
 
 ### sanity check
-
+#' sanity check for modal
+#' @type: type of selected data
+#' @data_check_choices: check choices of data
 sanity_check_Modal <- function(type, data_check_choices) {
   id_doc_label <- sprintf("Import_%s_id_doc", type)
   date_label <- sprintf("Import_%s_date", type)
@@ -311,6 +344,10 @@ values$Import_csv_dataset<-""
 values$Import_csv_scripts<-""
 values$Import_csv_split_scripts<-""
 
+#' show import of csv files
+#' depends on:
+#'   values$invalidate_csv_files: check if csv-file is invalide
+#'   
 output$UI_Import_csv_file<-renderUI({
   values$invalidate_csv_files
   validate(
@@ -326,6 +363,10 @@ output$UI_Import_csv_file<-renderUI({
   )
 })
 
+#' oberve event of importing a new csv-file
+#' depends on:
+#'   input$Import_csv_new: new csv-file import
+#'   
 observeEvent(input$Import_csv_new,ignoreInit = T,{
   validate(
     need(
@@ -345,7 +386,14 @@ observeEvent(input$Import_csv_new,ignoreInit = T,{
 
 
 
-
+#' observe loading a new csv-file
+#' deoends on:
+#'   input$Import_load_csv: load csv-file
+#'   input$import_load_csv_seperator: seperator of csv elements
+#'   input$Import_load_csv_header: extract header of csv-file
+#'   values$header_csv: extracted csv header
+#'   values$data_csv: all csv data
+#'   values$Import_csv_split_scripts: import csv scripts to split
 observeEvent(input$Import_load_csv,{
   withBusyIndicatorServer("Import_load_csv", {
     values$data_csv<-readr::read_delim(file = paste0("data_import/unprocessed_data/",input$Import_csv_files),col_names = input$Import_load_csv_header,
@@ -367,11 +415,17 @@ observeEvent(input$Import_load_csv,{
 
 ### split
 script_events("split", "csv", 1, TRUE)
-
+#' test view of csv-splitting
+#' depends on:
+#'   input$Import_csv_split_test_view: split test view of csv
 observeEvent(input$Import_csv_split_test_view, {
   split_test_view("csv")
 })
 
+#' start mapping
+#' depends on:
+#'   input$Import_start_mapping: import start mapping process
+#'   
 observeEvent(input$Import_start_mapping,{
   if(input$Import_csv_split_method != 'None') {
     showModal(modalDialog(
@@ -387,26 +441,39 @@ observeEvent(input$Import_start_mapping,{
   }
 })
 
+#' confirm mapping process
+#' depends on:
+#'   input$confirm_start_mapping_csv: confirm if mapping process should start
 observeEvent(input$confirm_start_mapping_csv,{
   start_mapping_csv()
   removeModal()
 })
 
+#' initiate mapping of csv
 start_mapping_csv <- function() {
   process_split("csv")
   values$start_mapping<-TRUE
 }
 
+#' return data if loading the csv was successful
+#' depends on:
+#'   values$data_load_csv_success: communicate wether the loading process was succesfull
 output$data_load_csv_success<-reactive({
   values$data_load_csv_success
 })
 
+#' validate if mapping has started
+#' depends on:
+#'   values$start_mapping: variable to validate if mapping has started
 output$start_mapping<-reactive({
   values$start_mapping
 })
 outputOptions(output, "data_load_csv_success", suspendWhenHidden = FALSE)
 outputOptions(output, "start_mapping", suspendWhenHidden = FALSE)
 
+#' render data table to show csv file with header of csv
+#' depends on:
+#'   values$data_csv: values from csv data
 output$Import_head_csv<-DT::renderDataTable({
   data<-values$data_csv
   data<-data[1:min(5,dim(data)[1]),]
@@ -414,7 +481,9 @@ output$Import_head_csv<-DT::renderDataTable({
   datatable(data = data,options = list(lengthChange = FALSE,dom="t"),width = "100%")
 })
 
-
+#' check csv-file 
+#' depends on:
+#'   input$Import_check_csv: variable to confirm that a csv-file needs to be checked
 observeEvent(input$Import_check_csv,{
   showModal(
     modalDialog(
@@ -427,6 +496,10 @@ observeEvent(input$Import_check_csv,{
   )
 })
 
+#' extract column names
+#' depends on:
+#'   input$Import_csv_column_name: column names of csv-file
+#'   values$header_csv: header of csv-file
 output$UI_Import_csv_column_name <- renderUI({
   select_value <- input$Import_csv_column_name
   selectInput(inputId = "Import_csv_column_name", "Column:", choices=values$header_csv, selected = select_value)%>%
@@ -436,120 +509,181 @@ output$UI_Import_csv_column_name <- renderUI({
     )
 })
 
-
+#' get csv title for import 
+#' depends on:
+#'   values$header_csv: header of csv
+#'   
 output$UI_Import_csv_title<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_title",label = "Map title",
                                    choices = c("automatic",values$header_csv),
                                    fill=T,animation = "pulse",selected = "automatic")
 })
 
+#' get csv date format automatically
+#'  depends on:
+#'    values$header_csv: csv header
 output$UI_Import_csv_date<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_date",label = "Map date",
                                    choices = c("automatic",values$header_csv),
                                    fill=T,animation = "pulse",selected = "automatic")
 })
 
+#' import the csv body 
+#' depends on:
+#'   values$header_csv: header of csv
 output$UI_Import_csv_body<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_body",label = "Map body",
                                    choices = values$header_csv,
                                    fill=T,animation = "pulse")
 })
 
+#' import csv mde1 
+#' depends on:
+#'   values$header_csv: header of the csv
 output$UI_Import_csv_mde1<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde1", label = "Map mde1",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
 })
 
+#' check which radio-button was selected to determine the current mde with a matching column from the csv
+#' depends on:
+#'   input$UI_Import_name_mde1: name of the selected column from csv for mde1
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde1",label = paste0("Map ",input$UI_Import_name_mde1))
 })
 
+#' import csv mde2
+#' depends on:
+#'   values$header_csv: header of the csv
 output$UI_Import_csv_mde2<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde2",label = "Map mde2",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
 })
 
+#' check which radio-button was selected to determine the current mde with a matching column from the csv
+#' depends on:
+#'   input$UI_Import_name_mde2: name of the selected column from csv for mde2
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde2",label = paste0("Map ",input$UI_Import_name_mde2))
 })
 
+#' import csv mde3
+#' depends on:
+#'   values$header_csv: header of the csv
 output$UI_Import_csv_mde3<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde3", label = "Map mde3",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
 })
-
+#' check which radio-button was selected to determine the current mde with a matching column from the csv
+#' depends on:
+#'   input$UI_Import_name_mde3: name of the selected column from csv for mde3
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde3",label = paste0("Map ",input$UI_Import_name_mde3))
 })
 
+#' import csv mde4
+#' depends on:
+#'   values$header_csv: header of the csv
 output$UI_Import_csv_mde4<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde4", label = "Map mde4",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
 })
 
+#' check which radio-button was selected to determine the current mde with a matching column from the csv
+#' depends on:
+#'   input$UI_Import_name_mde4: name of the selected column from csv for mde4
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde4",label = paste0("Map ",input$UI_Import_name_mde4))
 })
 
+#' import csv mde5
+#' depends on:
+#'   values$header_csv: header of the csv
 output$UI_Import_csv_mde5<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde5",label = "Map mde5",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
 })
-
+#' check which radio-button was selected to determine the current mde with a matching column from the csv
+#' depends on:
+#'   input$UI_Import_name_mde5: name of the selected column from csv for mde5
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde5",label = paste0("Map ",input$UI_Import_name_mde5))
 })
 
+#' import csv mde6
+#' depends on:
+#'   values$header_csv: header of the csv
 output$UI_Import_csv_mde6<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde6",label = "Map mde6",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
 })
 
+#' check which radio-button was selected to determine the current mde with a matching column from the csv
+#' depends on:
+#'   input$UI_Import_name_mde6: name of the selected column from csv for mde6
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde6",label = paste0("Map ",input$UI_Import_name_mde6))
 })
 
+#' import csv mde7
+#' depends on:
+#'   values$header_csv: header of the csv
 output$UI_Import_csv_mde7<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde7", label = "Map mde7",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
 })
 
+#' check which radio-button was selected to determine the current mde with a matching column from the csv
+#' depends on:
+#'   input$UI_Import_name_mde7: name of the selected column from csv for mde7
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde7",label = paste0("Map ",input$UI_Import_name_mde7))
 })
-
+#' import csv mde8
+#' depends on:
+#'   values$header_csv: header of the csv
 output$UI_Import_csv_mde8<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde8", label = "Map mde8",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
 })
-
+#' check which radio-button was selected to determine the current mde with a matching column from the csv
+#' depends on:
+#'   input$UI_Import_name_mde8: name of the selected column from csv for mde8
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde8",label = paste0("Map ",input$UI_Import_name_mde8))
 })
-
+#' import csv mde9
+#' depends on:
+#'   values$header_csv: header of the csv
 output$UI_Import_csv_mde9<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde9", label = "Map mde9",
                                    choices = c("not required",values$header_csv),
                                    fill=T,animation = "pulse",selected = "not required")
 })
-
+#' check which radio-button was selected to determine the current mde with a matching column from the csv
+#' depends on:
+#'   input$UI_Import_name_mde9: name of the selected column from csv for mde9
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde9",label = paste0("Map ",input$UI_Import_name_mde9))
 })
 
 
-#title
+#' title
 script_events("title", "csv", 1)
 type_events("title", "csv")
 
+#' set title of csv document
+#' depends on:
+#'   input$Import_csv_title: import title of csv file
+#'   values$data_csv: csv data
 observe({
   validate(
     need(!is.null(input$Import_csv_title),message=FALSE),
@@ -570,6 +704,10 @@ observe({
 script_events("body", "csv", 3)
 type_events("body", "csv")
 
+#' set body from csv-file
+#' depends on:
+#'   input$Import_csv_body: import body from csv-file
+#'   values$data_csv: data from csv
 observe({
   validate(
     need(!is.null(input$Import_csv_body),message=FALSE),
@@ -583,6 +721,10 @@ observe({
 script_events("date", "csv", 4)
 type_events("date", "csv")
 
+#' set date from csv date
+#' depends on:
+#'   input$Import_csv_date: import date from csv-file
+#'   values$data_csv: data from csv-file
 observe({
   validate(
     need(!is.null(input$Import_csv_date),message=FALSE),
@@ -643,7 +785,36 @@ type_events("mde9", "csv")
 observe_mde("mde9", "csv")
 
 
-
+#' set csv metadata
+#' depends on:
+#'   values$start_mapping: check if mapping started
+#'   input$Import_csv_dataset: import csv-dataset
+#'   values$host: selected host
+#'   values$db_port: used port for database
+#'   values$Import_csv_title: import title from csv-file
+#'   values$Import_csv_date: import date from csv-file
+#'   values$Import_csv_body: import body from csv-file
+#'   values$Import_csv_token: import token from csv-file
+#'   input$Import_csv_language: import language from csv-file
+#'   values$Import_csv_mde1: import selected row from csv-file for mde1
+#'   values$Import_csv_mde2: import selected row from csv-file for mde2
+#'   values$Import_csv_mde3: import selected row from csv-file for mde3
+#'   values$Import_csv_mde4: import selected row from csv-file for mde3
+#'   values$Import_csv_mde5: import selected row from csv-file for mde5
+#'   values$Import_csv_mde6: import selected row from csv-file for mde6
+#'   values$Import_csv_mde7: import selected row from csv-file for mde7
+#'   values$Import_csv_mde8: import selected row from csv-file for mde8
+#'   values$Import_csv_mde9: import selected row from csv-file for mde9
+#'   input$UI_Import_name_mde1: name for mde1
+#'   input$UI_Import_name_mde2: name for mde2
+#'   input$UI_Import_name_mde3: name for mde3
+#'   input$UI_Import_name_mde4:name for mde4
+#'   input$UI_Import_name_mde5: name for mde5
+#'   input$UI_Import_name_mde6: name for mde6
+#'   input$UI_Import_name_mde7: name for mde7
+#'   input$UI_Import_name_mde8: name for mde8
+#'   input$UI_Import_name_mde9: name for mde9
+#'   
 output$Import_csv_metadata<-DT::renderDataTable({
   if(values$start_mapping==T){
     dataset<-input$Import_csv_dataset
@@ -717,7 +888,28 @@ output$Import_csv_metadata<-DT::renderDataTable({
   }
 })
 
-
+#' import data from csv body
+#' depends on:
+#'   values$Import_csv_body: import csv-body
+#'   values$Import_csv_token: import csv-token
+#'   values$Import_csv_mde1: import selected row from csv-file for mde1
+#'   values$Import_csv_mde2: import selected row from csv-file for mde2
+#'   values$Import_csv_mde3: import selected row from csv-file for mde3
+#'   values$Import_csv_mde4: import selected row from csv-file for mde3
+#'   values$Import_csv_mde5: import selected row from csv-file for mde5
+#'   values$Import_csv_mde6: import selected row from csv-file for mde6
+#'   values$Import_csv_mde7: import selected row from csv-file for mde7
+#'   values$Import_csv_mde8: import selected row from csv-file for mde8
+#'   values$Import_csv_mde9: import selected row from csv-file for mde9
+#'   input$UI_Import_name_mde1: name for mde1
+#'   input$UI_Import_name_mde2: name for mde2
+#'   input$UI_Import_name_mde3: name for mde3
+#'   input$UI_Import_name_mde4:name for mde4
+#'   input$UI_Import_name_mde5: name for mde5
+#'   input$UI_Import_name_mde6: name for mde6
+#'   input$UI_Import_name_mde7: name for mde7
+#'   input$UI_Import_name_mde8: name for mde8
+#'   input$UI_Import_name_mde9: name for mde9
 observe({
   body<-values$Import_csv_body
   body<-stringr::str_remove_all(string = body,pattern = "\n")
@@ -727,7 +919,11 @@ observe({
   ))
 })
 
-
+#' import csv dataset information
+#' depends on:
+#'   input$Import_csv_dataset: import csv dataset
+#'   values$host: selected host
+#'   values$db_port: used port to data base
 observeEvent(ignoreNULL = T,input$Import_csv_dataset,{
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
   RMariaDB::dbBegin(conn = mydb)
@@ -736,6 +932,11 @@ observeEvent(ignoreNULL = T,input$Import_csv_dataset,{
   RMariaDB::dbDisconnect(mydb)
 })
 
+#' warning for metadata names
+#' depends on:
+#'   values$Import_csv_meta_complete: import complete metadata names 
+#'   values$Import_csv_metadatafields: import metadatafields from csv
+#'   
 output$Import_csv_metadata_names_warning<-renderUI({
   validate(
     need(values$Import_csv_meta_complete[1,"dataset"]!="",message=F),
@@ -787,7 +988,10 @@ output$Import_csv_metadata_names_warning<-renderUI({
   ))
 })
 
-
+#' import metadata names for presenting informations
+#' deoends on:
+#'   values$Import_csv_metadatanames_data: import metadata names from csv-file
+#'   
 output$Import_csv_metadatanames_table<-DT::renderDataTable({
   data =values$Import_csv_metadatanames_data
   validate(
@@ -802,7 +1006,30 @@ output$Import_csv_metadatanames_table<-DT::renderDataTable({
   return(table)
 })
 
-
+#' start preprocessing the csv-files
+#' depends on:
+#'   input$Import_csv_start_preprocess: initiate preprocessing
+#'   values$Import_csv_meta_complete: import complete meta data from csv-file
+#'   input$Import_csv_dataset:
+#'   input$UI_Import_name_mde1: import name of mde1
+#'   input$UI_Import_name_mde2: import name of mde2
+#'   input$UI_Import_name_mde3: import name of mde3
+#'   input$UI_Import_name_mde4: import name of mde4
+#'   input$UI_Import_name_mde5: import name of mde5
+#'   input$UI_Import_name_mde6: import name of mde6
+#'   input$UI_Import_name_mde7: import name of mde7
+#'   input$UI_Import_name_mde8: import name of mde8
+#'   input$UI_Import_name_mde9: import name of mde9
+#'   input$Import_csv_date_format: import csv-file date-format 
+#'   input$Import_csv_mde1: import selected row for mde1
+#'   input$Import_csv_mde2: import selected row for mde2
+#'   input$Import_csv_mde3: import selected row for mde3
+#'   input$Import_csv_mde4: import selected row for mde4
+#'   input$Import_csv_mde5: import selected row for mde5
+#'   input$Import_csv_mde6: import selected row for mde6
+#'   input$Import_csv_mde7: import selected row for mde7
+#'   input$Import_csv_mde8: import selected row for mde8
+#'   input$Import_csv_mde9: import selected row for mde9
 observeEvent(input$Import_csv_start_preprocess,{
   #test if metadata is valid 
   data<-values$Import_csv_meta_complete

@@ -1,9 +1,15 @@
+#' search for documents via sub collection name
+#' depends on:
+#'    values$Sub_search: sub collection search 
 output$Doc_Search_Sub_Save_Name_UI<-renderUI({
   validate(
     need(values$Sub_search==T,message=F))
   textInput(inputId = "Sub_Collection_Name",label = "Sub-Collection name:",value = "")
 })
 
+#' save sub collection
+#' depends on:
+#'   values$Sub_search: search in subcollection
 output$Doc_Search_Sub_Save_UI<-renderUI({
   validate(
     need(values$Sub_search==T,message=F))
@@ -11,6 +17,21 @@ output$Doc_Search_Sub_Save_UI<-renderUI({
 })
 
 
+#' find selected rows from collection
+#' depends on:
+#'   input$collections_rows_selected: selected rows from collection
+#'   values$Doc_url: document url
+#'   values$Doc_collection_name: collection name from documents
+#'   values$Doc_ids: document ids
+#'   values$Doc_q: parameter q from document
+#'   values$Doc_fq: parameter fq from document
+#'   values$Doc_del: delete document
+#'   values$Doc_dataset: documents from dataset
+#'   values$dataset_Sub: subcollection from dataset
+#'   values$metadata_available_Sub: meta data fr available subcollection
+#'   values$numFound_Sub: found numbers from subcollection
+#'   values$current_collection: current collection
+#'   values$Sub_search: subcollection search
 observe({
   validate(
     need(length(input$collections_rows_selected)>0,"no Collection specified")
@@ -42,6 +63,27 @@ values$Doc_custom<-F
 
 values$Doc_reload_keep<-F
 
+#' collection of documents
+#' depends on:
+#'   input$collections_rows_selected: selected rows from collection
+#'   input$Doc_row_sel: selected documents from rows
+#'   values$Doc_reload_keep:reload documents to keep them
+#'   values$custom_inputtext_Sub: costomed input text from subcollection
+#'   values$solr_url: url for solr
+#'   input$sort: select sorting method
+#'   values$Doc_q: documents parameter q
+#'   values$Doc_fq: documents parameter fq
+#'   values$Doc_del: delete documents
+#'   values$host: selected host
+#'   values$db_port: selected database port
+#'   values$Documents_Results: result document
+#'   values$Doc_custom: customed documents
+#'   input$control: controle input
+#'   values$control: controle values
+#'   values$sort: sorting method
+#'   input$sortupdateSliderInput: update slider input
+#'   values$Doc_reload_keep: reload documents to keep them
+#'   
 output$collection_documents<-DT::renderDataTable({
   validate(
     need(length(input$collections_rows_selected)>0,"no Collection specified"),
@@ -368,6 +410,16 @@ output$collection_documents<-DT::renderDataTable({
 },server = F
 )
 
+#' document row
+#' depends on:
+#'   input$collections_rows_selected: selected rows from collection
+#'   values$numFound_Sub: found numbers in sub collection
+#'   input$Documents_reupload_SolrTag: if user wants to re upload collection tag to solr and show progress
+#'   values$Doc_collection_name: collection name of document
+#'   values$update_solr_url: update url of solr
+#'   values$update_solr_port: update port of solr
+#'   values$Doc_ids: document ids 
+#'   
 output$Documents_row<-renderUI({
   validate(
     need(length(input$collections_rows_selected)>0,message=FALSE)
@@ -415,7 +467,18 @@ observeEvent(ignoreNULL = T,input$Documents_reupload_SolrTag,{
 
 
 
-#check wheather a document is selected in Search_results datatable // if yes get data from db and which to document view
+#' check wheather a document is selected in Search_results datatable // if yes get data from db and which to document view
+#' depends on:
+#'   input$collection_documents_rows_selected: selected row from document collection
+#'   values$Documents_Results: document results
+#'   values$host: used host
+#'   values$db_port: used database port
+#'   values$Doc_token: document token
+#'   values$Doc_new: new document
+#'   values$Doc_Doc_reload: reload document after deleted
+#'   values$Doc_annotations_show: show document annotations
+#'   values$Doc_annos: document annotations
+#'   
 observe({
   s = input$collection_documents_rows_selected
   if (length(s)) {
@@ -442,7 +505,12 @@ observe({
 })
 
 
-#check which documents should be excluded from collection
+#' check which documents should be excluded from collection
+#' depends on:
+#'   input$Doccbox_1: put documents in virtuelle box
+#'   values$Documents_Results: document result
+#'   values$Doc_delete_documents: documents to delete
+#'   
 observe({
   a<-lapply(X = 1:10,FUN=function(x){return(input[[paste0("Doccbox_",x)]])})
   validate(
@@ -458,19 +526,28 @@ observe({
   
 })
 
-#reset the list for documents marked for deletion when collction changed
+#' reset the list for documents marked for deletion when collection changed
+#' depends on:
+#'   input$collections_rows_selected: selected rows from collection
+#'   values$Doc_delete_documents: deleted documents
 observeEvent(input$collections_rows_selected,{
   values$Doc_delete_documents<-NULL
 })
 
 
-#reset the list for documents marked for deletion when refresh button for keep is pressed and trigger a reload of the search results table
+#' reset the list for documents marked for deletion when refresh button for keep is pressed and trigger a reload of the search results table
+#' depends on:
+#'   input$Doc_Search_results_reset_delete:  reset the list for documents marked for deletion
+#'   values$Doc_delete_documents: list of documents
+#'   values$Doc_reload_keep: reload documents to keep them
 observeEvent(input$Doc_Search_results_reset_delete,{
   values$Doc_delete_documents<-NULL
   values$Doc_reload_keep<-TRUE
 })
 
-
+#' delete documentions after delete button was pressed
+#' values$Doc_delete_documents: list of documents to delete
+#' 
 output$delete_documents_from_colelction_button_ui<-renderUI({
   if(length(values$Doc_delete_documents)>0){
     return(actionButton(inputId = "delete_documents_from_colelction_button",label = "delete documents",styleclass = "danger",icon = icon("trash")))
@@ -480,10 +557,24 @@ output$delete_documents_from_colelction_button_ui<-renderUI({
   }
 })
 
+#' observe is delete button was pressed
+#' depends on:
+#'   input$delete_documents_from_colelction_button: button to delete selected documents
+#'   values$Doc_delete_documents: documents to delete
+#'   
 observeEvent(input$delete_documents_from_colelction_button,{
   shinyWidgets::confirmSweetAlert(session = session,inputId = "confirm_delete_docs",type = "warning",title = paste0("Are you sure you want to delete ",length(values$Doc_delete_documents)," documents from the collection?"),danger_mode = T)
 })
 
+#' confirm to delete documents after button was pressed
+#' depends on:
+#'   input$confirm_delete_docs: confirm documents that should be deleted
+#'   input$collections_rows_selected: selcted document rows from collection
+#'   values$Doc_delete_documents: list of documents to delete
+#'   values$Doc_reload_keep: reload documents so thex wont get deleted
+#'   values$numFound_Sub: found numbers for subcollection
+#'   
+#'   
 observeEvent(input$confirm_delete_docs,{
   if(isTRUE(input$confirm_delete_docs)){
     load(list.files("collections/collections/", full.names = T)[[input$collections_rows_selected]])
@@ -532,7 +623,10 @@ observeEvent(input$confirm_delete_docs,{
 })
 
 
-#create modal for searching in sub corpora
+#' create modal for searching in sub corpora
+#' depends on:
+#'   input$Doc_Search_Sub: search for documents in subcollection
+#'   
 observeEvent(input$Doc_Search_Sub,{
   showModal(modalDialog(
     div(style = 'overflow-x:hidden;',
@@ -548,6 +642,12 @@ observeEvent(input$Doc_Search_Sub,{
   )
 })
 
+#' found number of documents
+#' depends on:
+#'   values$Documents_Results: relsulting documents for search
+#'   values$numFound_Sub: found number of documents in subcollection
+#'   values$host: selected host
+#'   values$db_port: selected port to database
 output$Doc_Num_Found<-renderUI({
   validate(
     need(dim(values$Documents_Results)[1]>0,message=F)
@@ -560,7 +660,25 @@ output$Doc_Num_Found<-renderUI({
 })
 
 
-
+#' save sub-collection
+#' depends on:
+#'   input$save_Sub_Collection: save sub-collection
+#'   input$Sub_Collection_Name: name of sub-collection
+#'   values$host: selected host
+#'   values$db_port: selected data base port
+#'   values$Doc_custom: customed documents
+#'   values$custom_inputtext_Sub: customed input text from subcollection
+#'   values$numFound_Sub: found number of documents subcollection
+#'   values$solr_url: url for solr
+#'   values$Doc_q: documents parameter q
+#'   values$Doc_fq: documents parameter fq
+#'   values$Doc_delete_documents: delete documents
+#'   values$update_solr_url: update solr url
+#'   values$update_solr_port: update solr port
+#'   values$Doc_solr_query: solr query of documents
+#'   values$coll_saved: saved collection
+#'   values$num_collections: number of collections
+#'   
 observeEvent(input$save_Sub_Collection,{
   #check if collection name is still avaiable
   if(stringr::str_detect(string = input$Sub_Collection_Name,pattern = "_")){

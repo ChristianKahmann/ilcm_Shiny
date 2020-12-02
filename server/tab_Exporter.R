@@ -1,3 +1,7 @@
+#' render export of results
+#' depends on:
+#'   input$export_results_analysis: export results of analysis
+#'   
 output$export_results_resultset_ui<-renderUI({
   return(tagList(
     conditionalPanel(condition = "input.export_results_analysis=='classification'",
@@ -12,7 +16,14 @@ output$export_results_resultset_ui<-renderUI({
   )
 })
 
-
+#' render export of result files
+#' depends on:
+#'   input$export_results_resultset: export of a result set
+#'   input$export_results_analysis: export results of analysis
+#'   input$export_results_resultset_class: export class of result set
+#'   values$export_results_files: export result files
+#'   values$export_results_table: result table for export
+#'   
 output$export_results_files_ui<-DT::renderDataTable({
   validate(
     need(!is.null(input$export_results_resultset),message=F)
@@ -44,7 +55,11 @@ output$export_results_files_ui<-DT::renderDataTable({
 
 
 
-
+#' check if export button for a result is clicked
+#' depends on:
+#'   input$export_results_buttons: clicked export button?
+#'   values$export_results_download_selected: export result for selected download
+#'   
 observeEvent(ignoreInit = T,input$export_results_buttons,{
   validate(
     need(input$export_results_buttons!="export_results_files_dl_0",message=F)
@@ -58,6 +73,10 @@ observeEvent(ignoreInit = T,input$export_results_buttons,{
   )
 })
 
+#' observe download process
+#' depends on:
+#'   values$export_results_table: result table for export
+#'   values$export_results_download_selected: selected results for download
 output$export_results_final_dl<-downloadHandler(
   filename = function(){
     as.character(values$export_results_table[values$export_results_download_selected,"filename"])
@@ -66,7 +85,11 @@ output$export_results_final_dl<-downloadHandler(
     file.copy(values$export_results_files[values$export_results_download_selected], file)
   })
 
-
+#' render extra options for export
+#' depends on:
+#'   input$export_results_resultset: result set for exported results
+#'   input$export_results_analysis: result of certain analysis
+#'   
 output$export_results_extra<-renderUI({
   validate(
     need(!is.null(input$export_results_resultset),message=F)
@@ -81,6 +104,10 @@ output$export_results_extra<-renderUI({
   return(L)
 })
 
+#' export special topic theta results
+#' depends on:
+#'   input$export_results_resultset: result set for export
+#'   
 output$export_results_special_topic_theta<-downloadHandler(
   filename = function(){
     paste0(input$export_results_resultset,"_theta",".csv")
@@ -92,6 +119,9 @@ output$export_results_special_topic_theta<-downloadHandler(
   }
 )
 
+#' export special topic phi for result-export
+#' depends on:
+#'   input$export_results_resultset: result set for export
 output$export_results_special_topic_phi<-downloadHandler(
   filename = function(){
     paste0(input$export_results_resultset,"_phi",".csv")
@@ -105,7 +135,12 @@ output$export_results_special_topic_phi<-downloadHandler(
 
 
 
-#get annotations from database and render them in a datatable
+#' get annotations from database and render them in a datatable
+#' depends on:
+#'   input$export_update_annotations: update annotations for export
+#'   values$host: host for export
+#'   values$db_port: databse port for export
+#'   
 output$export_annotations<-DT::renderDataTable({
   input$export_update_annotations
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
@@ -144,7 +179,9 @@ output$export_annotations<-DT::renderDataTable({
 
 
 
-
+#' export all
+#' depends on:
+#'   input$file: selected file
 output$download_export_all_ui<-renderUI({
   validate(need(dim(parseFilePaths(volumes, input$file))[1]>0,message=F))
   return(downloadButton("download_export_all","Download"))
@@ -160,12 +197,17 @@ volumes <- c('Results'="collections/results",
 )
 shinyFileChoose(input, 'file', roots=volumes, session=session)
 
+#' render prints
+#' depends on:
+#'   input$file: selected file
 output$filepaths <- renderPrint({
   validate(need(dim(parseFilePaths(volumes, input$file))[1]>0,message=F))
   parseFilePaths(volumes, input$file)})
 
 
-
+#' check if download button
+#' depends on:
+#'   input$export_collection: selected collection for export
 output$download_button_coll_ilcm <- downloadHandler(
   filename = function(){
     paste0(input$export_collection,".RData")
@@ -178,7 +220,10 @@ output$download_button_coll_ilcm <- downloadHandler(
 
 
 
-#render parameters for downloading a collection
+#' render parameters for downloading a collection
+#' depends on:
+#'   input$export_download_batch_size:specify batch size for export 
+#'   input$export_coll_format: select collection format for export
 output$Export_Analysis_Parameter_DL<-renderUI({
   validate(
     need(input$export_download_batch_size>0,"Please specify a batch size greater than 0"),
@@ -224,7 +269,13 @@ output$Export_Analysis_Parameter_DL<-renderUI({
 
 
 
-#get documents from database
+#' get documents from database
+#' depends on:
+#'   input$Export_Prepare_Documents: prepare documents for export
+#'   values$host: host for export
+#'   values$db_port: database port
+#'   values$export_token_tmp: temporary token for export
+#'   values$export_meta_tmp: temporary meta data for export
 observeEvent(input$Export_Prepare_Documents,{
   load(paste0("collections/collections/",input$export_collection,".RData"))
   #token object
@@ -252,7 +303,13 @@ observeEvent(input$Export_Prepare_Documents,{
 
 
 
-#create download functionality for downloading token objects
+#' create download functionality for downloading token objects
+#' depends on:
+#'   values$export_number_of_buttons: number of buttons for export
+#'   values$export_chosen_collection: choosen collection for export
+#'   values$export_token_tmp: temporary token for export
+#'   values$export_meta_tmp: temporary meta data for export
+#'   
 observe({
   validate(
     need(!is.null(values$export_number_of_buttons),message=FALSE)
@@ -277,7 +334,12 @@ observe({
 })
 
 
-#create download functionality for downloading meta objects
+#' create download functionality for downloading meta objects
+#' depends on:
+#'   values$export_number_of_buttons: export number of buttons
+#'   values$export_chosen_collection: choosen collection for export
+#'   values$export_meta_tmp: temporary meta data for export
+#'   
 observe({
   validate(
     need(!is.null(values$export_number_of_buttons),message=FALSE)
@@ -301,7 +363,10 @@ observe({
   })
 })
 
-# download functionality for downloading collection meta objects as RData
+#' download functionality for downloading collection meta objects as RData
+#' depends on:
+#'   input$export_collection: export collection
+#'   -values$export_meta_tmp: temporary meta data for export
 output$download_export_RData_meta <- downloadHandler(
   filename = function(){
     paste0(input$export_collection,"_meta.RData")
@@ -312,7 +377,10 @@ output$download_export_RData_meta <- downloadHandler(
   }
 )
 
-# download functionality for downloading collection token objects as RData
+#' download functionality for downloading collection token objects as RData
+#' depends on:
+#'   input$export_collection: export collection
+#'   values$export_token_tmp: temporary token for export
 output$download_export_RData_token <- downloadHandler(
   filename = function(){
     paste0(input$export_collection,"_token.RData")
@@ -325,7 +393,9 @@ output$download_export_RData_token <- downloadHandler(
 
 
 
-# update select input for collections (input$export_collection), when a new collection is created
+#' update select input for collections (input$export_collection), when a new collection is created
+#' depends on:
+#'   values$coll_saved: saved collection
 observe({
   values$coll_saved
   updateSelectInput(session = session,inputId = "export_collection", choices = stringr::str_remove(string = list.files("collections/collections/"),pattern = ".RData"))
@@ -338,7 +408,10 @@ observe({
 
 
 
-
+#' start export of all data
+#' depends on:
+#'   input$file: file input
+#'   
 output$download_export_all <- downloadHandler(
   filename = function(){
     if( dim(parseFilePaths(volumes, input$file))[1]>1){
