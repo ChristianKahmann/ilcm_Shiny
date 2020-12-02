@@ -1,19 +1,50 @@
 
+#' tab to view document categories
 
-
-
+#' render annotation title
+#' depends on:
+#'   values$Anno_meta: meta data for annotation
 output$Anno_DV_title<-renderText({
   title<- values$Anno_meta[,"title"]
   return(title)
 })
 
-#create reactive object, which stores the made annotations in the document
+#' create reactive object, which stores the made annotations in the document
 values$Anno_annotations_marked<-matrix(c(0),0,13)
 values$Anno_annotations_show<-matrix(c(0),0,13)
 
 
 
-#render the document
+#' render the document
+#' depends on:
+#'   values$Anno_Doc_reload: reload document annotation
+#'   values$Anno_token: annotation tokens
+#'   input$Anno_anno_scheme_selected: selected annotation scheme
+#'   values$set_Anno_anno_scheme: set of annotations schemes
+#'   values$Anno_scheme_changed: are there changes in the annotation scheme
+#'   input$Anno_anno_id: annotation id
+#'   values$Anno_anno_deleted: deleted annotation
+#'   values$Anno_new: mew annotation
+#'   values$host: selected host
+#'   values$db_port: selected data base port
+#'   values$Anno_annotations_show: show annotations
+#'   values$Doc_annos: document annotations
+#'   values$Anno_annos: list of annotations
+#'   input$Anno_anno_tag: annotation tag
+#'   input$Anno_anno_start: start annotation
+#'   input$Anno_anno_end: end annotation
+#'   values$user: current user
+#'   input$Anno_anno_scheme_selected: selected annotation scheme
+#'   values$Anno_annotations_marked: marked annotation
+#'   input$Anno_DV_POS: check if POS-tagging is selected
+#'   values$Anno_mark_pos: marked POS-tags for annotation
+#'   input$Anno_DV_Entity: check if Entity (NER)-taggins is selected 
+#'   values$Anno_mark_ner: marked NER-tags for annotation
+#'   input$Anno_Doc_View_paragraph: activate paragraph view for docuements
+#'   values$Anno_mark_space: mark spaces for annotation
+#'   values$Anno_token: annotation tokens
+#'   values$Anno_new: new annotation
+#'   
 output$Anno_document<-renderUI({
   values$Anno_Doc_reload
   
@@ -168,7 +199,10 @@ output$Anno_document<-renderUI({
   
 })
 
-#render metadata 
+#' render metadata 
+#' depends on:
+#'   values$Anno_meta: annotation meta data
+#'   
 output$Anno_DV_metadata_UI<-renderUI({
   validate(
     need(!is.null(values$Anno_meta),message=F)
@@ -183,13 +217,19 @@ output$Anno_DV_metadata_UI<-renderUI({
   return(tagList(tag))
 })
 
-#render select options for POS Tags
+#' render select options for POS Tags
+#' depends on:
+#'   values$Anno_token: annotation token
+#'   
 output$Anno_DV_POS<-renderUI({
   options<-c("None",unique(values$Anno_token[,"pos"]))
   radioButtons(inputId = "Anno_DV_POS",label = "POS-TAGS",choices = options,selected = "None")
 })
 
-#render select options for Entity Tags
+#' render select options for Entity Tags
+#' depends on:
+#'   values$Anno_token: annotation token
+#'   
 output$Anno_DV_Entity<-renderUI({
   options<-c("None",unique(values$Anno_token[,"entity"]))
   options<-options[-which(nchar(options)<2)]
@@ -198,6 +238,10 @@ output$Anno_DV_Entity<-renderUI({
   radioButtons(inputId = "Anno_DV_Entity",label = "Entity-TAGS",choices = options,selected = "None")
 })
 
+#' observe creating a new annotation scheme
+#' depends on:
+#'   input$Anno_anno_scheme_selected: selected annotation scheme
+#'   values$Anno_new: new annotation
 observeEvent(input$Anno_anno_scheme_selected,{
   values$Anno_new<-NULL
 })
