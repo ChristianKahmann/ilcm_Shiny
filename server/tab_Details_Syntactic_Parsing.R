@@ -1,4 +1,11 @@
-
+#' details for syntactic parsing
+#' depends on:
+#'   values$Det_SP_annotations: details for syntactic parsing annotations
+#'   input$Det_SP_baseform: details for syntactic parsing baseforms
+#'   input$Det_SP_subject: detailes for syntactic parsinf subject
+#'   input$Det_SP_predicate: details for synactic parsing predicate 
+#'   input$Det_SP_object: details for syntactic parsing object
+#'   ...
 observe({
   validate(
     need(!is.null(values$Det_SP_annotations),message=F),

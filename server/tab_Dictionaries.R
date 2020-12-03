@@ -1,8 +1,17 @@
+#' create a dictionary
+#' depends on:
+#'   input$Dict_create: initiate creating a dictionary
+#'   values$dict_name: name of the dictionary
+#'   values$dict_data: dictionary data
 observeEvent(input$Dict_create,{
   values$dict_name<-""
   values$dict_data<-data.frame(example=c("lorem","ipsum"))
 })
 
+#' change a dictionary
+#' depends on:
+#'    input$Dict_change: initiate to change a dictionary
+#'    
 observeEvent(input$Dict_change,{
   showModal(modalDialog(easyClose = F,
                         title = "Which Dictionary would like to change?",
@@ -13,6 +22,12 @@ observeEvent(input$Dict_change,{
   ))
 })
 
+#' accept changes on dictionary
+#' depends on:
+#'  input$dict_change_accept: check if dictionary changes are acceptable
+#'  values$dict_name: dictionary name
+#'  input$dict_change_dict: changed dictionary contents
+#'  values$dict_data: dictionary data
 observeEvent(input$dict_change_accept,{
   shiny::removeModal()
   if(is.null(input$dict_change_dict)){
@@ -25,6 +40,10 @@ observeEvent(input$dict_change_accept,{
   }
 })
 
+#' delete dictionary
+#' depends on:
+#'   input$Dict_delete: initiate deleting a dictionary
+#'   
 observeEvent(input$Dict_delete,{
   showModal(modalDialog(easyClose = F,
                         title = "Which Dictionary would like to delete?",
@@ -35,11 +54,17 @@ observeEvent(input$Dict_delete,{
   ))
 })
 
+#' observe if selected dictionary should be deleted
+#' depends on:
+#'   input$dict_delete: delete a dictionary
 observeEvent(input$dict_delete,{
   shinyWidgets::confirmSweetAlert(session = session,inputId = "dict_confirm_delete",type = "warning",title = "Are you sure you want to delete this dictionary",danger_mode = T)
 })
 
-
+#' confirm to delete a dictionary
+#' depends on:
+#'   input$dict_confirm_delete: confirm to delete a dictionary
+#'   input$dict_delete_dict: dictionary to delete
 observeEvent(input$dict_confirm_delete,{
   if(isTRUE(input$dict_confirm_delete)){
     if(is.null(input$dict_delete_dict)){
@@ -52,7 +77,10 @@ observeEvent(input$dict_confirm_delete,{
   }
 })
 
-
+#' render table of dictionaries
+#' depends on:
+#'   values$dict_data: dictionary data
+#'   
 output$Dict_table_ui<-renderRHandsontable({
   validate(
     need(!is.null(values$dict_data),message=FALSE
@@ -62,7 +90,10 @@ output$Dict_table_ui<-renderRHandsontable({
   rhandsontable(data = data,useTypes = F)
 })
 
-
+#' save dictionary
+#' depends on:
+#'   values$dict_data: dictionary data
+#'   
 output$dict_save_ui<-renderUI({
   validate(
     need(!is.null(values$dict_data),message=FALSE
@@ -72,6 +103,10 @@ output$dict_save_ui<-renderUI({
 })
 
 
+#' save dictionary
+#' depends on:
+#'   input$dict_save: initiate saving the dictionary
+#'   input$Dict_table_ui: user interface input for dictionary
 observeEvent(input$dict_save,{
   header_inputs<-tagList(
     lapply(1:length(input$Dict_table_ui$params$data[[1]]),FUN = function(x){
@@ -93,7 +128,10 @@ observeEvent(input$dict_save,{
   ))
 })
 
-
+#' show dictionary datatable
+#' depends on:
+#'   input$Dict_table_ui: user interface for dictionary table
+#'   values$dict_headers: dictionary headers
 observe({
   headers<-lapply(1:length(input$Dict_table_ui$params$data[[1]]),FUN = function(i){
     return(input[[paste("dict_header_",i)]])
@@ -102,6 +140,15 @@ observe({
   values$dict_headers<-do.call(what = base::c,headers)
 })
 
+#' save dictionary
+#' depends on:
+#'   input$dict_save_really: initiate saving
+#'   values$dict_headers: dictionary headers
+#'   input$dict_name: dictionary name
+#'   input$Dict_table_ui: dictionary user interface 
+#'   input$CL_dict: dictionary from classification
+#'   input$DE_dict: dictionary from dictionary extraction
+#'   
 observeEvent(input$dict_save_really,{
   if(any(nchar(values$dict_headers)==0)){
     shinyWidgets::sendSweetAlert(session=session,title = "Not all categories have names!",text = "Please specify a name for every category!",type = "warning")

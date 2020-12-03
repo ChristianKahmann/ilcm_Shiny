@@ -251,7 +251,12 @@ observeEvent(input$Anno_anno_scheme_selected,{
 #      Annotations        #
 ###########################
 
-
+#' show annotation schemes in document view
+#' depends on:
+#'   values$newscheme: create a new scheme
+#'   values$set_Anno_anno_scheme: set annotation scheme
+#'   values$Anno_scheme_changed: changed annotation scheme
+#'   
 output$Anno_DV_Annotation_Schemes<-renderUI({
   values$newscheme
   if(!is.null(values$set_Anno_anno_scheme)){
@@ -271,7 +276,14 @@ output$Anno_DV_Annotation_Schemes<-renderUI({
 })
 
 
-
+#' save annotation
+#' depends on:
+#'   input$Anno_save_annotations: save annotations
+#'   values$Anno_annotations_marked: marke annotation
+#'   values$Anno_token: annotation token
+#'   values$Anno_anno_loaded: load annotation
+#'   values$host: selected host
+#'   values$db_port: chosen database port
 observeEvent(input$Anno_save_annotations,{
   if(dim(isolate(values$Anno_annotations_marked))[1]==0){
     shinyWidgets::sendSweetAlert(session = session,title = "no annotations found",type = "warning")
@@ -301,7 +313,10 @@ observeEvent(input$Anno_save_annotations,{
   }
 })
 
-
+#' show annotation components 
+#' depends on:
+#'   input$Anno_anno_scheme_selected: selected annotation scheme
+#'   
 output$annotationComponents3<-renderUI({
   validate(
     need(!is.null(input$Anno_anno_scheme_selected),message=FALSE)
@@ -311,7 +326,13 @@ output$annotationComponents3<-renderUI({
 })
 
 
-
+#' show made annotations
+#' depends on:
+#'   values$Anno_annotations_show: show annotations
+#'   input$Anno_anno_scheme_selected: selected annotation scheme
+#'   values$Anno_highlight_annos: highlight annotations
+#'   values$Anno_delete_anno_box_id: check annotation-delete-box is ticked
+#'   
 output$Anno_made_annotations<-renderUI({
   validate(
     need(dim(values$Anno_annotations_show)[1]>0,message=FALSE)
@@ -349,7 +370,10 @@ output$Anno_made_annotations<-renderUI({
   }
 })
 
-#check whether an annotation box was drop in the trash div, if this is
+#' check whether an annotation box was drop in the trash div, if this is
+#' depends on:
+#'   input$Anno_delete_annotation_box: check if annotation-delete-box is ticked
+#'   
 observe({
   validate(
     need(!is.null(input$Anno_delete_annotation_box),message=FALSE)
@@ -357,7 +381,16 @@ observe({
   shinyWidgets::confirmSweetAlert(session = session,inputId = "Anno_confirm_delete_anno_box",type = "warning",title = "Are you sure you want to delete this annotation",danger_mode = T)
 })
 
-#if user has confiremd to delete annotation, delete the annotation in the database and also the annotation matrices
+#' if user has confiremd to delete annotation, delete the annotation in the database and also the annotation matrices
+#' depends on:
+#'   input$Anno_confirm_delete_anno_box: confirm to delete annotation
+#'   values$Anno_annotations_marked: marked annotions
+#'   values$Anno_delete_anno_box_id: id of annotation delete box
+#'   values$Anno_annotations_show: show annotations
+#'   values$Anno_annos_documentwide: documentwide annotations
+#'   values$Anno_annos: annotation list
+#'   values$host: selected host
+#'   values$db_port: database port
 observeEvent(input$Anno_confirm_delete_anno_box,{
   if(isTRUE(input$Anno_confirm_delete_anno_box)){
     values$Anno_annotations_marked<-isolate(values$Anno_annotations_marked[-which(isolate(values$Anno_annotations_marked[,1]==isolate(values$Anno_delete_anno_box_id))),,drop=F])
@@ -372,7 +405,10 @@ observeEvent(input$Anno_confirm_delete_anno_box,{
 }
 )
 
-
+#' render documentwide annotations
+#' depends on:
+#'   values$Anno_annos_documentwide: docuemntwide annotation
+#'   
 output$Anno_DV_documentwide_annotations<-renderUI({
   validate(
     need(

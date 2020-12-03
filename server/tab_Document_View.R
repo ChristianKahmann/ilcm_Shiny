@@ -1,11 +1,16 @@
 values$anno_loaded<-FALSE
-#render title of document
+#' render title of document
+#' depends on:
+#'  values$title: document title
+#'  
 output$DV_title<-renderText({
   title<-(values$title)
   return((title))
 })
 
-#render metadata 
+#' render metadata 
+#' depends on:
+#'   values$meta: document meta data
 output$DV_metadata_UI<-renderUI({
   validate(
     need(!is.null(values$meta),message=F)
@@ -21,11 +26,36 @@ output$DV_metadata_UI<-renderUI({
 })
 
 
-#create reactive object, which stores the made annotations in the document
+#' create reactive object, which stores the made annotations in the document
 values$annotations_marked<-matrix(c(0),0,13)
 values$annotations_show<-matrix(c(0),0,13)
 
-#render the document
+#' render the document
+#' depends on:
+#'   values$Doc_reload: reload documents
+#'   values$token: document token
+#'   input$anno_scheme_selected: selected annotation scheme
+#'   input$anno_id: annotation id
+#'   values$anno_deleted: deleted annotations
+#'   values$new: new session
+#'   values$host: selected host
+#'   values$db_port: chosen data base port
+#'   values$annos_documentwide: documentwide annotation
+#'   values$annotations_show: show annotations
+#'   values$annos: list of annotations
+#'   input$anno_tag: annotation tag
+#'   input$anno_start: start annotation
+#'   input$anno_end: end annotation
+#'   values$user: current used
+#'   values$selected: selected documents
+#'   input$DV_POS: check if POS-tags selected
+#'   values$mark_pos: mark POS-tags
+#'   input$DV_Entity: check if Entity(NER)-tags selected
+#'   values$mark_ner: mark entities
+#'   input$Doc_View_paragraph: view document paragraphs
+#'   values$mark_space: mark spaces
+#'   values$show: show document
+#'   values$new: create a new session
 output$document<-renderUI({
   values$Doc_reload
   validate(
@@ -183,13 +213,18 @@ output$document<-renderUI({
 })
 
 
-#render select options for POS Tags
+#' render select options for POS Tags
+#' depends on:
+#'   values$token: chosen tokens
 output$DV_POS<-renderUI({
   options<-setdiff(c("None",unique(values$token[,"pos"])),"SPACE")
   radioButtons(inputId = "DV_POS",label = "POS-TAGS",choices = options,selected = "None")
 })
 
-#render select options for Entity Tags
+#' render select options for Entity Tags
+#' depends on:
+#'   values$token: chosen tokens
+#'   
 output$DV_Entity<-renderUI({
   options<-c("None",unique(values$token[,"entity"]))
   options<-options[-which(nchar(options)<2)]
@@ -198,12 +233,19 @@ output$DV_Entity<-renderUI({
   radioButtons(inputId = "DV_Entity",label = "Entity-TAGS",choices = options,selected = "None")
 })
 
+#' observe selected scheme
+#' depends on:
+#'   input$anno_scheme_selected: selected annotation scheme
+#'   values$new: create a new sesion?
 observeEvent(input$anno_scheme_selected,{
   values$new<-NULL
 },priority = 1)
 
 
-
+#' render documentwide annotations
+#' depedns on:
+#'   values$annos_documentwide: documentwide annotations
+#'   
 output$DV_documentwide_annotations<-renderUI({
   validate(
     need(
