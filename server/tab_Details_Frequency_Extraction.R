@@ -1,5 +1,8 @@
 
-#render FE words to export checkbox
+#' render FE words to export checkbox
+#' depends on:
+#'   input$Det_FE_Word: words for frequency extraction
+#'   
 output$FE_words_to_export<-renderUI({
   validate(
     need(length(input$Det_FE_Word)>0,message = FALSE)
@@ -9,7 +12,25 @@ output$FE_words_to_export<-renderUI({
 
 
 
-#render FE plot
+#' render FE plot
+#' depends on:
+#'   input$Det_FE_Word: words for frequency extraction
+#'   input$Det_FE_use_regexp: choosen words or regular expression
+#'   input$Det_FE_REL_ABS: use relative or absolute values?
+#'   input$Det_FE_Term_Doc: selected terms in document
+#'   input$Det_FE_Time: selected time-intervall
+#'   values$FE_rel_freqs_day: selected relative values for frequency over day-intervall
+#'   values$FE_rel_freqs_week: selected relative values for frequency over week-intervall
+#'   values$FE_rel_freqs_month: selected relative values for frequency over month-intervall
+#'   values$FE_rel_freqs_year: selected relative values for frequency over year-intervall
+#'   input$Det_FE_calc: start detailed frequency calculation
+#'   values$Det_FE_regexp_words: words from regular expression
+#'   values$FE_doc_freqs_day: document frequencies for day-intervall
+#'   values$FE_freqs_week: document frequencies for week-intervall
+#'   values$FE_freqs_month: document frequencies for month-intervall
+#'   values$FE_freqs_year: document frequencies for year-intervall
+#'   values$freq_matrix: frequency-matrix
+#'   
 output$FE_plot<-renderPlotly({
   validate(
     need(length(input$Det_FE_Word)>0 | isTRUE(input$Det_FE_use_regexp),"choose at least one word or use regexp")

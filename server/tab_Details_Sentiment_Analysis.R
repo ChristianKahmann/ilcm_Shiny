@@ -1,5 +1,10 @@
 
-# render Sentiments dates aggreagted by date
+#' render Sentiments dates aggreagted by date
+#' depends on:
+#'   values$Det_Senti_meta: meta data for sentiment analysis
+#'   input$Det_SA_Time: selected time interval for sentiment analysis 
+#'   values$Det_SA_DL_res: sentiment analysis detailed results
+#'   
 output$Det_Senti_date<-renderPlotly({
   validate(
     need(!is.null(values$Det_Senti_meta),message = F),
@@ -63,7 +68,11 @@ output$Det_Senti_date<-renderPlotly({
 })
 
 
-# render sentiments aggreagted by  document length
+#' render sentiments aggreagted by  document length
+#' depends on:
+#'   values$Det_Senti_meta: detailed sentiment analysis meta data
+#'   input$Det_SA_max_breaks: sentiment analysis maximum of breaks
+#'   input$Det_SA_Lines: sentiment analysis lines 
 output$Det_Senti_length<-renderPlotly({
   validate(
     need(!is.null(values$Det_Senti_meta),message = F)
@@ -122,7 +131,9 @@ output$Det_Senti_length<-renderPlotly({
   return(p)
 })
 
-# download csv containing sentiment data by date 
+#' download csv containing sentiment data by date 
+#' depends on:
+#'   values$Det_SA_DL_res: detailes sentiment analysis results
 output$Det_SA_download_timeseries<-downloadHandler(
   filename = function() {
     paste('Sentiment_Analysis-', Sys.Date(), '.csv', sep='')
@@ -135,7 +146,13 @@ output$Det_SA_download_timeseries<-downloadHandler(
 
 
 
-# placeholder for other sentiment plots aggragated by available metadata
+#' placeholder for other sentiment plots aggragated by available metadata
+#' depends on:
+#'   values$Det_Senti_meta: check which metadata are avaiable
+#'   values$host: selected host
+#'   values$db_port: chosen database port
+#'   values$senti_meta_reduced: reduced meta data for sentiment analysis
+#'   
 output$Det_Senti_tab_Panels_mde_UI<-renderUI({
   #check which metadata are avaiable
   meta<-values$Det_Senti_meta
@@ -179,7 +196,13 @@ output$Det_Senti_tab_Panels_mde_UI<-renderUI({
   )
 })
 
-
+#' plot sentiment anaylsis
+#' depends on:
+#'   values$senti_meta_reduced: reduced meta data from sentiment analysis
+#'   input$Det_SA_min: minimum for sentiment analysis
+#'   values$Det_Senti_meta: sentiment analysis meta data
+#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   values$Det_SA_DL_res: sentiment analysis detailes results
 output$senti_plot_1<-plotly::renderPlotly({
   validate(
     need(!is.null(values$senti_meta_reduced),message=F),
@@ -239,7 +262,13 @@ output$senti_plot_1<-plotly::renderPlotly({
 })
 
 
-
+#' plot sentiment anaylsis
+#' depends on:
+#'    values$senti_meta_reduced:
+#'    input$Det_SA_min: minimum for sentiment analysis
+#'    values$Det_Senti_meta: meta data for sentiment analysis
+#'    input$Det_SA_Lines: selected lines for sentiment analyisis
+#'    values$Det_SA_DL_res: selected results for sentiment analysis
 output$senti_plot_2<-plotly::renderPlotly({
   validate(
     need(!is.null(values$senti_meta_reduced),message=F),
@@ -301,7 +330,13 @@ output$senti_plot_2<-plotly::renderPlotly({
 
 
 
-
+#' render plot for sentiment analysis (plot 3)
+#' depends on:
+#'   values$senti_meta_reduced: reduced meta data from sentiment analysis
+#'   input$Det_SA_min: minimum for sentiment analysis
+#'   values$Det_Senti_meta: sentiment analysis meta data
+#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   values$Det_SA_DL_res: sentiment analysis detailes results  
 output$senti_plot_3<-plotly::renderPlotly({
   validate(
     need(!is.null(values$senti_meta_reduced),message=F),
@@ -363,7 +398,13 @@ output$senti_plot_3<-plotly::renderPlotly({
 
 
 
-
+#' plot for sentiment analysis (4)
+#' depends on:
+#'   values$senti_meta_reduced: reduced meta data from sentiment analysis
+#'   input$Det_SA_min: minimum for sentiment analysis
+#'   values$Det_Senti_meta: sentiment analysis meta data
+#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   values$Det_SA_DL_res: sentiment analysis detailes results
 output$senti_plot_4<-plotly::renderPlotly({
   validate(
     need(!is.null(values$senti_meta_reduced),message=F),
@@ -425,7 +466,13 @@ output$senti_plot_4<-plotly::renderPlotly({
 
 
 
-
+#' render plot sentiment analysis 5
+#' depends on:
+#'   values$senti_meta_reduced: reduced meta data from sentiment analysis
+#'   input$Det_SA_min: minimum for sentiment analysis
+#'   values$Det_Senti_meta: sentiment analysis meta data
+#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   values$Det_SA_DL_res: sentiment analysis detailes results
 output$senti_plot_5<-plotly::renderPlotly({
   validate(
     need(!is.null(values$senti_meta_reduced),message=F),
@@ -486,7 +533,13 @@ output$senti_plot_5<-plotly::renderPlotly({
 })
 
 
-
+#' render plot for sentiment analysis (6)
+#' depends on:
+#'   values$senti_meta_reduced: reduced meta data from sentiment analysis
+#'   input$Det_SA_min: minimum for sentiment analysis
+#'   values$Det_Senti_meta: sentiment analysis meta data
+#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   values$Det_SA_DL_res: sentiment analysis detailes results
 output$senti_plot_6<-plotly::renderPlotly({
   validate(
     need(!is.null(values$senti_meta_reduced),message=F),
@@ -547,7 +600,13 @@ output$senti_plot_6<-plotly::renderPlotly({
 })
 
 
-
+#' render plot sentiment analysis (7)
+#'  depends on:
+#'   values$senti_meta_reduced: reduced meta data from sentiment analysis
+#'   input$Det_SA_min: minimum for sentiment analysis
+#'   values$Det_Senti_meta: sentiment analysis meta data
+#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   values$Det_SA_DL_res: sentiment analysis detailes results
 output$senti_plot_7<-plotly::renderPlotly({
   validate(
     need(!is.null(values$senti_meta_reduced),message=F),
@@ -608,7 +667,13 @@ output$senti_plot_7<-plotly::renderPlotly({
 })
 
 
-
+#' render plot sentiment analysis (8)
+#'  depends on:
+#'   values$senti_meta_reduced: reduced meta data from sentiment analysis
+#'   input$Det_SA_min: minimum for sentiment analysis
+#'   values$Det_Senti_meta: sentiment analysis meta data
+#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   values$Det_SA_DL_res: sentiment analysis detailes results
 output$senti_plot_8<-plotly::renderPlotly({
   validate(
     need(!is.null(values$senti_meta_reduced),message=F),
@@ -669,7 +734,13 @@ output$senti_plot_8<-plotly::renderPlotly({
 })
 
 
-
+#' render plot for sentiment analysis (9)
+#'  depends on:
+#'   values$senti_meta_reduced: reduced meta data from sentiment analysis
+#'   input$Det_SA_min: minimum for sentiment analysis
+#'   values$Det_Senti_meta: sentiment analysis meta data
+#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   values$Det_SA_DL_res: sentiment analysis detailes results 
 output$senti_plot_9<-plotly::renderPlotly({
   validate(
     need(!is.null(values$senti_meta_reduced),message=F),
@@ -731,7 +802,14 @@ output$senti_plot_9<-plotly::renderPlotly({
 
 
 
-# validation tab for sentiments showing the original documents with highlights sentiment scores
+#' validation tab for sentiments showing the original documents with highlights sentiment scores
+#' depends on:
+#'   input$Det_SA_validation_document: detailed sentiment analysis for validation of documents
+#'   values$Det_Senti_meta: sentiment analysis meta data
+#'   values$host: selected host
+#'   values$port: selected port
+#'   values$Details_Data_SA: details of sentiment analysis data
+#'   
 output$Det_Senti_validation_UI<-renderUI({
   validate(
     need(
@@ -818,7 +896,10 @@ output$Det_Senti_validation_UI<-renderUI({
 
 
 
-# table showing the most "positive" documents
+#' table showing the most "positive" documents
+#' depends on:
+#'   values$Det_Senti_meta: sentiment analysis meta data 
+#'   
 output$Det_Senti_validation_table_positive<-DT::renderDataTable({
   data<-values$Det_Senti_meta
   data<-data[order(data$score,decreasing=T),c("title","scores")]
@@ -826,7 +907,10 @@ output$Det_Senti_validation_table_positive<-DT::renderDataTable({
 })
 
 
-# table showing the most "negative" documents
+#' table showing the most "negative" documents
+#' depends on:
+#'   values$Det_Senti_meta: sentiment analysis meta data
+#'   
 output$Det_Senti_validation_table_negative<-DT::renderDataTable({
   data<-values$Det_Senti_meta
   data<-data[order(data$score,decreasing=F),c("title","scores")]

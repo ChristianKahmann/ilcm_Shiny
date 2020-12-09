@@ -1,5 +1,4 @@
 #' UI for sidebarpanle with different menu-items
-
 output$sidebarpanel_UI<-renderUI({
   sidebarmenu<-sidebarMenu(id = "tabs",
                            # menu for explorer 

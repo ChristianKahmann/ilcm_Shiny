@@ -1,3 +1,10 @@
+#' observe keyword extraction features
+#' depends on:
+#'   values$Det_KE_stats: current status of keyword extraction
+#'   input$Det_KE_min_freq: minimal frequence for keyword extraction
+#'   input$Det_KE_ngram: ngram for keyword extraction
+#'   values$Det_KE_method: keyword extraction method
+#'   values$Det_KE_data: keyword extraction data
 observe({
   validate(
     need(
@@ -30,7 +37,9 @@ observe({
 })
 
 
-
+#' data table for keyword extraction
+#' depends on:
+#'   values$Det_KE_data: detailed keyword extraction data
 output$Det_KE_table<-DT::renderDataTable({
   datatable(data = values$Det_KE_data,rownames = F,selection="none",extensions = c('Buttons','Responsive'),class = "row-border compact",options=list(dom='Bfrtip',
                                                                                                        buttons = c('copy', 'csv', 'excel', 'print'),
@@ -40,7 +49,12 @@ output$Det_KE_table<-DT::renderDataTable({
 },server=F)
 
 
-
+#' plot keyword extraction data
+#' depends on:
+#'   values$Det_KE_data: keyword extraction data
+#'   input$dimension: selected dimension
+#'   input$Det_KE_n: parameter n for keyword extraction
+#'   
 output$Det_KE_plot<-plotly::renderPlotly({
   validate(
     need(

@@ -1,3 +1,8 @@
+#' vector space representation details:
+#' depends on:
+#'   input$Det_VS_words: vector space - words
+#'   input$Det_VS_n: parameter n for vector space representation
+#'   
 output$vs_similar_table<-DT::renderDataTable({
   validate(
     need(!is.null(input$Det_VS_words),message = FALSE),
@@ -12,7 +17,13 @@ output$vs_similar_table<-DT::renderDataTable({
 
 
 
-
+#' vector space similarity using tsne
+#' depends on:
+#'   input$Det_VS_words: words for vector space representation
+#'   input$Det_VS_n: parameter n for vector space representation 
+#'   values$vs_model: vector space model
+#'   values$vs_tsne: two dimensional reduction of the vector space model using tsne
+#'   
 output$vs_similar_plotly_tsne<-renderPlotly({
   validate(
     need(!is.null(input$Det_VS_words),message = FALSE),
@@ -65,6 +76,12 @@ output$vs_similar_plotly_tsne<-renderPlotly({
   return(p)
 })
 
+#' vector space similarity with PCA
+#' depends on:
+#'   input$Det_VS_words: vector space words
+#'   input$Det_VS_n: parameter n for vector space representation
+#'   values$vs_pca: two dimensional reduction of the vector space model using pca
+#'   
 output$vs_similar_plotly_pca<-renderPlotly({
   validate(
     need(!is.null(input$Det_VS_words),message = FALSE),
@@ -119,7 +136,16 @@ output$vs_similar_plotly_pca<-renderPlotly({
 
 
 #######################linear Substructures###############
-
+#' linear substructures for PCA 
+#' depends on:
+#'   input$Det_VS_linS_words1: substructure for word 1
+#'   values$vs_model: vector space model
+#'   input$Det_VS_linS_words2: substructure for word 2
+#'   input$Det_VS_linS_words3: substructure for word 3
+#'   input$Det_VS_linS_words4: substructure for word 4
+#'   input$Det_VS_linS_words5: substructure for word 5
+#'   values$vs_pca: two dimensional reduction of the vector space model using pca
+#'   
 output$vs_linS_plotly_pca<-renderPlotly({
   validate(
     need(length(input$Det_VS_linS_words1)>1,"Please choose at least two words")
@@ -158,7 +184,16 @@ output$vs_linS_plotly_pca<-renderPlotly({
 })
 
 
-
+#' linear substructures for tsne
+#' depends on: 
+#'   input$Det_VS_linS_words1: linear substructure of word 1
+#'   values$vs_model: vector space model
+#'   input$Det_VS_linS_words2: linear substructure of word 2
+#'   input$Det_VS_linS_words3: linear substructure of word 3
+#'   input$Det_VS_linS_words4: linear substructure of word 4
+#'   input$Det_VS_linS_words5: linear substructure of word 5
+#'   values$vs_tsne: two dimensional reduction of the vector space model using tsne
+#'   
 output$vs_linS_plotly_tsne<-renderPlotly({
   validate(
     need(length(input$Det_VS_linS_words1)>1,"Please choose at least two words")
@@ -200,6 +235,12 @@ output$vs_linS_plotly_tsne<-renderPlotly({
 
 ################arithmetics###############
 
+#' vector space arithmetics
+#' depends on:
+#'   input$Det_VS_arith_words_pos: arithmetics for positive words
+#'   values$vs_model: vector space model
+#'   input$Det_VS_arith_words_neg: arithmetica for negative words
+#'   input$Det_VS_arith_n: arithmetics for parameter n
 output$vs_arithmetics<-DT::renderDataTable({
   validate(
     need(length(input$Det_VS_arith_words_pos)>0,"Please specify at least one word")
