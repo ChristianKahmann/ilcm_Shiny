@@ -1,5 +1,8 @@
 
-#render DE words to export checkbox
+#' render DE words to export checkbox
+#' depends on:
+#'   input$Det_DE_Word: detailed dictionary extraction input-words
+#'   
 output$DE_words_to_export<-renderUI({
   validate(
     need(length(input$Det_DE_Word)>0,message = FALSE)
@@ -9,7 +12,21 @@ output$DE_words_to_export<-renderUI({
 
 
 
-#render DE plot
+#' render DE plot
+#' depends on:
+#'   input$Det_DE_Word: detailed dictionary extraction input-words
+#'   input$Det_DE_REL_ABS: select relative or absolute calculation
+#'   input$Det_DE_Term_Doc: select terms dimension for dictionary extraction (e.g. words)
+#'   values$DE_rel_freqs_day: relative frequency of words per daily intevall
+#'   values$DE_rel_freqs_week: relative frequency of words per weekly intervall
+#'   values$DE_rel_freqs_month: relative frequency of words per monthly intervall
+#'   values$DE_rel_freqs_year:  relative frequency of words per yearly intervall
+#'   values$DE_rel_doc_freqs_day: relative frequency of documents from daily intervall
+#'   values$DE_rel_doc_freqs_week: relativ frequency of documents from weekly intervall
+#'   values$DE_rel_doc_freqs_month: relativ frequency of documents from monthly intervall
+#'   values$DE_rel_doc_freqs_year: relativ frequency of documents from yearly intervall
+#'   values$DE_freq_matrix: frequency matrix 
+#'   
 output$DE_plot<-renderPlotly({
   validate(
     need(length(input$Det_DE_Word)>0,"choose at least one concept")
@@ -115,7 +132,11 @@ output$DE_plot<-renderPlotly({
   return(p)
 })
 
-#link downloadbutton in FE details to the according time series data
+#' link downloadbutton in FE details to the according time series data
+#' depends on:
+#'   values$DE_freq_matrix: frequency matrix
+#'   input$DE_CB_words_to_export: words for export
+#'   
 output$download_DE_frequencies<-downloadHandler(
   filename = function() {
     paste('Time_Series-', Sys.Date(), '.csv', sep='')
@@ -127,7 +148,10 @@ output$download_DE_frequencies<-downloadHandler(
   }
 )  
 
-
+#' render regular expression for words
+#' depends on:
+#'   values$Det_DE_regexp_words: regular expression words
+#'   
 output$Det_DE_regexp_words<-renderUI({
   validate(
     need(!is.null(values$Det_DE_regexp_words),message=F)

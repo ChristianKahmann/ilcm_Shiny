@@ -1,3 +1,32 @@
+#' observe inputs for details in analysis methods
+#' depends on:
+#'   input$dataset: choosen dataset
+#'   values$solr_url: create sorl url
+#'   input$Det_vonin: time marker for the beginning of a process
+#'   input$Det_bisin: time marker for the end of a process
+#'   input$Det_mde1:
+#'   input$Det_mde2:
+#'   input$Det_mde3:
+#'   input$Det_mde4:
+#'   input$Det_mde5:
+#'   input$Det_mde6:
+#'   input$Det_mde7:
+#'   input$Det_mde8:
+#'   input$Det_mde9:
+#'   input$Det_Token: choosen token range
+#'   following values are solr query parameters for calls in search results and timseries
+#'   values$start:
+#'   values$custom:
+#'   values$url:
+#'   values$q:
+#'   values$fq:
+#'   values$fq_init:
+#'   values$numFound:
+#'   values$start:
+#'   values$search:
+#'   values$solr_query
+#'   values$delete_documents
+#'   
 observeEvent(input$Det_action,{
   validate(
     need(length(input$dataset)>0,message=FALSE)
