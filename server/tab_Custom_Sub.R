@@ -1,10 +1,30 @@
 values$Doc_custom<-F
 
+#' render customed input text
+#' depends on: 
+#'   values$Doc_url: document url
 output$custom_inputtext_Sub_UI<-renderUI({
 textAreaInput(inputId = "custom_inputtext_Sub",label = "custom input",value =  values$Doc_url,rows=3)
 })
 
 
+#' observe customed actopn für subcollections
+#' depends on:
+#'   input$custom_action_Sub: customed action for subcollection
+#'   values$custom_inputtext_Sub: customed inputtext for subcollection
+#'    values$Doc_custom: is there a customed document
+#'    values$Doc_sort: sort documents
+#'    values$Doc_start: start document
+#'    values$Doc_url: url for document
+#'    values$Doc_q: document parameter q
+#'    values$Doc_fq: document parameter fq
+#'    values$Doc_fq_init: initialize parameter fq
+#'    values$numFound_Sub: number of found subcollections
+#'    values$Doc_search: search for documents
+#'    values$Doc_solr_query: solr query of documents
+#'    input$custom_inputtext: cutomed inputtext
+#'    values$Doc_delete_documents: deleted documents
+#'    values$Sub_search: search for subcollection
 observeEvent(input$custom_action_Sub,{
   #check wheater solr query is valid and get solq query back
   values$custom_inputtext_Sub<-stringr::str_replace_all(string =input$custom_inputtext_Sub,pattern = " ",replacement = "%20" )

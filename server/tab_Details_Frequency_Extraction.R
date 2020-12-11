@@ -316,7 +316,8 @@ output$Det_FE_most_frequent_words_table<-DT::renderDataTable({
 
 #' wordcloud showing the counts of words per time point(s)
 #' depends on:
-#'   values$Det_FE_most_frequent_words_counts: most frequent words from counts   
+#'   values$Det_FE_most_frequent_words_counts: most frequent words from counts
+#'      
 output$Det_FE_most_frequent_words_wc<-wordcloud2::renderWordcloud2({
   validate(
     need(!is.null(values$Det_FE_most_frequent_words_counts),message=F)

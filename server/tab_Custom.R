@@ -1,4 +1,20 @@
 values$custom<-FALSE
+#' observe all cumstomed actions
+#' depends on:
+#'  values$custom_inputtext: customed input text
+#'  values$sort: sort values
+#'  values$start: start values
+#'  values$url: selected url
+#'  values$q: parameter q
+#'  values$fq: parameter fq
+#'  values$fq_init: initialize parameter fq
+#'  values$numFound: found numbers
+#'  values$start: initiate start
+#'  values$search: search for values
+#'  values$solr_query: solr query
+#'  values$delete_documents: deleted documents
+#'  
+#'  
 observeEvent(input$custom_action,{
   #check wheater solr query is valid and get solq query back
   values$custom_inputtext<-stringr::str_replace_all(string =input$custom_inputtext,pattern = " ",replacement = "%20" )
