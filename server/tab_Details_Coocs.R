@@ -1,4 +1,8 @@
-
+#' details for cooccurrence analysis
+#' depends on:
+#'    values$Details_Data_CO: cooccurrence analysis detailed data
+#'    input$Det_CO_Measure: selected measurement for cooccurrence analysis
+#'    
 observe({
   values$Details_Data_CO
   validate(need(!is.null(input$Det_CO_Measure),message=F))
@@ -21,7 +25,20 @@ observe({
 })
 
 
-#create/recreate coocs_network when update button is clicked
+#' create/recreate coocs_network when update button is clicked
+#' depends on:
+#'   input$Det_CO_Update: update cooccurrence analysis
+#'   input$Det_CO_Word: selected words for cooccurrence analysis
+#'   input$Det_CO_Depth: cooccurrence analysis depth
+#'   input$Det_CO_Charge: cooccurrence analysis charge
+#'   values$coocs_matrix: matrix from cooccurrence analysis
+#'   input$Det_CO_RootLinks: root links from cooccurrence analysis
+#'   input$Det_CO_LeavesLinks: leaves links for cooccurrence analysis
+#'   input$Det_CO_Max_Edges: maximal number if edges from cooccurrence tree
+#'   values$cooc_nodes: all nodes from cooccurrence tree
+#'   values$cooc_edges: all edges from cooccurrence tree
+#'   values$Det_CO_dl_coocs: cooccurrence analysis details
+#'   
 observeEvent(input$Det_CO_Update,{
   #render cooc-network using NetworkD3 library
   #load result matrix and input parameters
@@ -194,7 +211,18 @@ observeEvent(input$Det_CO_Update,{
 })
 
 
-
+#' visualize network for coccurrence analysis
+#' depends on:
+#'   values$cooc_nodes: nodes for cooccurrence
+#'   input$Det_CO_Threshold: threshold of cooccurrence
+#'   values$cooc_edges: edges of cooccurrence
+#'   input$Det_CO_smooth: smooth values for visualization
+#'   input$Det_CO_node_scaling: selected scaling for nodes
+#'   values$name_for_cooc_knk: names for cooccurrences knk 
+#'   input$Det_CO_use_igraph_layout: use an igraph layout
+#'   input$Det_CO_gravity: selected cooccurrence gravity
+#'   input$Det_CO_Layout: selected cooccurrence layout
+#'   
 output$visNetwork_cooc_net<-visNetwork::renderVisNetwork({
   validate(
     need(dim(values$cooc_nodes)[1]>0,message = "please press update Plot"),
@@ -277,7 +305,9 @@ output$visNetwork_cooc_net<-visNetwork::renderVisNetwork({
 })
 
 
-
+#' download cooccurrence matrix
+#' depends on:
+#'   values$Det_CO_dl_coocs: cooccurrence datails
 output$Det_CO_download_coocs<-downloadHandler(
   filename = function() {
     paste('co-occurence_matrix-', Sys.Date(), '.csv', sep='')
@@ -288,7 +318,18 @@ output$Det_CO_download_coocs<-downloadHandler(
   }
 ) 
 
-
+#' create samples of words to render a data table
+#' depends on:
+#'   input$coocs_examples_words: selected example words
+#'   input$coocs_examples_all: all selected examples
+#'   values$cooc_examples_dtm: render example for document term matrix
+#'   input$coocs_examples_k: examples parameter k
+#'   input$coocs_examples_n: examples parameter n
+#'   values$coocs_examples_document_ids: document ids
+#'   values$coocs_examples_texts: text examples
+#'   values$host: selected host
+#'   values$port: selected port
+#'   
 output$cooc_examples_table<-DT::renderDataTable({
   validate(
     need(length(input$coocs_examples_words)>0,"Please choose at least one word")
@@ -358,7 +399,14 @@ output$cooc_examples_table<-DT::renderDataTable({
 })
 
 
-#kwic show documents 
+#' kwic show documents 
+#' depends on:
+#'   input$coocs_kwic_document: kwic documents
+#'   values$coocs_examples_document_ids: examples for document ids
+#'   values$host: selected host
+#'   values$port: selected port
+#'   input$coocs_examples_words: example words for calculation
+#'   
 observeEvent(input$coocs_kwic_document,{
   selected_row<-as.numeric(stringr::str_split(string = input$coocs_kwic_document,pattern = "_",simplify = T)[1,6])
   validate(
@@ -384,7 +432,9 @@ observeEvent(input$coocs_kwic_document,{
 
 
 
-#link downloadbutton for the exampel texts in  co-occurrences  restuls tab
+#' link downloadbutton for the exampel texts in  co-occurrences  restuls tab
+#' depends on:
+#'   values$coocs_examples_texts: example texts for cooccurrence analysis
 output$Det_CO_download_examples<-downloadHandler(
   filename = function() {
     paste('examples-', Sys.Date(), '.csv', sep='')
@@ -395,7 +445,9 @@ output$Det_CO_download_examples<-downloadHandler(
   }
 )  
 
-#link downloadbutton for the top co-occurrecnes in coocs results tab
+#' link downloadbutton for the top co-occurrecnes in coocs results tab
+#' depends on:
+#'   values$coocs_top_dl_dice: top dl for cooccurrence analysis with dice measurement
 output$coocs_download_dice<-downloadHandler(
   filename = function() {
     paste('results-dice_', Sys.Date(), '.csv', sep='')
@@ -406,6 +458,9 @@ output$coocs_download_dice<-downloadHandler(
   }
 )  
 
+#' link downloadbutton for the top co-occurrecnes in coocs results tab
+#' depends on: 
+#'   values$coocs_top_dl_mi: top dl for cooccurrence analysis with mutual information measurement
 output$coocs_download_mi<-downloadHandler(
   filename = function() {
     paste('results-mi_', Sys.Date(), '.csv', sep='')
@@ -415,7 +470,9 @@ output$coocs_download_mi<-downloadHandler(
     write.csv(data, con)
   }
 )  
-
+#' link downloadbutton for the top co-occurrecnes in coocs results tab
+#' depends on: 
+#'   values$coocs_top_dl_log: top dl for cooccurrence analysis with log likelihood measurement
 output$coocs_download_log<-downloadHandler(
   filename = function() {
     paste('results-log_', Sys.Date(), '.csv', sep='')
@@ -426,7 +483,10 @@ output$coocs_download_log<-downloadHandler(
   }
 )  
 
-
+#' example stats for cooccurrence analysis
+#' depends on:
+#'   input$coocs_examples_words: example words
+#'   
 output$coocs_examples_stats<-renderUI({
   validate(
     need(length(input$coocs_examples_words)>0,message=F)
@@ -448,6 +508,17 @@ output$coocs_examples_stats<-renderUI({
 })
 
 
+#' buttom for top cooccurrence presentation
+#' depends on:
+#'   input$tabBox_coocs: values from tab box (clicked or not)
+#'   values$coocs_load_top: load top values
+#'   values$Details_Data_CO: show detailes data for cooccurrence analysis
+#'   values$coocs_dice: select dice measurement
+#'   values$coocs_mi: select mutual information measurement
+#'   values$coocs_log: select log likelihood measurement
+#'   values$coocs_count: select counts as measurement
+#'   values$cooc_examples_dtm: create document term matrix for examples
+#'   values$coocs_load_examples: load examples
 observeEvent(input$tabBox_coocs,{
   if(input$tabBox_coocs=="Top-Co-occurrences"){
     if(values$coocs_load_top==FALSE){
@@ -473,6 +544,14 @@ observeEvent(input$tabBox_coocs,{
   }
 })
 
+#' show top result for cooccurrence with dice measurement
+#' depends on:
+#'   values$coocs_load_top: load top values
+#'   values$coocs_dice: selected dice measurement
+#'   input$coocs_top_word1: top results for word 1
+#'   input$coocs_top_word2: top results for word 2
+#'   input$coocs_top_max: maximal number of top values
+#'   values$coocs_top_dl_dice: detailes result data
 output$coocs_top_dice_table<-DT::renderDataTable({
   validate(need(
     values$coocs_load_top==TRUE,message=F)
@@ -505,6 +584,14 @@ output$coocs_top_dice_table<-DT::renderDataTable({
   datatable(data = data)
 })
 
+#' show top result for cooccurrence with mutual information measurement
+#' depends on:
+#'   values$coocs_load_top: load top values
+#'   values$coocs_mi: selected mutual information measurement
+#'   input$coocs_top_word1: top results for word 1
+#'   input$coocs_top_word2: top results for word 2
+#'   input$coocs_top_max: maximal number of top values
+#'   values$coocs_top_dl_mi: detailes result data
 output$coocs_top_mi_table<-DT::renderDataTable({
   validate(need(
     values$coocs_load_top==TRUE,message=F)
@@ -536,6 +623,14 @@ output$coocs_top_mi_table<-DT::renderDataTable({
   datatable(data = data)
 })
 
+#' show top result for cooccurrence with log likelihood measurement
+#' depends on:
+#'   values$coocs_load_top: load top values
+#'   values$coocs_log: selected log likelihood measurement
+#'   input$coocs_top_word1: top results for word 1
+#'   input$coocs_top_word2: top results for word 2
+#'   input$coocs_top_max: maximal number of top values
+#'   values$coocs_top_dl_log: detailes result data
 output$coocs_top_log_table<-DT::renderDataTable({
   validate(need(
     values$coocs_load_top==TRUE,message=F)
