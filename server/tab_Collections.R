@@ -1,7 +1,11 @@
 
 
 
-#reload avaiable collections
+#' reload avaiable collections
+#' depends on:
+#'  values$coll_saved: saved collection
+#'  input$collections_Reset: confirm to reset collections
+#'  values$num_collections: number of collection
 observe({
   values$coll_saved
   input$collections_Reset
@@ -9,7 +13,11 @@ observe({
     length(list.files("collections/collections/"))
 })
 
-
+#' render collection data table
+#' depends on:
+#'   values$num_collections: current number of collections
+#'   values$collection_names: collection names
+#'   
 output$collections <- DT::renderDataTable({
   validate(
     need(values$num_collections > 0, "No collections found")
@@ -85,10 +93,14 @@ output$collections <- DT::renderDataTable({
   )
 },server = F)
 
+
 proxy_collections = DT::dataTableProxy('collections')
 
 
-#add an reactive value saving the current collection selected
+#' add an reactive value saving the current collection selected
+#' depends on:
+#'   input$collections_rows_selected: selected rows of collections
+#'   values$collection_selected: selected collection
 observe({
   row<-input$collections_rows_selected
   if(is.null(row)){
@@ -102,7 +114,10 @@ observe({
 
 
 
-#if button is clicked delete collection
+#' if button is clicked delete collection
+#' depends on:
+#'   input$delete_button: observe if delete button is pressed
+#'   
 observeEvent(input$delete_button, {
   selectedRow <-
     as.numeric(strsplit(input$delete_button, "_")[[1]][3])
@@ -111,6 +126,13 @@ observeEvent(input$delete_button, {
   }
 })
 
+#' confirm that collection was deleted
+#' depends on:
+#'   input$confirm_delete_coll: recived cofirmation to delete the collection?
+#'   input$delete_button: delete button selected
+#'   values$update_solr_url: update solr url
+#'   values$update_solr_port: update the solr port
+#'   values$num_collections: number of collections
 observeEvent(input$confirm_delete_coll,{
   if(isTRUE(input$confirm_delete_coll)){
     name<-list.files("collections/collections/", full.names = F)[ as.numeric(strsplit(input$delete_button, "_")[[1]][3])]
@@ -144,7 +166,11 @@ observeEvent(input$confirm_delete_coll,{
 }
 )
 
-#if see button is clicked, show time series + other metadata for selected collection
+#' if see button is clicked, show time series + other metadata for selected collection
+#' depends on:
+#'   input$see_button: is see button pressed?
+#'   values$collection_time_series: collection of time series
+#'   values$collection_time_series_name: name of time series
 observeEvent(input$see_button, {
   selectedRow <- as.numeric(strsplit(input$see_button, "_")[[1]][3])
   if(selectedRow>0){
@@ -181,7 +207,12 @@ observeEvent(input$see_button, {
   }
 })
 
-#render time series plot for selected collection
+#' render time series plot for selected collection
+#' depends on:
+#'   values$collection_time_series: time series of collection
+#'   input$Collection_TS_timeintervall: selected time intervall (days, month, years,...)
+#'   values$Collection_TS_dates: dates of selected time series of collection
+#'   
 output$Collection_TS <- renderPlotly({
   validate(need(
     !is.null(values$collection_time_series),
@@ -262,7 +293,9 @@ output$Collection_TS <- renderPlotly({
   return(p)
 })
 
-#render download button for Collection time series andstart download when clicked
+#' render download button for Collection time series andstart download when clicked
+#' depends on:
+#'   values$collection_time_series_name: selected names for time series from collection
 output$Collection_TS_download_dates <- downloadHandler(
   filename = function() {
     paste0(isolate(values$collection_time_series_name), ".csv")
