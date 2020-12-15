@@ -296,6 +296,7 @@ output$Collection_TS <- renderPlotly({
 #' render download button for Collection time series andstart download when clicked
 #' depends on:
 #'   values$collection_time_series_name: selected names for time series from collection
+#'   values$Collection_TS_dates: from time series selected dates
 output$Collection_TS_download_dates <- downloadHandler(
   filename = function() {
     paste0(isolate(values$collection_time_series_name), ".csv")

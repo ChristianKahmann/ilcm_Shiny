@@ -1,5 +1,9 @@
 rv <- reactiveValues(cachedTbl = NULL)
 
+#' render table to show categories
+#' depends on:
+#'   input$categories_number: number if categories
+#'   
 output$tbl <- renderHtable({
 
  
@@ -16,6 +20,9 @@ output$tbl <- renderHtable({
   
 })  
 
+#'  cached table to respond when the button is pressed
+#'  depends on:
+#'    input$actionButtonID: id for action button to add dependencies
 output$tblNonEdit <- renderTable({
   
   #add dependence on button

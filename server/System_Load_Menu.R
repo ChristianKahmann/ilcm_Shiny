@@ -1,5 +1,12 @@
 
-# show select input with the found corpora in the database
+#' show select input with the found corpora in the database
+#' depends on:
+#'   values$import_files_changed: reactive variable that invalidates if the number of files in "data_import_processed_data" changes
+#'   values$host: selected host
+#'   values$db_port: selected data base port
+#'   values$update_datasets_avaiable: update datasets- changes whenever a dataset is successfully imported to the database
+#'   values$datasets_available: stores the available dataset abbreviations
+#'   
 output$datasets_avaiable<-renderUI({
   # invalidate when values$import_filed_changed changes
   # @values$import_files_changed reactive variable that invalidates if the number of files in "data_import_processed_data" changes
@@ -26,7 +33,7 @@ output$datasets_avaiable<-renderUI({
 })
 
 
-# show informations icon in header with current user and app version
+#'  show informations icon in header with current user and app version
 output$dropdown_info<-renderMenu({
   # only show icon when @ values$user is set
   validate(
@@ -47,7 +54,14 @@ output$dropdown_info<-renderMenu({
 
 
 
-#options Modal
+#' options Modal
+#' depends on:
+#'   input$openOptionsModal: open modal options
+#'   values$host: selected host
+#'   values$update_solr_url: update solr url
+#'   values$update_solr_port: update the solr port
+#'   values$datasets_available: available datasets
+#'   values$random_seed: chosen random seet
 observeEvent(input$openOptionsModal, {
   
   showModal(
@@ -183,7 +197,10 @@ observeEvent(input$openOptionsModal, {
   )
 })
 
-#render installed spacy
+#' render installed spacy
+#' depends on:
+#'   values$reload_options_modal: reload modal options
+#'   
 output$options_spacy_installed<-renderUI({
   values$reload_options_modal
   return(tags$em(paste(stringr::str_remove_all(string = stringr::str_split(
@@ -192,7 +209,10 @@ output$options_spacy_installed<-renderUI({
   )
 })
 
-#render spacy languaes which can be installed
+#' render spacy languaes which can be installed
+#' depends on:
+#'   values$reload_options_modal: reload modal options
+#'   
 output$options_add_model_select_UI<-renderUI({
   values$reload_options_modal
   return(selectizeInput(inputId = "options_add_model_select",label = "Available models to be added",options=list(create=T),choices=setdiff(c("en","de","es","fr","it","nl","pt","el","xx"),stringr::str_remove_all(string=stringr::str_split(
@@ -203,7 +223,11 @@ output$options_add_model_select_UI<-renderUI({
 
 
 
-#reindex solr/full import
+#' reindex solr/full import
+#' depends on:
+#'   input$options_update_solr: update options for solr
+#'   values$solr_url: solr url
+#'   
 observeEvent(ignoreNULL = T,input$options_update_solr,{
   #import data to solr
   withBusyIndicatorServer("options_update_solr", {
@@ -220,7 +244,12 @@ observeEvent(ignoreNULL = T,input$options_update_solr,{
 })
 
 
-#ask for confirmation before deleting corpora
+#' ask for confirmation before deleting corpora
+#' depends on:
+#'   input$options_delete_dataset_action: options for the delete dataset action
+#'   input$options_delete_dataset_annotations: options to delete dataset annotations
+#'   input$Options_delete_dataset_select: options to delete selecte dataset
+#'   
 observeEvent(ignoreNULL = T,input$options_delete_dataset_action,{
   if(input$options_delete_dataset_annotations){
     text=paste0("Are you sure you want to delete corpus:",input$Options_delete_dataset_select," including all annotations?")
@@ -234,7 +263,16 @@ observeEvent(ignoreNULL = T,input$options_delete_dataset_action,{
 })
 
 
-#if confirmed delete corpus
+#' if confirmed delete corpus
+#' depends on:
+#'   input$options_delete_dataset_action_confirm: confirm to delete dataset with selected options
+#'   values$host: selected host
+#'   values$db_port: selected data base port
+#'   input$Options_delete_dataset_select: select dataset with chosen options
+#'   input$options_delete_dataset_annotation:option to delete dataset annotations
+#'   values$update_datasets_avaiable: update available datasets
+#'   values$datasets_available: aivailable datasets
+#'   
 observeEvent(ignoreNULL = T,input$options_delete_dataset_action_confirm,{
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
   RMariaDB::dbBegin(conn = mydb)
@@ -306,7 +344,10 @@ observeEvent(ignoreNULL = T,input$options_delete_dataset_action_confirm,{
 
 
 
-#change max file upload size
+#' change max file upload size
+#' depends on:
+#'   input$options_max_size_import: maximum size of import options
+#'   
 observeEvent(ignoreInit = T,input$options_max_size_import,{
   print(input$options_max_size_import)
   config<-readLines("config_file.R")
@@ -315,7 +356,10 @@ observeEvent(ignoreInit = T,input$options_max_size_import,{
   options(shiny.maxRequestSize=input$options_max_size_import*1024^2) 
 })
 
-#change random seed
+#' change random seed
+#' depends on:
+#'   input$options_random_seed: random seed options
+#'    values$random_seed: chosen random seed
 observeEvent(ignoreInit = T,input$options_random_seed,{
   config<-readLines("config_file.R")
   config<-stringr::str_replace_all(string = config,pattern = "^random_seed=.{1,20}$",replacement = paste0("random_seed=",input$options_random_seed))
@@ -325,7 +369,13 @@ observeEvent(ignoreInit = T,input$options_random_seed,{
 
 
 
-#change database connection in values object and config_file.R
+#' change database connection in values object and config_file.R
+#' depends on:
+#'   input$options_database_change: options to chang a data base
+#'   values$host: selected host
+#'   input$options_database_host: options for the host of  data bases
+#'   values$db_port: selected database port
+#'   input$options_database_port: options for a data base port
 observeEvent(ignoreInit = T,input$options_database_change,{
   withBusyIndicatorServer("options_database_change", {
     values$host<-input$options_database_host
@@ -344,7 +394,11 @@ observeEvent(ignoreInit = T,input$options_database_change,{
 
 
 
-#show icon if database connection is working
+#' show icon if database connection is working
+#' depends on:
+#'   values$host: selected host
+#'   values$db_port: selected database port
+#'   
 output$options_database_connected<-renderUI({
   db_valid=FALSE
   try({
@@ -370,7 +424,15 @@ output$options_database_connected<-renderUI({
 
 
 
-#change solr connection in values object and config_file.R
+#' change solr connection in values object and config_file.R
+#' depends on:
+#'   input$options_solr_change: changes in solr options
+#'   values$update_solr_url: update the solr url
+#'   input$options_solr_host: select a host for solr host
+#'   values$update_solr_port: update the solr port
+#'   input$options_solr_port: select a port for solr
+#'   values$solr_url: current solr url 
+#'   
 observeEvent(ignoreInit = T,input$options_solr_change,{
   withBusyIndicatorServer("options_solr_change", {
     values$update_solr_url<-input$options_solr_host
@@ -392,7 +454,10 @@ observeEvent(ignoreInit = T,input$options_solr_change,{
 
 
 
-#show icon if solr connection is working
+#' show icon if solr connection is working
+#' depend on:
+#'   values$solr_url: current solr url
+#'   
 output$options_solr_connected<-renderUI({
   solr_valid=FALSE
   try({
@@ -423,7 +488,12 @@ output$options_solr_connected<-renderUI({
 
 
 
-#install new spacy model
+#' install new spacy model
+#' depends on:
+#'   input$options_add_model: add a new spacy model
+#'   input$options_add_model_select: add a selected model
+#'   values$reload_options_modal: reload options for spacy modal
+#'   
 observeEvent(ignoreInit = T,input$options_add_model,{
   withBusyIndicatorServer("options_add_model", {
     query<-paste0("python -m spacy download ",input$options_add_model_select)
@@ -443,7 +513,12 @@ observeEvent(ignoreInit = T,input$options_add_model,{
 
 
 
-#add users
+#' add users
+#' depends on:
+#'   input$option_create_newuser: option to create a new user
+#'   input$options_newuser_username: new user name
+#'   input$options_newuser_password: new user password
+#'   
 observeEvent(input$option_create_newuser,{
   
   name<-input$options_newuser_username
