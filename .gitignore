@@ -71,6 +71,13 @@ packrat/lib*/
 /data_import/refi/*
 !/data_import/refi/xsd
 /play/*
+/Tutorials/*
+!/Tutorials/.gitkeep
+/collections/vocabularies/*
+!/collections/vocabularies/.gitkeep
+/collections/parameter_settings/Dynamic_Topic_Model/*
+!/collections/parameter_settings/Dynamic_Topic_Model/.gitkeep
+/Tutorials DEval/
 config_file.R
 /global/escape_quotes.R
 /global/task_id_counter.RData
