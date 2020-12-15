@@ -261,7 +261,7 @@ error<-try(expr = {
   dictionary <- corpora_dictionary(docs = texts_from_dtm)
   corpus <- doc2bow(dictionary, texts_from_dtm)
   num_topics<-as.integer(parameters$tm_number_of_topics)
-  mode<-parameters$dtm_mode
+ # mode<-parameters$dtm_mode
   #initialize_lda<-parameters$dtm_initialize_lda
   top_chain_variance<-parameters$dtm_top_chain_variance
   write(x = time_slices,file = "collections/tmp/time_sclices.txt")
@@ -269,7 +269,7 @@ error<-try(expr = {
   reticulate::py_save_object(object = r_to_py(num_topics),filename = "collections/tmp/num_topics")
   reticulate::py_save_object(object = dictionary,filename = "collections/tmp/test_dictionary")
   reticulate::py_save_object(object = r_to_py(as.integer(time_slices)),filename = "collections/tmp/time_slices")
-  reticulate::py_save_object(object = r_to_py(as.character(mode)),filename = "collections/tmp/mode")
+  #reticulate::py_save_object(object = r_to_py(as.character(mode)),filename = "collections/tmp/mode")
   #reticulate::py_save_object(object = r_to_py(initialize_lda),filename = "collections/tmp/initialize_lda")
   reticulate::py_save_object(object = r_to_py(as.numeric(top_chain_variance)),filename = "collections/tmp/top_chain_variance")
   # start python script
