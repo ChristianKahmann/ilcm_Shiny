@@ -90,6 +90,7 @@ error<-try(expr = {
   #calculating dtm
   log_to_file(message = "<b>Step 8/13: Calculating DTM</b>",file = logfile)
   dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
+  meta<-meta[which(meta$id_doc%in%rownames(dtm)),]
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
   #save.image(paste0("data_TM_Pruning_",Sys.Date(),".RData"))
@@ -117,13 +118,12 @@ error<-try(expr = {
   
   
   
-  
+
   #remove empty documents
   log_to_file(message = "<b>Step 10/13: Removing empty documents</b>",file = logfile)
   empty<-which(Matrix::rowSums(dtm)==0)
   if(length(empty)>0){
     dtm<-dtm[-empty,]
-    documents<-documents[-empty,]
     documents_original<-documents_original[-empty,]
     info[[6]]<-data.frame(info[[6]][-empty,1],stringsAsFactors = F)
     meta<-meta[-empty,]
@@ -145,6 +145,9 @@ error<-try(expr = {
   
   log_to_file(message = "<b>Step 11/13: Create Time Slices</b>",file = logfile)
   dates<-meta$date
+  if(parameters$dtm_Date_Type=="Decade"){
+    dates<-paste0(substr(dates,0,3),"0")
+  }
   if(parameters$dtm_Date_Type=="Year"){
     dates<-substr(dates,0,4)
   }
@@ -164,50 +167,75 @@ error<-try(expr = {
   if(parameters$dtm_split_how=="By Date"){
     n<-parameters$dtm_Date_n
     for (i in 1:ceiling(length(unique_dates)/n)){
-      date_start<-unique_dates[i*n]
-      date_end<-unique_dates[min(length(unique_dates),(((i+1)*n)-1))]
+      date_start<-unique_dates[(((i-1)*n)+1)]
+      date_end<-unique_dates[min(length(unique_dates),(((i)*n)))]
       if(n==1){
         time_slice_names<-c(time_slice_names,date_start)
       }
       else{
-        time_slice_names<-c(time_slice_names,paste0(date_start," - ",date_end))
+        if(date_start==date_end){
+          time_slice_names<-c(time_slice_names,date_start)
+        }
+        else{
+          time_slice_names<-c(time_slice_names,paste0(date_start," - ",date_end))
+        }
+        
       }
-      time_slices<-c(time_slices,length(which(dates%in%unique_dates[(i*n):min(length(unique_dates),(((i+1)*n)-1))])))
-      doc_belongings_to_time_slices[which(dates%in%unique_dates[(i*n):min(length(unique_dates),(((i+1)*n)-1))])]<-i
+      time_slices<-c(time_slices,length(which(dates%in%unique_dates[(((i-1)*n)+1):min(length(unique_dates),(((i)*n)))])))
+      doc_belongings_to_time_slices[which(dates%in%unique_dates[(((i-1)*n)+1):min(length(unique_dates),(((i)*n)))])]<-i
     }
   }
   else{
     n<-parameters$dtm_chunksize
-    opt_chunk_size<-nrow(dtm)/n
+    if(n>length(unique_dates)){
+      log_to_file(message = "&emsp;<b style='color:red'>&#10008; The number of chunks is bigger than the number of available dates.</b>",logfile)
+      stop("Number of Chunks bigger than number of unique dates")
+    }
     dates_table<-data.frame(table(dates),stringsAsFactors = F)
-    count=1
-    for(i in 1:n){
-      if(i==n){
-        doc_belongings_to_time_slices[which(doc_belongings_to_time_slices==0)]<-i
-      }
-      else{
-        min_date<-unique_dates[count]
-        repeat{
-          doc_belongings_to_time_slices[which(dates==unique_dates[count])]<-i
-          diff_if_stop=abs(opt_chunk_size-length(which(doc_belongings_to_time_slices==i)))
-          diff_if_add_one_more=abs(opt_chunk_size-(length(which(doc_belongings_to_time_slices==i))+length(which(dates==unique_dates[count+1]))))
-          count=count+1
-          if(diff_if_add_one_more>diff_if_stop){
-            max_date<-unique_dates[count-1]
-            time_slice_names<-c(time_slice_names,paste(min_date,"-",max_date))
-            break
-          }
+    dates_table<-data.frame(min_date=dates_table$dates,max_date=dates_table$dates,count=dates_table$Freq,all_dates=as.character(dates_table$dates),stringsAsFactors = F)
+    if(nrow(dates_table)>n){
+      repeat{
+        min<-which.min(unlist(lapply(1:(nrow(dates_table)-1),FUN = function(x){
+          sum(as.numeric(dates_table$count[c(x,(x+1))]))
+        })
+        )
+        )
+        ind<-c(min,(min+1))
+        min_date<-min(as.character(dates_table$min_date[ind]))
+        max_date<-max(as.character(dates_table$max_date[ind]))
+        count_new<-sum(as.numeric(dates_table$count[ind]))
+        all_dates_in_this_chunk<-paste0(unique(union(dates_table$all_dates[ind[1]],dates_table$all_dates[ind[2]])),collapse = ",")
+        dates_table<-rbind(dates_table,c(min_date,max_date,count_new,all_dates_in_this_chunk))
+        dates_table<-dates_table[-ind,]
+        dates_table<-dates_table[order(dates_table$min_date,decreasing = F),]
+        if(nrow(dates_table)==n){
+          break
         }
-        opt_chunk_size<-length(which(doc_belongings_to_time_slices==0))/(n-i)
       }
     }
-    time_slices <- as.vector(table(doc_belongings_to_time_slices)) 
-    
+    time_slices<-as.numeric(dates_table$count)
+    time_slice_names<-unlist(lapply(X = 1:nrow(dates_table),FUN = function(x){
+      min_date<-as.character(dates_table$min_date[x])
+      max_date<-as.character(dates_table$max_date[x])
+      if(min_date==max_date){
+        return(max_date) 
+      }
+      else{
+        return(paste(min_date,"-",max_date))
+      }
+    })
+    )
+    for(i in 1:nrow(dates_table)){
+      doc_belongings_to_time_slices[which(dates%in%stringr::str_split(string = dates_table$all_dates[i],pattern = ",",simplify = T))]<-i
+    }
     
   }
+  time_slice_names<-paste0(time_slice_names," (",time_slices,")")
   
   log_to_file(message = paste0("<b style='color:green'> ✔ </b>  Created ",length(time_slices)," Time Slices with an average number of documents per time slice of: ",
                                round(mean(time_slices),digits = 2),"+-",round(sd(time_slices),digits = 2)),logfile)  
+  
+  
   
   #calculate Dynamic Topic Model
   log_to_file(message = "<b>Step 12/13: Calcualte Dynamic Topic Model</b>",file = logfile)
@@ -229,14 +257,21 @@ error<-try(expr = {
     texts_from_dtm[[i]]<-text
   }
   
+
   dictionary <- corpora_dictionary(docs = texts_from_dtm)
   corpus <- doc2bow(dictionary, texts_from_dtm)
   num_topics<-as.integer(parameters$tm_number_of_topics)
+  mode<-parameters$dtm_mode
+  #initialize_lda<-parameters$dtm_initialize_lda
+  top_chain_variance<-parameters$dtm_top_chain_variance
   write(x = time_slices,file = "collections/tmp/time_sclices.txt")
   reticulate::py_save_object(object = corpus,filename = "collections/tmp/test_corpus")
   reticulate::py_save_object(object = r_to_py(num_topics),filename = "collections/tmp/num_topics")
   reticulate::py_save_object(object = dictionary,filename = "collections/tmp/test_dictionary")
   reticulate::py_save_object(object = r_to_py(as.integer(time_slices)),filename = "collections/tmp/time_slices")
+  reticulate::py_save_object(object = r_to_py(as.character(mode)),filename = "collections/tmp/mode")
+  #reticulate::py_save_object(object = r_to_py(initialize_lda),filename = "collections/tmp/initialize_lda")
+  reticulate::py_save_object(object = r_to_py(as.numeric(top_chain_variance)),filename = "collections/tmp/top_chain_variance")
   # start python script
   reticulate::source_python(file = "global/run_dtm.py")
   
@@ -250,6 +285,9 @@ error<-try(expr = {
   results_additional$time_slices<-time_slices
   results_additional$doc_belongings_to_time_slices<-doc_belongings_to_time_slices
   results_additional$time_slice_names<-time_slice_names
+  log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
+  
+  
   #Saving results
   log_to_file(message = "<b>Step 13/13: Saving results</b>",file = logfile)
   lang<-db_data$language

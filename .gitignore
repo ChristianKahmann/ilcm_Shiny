@@ -60,6 +60,8 @@ packrat/lib*/
 /collections/results/volatility-analysis/*
 !/collections/results/volatility-analysis/.gitkeep
 /collections/results/syntactic-parsing/*
+!/collections/results/dynamic-topic-model/.gitkeep
+/collections/results/dynamic-topic-model/*
 !/collections/results/syntactic-parsing/.gitkeep
 /collections/tmp/*  
 !/collections/tmp/refi/.gitkeep

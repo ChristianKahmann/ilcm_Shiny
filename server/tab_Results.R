@@ -10,6 +10,7 @@ source(file.path("server","tab_Results_Vecto.R"),local = T)$value
 source(file.path("server","tab_Results_Deduplication.R"),local = T)$value
 source(file.path("server","tab_Results_Keyword_Extraction.R"),local = T)$value
 source(file.path("server","tab_Results_Syntactic_Parsing.R"),local = T)$value
+source(file.path("server","tab_Results_Dynamic_Topic_Model.R"),local = T)$value
 
 #' reload results if reload button is clicked
 #' depends on:
@@ -25,6 +26,7 @@ source(file.path("server","tab_Results_Syntactic_Parsing.R"),local = T)$value
 #'   values$reload_deduplication_result: reload document deduplication result list
 #'   values$reload_keyword_result: reload keyword extraction result list
 #'   values$reload_parsing_result: reload syntactic parsing
+#'   values$reload_dynamic_topic_result: reload results for dynamic topic models
 observeEvent(input$Results_Reset,{
   values$reload_volat_result<-TRUE 
   values$reload_coocs_result<-TRUE 
@@ -38,6 +40,7 @@ observeEvent(input$Results_Reset,{
   values$reload_deduplication_result<-TRUE
   values$reload_keyword_result<-TRUE
   values$reload_parsing_result<-TRUE
+  values$reload_dynamic_topic_result<-TRUE
 }
 )
 

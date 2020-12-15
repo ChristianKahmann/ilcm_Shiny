@@ -355,7 +355,16 @@ output$Analysis_Parameter_DTM<-renderUI({
                                     )
                                 )
                        ),
-                       
+                       # column(2,
+                       #        selectInput(inputId = "DTM_Mode",choices=c("fit","time"),multiple = F,label="Mode")%>%
+                       #          shinyInput_label_embed(
+                       #            shiny_iconlink() %>%
+                       #              bs_embed_popover(
+                       #                title = "Controls the mode of the mode: ‘fit’ is for training, ‘time’ for analyzing documents through time according to a DTM, basically a held out set.",
+                       #                placement = "right"
+                       #              )
+                       #          )
+                       # ),
                        
                        column(2,
                               selectInput(inputId = "DTM_Date_Split_How",label = "How to split the dates?",choices=c("By Date","Automatic Chunking"))%>%
@@ -380,7 +389,7 @@ output$Analysis_Parameter_DTM<-renderUI({
                                                  )
                               ),
                               conditionalPanel(condition = 'input.DTM_Date_Split_How=="By Date"',
-                                               selectInput(inputId = "DTM_ByDate_Type",label="Time Intervall",choices=c("Year","Month","Week","Day"))%>%
+                                               selectInput(inputId = "DTM_ByDate_Type",label="Time Intervall",choices=c("Decade","Year","Month","Week","Day"),selected="Year")%>%
                                                  shinyInput_label_embed(
                                                    shiny_iconlink() %>%
                                                      bs_embed_popover(
@@ -399,8 +408,9 @@ output$Analysis_Parameter_DTM<-renderUI({
                               )
                               
                        )
+                       
                      )
-                     
+                  
                      
     ),
     bsButton(inputId = "DTM_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
@@ -595,7 +605,7 @@ observeEvent(input$DTM_Submit_Script,{
                      fixed_vocab=input$DTM_fixed_vocab,
                      tm_number_of_topics=input$DTM_number_of_topics,
                      tm_alpha=input$DTM_alpha,
-                     dtm_chain_vairance=input$DTM_chain_variance,
+                     dtm_top_chain_variance=input$DTM_chain_variance,
                      dtm_split_how=input$DTM_Date_Split_How,
                      dtm_chunksize=input$DTM_Chunksize,
                      dtm_Date_Type=input$DTM_ByDate_Type,
@@ -756,7 +766,7 @@ observeEvent(input$DTM_pruning_continue,ignoreInit = T,{
                    fixed_vocab=input$DTM_fixed_vocab,
                    tm_number_of_topics=input$DTM_number_of_topics,
                    tm_alpha=input$DTM_alpha,
-                   dtm_chain_vairance=input$DTM_chain_variance,
+                   dtm_top_chain_variance=input$DTM_chain_variance,
                    dtm_split_how=input$DTM_Date_Split_How,
                    dtm_chunksize=input$DTM_Chunksize,
                    dtm_Date_Type=input$DTM_ByDate_Type,

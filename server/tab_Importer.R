@@ -942,7 +942,7 @@ output$Import_csv_metadata_names_warning<-renderUI({
     need(values$Import_csv_meta_complete[1,"dataset"]!="",message=F),
     #need(any(c(input$Import_csv_mde1,input$Import_csv_mde2,input$Import_csv_mde3,input$Import_csv_mde4,input$Import_csv_mde5,input$Import_csv_mde6,input$Import_csv_mde7,input$Import_csv_mde8,input$Import_csv_mde9)!="not required"),message=F),
     need(!is.null(values$Import_csv_metadatafields),message=F),
-    need(dim(values$Import_csv_metadatafields)[1]>0,message = "This dataset is not used yes. Feel free to specify your metadata")
+    need(dim(values$Import_csv_metadatafields)[1]>0,message = "This dataset is not used yet. Feel free to specify your metadata")
   )
   
   data_db<-values$Import_csv_metadatafields[1,which(!is.na(values$Import_csv_metadatafields))]
@@ -950,7 +950,7 @@ output$Import_csv_metadata_names_warning<-renderUI({
   data_import<-data.frame(t(c(input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
   colnames(data_import)<-c("mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
   data_import<-data_import[1,which(c(input$Import_csv_mde1,input$Import_csv_mde2,input$Import_csv_mde3,input$Import_csv_mde4,input$Import_csv_mde5,input$Import_csv_mde6,input$Import_csv_mde7,input$Import_csv_mde8,input$Import_csv_mde9)!="not required"),drop=F]
-  data<-rbind.fill(data_db,data_import)
+  data<-plyr::rbind.fill(data_db,data_import)
   colors<-matrix(c(0),dim(data)[1],dim(data)[2])
   #get colors for matching mde's
   if(dim(data)[2]>0){
@@ -1838,7 +1838,7 @@ output$Import_mtf_metadata_names_warning<-renderUI({
     need(values$Import_mtf_meta_complete[1,"dataset"]!="",message=F),
     #need(any(c(input$Import_csv_mde1,input$Import_csv_mde2,input$Import_csv_mde3,input$Import_csv_mde4,input$Import_csv_mde5,input$Import_csv_mde6,input$Import_csv_mde7,input$Import_csv_mde8,input$Import_csv_mde9)!="not required"),message=F),
     need(!is.null(values$Import_mtf_metadatafields),message=F),
-    need(dim(values$Import_mtf_metadatafields)[1]>0,message = "This dataset is not used yes. Feel free to specify your metadata")
+    need(dim(values$Import_mtf_metadatafields)[1]>0,message = "This dataset is not used yet. Feel free to specify your metadata")
   )
   
   data_db<-values$Import_mtf_metadatafields[1,which(!is.na(values$Import_mtf_metadatafields))]
@@ -1846,7 +1846,7 @@ output$Import_mtf_metadata_names_warning<-renderUI({
   data_import<-data.frame(t(c(input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,input$UI_Import_name_mde6_mtf,input$UI_Import_name_mde7_mtf,input$UI_Import_name_mde8_mtf,input$UI_Import_name_mde9_mtf)))
   colnames(data_import)<-c("mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
   data_import<-data_import[1,which(c(input$Import_mtf_mde1,input$Import_mtf_mde2,input$Import_mtf_mde3,input$Import_mtf_mde4,input$Import_mtf_mde5,input$Import_mtf_mde6,input$Import_mtf_mde7,input$Import_mtf_mde8,input$Import_mtf_mde9)!="not required"),drop=F]
-  data<-rbind.fill(data_db,data_import)
+  data<-plyr::rbind.fill(data_db,data_import)
   colors<-matrix(c(0),dim(data)[1],dim(data)[2])
   #get colors for matching mde's
   if(dim(data)[2]>0){

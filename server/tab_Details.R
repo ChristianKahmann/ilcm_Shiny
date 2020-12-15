@@ -23,6 +23,34 @@ output$details_parameter<-renderUI({
         )
       )
     }
+    # Parameters for Dynamic Topic Model Visualization
+    if(values$Details_Analysis=="DTM"){
+      load(paste0(values$Details_Data_DTM,"/data_TM.RData"))
+      load(paste0(values$Details_Data_DTM,"/meta_TM.RData"))
+      values$dtm_results<-results
+      values$dtm_meta<-meta
+      values$dtm_results_additional<-results_additional
+      #values$Det_DTM_topic_importances<-NULL
+      return(
+        tagList(
+          conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='LDA-Vis'",
+                           selectInput(inputId = "Det_DTM_LDAvis_n",label = "Select Time Stamp to analyze",choices=setNames(nm = results_additional$time_slice_names,
+                                                                                                                            object = 1:length(results)))
+          ),
+          conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Topic Dynamics over Time'",
+                           sliderInput(inputId = "Det_DTM_topic_dynamic_lambda",label = "Lambda:",min=0,max=1,value=0.5,step=0.1),
+                           sliderInput(inputId = "Det_DTM_topic_dynamic_topic",label = "Topic:",min=1,max=nrow(results[[1]][[2]]),step=1,value=1),
+                           numericInput(inputId = "Det_DTM_topic_dynamic_number_of_words",label = "Number of words:",min=1,max=length(results[[1]][[5]]),value=10,step=1),
+                        
+                       
+          ),
+          conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Word Importance'",
+                           selectizeInput(inputId = "Det_DTM_word_importance_Words",label="Words:",choices=NULL,multiple=T),
+                           sliderInput(inputId = "Det_DTM_word_importance_topic",label = "Topic:",min=1,max=nrow(results[[1]][[2]]),step=1,value=1)
+          )
+        )
+      )
+    }
     # Parameters for Keyword Extraction Visualization
     if(values$Details_Analysis=="KE"){
       load(paste0(values$Details_Data_KE,"/stats.RData"))
@@ -1255,6 +1283,43 @@ output$details_visu<-renderUI({
         )
       )
     }
+    if(values$Details_Analysis=="DTM"){
+      vocab<-values$dtm_results[[1]][[5]]
+      updateSelectizeInput(session = session,inputId = "Det_DTM_word_importance_Words",server = T,choices = vocab)
+      return(
+        tagList(
+          tabBox(id="tabBox_dynamic_topic_model",width=12,
+                 tabPanel("LDA-Vis",
+                          #use the d3.js from ldavis library
+                          tags$script(src="d3.v3.js"),
+                          LDAvis::visOutput('Det_DTM_LDAvis')%>%
+                            withSpinner()
+                 ),
+                 tabPanel("Topic Dynamics over Time", 
+                          tags$br(),
+                          DT::dataTableOutput(outputId = "Det_DTM_dynamic_table")%>%
+                            withSpinner(),
+                          tags$br(),
+                          uiOutput(outputId = "Det_DTM_dynamic_wordcloud_UI")
+                          
+                 ),
+                 tabPanel("Topic Importance over Time", 
+                          tags$br(),
+                          plotlyOutput(outputId = "Det_DTM_importance_plot")%>%
+                            withSpinner(),
+                          tags$br(),
+                          plotlyOutput(outputId = "Det_DTM_importance_scatter_plot")%>%
+                            withSpinner(),
+                 ),
+                 tabPanel("Word Importance", 
+                          tags$br(),
+                          plotlyOutput(outputId = "Det_DTM_word_importance_plot")%>%
+                            withSpinner()
+                 )
+          )
+        )
+      )
+    }
     if(values$Details_Analysis=="SP"){
       validate(
         need(
@@ -1450,13 +1515,13 @@ source(file.path("server","tab_Details_Vector.R"),local = T)$value
 source(file.path("server","tab_Details_Deduplication.R"),local = T)$value
 source(file.path("server","tab_Details_Keyword_Extraction.R"),local = T)$value
 source(file.path("server","tab_Details_Syntactic_Parsing.R"),local = T)$value
-
+source(file.path("server","tab_Details_Dynamic_Topic_Model.R"),local = T)$value
 
 
 
 outputOptions(output,"details_visu",suspendWhenHidden=FALSE)
 outputOptions(output,"TM_LDAvis",suspendWhenHidden=FALSE)
-
+outputOptions(output,"Det_DTM_LDAvis",suspendWhenHidden=FALSE)
 
 
 
