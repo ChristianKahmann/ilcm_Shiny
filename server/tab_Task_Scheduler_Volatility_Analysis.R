@@ -1,14 +1,30 @@
 
-#render the parameter set for volatility analysis
+#' render the parameter set for volatility analysis
 output$Analysis_Parameter_VA<-renderUI({
   tagList(
     tags$hr(),
     #standard parameters
     fluidRow(
+      column(2,
+             checkboxInput(inputId="VA_use_fixed_vocab",label="use fixed vocabulary?",value=F)   %>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Use an already existing vocabulary instead of performing a parameterized preprocessing. Vocabularies can be added and adjusted in Scripts > Vocabularies.", placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             conditionalPanel(condition = 'input.VA_use_fixed_vocab==true',
+                              selectInput(inputId="VA_fixed_vocab",label="found vocabularies",choices=list.files("collections/vocabularies/",full.names = F),multiple=F)
+             )
+      )
+    ),
+    fluidRow(
       column(1,
              selectInput(inputId = "VA_baseform",label = "Baseform Reduction",choices = c("lemma","stemming","none"),selected = "none")#,
              #shinyBS::bsPopover(id = "VA_baseform", title = "Specify whether and how to do baseform reduction. The options are stemming, lemmatization or no baseorm reduction.",
-            #                    content = '<a href="https://www.google.com/">Google Homepage</a>',placement = "right",trigger = "hover",list(container = "body"))
+             #                    content = '<a href="https://www.google.com/">Google Homepage</a>',placement = "right",trigger = "hover",list(container = "body"))
              %>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -17,14 +33,6 @@ output$Analysis_Parameter_VA<-renderUI({
                    )
                )
       ),
-      column(2,
-             sliderInput(inputId = "VA_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
-                   ,html=T)
-               )),
       column(1,
              selectInput(inputId = "VA_ngram",label = "N-grams",choices = c(1,2,3),selected = 1,multiple = T)%>%
                shinyInput_label_embed(
@@ -34,33 +42,39 @@ output$Analysis_Parameter_VA<-renderUI({
                    )
                )),
       column(2,
-             textInput(inputId = "VA_remove_custom",label = HTML("Remove custom words"),placeholder ="Add words (Seperated by ,)")%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Delete specific words from the analysis. Seperate them with ','.", placement = "right"
-                   )
-               )
+             conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                              sliderInput(inputId = "VA_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
+                                      ,html=T)
+                                ))
       ),
       column(2,
-             textInput(inputId = "VA_keep_custom",label = HTML("Keep custom words"),placeholder ="Add words (Seperated by ,)")%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Keep specific words in the analysis. Seperate them with ','. If both custom words and whitelist are specified, they will be merged together.", placement = "right"
-                   )
-               )
+             conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                              textInput(inputId = "VA_remove_custom",label = HTML("Remove custom words"),placeholder ="Add words (Seperated by ,)")%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Delete specific words from the analysis. Seperate them with ','.", placement = "right"
+                                    )
+                                )
+             )
+      ),
+      column(2,
+             conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                              textInput(inputId = "VA_keep_custom",label = HTML("Keep custom words"),placeholder ="Add words (Seperated by ,)")%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Keep specific words in the analysis. Seperate them with ','. If both custom words and whitelist are specified, they will be merged together.", placement = "right"
+                                    )
+                                )
+             )
       )
     ),
     fluidRow(
-      column(1,
-             checkboxInput(inputId = "VA_remove_stopwords",label = "Remove Stopwords",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
-                   )
-               )),
       column(1,
              checkboxInput(inputId = "VA_lowercase",label = "Transform tokens to lowercase?",value = T)%>%
                shinyInput_label_embed(
@@ -70,37 +84,55 @@ output$Analysis_Parameter_VA<-renderUI({
                    )
                )),
       column(1,
-             checkboxInput(inputId = "VA_remove_numbers",label = "Remove Numbers?",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Remove types which consist of numbers only from the analysis.", placement = "bottom"
-                   )
-               )),
+             conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                              checkboxInput(inputId = "VA_remove_stopwords",label = "Remove Stopwords",value = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
+                                    )
+                                )
+             )),
       column(1,
-             checkboxInput(inputId = "VA_remove_numbers_all",label = "Remove everything containing a number number?",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Remove words which are composed of at least one number.", placement = "right"
-                   )
-               )),
+             conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                              checkboxInput(inputId = "VA_remove_numbers",label = "Remove Numbers?",value = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Remove types which consist of numbers only from the analysis.", placement = "bottom"
+                                    )
+                                )
+             )),
       column(1,
-             checkboxInput(inputId = "VA_remove_punctuation",label = "Remove Punctuation?",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Remove words, which reflect punctuation from the analysis.", placement = "right"
-                   )
-               )),
+             conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                              checkboxInput(inputId = "VA_remove_numbers_all",label = "Remove everything containing a number number?",value = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Remove words which are composed of at least one number.", placement = "right"
+                                    )
+                                )
+             )),
       column(1,
-             checkboxInput(inputId = "VA_remove_hyphenation",label = "Remove Hyphenation?",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Remove words, which reflect hyphens from the analysis.", placement = "right"
-                   )
-               )),
+             conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                              checkboxInput(inputId = "VA_remove_punctuation",label = "Remove Punctuation?",value = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Remove words, which reflect punctuation from the analysis.", placement = "right"
+                                    )
+                                )
+             )),
+      column(1,
+             conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                              checkboxInput(inputId = "VA_remove_hyphenation",label = "Remove Hyphenation?",value = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Remove words, which reflect hyphens from the analysis.", placement = "right"
+                                    )
+                                )
+             )),
       column(1,
              checkboxInput(inputId = "VA_consolidate_entities",label = "Consolidate Entities?",value = F)%>%
                shinyInput_label_embed(
@@ -110,144 +142,141 @@ output$Analysis_Parameter_VA<-renderUI({
                    )
                ))
     ),
-    fluidRow(
-      column(1,
-             checkboxInput(inputId = "VA_use_custom_blacklist",label = "use custom blacklist?",value = F)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Use one of the specified blacklists to remove a set of words from the analysis.", placement = "right"
-                   )
-               )
-      ),
-      column(2,
-             conditionalPanel(condition = "input.VA_use_custom_blacklist==true",
-                              uiOutput(outputId = "VA_blacklist_UI")
-             )
-      ),
-      column(1,
-             checkboxInput(inputId = "VA_use_custom_whitelist",label = "use custom whitelist?",value = F)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Use of the specified whitelists to protect a set of words from the removal during the pre-processing or to calculate the analysis for these words exclusivly.", placement = "right"
-                   )
-               )
-      ),
-      column(2,
-             conditionalPanel(condition = "input.VA_use_custom_whitelist==true",
-                              uiOutput(outputId = "VA_whitelist_UI")
-             )
-      )
-    ),
-    fluidRow(
-      conditionalPanel(condition = "input.VA_use_custom_whitelist==true || input.VA_keep_custom.length>=1",
-                       tags$br(),
-                       tags$h5("Whitelist Options:"),
+    conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                     fluidRow(
                        column(1,
-                              checkboxInput(inputId = "VA_whitelist_only",label = "Exclude all words apart from the whitelist entries",value = FALSE)%>%
+                              checkboxInput(inputId = "VA_use_custom_blacklist",label = "use custom blacklist?",value = F)%>%
                                 shinyInput_label_embed(
                                   shiny_iconlink() %>%
                                     bs_embed_popover(
-                                      title = "Should all words apart from the entries in the whitelist be excluded from the analysis?", placement = "right"
+                                      title = "Use one of the specified blacklists to remove a set of words from the analysis.", placement = "right"
                                     )
                                 )
                        ),
                        column(2,
-                              checkboxInput(inputId = "VA_whitelist_only_results",label = "Volatility calculation for whitelist terms only",value = FALSE)%>%
+                              uiOutput(outputId = "VA_blacklist_UI")
+                       ),
+                       column(1,
+                              checkboxInput(inputId = "VA_use_custom_whitelist",label = "use custom whitelist?",value = F)%>%
                                 shinyInput_label_embed(
                                   shiny_iconlink() %>%
                                     bs_embed_popover(
-                                      title = "Use regular pre-processing but calculate the context volatility only for those words in the whitelist.", placement = "right"
+                                      title = "Use of the specified whitelists to protect a set of words from the removal during the pre-processing or to calculate the analysis for these words exclusivly.", placement = "right"
                                     )
                                 )
                        ),
-                       column(1,
-                              conditionalPanel(condition = "(input.VA_use_custom_whitelist==true || input.VA_keep_custom.length>=1) && (input.VA_ngram.includes('2') || input.VA_ngram.includes('3'))",
-                                               checkboxInput(inputId = "VA_whitelist_expand",label = "Expand whitelist?",value = FALSE)%>%
+                       column(2,
+                              uiOutput(outputId = "VA_whitelist_UI")
+                       )
+                     ),
+                     fluidRow(
+                       conditionalPanel(condition = "input.VA_use_custom_whitelist==true || input.VA_keep_custom.length>=1",
+                                        tags$br(),
+                                        tags$h5("Whitelist Options:"),
+                                        column(1,
+                                               checkboxInput(inputId = "VA_whitelist_only",label = "Exclude all words apart from the whitelist entries",value = FALSE)%>%
                                                  shinyInput_label_embed(
                                                    shiny_iconlink() %>%
                                                      bs_embed_popover(
-                                                       title = "Should the words whitelist be expaned using n-grams?", placement = "right"
+                                                       title = "Should all words apart from the entries in the whitelist be excluded from the analysis?", placement = "right"
                                                      )
                                                  )
-                              )  
-                              
+                                        ),
+                                        column(2,
+                                               checkboxInput(inputId = "VA_whitelist_only_results",label = "Volatility calculation for whitelist terms only",value = FALSE)%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "Use regular pre-processing but calculate the context volatility only for those words in the whitelist.", placement = "right"
+                                                     )
+                                                 )
+                                        ),
+                                        column(1,
+                                               conditionalPanel(condition = "(input.VA_use_custom_whitelist==true || input.VA_keep_custom.length>=1) && (input.VA_ngram.includes('2') || input.VA_ngram.includes('3'))",
+                                                                checkboxInput(inputId = "VA_whitelist_expand",label = "Expand whitelist?",value = FALSE)%>%
+                                                                  shinyInput_label_embed(
+                                                                    shiny_iconlink() %>%
+                                                                      bs_embed_popover(
+                                                                        title = "Should the words whitelist be expaned using n-grams?", placement = "right"
+                                                                      )
+                                                                  )
+                                               )  
+                                               
+                                        )
                        )
-      )
-    ),
-    tags$hr(),
-    tags$h4("Pruning"),
-    fluidRow(
-      column(1,
-             tags$div(
-               selectInput(inputId = "VA_termfreq_type",label = "term frequency type",choices = c("count","prop","rank","quantile"),multiple = F,selected = "count")%>%
-                 shinyInput_label_embed(
-                   shiny_iconlink() %>%
-                     bs_embed_popover(
-                       title = "Remove words from the analysis that exhibit a specified lower and/or upper bound of occurrences.
+                     ),
+                     tags$hr(),
+                     tags$h4("Pruning"),
+                     fluidRow(
+                       column(1,
+                              tags$div(
+                                selectInput(inputId = "VA_termfreq_type",label = "term frequency type",choices = c("count","prop","rank","quantile"),multiple = F,selected = "count")%>%
+                                  shinyInput_label_embed(
+                                    shiny_iconlink() %>%
+                                      bs_embed_popover(
+                                        title = "Remove words from the analysis that exhibit a specified lower and/or upper bound of occurrences.
                                       These bound can be specified by a explicit number of occurrences (count based), by setting a probability (prob),
                                       by using a rank to keep just words within a certain range of occurrence ranks or by specifying a quantile to cut of.",
-                       placement = "right",
-                       html="true"
-                     )
-                 )
-             )
-      ),
-      column(2,
-             tags$br(),
-             conditionalPanel(condition = 'input.VA_termfreq_type=="count"',
-                              numericInput(inputId = "VA_min_termfreq_c",label = "min. term frequency",min = 0,step = 1,value=NULL),
-                              numericInput(inputId = "VA_max_termfreq_c",label = "max. term frequency",min = 1,step = 1,value=NULL)
-             ),
-             conditionalPanel(condition = 'input.VA_termfreq_type=="prop"',
-                              numericInput(inputId = "VA_min_termfreq_p",label = "min. term probability",min = 0,step = 0.01,max = 1,value=NULL),
-                              numericInput(inputId = "VA_max_termfreq_p",label = "max. term probability",min = 0.001,step = 0.01,max = 1,value=NULL)
-             ),
-             conditionalPanel(condition = 'input.VA_termfreq_type=="rank"',
-                              numericInput(inputId = "VA_min_termfreq_r",label = "min. term rank",min = 1,step = 1,value=NULL),
-                              numericInput(inputId = "VA_max_termfreq_r",label = "max. term rank",min = 1,step = 1,value=NULL)
-             ),
-             conditionalPanel(condition = 'input.VA_termfreq_type=="quantile"',
-                              numericInput(inputId = "VA_min_termfreq_q",label = "min. term quantile",min = 0,max = 1,step = 0.25,value=NULL),
-                              numericInput(inputId = "VA_max_termfreq_q",label = "max. term quantile",min = 0,max = 1,step = 0.25,value=NULL)
-             )
-      ),
-      column(1,
-             tags$div(
-               selectInput(inputId = "VA_docfreq_type",label = "doc frequency type",choices = c("count","prop","rank","quantile"),multiple = F,selected = "prop")%>%
-                 shinyInput_label_embed(
-                   shiny_iconlink() %>%
-                     bs_embed_popover(
-                       title = "Remove words from the analysis that exhibit a specified lower and/or upper bound of document occurrences.
+                                        placement = "right",
+                                        html="true"
+                                      )
+                                  )
+                              )
+                       ),
+                       column(2,
+                              tags$br(),
+                              conditionalPanel(condition = 'input.VA_termfreq_type=="count"',
+                                               numericInput(inputId = "VA_min_termfreq_c",label = "min. term frequency",min = 0,step = 1,value=NULL),
+                                               numericInput(inputId = "VA_max_termfreq_c",label = "max. term frequency",min = 1,step = 1,value=NULL)
+                              ),
+                              conditionalPanel(condition = 'input.VA_termfreq_type=="prop"',
+                                               numericInput(inputId = "VA_min_termfreq_p",label = "min. term probability",min = 0,step = 0.01,max = 1,value=NULL),
+                                               numericInput(inputId = "VA_max_termfreq_p",label = "max. term probability",min = 0.001,step = 0.01,max = 1,value=NULL)
+                              ),
+                              conditionalPanel(condition = 'input.VA_termfreq_type=="rank"',
+                                               numericInput(inputId = "VA_min_termfreq_r",label = "min. term rank",min = 1,step = 1,value=NULL),
+                                               numericInput(inputId = "VA_max_termfreq_r",label = "max. term rank",min = 1,step = 1,value=NULL)
+                              ),
+                              conditionalPanel(condition = 'input.VA_termfreq_type=="quantile"',
+                                               numericInput(inputId = "VA_min_termfreq_q",label = "min. term quantile",min = 0,max = 1,step = 0.25,value=NULL),
+                                               numericInput(inputId = "VA_max_termfreq_q",label = "max. term quantile",min = 0,max = 1,step = 0.25,value=NULL)
+                              )
+                       ),
+                       column(1,
+                              tags$div(
+                                selectInput(inputId = "VA_docfreq_type",label = "doc frequency type",choices = c("count","prop","rank","quantile"),multiple = F,selected = "prop")%>%
+                                  shinyInput_label_embed(
+                                    shiny_iconlink() %>%
+                                      bs_embed_popover(
+                                        title = "Remove words from the analysis that exhibit a specified lower and/or upper bound of document occurrences.
                                       These bound can be specified by a explicit number of document occurrences (count based), by setting a probability (prob),
                                       by using a rank to keep just words within a certain range of document occurrence ranks or by specifying a quantile to cut of.",
-                       placement = "right",
-                       html="true"
+                                        placement = "right",
+                                        html="true"
+                                      )
+                                  )
+                              )
+                       ),
+                       column(2,
+                              tags$br(),
+                              conditionalPanel(condition = 'input.VA_docfreq_type=="count"',
+                                               numericInput(inputId = "VA_min_docfreq_c",label = "min. doc frequency",min = 0,step = 1,value=NULL),
+                                               numericInput(inputId = "VA_max_docfreq_c",label = "max. doc frequency",min = 1,step = 1,value=NULL)
+                              ),
+                              conditionalPanel(condition = 'input.VA_docfreq_type=="prop"',
+                                               numericInput(inputId = "VA_min_docfreq_p",label = "min. doc probability",min = 0,step = 0.01,max = 1,value=NULL),
+                                               numericInput(inputId = "VA_max_docfreq_p",label = "max. doc probability",min = 0.001,step = 0.01,max = 1,value=NULL)
+                              ),
+                              conditionalPanel(condition = 'input.VA_docfreq_type=="rank"',
+                                               numericInput(inputId = "VA_min_docfreq_r",label = "min. doc rank",min = 1,step = 1,value=NULL),
+                                               numericInput(inputId = "VA_max_docfreq_r",label = "max. doc rank",min = 1,step = 1,value=NULL)
+                              ),
+                              conditionalPanel(condition = 'input.VA_docfreq_type=="quantile"',
+                                               numericInput(inputId = "VA_min_docfreq_q",label = "min. doc quantile",min = 0,max = 1,step = 0.25,value=NULL),
+                                               numericInput(inputId = "VA_max_docfreq_q",label = "max. doc quantile",min = 0,max = 1,step = 0.25,value=NULL)
+                              )
+                       )
                      )
-                 )
-             )
-      ),
-      column(2,
-             tags$br(),
-             conditionalPanel(condition = 'input.VA_docfreq_type=="count"',
-                              numericInput(inputId = "VA_min_docfreq_c",label = "min. doc frequency",min = 0,step = 1,value=NULL),
-                              numericInput(inputId = "VA_max_docfreq_c",label = "max. doc frequency",min = 1,step = 1,value=NULL)
-             ),
-             conditionalPanel(condition = 'input.VA_docfreq_type=="prop"',
-                              numericInput(inputId = "VA_min_docfreq_p",label = "min. doc probability",min = 0,step = 0.01,max = 1,value=NULL),
-                              numericInput(inputId = "VA_max_docfreq_p",label = "max. doc probability",min = 0.001,step = 0.01,max = 1,value=NULL)
-             ),
-             conditionalPanel(condition = 'input.VA_docfreq_type=="rank"',
-                              numericInput(inputId = "VA_min_docfreq_r",label = "min. doc rank",min = 1,step = 1,value=NULL),
-                              numericInput(inputId = "VA_max_docfreq_r",label = "max. doc rank",min = 1,step = 1,value=NULL)
-             ),
-             conditionalPanel(condition = 'input.VA_docfreq_type=="quantile"',
-                              numericInput(inputId = "VA_min_docfreq_q",label = "min. doc quantile",min = 0,max = 1,step = 0.25,value=NULL),
-                              numericInput(inputId = "VA_max_docfreq_q",label = "max. doc quantile",min = 0,max = 1,step = 0.25,value=NULL)
-             )
-      )
-      
     ),
     #specific parameters
     tags$hr(),
@@ -292,18 +321,6 @@ output$Analysis_Parameter_VA<-renderUI({
                    )
                )),
       column(1,
-             #"sig_vc_window",
-             #"sig_sd_window","rank_minmax","rank_no_zero",
-             #"rank_max_rank","rank_recommender"
-             selectInput(inputId = "VA_method",label = HTML("Method <br/> <br/>"),choices = c("sig_simple","sig_cosine"),selected = "sig_simple")%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Context Volatility can be calculated with different approaches. Here you can choose this method.",
-                     placement = "right"
-                   )
-               )),
-      column(1,
              selectInput(inputId = "VA_cooc_type",label = HTML("Co-occurrence window <br/>"),choices = c("Document","Sentence"),selected = "Sentence")%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -312,45 +329,173 @@ output$Analysis_Parameter_VA<-renderUI({
                      placement = "right"
                    )
                ))
-      ),
+    ),
     fluidRow(
-      column(2,
-             conditionalPanel(condition='input.VA_method=="sig_simple" || input.VA_method=="sig_cosine"',
-                              selectInput(inputId = "VA_weightfactor",label = "Weightfactor",choices = c("linear","exponential"),selected = "linear")%>%
+      column(1,
+             conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                              selectInput(inputId = "VA_POS_TYPES",label = "Include POS-Types",
+                                          choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X") ,selected = "all",multiple = T)%>%
                                 shinyInput_label_embed(
                                   shiny_iconlink() %>%
                                     bs_embed_popover(
-                                      title = "This parameter specifies the influence of the individual points in time in the past on the calculation of an expected value with the respective present.
-                                      The shorter a point in time lies in the past, the higher its weight for the calculation of the expected value.
-                                      If a linear weightfactor is taken, the weights for a set memorysize of 3 could look as follows: (0.5, 0.333, 0.1667).
-                                      Using an exponential weighting factor, the weights would be as follows: (0.665, 0.2447, 0.09).",
+                                      title = "Should the analysis be limited to words from a certain range of POS-Types. If this is the case make sure to exclude 'all' from the selection.",
                                       placement = "right"
                                     )
                                 )
-                              )
-             ),
+             )
+      ),
+      column(1,
+             conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                              selectInput(inputId = "VA_ENTITY_TYPES",label = " Include NER-Tags",
+                                          choices =c("all","PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+                                                     "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = "all",multiple=T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-Tag option causes the consolidation of entities.",
+                                      placement = "right"
+                                    )
+                                )
+             )
+      ),
+      column(1,
+             conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                              selectInput(inputId = "VA_POS_TYPES_exclude",label = "Exclude POS-Types",
+                                          choices =c("NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X"), selected=character(0),multiple = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Remove words with a certain POS-Tag from the analysis.",
+                                      placement = "right"
+                                    )
+                                )
+             )
+      ),
+      column(1,
+             conditionalPanel(condition='input.VA_use_fixed_vocab==false',
+                              selectInput(inputId = "VA_ENTITY_TYPES_exclude",label = "Exclude NER-Tags",
+                                          choices =c("PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+                                                     "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = character(0),multiple=T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Remove words with a certain NER-Tag from the analysis. Using this option causes the consolitation of entities.",
+                                      placement = "right"
+                                    )
+                                )
+             )
+      )
+    ),
+    fluidRow(
       column(2,
-             selectInput(inputId = "VA_POS_TYPES",label = "POS-Types",
-                         choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X") ,selected = "all",multiple = T)%>%
+             selectInput(inputId="VA_rank_significance",label="Use ranks or signficances",choices=setNames(object = c("sig","rank"),nm = c("significances","ranks")))%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
-                     title = "Should the analysis be limited to words from a certain range of POS-Types. If this is the case make sure to exclude 'all' from the selection.",
+                     title = "In order to calculate context volatility, both rank-based and significance-based approaches can be used",
                      placement = "right"
                    )
                )
       ),
       column(2,
-             selectInput(inputId = "VA_ENTITY_TYPES",label = "NER-Tags",
-                         choices =c("all","PERSON","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
-                                    "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = "all",multiple=T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-tag option causes the consolidation of entities.",
-                     placement = "right"
-                   )
-               )
+             conditionalPanel(condition = 'input.VA_rank_significance=="sig"',
+                              selectInput(inputId="VA_reference_window",label="Reference or window based",choices=c("reference","window"))%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "The significant-based approaches are further subdivided into reference-based and window-based approaches.
+In the reference-based approaches, an expected value is determined on the basis of a given set of points in time, with which the actual available data is subsequently compared.
+With the window based approaches, the dispersion of the available values within a time window is examined.",
+                                      placement = "right"
+                                    )
+                                )
+             ),
+             conditionalPanel(condition = 'input.VA_rank_significance=="rank"',
+                              # selectInput(inputId="VA_rank",label="Rank based methods",choices=setNames(object = c("minmax","no_zero","max_rank","global","recommender"),
+                              #                                                                           nm = c("Min Max algorithm","no gap information","use max ranks for gaps","use global information to fill gaps",
+                              #                                                                                  "use local inforamtion to fill gaps")))
+                              selectInput(inputId="VA_rank",label="Rank based methods",choices=setNames(object = c("minmax"),
+                                                                                                        nm = c("Min Max algorithm")))%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "The Minmax algorithm is a ranking-based method for calculating context volatility, with a special focus on dealing with incomplete data.",
+                                      placement = "right"
+                                    )
+                                )
+             )
+      ),
+      conditionalPanel(condition = 'input.VA_rank_significance=="sig"',
+                       conditionalPanel(condition = 'input.VA_reference_window=="window"',
+                                        column(2,
+                                               selectInput(inputId="VA_window_var",label="Variation calculation",choices=setNames(object = c("iqr","var","vc"),nm = c("Inter Quartile Range","Variance","Variance coefficient")))%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "The variation within a time window can be determined by the 3 methods: interquartile range, variance and variance coefficient.",
+                                                       placement = "right"
+                                                     )
+                                                 )
+                                        )
+                       ),
+                       conditionalPanel(condition = 'input.VA_reference_window=="reference"',
+                                        column(2,
+                                               selectInput(inputId="VA_sig_reference_dist",label="Distance Measure",
+                                                           choices=setNames(object = c("ed","edmc","md","mdmc","cosine","jensen_shannon","kl","tanimoto","dice_dist"),
+                                                                            nm = c("Euclidean distance","Euclidean distance combined with mean difference",
+                                                                                   "Manhattan distance","Manhattan distance combinded with mean difference",
+                                                                                   "Cosine distance","Jensen Shannon distance","Kullback Leibler distance",
+                                                                                   "Tanimoto distance","Dice distance")))%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "Various methods are implemented to estimate the distance between the expected value and the actual value.",
+                                                       placement = "right"
+                                                     )
+                                                 )
+                                        ),
+                                        column(1,
+                                               selectInput(inputId="VA_sig_reference_weightfactor",label="Weightfactor",
+                                                           choices=setNames(object = c("linear","exp"),nm = c("Linear","Exponential")))%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "This parameter specifies the influence of the individual points in time in the past on the calculation of an expected value with the respective present.
+                                      The shorter a point in time lies in the past, the higher its weight for the calculation of the expected value.
+                                      If a linear weightfactor is taken, the weights for a set memorysize of 3 could look as follows: (0.5, 0.333, 0.1667).
+                                      Using an exponential weighting factor, the weights would be as follows: (0.665, 0.2447, 0.09).",
+                                                       placement = "right"
+                                                     )
+                                                 )
+                                        )
+                       )
+      ),
+      conditionalPanel(condition = 'input.VA_rank_significance=="rank"',
+                       conditionalPanel(condition = 'input.VA_rank=="minmax"',
+                                        column(2,
+                                               numericInput(inputId="VA_rank_minmax_beta",label="Beta Parameter",value=2,min=1,max=100)%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "The beta parameter allows to down-weight noise in the data. The higher the value for beta, the lower the weighting on small changes.",
+                                                       placement = "right"
+                                                     )
+                                                 )
+                                        )      
+                       ),
+                       conditionalPanel(condition = 'input.VA_rank!="minmax"',
+                                        column(2,
+                                               selectInput(inputId="VA_window_var",label="Variation calculation",choices=setNames(object = c("iqr","var","vc"),nm = c("Inter Quartile Range","Variance","Variance coefficient")))%>%
+                                                 shinyInput_label_embed(
+                                                   shiny_iconlink() %>%
+                                                     bs_embed_popover(
+                                                       title = "The variation within a time window can be determined by the 3 methods: interquartile range, variance and variance coefficient.",
+                                                       placement = "right"
+                                                     )
+                                                 )
+                                               
+                                        )      
+                       )
       )
     ),
     tags$hr(),
@@ -359,44 +504,81 @@ output$Analysis_Parameter_VA<-renderUI({
 })
 
 
-output$VA_whitelist_UI<-renderUI({
-  values$invalidate_whitelists
-  if(length(list.files("collections/whitelists/"))==0){
-    return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
-  }
-  else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "VA_whitelist",label = "Whitelists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
-  }
-})
-
-output$VA_blacklist_UI<-renderUI({
-  values$invalidate_blacklists
-  if(length(list.files("collections/blacklists/"))==0){
-    return(HTML("No blacklists available. You can create blacklists in the Scripts-Blacklist Tab"))
-  }
-  else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "VA_blacklist",label = "Blacklists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
-  }
-})
 
 
-#start volatility analysis script, if submit button is clicked
+
+#' start volatility analysis script, if submit button is clicked
+#' depends on:
+#'   input$VA_Submit_Script: submission script for  volatility analysis
+#'   input$VA_min_termfreq_c: mininal term frequency (count)
+#'   input$VA_max_termfreq_c: maximal term frequency (count)
+#'   input$VA_min_termfreq_p: minimal term propability
+#'   input$VA_max_termfreq_p: maximal term propability
+#'   input$VA_min_termfreq_r: minimal term rank
+#'   input$VA_max_termfreq_r: maximal term rank 
+#'   input$VA_min_termfreq_q: minimal term quantile
+#'   input$VA_max_termfreq_q: maximal term quantile
+#'   input$VA_min_docfreq_c: minimal document frequency (count)
+#'   input$VA_max_docfreq_c: maximal document frequency (count) 
+#'   input$VA_min_docfreq_p: minimal document probability
+#'   input$VA_max_docfreq_p: maximal document probability
+#'   input$VA_min_docfreq_r: minimal document rank
+#'   input$VA_max_docfreq_r: maximal document rank
+#'   input$VA_min_docfreq_q: minimal document quantile
+#'   input$VA_max_docfreq_q: maximal document quantile
+#'   input$VA_use_fixed_vocab: should a fix vocabulary be used?
+#'   input$VA_fixed_vocab: fixed vocab that should ne used
+#'   input$VA_termfreq_type: type of term frequency (count, prob, rank, quantile can be choosed)
+#'   input$VA_baseform: should the baseforms of the words be used?
+#'   input$VA_min_char: minimum of chars a word should consist of 
+#'   input$VA_ngram: size of N-Grams used in volatility analysis
+#'   input$VA_remove_stopwords: should stopwords be removed?
+#'   input$VA_lowercase: should the words of the document be converted to lower case?
+#'   input$VA_remove_numbers: should numbers be removed?
+#'   input$VA_remove_numbers_all: should everything be removed that can contain a number?
+#'   input$VA_remove_punctuation: should the punctuation be removed?
+#'   input$VA_remove_hyphenation: should hyphenation be removed?
+#'   input$VA_min_Cooc_Freq: minimum Cooccurrence frequency
+#'   input$VA_timeintervall: which time intervall (day, month, year) should be used?
+#'   input$VA_history: how large should the memory storage be?
+#'   input$VA_method: whitch method should be used? (significance or ranks)
+#'   input$VA_Cooc_Measure:which distand measurement should be used? (manhatten distance, eucledean distance, etc.)
+#'   input$VA_cooc_type: which Co-occurrence significance measure should be used? (Dice, log likelihood, mutual information)
+#'   input$VA_remove_custom: Remove custom words?
+#'   input$VA_consolidate_entities: should entities of the texts be consolidated?
+#'   input$VA_blacklist: used blacklist (words that should be ignored in calculations)
+#'   input$VA_POS_TYPES: which POS-Types should be included
+#'   input$VA_POS_TYPES_exclude: whicht POS-Types should be excluded
+#'   input$VA_ENTITY_TYPES: which entity-types should be used
+#'   input$VA_ENTITY_TYPES_exclude: which entity-types should be excluded
+#'   input$VA_docfreq_type: type of document frequency (count, prob, rank, quantile can be choosed)
+#'   input$VA_rank_significance: selected rank significance
+#'   input$VA_reference_window: should significance be referenced or window based
+#'   input$VA_rank: selected rank as Volatility Analysis parameters
+#'   input$VA_window_var: is window based significance selected choose variation calculation (inter quartile range or variance or variance coefficent)
+#'   input$VA_sig_reference_dist: is referenced based significance selected choose distance measurement (eucledean distance, manhatten distance, etc.) 
+#'   input$VA_sig_reference_weightfactor:is referenced based significance selected choose weight factor (linear or exponential)
+#'   input$VA_rank_minmax_beta: is ranked parameter selected use minimum/maximum algorithm and choose beta parameters
+#'   input$VA_keep_custom: keep custom words
+#'   input$VA_use_custom_blacklist: should a custom blacklist be used?
+#'   input$VA_use_custom_whitelist: should a custom whitelist be used?
+#'   input$VA_whitelist: selcted whitelist (list of words that should stay in calculation)
+#'   input$VA_whitelist_only: exclude all words despite the ones on the blacklist
+#'   input$VA_whitelist_expand: expand the whitelist
+#'   input$VA_whitelist_only_results: Volatility calculation for whitelist terms only
 observeEvent(input$VA_Submit_Script,{
   valid<-check_pruning_parameters(min_t_c = input$VA_min_termfreq_c,max_t_c = input$VA_max_termfreq_c,min_t_p =input$VA_min_termfreq_p,max_t_p =  input$VA_max_termfreq_p
                                   ,min_t_r =input$VA_min_termfreq_r,max_t_r = input$VA_max_termfreq_r,min_t_q = input$VA_min_termfreq_q, max_t_q = input$VA_max_termfreq_q
                                   ,min_d_c = input$VA_min_docfreq_c,max_d_c = input$VA_max_docfreq_c,min_d_p = input$VA_min_docfreq_p,max_d_p = input$VA_max_docfreq_p
                                   ,min_d_r = input$VA_min_docfreq_r,max_d_r = input$VA_max_docfreq_r,min_d_q = input$VA_min_docfreq_q,max_d_q = input$VA_max_docfreq_q)
+  valid_vocab<-check_if_predefined_vocabulary_is_valid(use_predefined_vocab = input$VA_use_fixed_vocab, vocabulary = input$VA_fixed_vocab)
   if(isFALSE(valid)){
     shinyWidgets::confirmSweetAlert(session = session,title = "Check pruning settings!",text = HTML("It seems your current pruning input parameters don't make sense. It's very likely, that the whole vocabulary will be removed.
                            Check <a href='https://quanteda.io/reference/dfm_trim.html' title='quanteda pruning'> Quanteda Pruning Settings </a>"),html=T,inputId="VA_pruning_continue",
+                                    type="warning",closeOnClickOutside = T,btn_labels = c("Change Settings","Continue anyway!"))
+  }
+  else if(isFALSE(valid_vocab)){
+    shinyWidgets::confirmSweetAlert(session = session,title = "Check vocabulary",text = HTML("You chose to use a predefined vocabulary. It seems this vocabulary is not present."),html=T,inputId="VA_pruning_continue",
                                     type="warning",closeOnClickOutside = T,btn_labels = c("Change Settings","Continue anyway!"))
   }
   else{
@@ -462,18 +644,27 @@ observeEvent(input$VA_Submit_Script,{
                      consolidate_entities=input$VA_consolidate_entities,
                      blacklist=input$VA_blacklist,
                      reduce_POS=input$VA_POS_TYPES,
+                     reduce_POS_exclude=input$VA_POS_TYPES_exclude,
                      reduce_NER=input$VA_ENTITY_TYPES,
+                     reduce_NER_exclude=input$VA_ENTITY_TYPES_exclude,
                      termfreq_type=input$VA_termfreq_type,
                      docfreq_type=input$VA_docfreq_type,
-                     va_weightfactor=input$VA_weightfactor,
-                     va_method=input$VA_method,
+                     rank_significance=input$VA_rank_significance,
+                     reference_window=input$VA_reference_window,
+                     rank_method=input$VA_rank,
+                     window_var=input$VA_window_var,
+                     sig_reference_dist=input$VA_sig_reference_dist,
+                     sig_reference_weightfactor=input$VA_sig_reference_weightfactor,
+                     rank_minmax_beta=input$VA_rank_minmax_beta,
                      keep_custom=input$VA_keep_custom,
                      use_blacklist=input$VA_use_custom_blacklist,
                      use_whitelist=input$VA_use_custom_whitelist,
                      whitelist=input$VA_whitelist,
                      whitelist_only=input$VA_whitelist_only,
                      whitelist_expand=input$VA_whitelist_expand,
-                     whitelist_only_results=input$VA_whitelist_only_results
+                     whitelist_only_results=input$VA_whitelist_only_results,
+                     use_fixed_vocab=input$VA_use_fixed_vocab,
+                     fixed_vocab=input$VA_fixed_vocab
     )
     #create process ID
     ID<-get_task_id_counter()+1
@@ -503,7 +694,122 @@ observeEvent(input$VA_Submit_Script,{
 })
 
 
-#start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' show whitelists stored in collections/whitelists
+#' 
+output$VA_whitelist_UI<-renderUI({
+  if(length(list.files("collections/whitelists/"))==0){
+    return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
+  }
+  else{
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "VA_whitelist",label = "Whitelists",
+                         choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
+  }
+})
+
+#' show whitelist options when whitelist checkbox is TRUE
+#' depends:
+#'    input$VA_use_custom_whitelist: checks if the checkbox for the usage of whitelist is ticked
+observeEvent(ignoreNULL = T,input$VA_use_custom_whitelist,{
+  if(isTRUE(input$VA_use_custom_whitelist)){
+    shinyjs::show(id = "VA_whitelist")
+  }
+  else{
+    shinyjs::hide(id = "VA_whitelist")
+  }
+})
+
+#' show blacklists stored in collections/blacklists
+output$VA_blacklist_UI<-renderUI({
+  if(length(list.files("collections/blacklists/"))==0){
+    return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
+  }
+  else{
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "VA_blacklist",label = "Blacklists",
+                         choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
+  }
+})
+
+#' show blacklist options when blacklist checkbox is TRUE
+#' depends on:
+#'   input$VA_use_custom_blacklist: checks if checkbox for the usage of a blacklist is ticked
+observeEvent(ignoreNULL = T,input$VA_use_custom_blacklist,{
+  if(isTRUE(input$VA_use_custom_blacklist)){
+    shinyjs::show(id = "VA_blacklist")
+  }
+  else{
+    shinyjs::hide(id = "VA_blacklist")
+  }
+})
+
+
+
+#' start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' depends on:
+#'   input$VA_pruning_continue: continue with data prouning?
+#'   input$VA_termfreq_type: type of term frequency (count, prob, rank, quantile can be choosed)
+#'   input$collection_selected: selected collection
+#'   input$VA_Submit_Script: submission script for  volatility analysis
+#'   input$VA_min_termfreq_c: mininal term frequency (count)
+#'   input$VA_max_termfreq_c: maximal term frequency (count)
+#'   input$VA_min_termfreq_p: minimal term propability
+#'   input$VA_max_termfreq_p: maximal term propability
+#'   input$VA_min_termfreq_r: minimal term rank
+#'   input$VA_max_termfreq_r: maximal term rank 
+#'   input$VA_min_termfreq_q: minimal term quantile
+#'   input$VA_max_termfreq_q: maximal term quantile
+#'   input$VA_min_docfreq_c: minimal document frequency (count)
+#'   input$VA_max_docfreq_c: maximal document frequency (count) 
+#'   input$VA_min_docfreq_p: minimal document probability
+#'   input$VA_max_docfreq_p: maximal document probability
+#'   input$VA_min_docfreq_r: minimal document rank
+#'   input$VA_max_docfreq_r: maximal document rank
+#'   input$VA_min_docfreq_q: minimal document quantile
+#'   input$VA_max_docfreq_q: maximal document quantile
+#'   input$VA_baseform: should the baseforms of the words be used?
+#'   input$VA_min_char: minimum of chars a word should consist of 
+#'   input$VA_ngram: size of N-Grams used in volatility analysis
+#'   input$VA_remove_stopwords: should stopwords be removed?
+#'   input$VA_lowercase: should the words of the document be converted to lower case?
+#'   input$VA_remove_numbers: should numbers be removed?
+#'   input$VA_remove_numbers_all: should everything be removed that can contain a number?
+#'   input$VA_remove_punctuation: should the punctuation be removed?
+#'   input$VA_remove_hyphenation: should hyphenation be removed?
+#'   input$VA_min_Cooc_Freq: minimum Cooccurrence frequency
+#'   input$VA_timeintervall: which time intervall (day, month, year) should be used?
+#'   input$VA_history: how large should the memory storage be?
+#'   input$VA_method: which method should be used? (significance or ranks)
+#'   input$VA_Cooc_Measure: which distand measurement should be used? (manhatten distance, eucledean distance, etc.)
+#'   input$VA_cooc_type: which Co-occurrence significance measure should be used? (Dice, log likelihood, mutual information)
+#'   input$VA_remove_custom: Remove custom words?
+#'   input$VA_consolidate_entities: should entities of the texts be consolidated?
+#'   input$VA_blacklist: used blacklist (words that should be ignored in calculations)
+#'   input$VA_POS_TYPES: which POS-Types should be included
+#'   input$VA_POS_TYPES_exclude: whicht POS-Types should be excluded
+#'   input$VA_ENTITY_TYPES: which entity-types should be used (NER)
+#'   input$VA_ENTITY_TYPES_exclude: which entity-types should be excluded(NER)
+#'   input$VA_docfreq_type: type of document frequency (count, prob, rank, quantile can be choosed)
+#'   input$VA_rank_significance: selected rank significance
+#'   input$VA_reference_window: should significance be referenced or window based
+#'   input$VA_rank: selected rank as Volatility Analysis parameters
+#'   input$VA_window_var: is window based significance selected choose variation calculation (inter quartile range or variance or variance coefficent)
+#'   input$VA_sig_reference_dist: is referenced based significance selected choose distance measurement (eucledean distance, manhatten distance, etc.) 
+#'   input$VA_sig_reference_weightfactor: it's referenced based significance selected choose weight factor (linear or exponential)
+#'   input$VA_rank_minmax_beta: is ranked parameter selected use minimum/maximum algorithm and choose beta parameters
+#'   input$VA_keep_custom: keep custom words
+#'   input$VA_use_custom_blacklist: should a custom blacklist be used?
+#'   input$VA_use_custom_whitelist: should a custom whitelist be used?
+#'   input$VA_whitelist: selcted whitelist (list of words that should stay in calculation)
+#'   input$VA_whitelist_only: exclude all words despite the ones on the blacklist
+#'   input$VA_whitelist_expand: expand the whitelist
+#'   input$VA_whitelist_only_results: Volatility calculation for whitelist terms only
+#'   input$VA_use_fixed_vocab: should a fixed vocabulary be used?
+#'   input$VA_fixed_vocab: fixed vocabulary that should be used
 observeEvent(input$VA_pruning_continue,ignoreInit = T,{
   validate(
     need(isTRUE(input$VA_pruning_continue),message=F)
@@ -570,18 +876,27 @@ observeEvent(input$VA_pruning_continue,ignoreInit = T,{
                    consolidate_entities=input$VA_consolidate_entities,
                    blacklist=input$VA_blacklist,
                    reduce_POS=input$VA_POS_TYPES,
+                   reduce_POS_exclude=input$VA_POS_TYPES_exclude,
                    reduce_NER=input$VA_ENTITY_TYPES,
+                   reduce_NER_exclude=input$VA_ENTITY_TYPES_exclude,
                    termfreq_type=input$VA_termfreq_type,
                    docfreq_type=input$VA_docfreq_type,
-                   va_weightfactor=input$VA_weightfactor,
-                   va_method=input$VA_method,
+                   rank_significance=input$VA_rank_significance,
+                   reference_window=input$VA_reference_window,
+                   rank_method=input$VA_rank,
+                   window_var=input$VA_window_var,
+                   sig_reference_dist=input$VA_sig_reference_dist,
+                   sig_reference_weightfactor=input$VA_sig_reference_weightfactor,
+                   rank_minmax_beta=input$VA_rank_minmax_beta,
                    keep_custom=input$VA_keep_custom,
                    use_blacklist=input$VA_use_custom_blacklist,
                    use_whitelist=input$VA_use_custom_whitelist,
                    whitelist=input$VA_whitelist,
                    whitelist_only=input$VA_whitelist_only,
                    whitelist_expand=input$VA_whitelist_expand,
-                   whitelist_only_results=input$VA_whitelist_only_results
+                   whitelist_only_results=input$VA_whitelist_only_results,
+                   use_fixed_vocab=input$VA_use_fixed_vocab,
+                   fixed_vocab=input$VA_fixed_vocab
   )
   #create process ID
   ID<-get_task_id_counter()+1
@@ -594,7 +909,7 @@ observeEvent(input$VA_pruning_continue,ignoreInit = T,{
   write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0( "Collection: <b>",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
   #save data needed in script execution 
   save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
-  #start script
+  #start script 
   if(input$use_custom_script==TRUE && !is.null(input$custom_script_options)){
     shinyWidgets::sendSweetAlert(session=session,title = "Starting a custom script",text = "You are about to start a custom script. Caution with the calculation and results!",type = "info")
     system(paste0('Rscript collections/scripts/Volatility_Analysis/',input$custom_script_options,' &'))

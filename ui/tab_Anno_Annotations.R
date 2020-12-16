@@ -1,3 +1,4 @@
+#' create panel to show annotation options for documents
 conditionalPanel("input.category=='Document View3'",
                  tags$div(style = 'height: 90vh; overflow-y: auto; overflow-x:hidden;',
                           box(width=NULL,title = tags$h4("Annotations",style="color:white"),solidHeader = TRUE,status = "danger",collapsible = T,

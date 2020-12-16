@@ -1,6 +1,6 @@
 
 
-#render table with finished results for vectorility analysis
+#' render table with finished results for vectorility analysis
 output$Deduplication_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_deduplication_result
@@ -144,7 +144,6 @@ observeEvent(input$delete_deduplication_results, {
     unlink(values$Deduplication_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_deduplication_results\",  "delete_button_deduplication_results_0")'))
-    delete_result_from_datbase(isolate(values$results_deduplication[selectedRow,]))
     values$reload_deduplication_result<-TRUE
   }
 })

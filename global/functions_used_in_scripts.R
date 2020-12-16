@@ -89,19 +89,40 @@ get_token_meta_and_language_from_db<-function(get_meta=T,get_language=T,get_glob
   meta=NULL
   language=NULL
   global_doc_ids<-NULL
+  options(scipen=999)
   #getting data from db
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=port)
   rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
   d<-data.frame(id=id,dataset=dataset)
   for(i in 1:length(unique(d[,2]))){
-    ids<-paste(d[which(d[,2]==unique(d[,2])[i]),1],collapse = " ")
-    ids<-stringr::str_replace_all(string = as.character(ids),pattern = " ",",")
-    token<-rbind(token,RMariaDB::dbGetQuery(mydb, paste("select * from token where dataset='",unique(d[,2])[i],"' and id in (",ids,");",sep="")))
-    if(get_meta==T){
-      meta<-rbind(meta,RMariaDB::dbGetQuery(mydb, paste("select id_doc ,date from documents where dataset='",unique(d[,2])[i],"' and id_doc in (",ids,");",sep="")))
-    }
-    if(get_global_doc_ids==T){
-      global_doc_ids<-c(global_doc_ids,RMariaDB::dbGetQuery(mydb, paste("select id from documents where dataset='",unique(d[,2])[i],"' and id_doc in (",ids,");",sep="")))
+    id_vector<-d[which(d[,2]==unique(d[,2])[i]),1]
+    #ids<-paste(id_vector,collapse = " ")
+    #ids<-stringr::str_replace_all(string = as.character(ids),pattern = " ",",")
+    # chunking of documents in chunks of 10k documents per chunk
+    splitsize=10000
+    split<-split(id_vector, ceiling(seq_along(id_vector)/splitsize))
+    log_to_file(message = paste0("&emsp; split ids (" ,length(id_vector), ") in ",length(split)," chunks"),logfile)
+    loghelper<-floor(seq(1,length(split),length.out = 11))[2:11]
+    names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+    for(j in 1:length(split)){
+      ids<-paste(split[[j]],collapse = " ")
+      ids<-stringr::str_replace_all(string = as.character(ids),pattern = " ",",")
+      token<-rbind(token,RMariaDB::dbGetQuery(mydb, paste("select * from token where dataset='",unique(d[,2])[i],"' and id in (",ids,");",sep="")))
+      if(get_meta==T){
+        meta<-rbind(meta,RMariaDB::dbGetQuery(mydb, paste("select id_doc ,date from documents where dataset='",unique(d[,2])[i],"' and id_doc in (",ids,");",sep="")))
+      }
+      if(get_global_doc_ids==T){
+        global_doc_ids<-c(global_doc_ids,RMariaDB::dbGetQuery(mydb, paste("select id from documents where dataset='",unique(d[,2])[i],"' and id_doc in (",ids,");",sep="")))
+      }
+      if(j %in% loghelper){
+        gc()
+        if(length(split)>10){
+          log_to_file(message = paste0("&emsp; ",names(which(loghelper==j)),"% of documents imported (",splitsize*j,")"),logfile)
+        }
+        else{
+          log_to_file(message = paste0("&emsp; ","chunk:",j," imported"),logfile)
+        }
+      } 
     }
   }
   
@@ -116,6 +137,64 @@ get_token_meta_and_language_from_db<-function(get_meta=T,get_language=T,get_glob
   #get language // so far just use language of first document for all
   if(get_language==T){
     language<-as.character(RMariaDB::dbGetQuery(mydb, paste("select language from documents where dataset='",d[1,2],"' and id_doc =",d[1,1],";",sep="")))
+  }
+  RMariaDB::dbDisconnect(mydb)
+  if(language=="eng"){
+    language<-"en"
+  }
+  return(list(token=token,meta=meta,language=language,global_doc_ids=global_doc_ids))
+}
+
+
+
+get_token_meta_and_language_from_db_refi<-function(get_meta=T,get_language=T,get_global_doc_ids=F,host=NULL,port=NULL,id,dataset){
+  token<-NULL
+  meta=NULL
+  language=NULL
+  global_doc_ids<-NULL
+  #getting data from db
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=port)
+  rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+  RMariaDB::dbClearResult(rs)
+  d<-data.frame(id=id,dataset=dataset)
+  for(i in 1:length(unique(d[,2]))){
+    print("token")
+    ids<-paste(d[which(d[,2]==unique(d[,2])[i]),1],collapse = " ")
+    ids<-stringr::str_replace_all(string = as.character(ids),pattern = " ",",")
+    res<-RMariaDB::dbSendQuery(mydb, paste("select * from token where dataset='",unique(d[,2])[i],"' and id in (",ids,");",sep=""))
+    result<-RMariaDB::dbFetch(res = res)
+    token<-rbind(token,result)
+    RMariaDB::dbClearResult(res)
+    if(get_meta==T){
+      print("meta")
+      res<-RMariaDB::dbSendQuery(mydb, paste("select id_doc ,date from documents where dataset='",unique(d[,2])[i],"' and id_doc in (",ids,");",sep=""))
+      result<-RMariaDB::dbFetch(res = res)
+      RMariaDB::dbClearResult(res)
+      meta<-rbind(meta,result)
+    }
+    if(get_global_doc_ids==T){
+      print("glob")
+      res<-RMariaDB::dbSendQuery(mydb, paste("select id from documents where dataset='",unique(d[,2])[i],"' and id_doc in (",ids,");",sep=""))
+      result<-RMariaDB::dbFetch(res = res)
+      RMariaDB::dbClearResult(res)
+      global_doc_ids<-c(global_doc_ids,result)
+    }
+  }
+  
+  #x<-as.numeric(factor(paste(token[,1],token[,2],sep="_")))
+  x<-paste(token[,1],token[,2],sep="_")
+  token[,2]<-x
+  
+  if(get_meta==T){
+    meta[,2]<-as.character(as.Date(meta[,2]))
+    meta[,1]<-unique(x)
+  }
+  #get language // so far just use language of first document for all
+  if(get_language==T){
+    res<-RMariaDB::dbSendQuery(mydb, paste("select language from documents where dataset='",d[1,2],"' and id_doc =",d[1,1],";",sep=""))
+    result<-RMariaDB::dbFetch(res = res)
+    RMariaDB::dbClearResult(res)
+    language<-as.character(result)
   }
   RMariaDB::dbDisconnect(mydb)
   if(language=="eng"){
@@ -225,14 +304,15 @@ prepare_token_object<-function(token,parameters){
       }
     }
   })
-  #filter for pos or ner tags
+  # filter for pos or ner tags
+  # reduce by keeping defined Tags
   try({
     if(!is.element(el = "all",set = parameters$reduce_POS)){
       #whitelist sercure
-      safe<-which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ","))))
+      safe<-setdiff(which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ",")))),which(token[,4]==""))
       reduce<-which(token[,6]%in%parameters$reduce_POS)
       token<-token[unique(union(reduce,safe)),]
-      log_to_file(message = "&emsp; Finished filtering for pos types",file = logfile)
+      log_to_file(message = "&emsp; Finished filtering POS-Types to keep",file = logfile)
     }
   })
   try({
@@ -243,9 +323,44 @@ prepare_token_object<-function(token,parameters){
         token<-spacyr::entity_consolidate(token)
         log_to_file(message = "&emsp; Finished consolidating entities",file = logfile)
       }
-      safe<-which(token[,4]%in%parameters$keep_custom)
+      safe<-setdiff(which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ",")))),which(token[,4]==""))
       reduce<-which(token[,7]%in%parameters$reduce_NER)
       token<-token[unique(union(reduce,safe)),]
+      log_to_file(message = "&emsp; Finished filtering NER-Tags to keep",file = logfile)
+    }
+  })
+  # reduce by excluding defined Tags
+  try({
+    if(!is.null(parameters$reduce_POS_exclude)){
+      #whitelist sercure
+      safe<-setdiff(which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ",")))),which(token[,4]==""))
+      reduce<-which(token[,6]%in%parameters$reduce_POS_exclude)
+      remove<-unique(setdiff(reduce,safe))
+      if(length(remove)>0){
+        token<-token[-remove,]
+      }
+      log_to_file(message = "&emsp; Finished filtering for POS-Types to exclude",file = logfile)
+    }
+  })
+  try({
+    if(!is.null(parameters$reduce_NER_exclude)){
+      if(parameters$consolidate_entities==F){
+        log_to_file(message = "&emsp; Consolidating...due to NER Filter settings",file = logfile)
+        spacyr::spacy_initialize()
+        token<-spacyr::entity_consolidate(token)
+        log_to_file(message = "&emsp; Finished consolidating entities",file = logfile)
+      }
+      safe<-setdiff(which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ",")))),which(token[,4]==""))
+      # Spacy uses Tags PER and PERSON for person named entities --> check for both options
+      reduce<-which(token[,7]%in%parameters$reduce_NER_exclude)
+      reduce<-c(reduce,which(token[,7]%in%stringr::str_replace_all(parameters$reduce_NER_exclude,
+                                                                   pattern = "PER","PERSON"))
+      )
+      remove<-unique(setdiff(reduce,safe))
+      if(length(remove)>0){
+        token<-token[-remove,]
+      }
+      log_to_file(message = "&emsp; Finished filtering NER-Tags to exclude",file = logfile)
     }
   })
   return(token)
@@ -264,6 +379,31 @@ if_empty_return_NULL<-function(string){
 
 
 calculate_dtm<-function(token,parameters,tibble=F,lang){
+  # if useser chooses to use a predefined vocabulary
+  if(!is.null(parameters$use_fixed_vocab)){
+    if(parameters$use_fixed_vocab==TRUE){
+      vocab_words<-paste0(readRDS(paste0("collections/vocabularies/",parameters$fixed_vocab)),collapse=",")
+      #vocab_words<-readChar(con=paste0("collections/vocabularies/",parameters$fixed_vocab),nchars = file.info(paste0("collections/vocabularies/",parameters$fixed_vocab))$size)
+      #vocab_words<-stringr::str_replace_all(string = vocab_words,pattern = ", ",replacement = ",")
+      #vocab_words<-stringr::str_replace_all(string = vocab_words,pattern = " ,",replacement = ",")
+      #vocab_words<-stringr::str_replace_all(string = vocab_words,pattern = ",,",replacement = ",")
+      #vocab_words<-stringr::str_replace_all(string = vocab_words,pattern = ",[ ]+,",replacement = ",")
+      #vocab_words<-stringr::str_remove_all(string = vocab_words,pattern = "\n")
+      #vocab_words<-stringr::str_remove_all(string = vocab_words,pattern = "[\\p{P}\\p{S}&&[^_,]]+")
+      #vocab_words<-stringr::str_remove_all(string = vocab_words,pattern = "[⁰¹²³⁴⁵⁶⁷⁸⁹]+")
+      
+      #vocab_words<-stringr::str_split(string = vocab_words,pattern = ",",simplify = T)[1,]
+      #empty<-which(vocab_words=="")
+      #if(length(empty)>0){
+      #  vocab_words<-vocab_words[-empty]
+      #}
+      
+      
+      parameters$keep_custom<-stringr::str_remove(string = paste(parameters$keep_custom,vocab_words,sep = ","),pattern = "^,")
+      parameters$whitelist_only<-T
+    }
+  }
+  
   tow<-tmca.util::TextObjectWrapper$new()
   control=plyr::compact(
     list(
@@ -282,8 +422,9 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
       expand_save_custom=parameters$whitelist_expand,
       just_save_custom=parameters$whitelist_only
     )
-  )
-  #split token
+  )  
+
+  # split token
   splitsize<-ceiling(100000/(dim(token)[1]/length(unique(token[,1]))))
   split<-split(unique(token[,1]), ceiling(seq_along(unique(token[,1]))/splitsize))
   
@@ -291,6 +432,7 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
   loghelper<-floor(seq(1,length(split),length.out = 11))[2:11]
   names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
   for(i in 1:length(split)){
+    print(i)
     tow$logging("silent")
     tow$input(x = token[which(token[,1]%in%split[[i]]),])
     if(i==1){
@@ -301,7 +443,9 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
       dtm_local<-tow$process(control = control,backend = "quanteda")%>%
         tow$output(format = "sparseMatrix")
       if(dim(dtm_local)[2]>0){
+        rownames_dtm_glob <- c(rownames(dtm_glob),rownames(dtm_local)) 
         dtm_glob<-rBind_huge(dtm_glob,dtm_local)
+        rownames(dtm_glob) <- rownames_dtm_glob
       }
     }
     if(i %in% loghelper){
@@ -357,7 +501,6 @@ calculate_diachronic_cooccurrences<-function(dtm,parameters,meta){
   ids<-stringr::str_split(string = rownames(dtm),pattern = "_",simplify = T)[,1:2]
   ids<-paste(ids[,1],ids[,2],sep="_")
   coocsCalc <- tmca.cooccurrence::Coocc$new(dtm)
-  
   #calculate cooc-slices
   diachron_Coocs<-list()
   if(parameters$va_timeintervall=="week"){
@@ -366,10 +509,20 @@ calculate_diachronic_cooccurrences<-function(dtm,parameters,meta){
   if(parameters$va_timeintervall=="month"){
     db_data$meta[,2]<<-(substr(as.matrix(db_data$meta[,2]),1,7))
   }
-  if(parameters$va_timeintervall=="year"){
-    db_data$meta[,2]<<-(substr(as.matrix(db_data$meta[,2]),1,4))
+  if(parameters$va_timeintervall=="quarter"){
+    db_data$meta[,2]<<-zoo::as.yearqtr(db_data$meta[,2], format = "%Y-%m-%d")
   }
-  un_dates<-as.matrix(unique(db_data$meta[,2]))
+  if(parameters$va_timeintervall=="year"){
+    db_data$meta[,2]<<-(substr(as.matrix(as.character(db_data$meta[,2])),1,4))
+  }
+  
+  if(parameters$va_timeintervall=="quarter"){
+    un_dates<-as.matrix(as.character(unique(db_data$meta[,2])))
+  }
+  else{
+    un_dates<-as.matrix(unique(db_data$meta[,2]))
+  }
+  
   un_dates<-un_dates[order(un_dates,decreasing = F)]
   
   freq<-matrix(c(0),dim(dtm)[2],length(un_dates))
@@ -382,6 +535,7 @@ calculate_diachronic_cooccurrences<-function(dtm,parameters,meta){
   
   loghelper<-floor(seq(1,length(un_dates),length.out = 11))[2:11]
   names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+  #browser()
   for(d in un_dates){
     count<-count+1
     idx<-which(ids%in%db_data$meta[which(db_data$meta[,2]==d),1])
@@ -554,9 +708,7 @@ get_meta_data_for_detailed_topic_analysis<-function(host,port,ids,datasets,token
 }
 
 
-
 calculate_diachron_frequencies<-function(dtm,meta){
-  
   meta<-meta[which(meta[,1]%in%rownames(dtm)),]
   
   bin_dtm<-tmca.util::make_binary(dtm = dtm)
@@ -571,64 +723,122 @@ calculate_diachron_frequencies<-function(dtm,meta){
   un_dates_week<-unique(dates_week)
   un_dates_month<-unique(dates_month)
   un_dates_year<-unique(dates_year)
-  
   #create frequency matrices
-  freqs_day<-matrix(c(0),length(un_dates_day),length(vocab))
+  freqs_day<-Matrix::Matrix(c(0),0,length(vocab))
   colnames(freqs_day)<-vocab
-  rownames(freqs_day)<-un_dates_day
-  freqs_week<-matrix(c(0),length(un_dates_week),length(vocab))
-  colnames(freqs_week)<-vocab
-  rownames(freqs_week)<-un_dates_week
-  freqs_month<-matrix(c(0),length(un_dates_month),length(vocab))
-  colnames(freqs_month)<-vocab
-  rownames(freqs_month)<-un_dates_month
-  freqs_year<-matrix(c(0),length(un_dates_year),length(vocab))
-  colnames(freqs_year)<-vocab
-  rownames(freqs_year)<-un_dates_year
   
-  doc_freqs_day<-matrix(c(0),length(un_dates_day),length(vocab))
+  freqs_week<-Matrix::Matrix(c(0),0,length(vocab))
+  colnames(freqs_week)<-vocab
+  
+  freqs_month<-Matrix::Matrix(c(0),0,length(vocab))
+  colnames(freqs_month)<-vocab
+  
+  freqs_year<-Matrix::Matrix(c(0),0,length(vocab))
+  colnames(freqs_year)<-vocab
+  
+  
+  doc_freqs_day<-Matrix::Matrix(c(0),0,length(vocab))
   colnames(doc_freqs_day)<-vocab
-  rownames(doc_freqs_day)<-un_dates_day
-  doc_freqs_week<-matrix(c(0),length(un_dates_week),length(vocab))
+  
+  doc_freqs_week<-Matrix::Matrix(c(0),0,length(vocab))
   colnames(doc_freqs_week)<-vocab
-  rownames(doc_freqs_week)<-un_dates_week
-  doc_freqs_month<-matrix(c(0),length(un_dates_month),length(vocab))
+  
+  doc_freqs_month<-Matrix::Matrix(c(0),0,length(vocab))
   colnames(doc_freqs_month)<-vocab
-  rownames(doc_freqs_month)<-un_dates_month
-  doc_freqs_year<-matrix(c(0),length(un_dates_year),length(vocab))
+  
+  doc_freqs_year<-Matrix::Matrix(c(0),0,length(vocab))
   colnames(doc_freqs_year)<-vocab
-  rownames(doc_freqs_year)<-un_dates_year
   
   #calculate frequencies on daily basis
   log_to_file(message = "&emsp; Calculating frequencies on daily basis",logfile)
+  loghelper<-floor(seq(1,length(un_dates_day),length.out = 11))[2:11]
+  names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+  count=0
   for(i in 1:length(un_dates_day)){
-    freqs_day[i,]<-colSums(x = dtm[which(dates_day==un_dates_day[i]),,drop=FALSE])
-    doc_freqs_day[i,]<-colSums(x = bin_dtm[which(dates_day==un_dates_day[i]),,drop=FALSE])
+    count=count+1
+    relevant<-which(dates_day==un_dates_day[i])
+    freqs_day<-rbind(freqs_day,colSums(x = dtm[relevant,,drop=FALSE]))
+    doc_freqs_day<-rbind(doc_freqs_day,colSums(x = bin_dtm[relevant,,drop=FALSE]))
+    if(count %in% loghelper){
+      if(length(un_dates_day)>10){
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",un_dates_day[i],")"),logfile)
+      }
+      else{
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed"),logfile)
+      }
+    }
   }
+  rownames(freqs_day)<-un_dates_day
+  rownames(doc_freqs_day)<-un_dates_day
   log_to_file(message = "&emsp;  ✔ ",logfile)
   
   #calculate frequencies on weekly basis
   log_to_file(message = "&emsp; Calculating frequencies on weekly basis",logfile)
+  loghelper<-floor(seq(1,length(un_dates_week),length.out = 11))[2:11]
+  names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+  count=0
   for(i in 1:length(un_dates_week)){
-    freqs_week[i,]<-colSums(x = dtm[which(dates_week==un_dates_week[i]),,drop=FALSE])
-    doc_freqs_week[i,]<-colSums(x = bin_dtm[which(dates_week==un_dates_week[i]),,drop=FALSE])
+    count=count+1
+    relevant<-which(dates_week==un_dates_week[i])
+    freqs_week<-rbind(freqs_week,colSums(x = dtm[relevant,,drop=FALSE]))
+    doc_freqs_week<-rbind(doc_freqs_week,colSums(x = bin_dtm[relevant,,drop=FALSE]))
+    if(count %in% loghelper){
+      if(length(un_dates_week)>10){
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",un_dates_week[i],")"),logfile)
+      }
+      else{
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed"),logfile)
+      }
+    }
   }
+  rownames(freqs_week)<-un_dates_week
+  rownames(doc_freqs_week)<-un_dates_week
   log_to_file(message = "&emsp;  ✔ ",logfile)
   
   #calculate frequencies on monthly basis
-  log_to_file(message = "&emsp; Calculating frequencies on montly basis",logfile)
+  log_to_file(message = "&emsp; Calculating frequencies on monthly basis",logfile)
+  loghelper<-floor(seq(1,length(un_dates_month),length.out = 11))[2:11]
+  names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+  count=0
   for(i in 1:length(un_dates_month)){
-    freqs_month[i,]<-colSums(x = dtm[which(dates_month==un_dates_month[i]),,drop=FALSE])
-    doc_freqs_month[i,]<-colSums(x = bin_dtm[which(dates_month==un_dates_month[i]),,drop=FALSE])
+    count=count+1
+    relevant<-which(dates_month==un_dates_month[i])
+    freqs_month<-rbind(freqs_month,colSums(x = dtm[relevant,,drop=FALSE]))
+    doc_freqs_month<-rbind(doc_freqs_month,colSums(x = bin_dtm[relevant,,drop=FALSE]))
+    if(count %in% loghelper){
+      if(length(un_dates_month)>10){
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",un_dates_month[i],")"),logfile)
+      }
+      else{
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed"),logfile)
+      }
+    }
   }
+  rownames(freqs_month)<-un_dates_month
+  rownames(doc_freqs_month)<-un_dates_month
   log_to_file(message = "&emsp;  ✔ ",logfile)
   
   #calculate frequencies on yearly basis
-  log_to_file(message = "&emsp; Calculating frequencies on annual basis",logfile)
+  log_to_file(message = "&emsp; Calculating frequencies on yearly basis",logfile)
+  loghelper<-floor(seq(1,length(un_dates_year),length.out = 11))[2:11]
+  names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+  count=0
   for(i in 1:length(un_dates_year)){
-    freqs_year[i,]<-colSums(x = dtm[which(dates_year==un_dates_year[i]),,drop=FALSE])
-    doc_freqs_year[i,]<-colSums(x = bin_dtm[which(dates_year==un_dates_year[i]),,drop=FALSE])
+    count=count+1
+    relevant<-which(dates_year==un_dates_year[i])
+    freqs_year<-rbind(freqs_year,colSums(x = dtm[relevant,,drop=FALSE]))
+    doc_freqs_year<-rbind(doc_freqs_year,colSums(x = bin_dtm[relevant,,drop=FALSE]))
+    if(count %in% loghelper){
+      if(length(un_dates_year)>10){
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",un_dates_year[i],")"),logfile)
+      }
+      else{
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed"),logfile)
+      }
+    }
   }
+  rownames(freqs_year)<-un_dates_year
+  rownames(doc_freqs_year)<-un_dates_year
   log_to_file(message = "&emsp;  ✔ ",logfile)
   
   #calculating relative frequencies
@@ -662,6 +872,8 @@ calculate_diachron_frequencies<-function(dtm,meta){
          rel_freqs_day=rel_freqs_day)
   )
 }
+
+  
 
 
 
@@ -996,9 +1208,9 @@ calculate_dictioanry_frequencies<-function(meta,dtm,dict_terms,conceptnames,dict
   rownames(doc_freqs_year_dict)<-un_dates_year
   
   for(l in 1:length(conceptnames)){
-    try({freqs_day_dict[,l]<-rowSums(freqs_day[,dicts_available[[l]]])})
-    try({freqs_week_dict[,l]<-rowSums(freqs_week[,dicts_available[[l]]])})
-    try({freqs_month_dict[,l]<-rowSums(freqs_month[,dicts_available[[l]]])})
+    try({freqs_day_dict[,l]<-rowSums(freqs_day[,dicts_available[[l]],drop=F])})
+    try({freqs_week_dict[,l]<-rowSums(freqs_week[,dicts_available[[l]],drop=F])})
+    try({freqs_month_dict[,l]<-rowSums(freqs_month[,dicts_available[[l]],drop=F])})
     try({freqs_year_dict[,l]<-rowSums(freqs_year[,dicts_available[[l]],drop=F])})
     
     try({doc_freqs_day_dict[,l]<-unlist(lapply(un_dates_day,FUN = function(x){return(length(which(rowSums(bin_dtm[which(dates_day==x),dicts_available[[l]],drop=F])>0)))}))})
@@ -1061,7 +1273,7 @@ copyListButRemoveNullValuesAndEmptyStringValues = function(inputList){
     if(is.null(listValue)){
       next # skip/do not include this parameter (work around for optional parameters which are not set (set to NULL)) because abstract class stops with error when a parameter is NULL. So this removes these parameters completely which only gives a warning for missing parameters.
     }
-
+    
     resultList[[name]] <- listValue
   }
   return (resultList)
@@ -1102,6 +1314,7 @@ getSpecificResultFolderNameFromSelectedTopic <- function(data){
   
   return(specificResultFolderName)
 }
+
 
 # convenience function to get available distinct values even if column contains multiple values separated by separator
 getAvailableValues <- function(dataToUse, columnName, columnContainsMultipleValues = F, separator = ",", replaceNullWith = NULL, replaceNAWith = NA, replaceEmptyWith =""){
@@ -1446,5 +1659,30 @@ createPlotsForDistributionData <- function(statsDistributionData, sortByValueDes
     return(subplot(finalPlots))
   
 }
+
+
+
+
+
+remove_locations<-function(token){
+  locations<-readtext::readtext(file = "officialnamesofcountries.pdf")$text
+  locations<-substr(x = locations,start=58,stop = nchar(locations))
+  locations<-stringr::str_split(string = locations,pattern = "\n",simplify = T)[1,]
+  locations<-locations[-which(nchar(locations)<3)]
+  
+  for( loc in locations){
+    l<-length(stringr::str_split())
+    for(i in 1:(nrow(token)-5)){
+      string<-token[i]
+      
+    }
+  }
+  
+  
+  
+}
+
+
+
 
 

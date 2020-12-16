@@ -14,8 +14,7 @@ tabPanel("Importer",
                                        conditionalPanel(condition='input.Import_csv_files!= null',
                                                         box(width=2,title = tags$div("CSV-Import Parameters",style="color:white;"),status = "primary",collapsible = T,solidHeader = T,
                                                             prettyCheckbox(inputId = "Import_load_csv_header",label = "header?",value = TRUE,status = "primary",shape = "curve"),
-                                                            textInput(inputId = "import_load_csv_seperator",label = "seperator:",value = ","),
-                                                            textInput(inputId = "import_load_csv_encoding",label = "encoding:",value = "UTF-8")
+                                                            textInput(inputId = "import_load_csv_seperator",label = "seperator:",value = ",")
                                                         ),
                                                         withBusyIndicatorUI(
                                                           shinyBS::bsButton(inputId = "Import_load_csv",label = "use selected csv",icon = icon("upload"),style = "info")
@@ -25,6 +24,36 @@ tabPanel("Importer",
                                                                          #tags$img(src="success.svg"),
                                                                          #tags$br(),
                                                                          tags$br(),
+                                                                         box(width=2,title = "Split Method",status = "primary",collapsible = T,
+                                                                             selectInput(inputId = "Import_csv_split_method", "Method:",
+                                                                                         choices=c("None", "Regular Expression", "Hard Split", "Script")
+                                                                             )%>%
+                                                                               shinyInput_label_embed(
+                                                                                 icon("info") %>%
+                                                                                   bs_embed_tooltip(title = "This Method will split the text of the imported files.")
+                                                                               ),
+                                                                             conditionalPanel(
+                                                                               condition = "input.Import_csv_split_method != 'None'",
+                                                                               uiOutput("UI_Import_csv_column_name")
+                                                                             ),
+                                                                             conditionalPanel(
+                                                                               condition = "input.Import_csv_split_method == 'Regular Expression'",
+                                                                               textInput(inputId = "Import_csv_split_method_regex",label = "Regular Expression:", value = "\\n\\n")
+                                                                             ),
+                                                                             conditionalPanel(
+                                                                               condition = "input.Import_csv_split_method == 'Hard Split'",
+                                                                               numericInput(inputId = "Import_csv_split_method_split_number",label = "Split after x Characters:", value = 2000, min = 1)
+                                                                             ),
+                                                                             conditionalPanel(
+                                                                               condition = "input.Import_csv_split_method == 'Script'",
+                                                                               shinyBS::bsButton("Import_script_split_csv",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script to split text in imported files")
+                                                                             ),
+                                                                             conditionalPanel(
+                                                                               condition = "input.Import_csv_split_method != 'None'",
+                                                                               tags$br(),
+                                                                               actionButton("Import_csv_split_test_view", "Test Split", style = "info", block=T)
+                                                                             )
+                                                                         ),
                                                                          fluidRow(style="margin-left:0px;margin-right:0px",
                                                                                   shinyBS::bsButton(inputId = "Import_check_csv",label = "check csv",icon = icon("search"),style = "primary"),
                                                                                   shinyBS::bsButton(inputId = "Import_start_mapping",label = "start mapping",icon = icon("play"),style="info")
@@ -64,16 +93,13 @@ tabPanel("Importer",
                                                                                                        ),
                                                                                                        fluidRow(style="margin-left:0px; margin-right:0px;",
                                                                                                                 column(3,
-                                                                                                                       column(3,
-                                                                                                                              uiOutput(outputId = "UI_Import_csv_id_doc")
-                                                                                                                       ),
-                                                                                                                       column(3,
+                                                                                                                       column(4,
                                                                                                                               uiOutput(outputId = "UI_Import_csv_title")
                                                                                                                        ),
-                                                                                                                       column(3,
+                                                                                                                       column(4,
                                                                                                                               uiOutput(outputId = "UI_Import_csv_date")
                                                                                                                        ),
-                                                                                                                       column(3,
+                                                                                                                       column(4,
                                                                                                                               uiOutput(outputId = "UI_Import_csv_body")
                                                                                                                        )
                                                                                                                 ),
@@ -107,72 +133,67 @@ tabPanel("Importer",
                                                                                                        ),
                                                                                                        fluidRow(style="margin-left:0px; margin-right:0px;",
                                                                                                                 column(3,
-                                                                                                                       column(3,
-                                                                                                                              shinyBS::bsButton("Import_script_id_doc",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       column(4,
+                                                                                                                              shinyBS::bsButton("Import_script_title_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                               tags$br(),
-                                                                                                                              shinyBS::bsButton("Import_type_id_doc",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                              shinyBS::bsButton("Import_type_title_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                        ),
-                                                                                                                       column(3,
-                                                                                                                              shinyBS::bsButton("Import_script_title",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       column(4,
+                                                                                                                              shinyBS::bsButton("Import_script_date_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                               tags$br(),
-                                                                                                                              shinyBS::bsButton("Import_type_title",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                                       ),
-                                                                                                                       column(3,
-                                                                                                                              shinyBS::bsButton("Import_script_date",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                                              tags$br(),
-                                                                                                                              shinyBS::bsButton("Import_type_date",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                              shinyBS::bsButton("Import_type_date_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                               
                                                                                                                        ),
-                                                                                                                       column(3,
-                                                                                                                              shinyBS::bsButton("Import_script_body",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       column(4,
+                                                                                                                              shinyBS::bsButton("Import_script_body_csv",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
                                                                                                                               tags$br(),
-                                                                                                                              shinyBS::bsButton("Import_type_body",label = "Type",style="info",icon=icon("edit"),block=T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                              shinyBS::bsButton("Import_type_body_csv",label = "Type",style="info",icon=icon("edit"),block=T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                        )
                                                                                                                 ),
                                                                                                                 column(1,
-                                                                                                                       shinyBS::bsButton("Import_script_mde1",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       shinyBS::bsButton("Import_script_mde1_csv",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
                                                                                                                        tags$br(),
-                                                                                                                       shinyBS::bsButton("Import_type_mde1",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       shinyBS::bsButton("Import_type_mde1_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                 ),
                                                                                                                 column(1,
-                                                                                                                       shinyBS::bsButton("Import_script_mde2",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       shinyBS::bsButton("Import_script_mde2_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                        tags$br(),
-                                                                                                                       shinyBS::bsButton("Import_type_mde2",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       shinyBS::bsButton("Import_type_mde2_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                 ),
                                                                                                                 column(1,
-                                                                                                                       shinyBS::bsButton("Import_script_mde3",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       shinyBS::bsButton("Import_script_mde3_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                        tags$br(),
-                                                                                                                       shinyBS::bsButton("Import_type_mde3",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       shinyBS::bsButton("Import_type_mde3_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                 ),
                                                                                                                 column(1,
-                                                                                                                       shinyBS::bsButton("Import_script_mde4",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       shinyBS::bsButton("Import_script_mde4_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                        tags$br(),
-                                                                                                                       shinyBS::bsButton("Import_type_mde4",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       shinyBS::bsButton("Import_type_mde4_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                 ),
                                                                                                                 column(1,
-                                                                                                                       shinyBS::bsButton("Import_script_mde5",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       shinyBS::bsButton("Import_script_mde5_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                        tags$br(),
-                                                                                                                       shinyBS::bsButton("Import_type_mde5",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       shinyBS::bsButton("Import_type_mde5_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                 ),
                                                                                                                 column(1,
-                                                                                                                       shinyBS::bsButton("Import_script_mde6",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       shinyBS::bsButton("Import_script_mde6_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                        tags$br(),
-                                                                                                                       shinyBS::bsButton("Import_type_mde6",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       shinyBS::bsButton("Import_type_mde6_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                 ),
                                                                                                                 column(1,
-                                                                                                                       shinyBS::bsButton("Import_script_mde7",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       shinyBS::bsButton("Import_script_mde7_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                        tags$br(),
-                                                                                                                       shinyBS::bsButton("Import_type_mde7",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       shinyBS::bsButton("Import_type_mde7_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                 ),
                                                                                                                 column(1,
-                                                                                                                       shinyBS::bsButton("Import_script_mde8",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       shinyBS::bsButton("Import_script_mde8_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                        tags$br(),
-                                                                                                                       shinyBS::bsButton("Import_type_mde8",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       shinyBS::bsButton("Import_type_mde8_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                 ),
                                                                                                                 column(1,
-                                                                                                                       shinyBS::bsButton("Import_script_mde9",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
+                                                                                                                       shinyBS::bsButton("Import_script_mde9_csv",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                        tags$br(),
-                                                                                                                       shinyBS::bsButton("Import_type_mde9",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
+                                                                                                                       shinyBS::bsButton("Import_type_mde9_csv",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                 )
                                                                                                        ),
                                                                                                        tags$br(),
@@ -194,7 +215,6 @@ tabPanel("Importer",
                                                                                                                 column(9,
                                                                                                                        uiOutput("Import_csv_metadata_names_warning")
                                                                                                                 )
-                                                                                                                
                                                                                                        )
                                                                                               )
                                                                                           ),
@@ -207,7 +227,8 @@ tabPanel("Importer",
                                                                                           ),
                                                                                           
                                                                                           shinyBS::bsButton("Import_csv_start_preprocess",label = "Start Preprocessing and save csv-files",style="info",icon=icon("tags")),
-                                                                                          shinyBS::bsButton("Import_csv_start_preprocess_and_write",label = "Start Preprocessing and directly wirte to DB",style="info",icon=icon("upload"))
+                                                                                          shinyBS::bsButton("Import_csv_start_preprocess_and_write",label = "Start Preprocessing and directly wirte to DB",style="info",icon=icon("upload")),
+                                                                                          shinyBS::bsButton("Import_csv_sanity_check",label = "Sanity Check",style="info",icon=icon("search"))
                                                                          )
                                                         )
                                                         
@@ -241,6 +262,36 @@ tabPanel("Importer",
                                                                                       prettyCheckbox(inputId = "Import_mtf_metadata_csv_header",label = "header?",value = TRUE,status = "primary",shape = "curve"),
                                                                                       textInput(inputId = "import_load_mtf_seperator",label = "seperator:",value = ","),
                                                                                       textInput(inputId = "import_load_mtf_encoding",label = "encoding:",value = "UTF-8")
+                                                                                  ),
+                                                                                  box(width=2,title = "Split Method",status = "primary",collapsible = T,
+                                                                                      selectInput(inputId = "Import_mtf_split_method", "Method:",
+                                                                                                  choices=c("None", "Regular Expression", "Hard Split", "Script")
+                                                                                      )%>%
+                                                                                        shinyInput_label_embed(
+                                                                                          icon("info") %>%
+                                                                                            bs_embed_tooltip(title = "This Method will split the text of the imported files.")
+                                                                                        ),
+                                                                                      conditionalPanel(
+                                                                                        condition = "input.Import_mtf_split_method != 'None'",
+                                                                                        uiOutput("UI_Import_mtf_column_name")
+                                                                                      ),
+                                                                                      conditionalPanel(
+                                                                                        condition = "input.Import_mtf_split_method == 'Regular Expression'",
+                                                                                        textInput(inputId = "Import_mtf_split_method_regex",label = "Regular Expression:", value = "\\n\\n")
+                                                                                      ),
+                                                                                      conditionalPanel(
+                                                                                        condition = "input.Import_mtf_split_method == 'Hard Split'",
+                                                                                        numericInput(inputId = "Import_mtf_split_method_split_number",label = "Split after x Characters:", value = 2000, min = 1)
+                                                                                      ),
+                                                                                      conditionalPanel(
+                                                                                        condition = "input.Import_mtf_split_method == 'Script'",
+                                                                                        shinyBS::bsButton("Import_script_split_mtf",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script to split text in imported files")
+                                                                                      ),
+                                                                                      conditionalPanel(
+                                                                                        condition = "input.Import_mtf_split_method != 'None'",
+                                                                                        tags$br(),
+                                                                                        actionButton("Import_mtf_split_test_view", "Test Split", style = "info", block=T)
+                                                                                      )
                                                                                   ),
                                                                                   shinyBS::bsButton(inputId = "Import_check_mtf",label = "check import",icon = icon("search"),style = "primary"),
                                                                                   shinyBS::bsButton(inputId = "Import_start_mapping_mtf",label = "start mapping",icon = icon("play"),style="info")
@@ -281,16 +332,13 @@ tabPanel("Importer",
                                                                                                        # column(3,tags$br()),
                                                                                                        fluidRow(style="margin-left:0px; margin-right:0px;",
                                                                                                                 column(3,
-                                                                                                                       column(3,
-                                                                                                                              uiOutput(outputId = "UI_Import_mtf_id_doc")
-                                                                                                                       ),
-                                                                                                                       column(3,
+                                                                                                                       column(4,
                                                                                                                               uiOutput(outputId = "UI_Import_mtf_title")
                                                                                                                        ),
-                                                                                                                       column(3,
+                                                                                                                       column(4,
                                                                                                                               uiOutput(outputId = "UI_Import_mtf_date")
                                                                                                                        ),
-                                                                                                                       column(3,
+                                                                                                                       column(4,
                                                                                                                               uiOutput(outputId = "UI_Import_mtf_body")
                                                                                                                        )
                                                                                                                 ),
@@ -324,22 +372,17 @@ tabPanel("Importer",
                                                                                                        ),
                                                                                                        fluidRow(style="margin-left:0px; margin-right:0px;", 
                                                                                                                 column(3,
-                                                                                                                       column(3,
-                                                                                                                              shinyBS::bsButton("Import_script_id_doc_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
-                                                                                                                              tags$br(),
-                                                                                                                              shinyBS::bsButton("Import_type_id_doc_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
-                                                                                                                       ),
-                                                                                                                       column(3,
+                                                                                                                       column(4,
                                                                                                                               shinyBS::bsButton("Import_script_title_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                               tags$br(),
                                                                                                                               shinyBS::bsButton("Import_type_title_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                        ),
-                                                                                                                       column(3,
+                                                                                                                       column(4,
                                                                                                                               shinyBS::bsButton("Import_script_date_mtf",label = "Script",style = "info",icon=icon("terminal"),block = T,title = "Use an R-Script for creating the metadata"),
                                                                                                                               tags$br(),
                                                                                                                               shinyBS::bsButton("Import_type_date_mtf",label = "Type",style="info",icon=icon("edit"),block = T,title = "Type in the attrbute you want to use for all documents")
                                                                                                                        ),
-                                                                                                                       column(3,
+                                                                                                                       column(4,
                                                                                                                               shinyBS::bsButton("Import_script_body_mtf",label = "Script",style = "info",icon=icon("terminal"),block=T,title = "Use an R-Script for creating the metadata"),
                                                                                                                               tags$br(),
                                                                                                                               shinyBS::bsButton("Import_type_body_mtf",label = "Type",style="info",icon=icon("edit"),block=T,title = "Type in the attrbute you want to use for all documents")
@@ -423,7 +466,8 @@ tabPanel("Importer",
                                                                                           ),
                                                                                           
                                                                                           shinyBS::bsButton("Import_mtf_start_preprocess",label = "Start Preprocessing and save csv-files",style="info",icon=icon("tags")),
-                                                                                          shinyBS::bsButton("Import_mtf_start_preprocess_and_write",label = "Start Preprocessing and directly wirte to DB",style="info",icon=icon("upload"))
+                                                                                          shinyBS::bsButton("Import_mtf_start_preprocess_and_write",label = "Start Preprocessing and directly wirte to DB",style="info",icon=icon("upload")),
+                                                                                          shinyBS::bsButton("Import_mtf_sanity_check",label = "Sanity Check",style="info",icon=icon("search"))
                                                                          )
                                                         )
                                        )
@@ -436,25 +480,90 @@ tabPanel("Importer",
              tags$br(),
              withBusyIndicatorUI(
                shinyBS::bsButton(
-                 inputId = "Upload_Data",
-                 label = "Upload selected data to DB",
-                 icon = icon("database"),
-                 style = "default"
-               )
+                     inputId = "Upload_Data_DB_and_Solr",
+                     label = "Upload selected data to DB and import to Solr",
+                     icon = icon("upload"),
+                     style = "default"
+                   )
              ),
-             withBusyIndicatorUI(
-               shinyBS::bsButton(
-                 inputId = "Import_to_solr",
-                 label = "Import data to solr",
-                 icon = icon("upload"),
-                 style = "default"
-               )
-             ),
+             # withBusyIndicatorUI(
+             #   shinyBS::bsButton(
+             #     inputId = "Upload_Data",
+             #     label = "Upload selected data to DB",
+             #     icon = icon("database"),
+             #     style = "default"
+             #   )
+             # ),
+             # withBusyIndicatorUI(
+             #   shinyBS::bsButton(
+             #     inputId = "Import_to_solr",
+             #     label = "Import data to solr",
+             #     icon = icon("upload"),
+             #     style = "default"
+             #   )
+             # ),
              shinyBS::bsButton(
                inputId = "Import_delete",
                label = "Delete",
                icon = icon("remove"),
                style = "danger"
              )
+           ),
+           tabPanel(
+             "REFI-Import",
+             tags$br(),
+             tags$br(),
+             box(
+               id = "refi_import_box1"
+               , width = 4
+               , tags$div(
+                 style=""
+                 , textInput(
+                   inputId = "refi_import_dataset_name"
+                   , label = "Choose a name for the dataset or annotation scheme"
+                   , value = "REFI"
+                   , placeholder = "refi-import"
+                 )
+                 , verbatimTextOutput(
+                   outputId = "refi_import_validate_dataset"
+                 )
+                 , fileInput(
+                   inputId = "refi_import_fileInput"
+                   , label = "Choose a REFI-QDA Project file (.qdpx) or a REFI-QDA Codebook file (.qdc)."
+                   , accept = c(".xml", ".qdpx", ".qdc", ".qde")
+                   , buttonLabel = "Start import"
+                 )
+                 # , infoBox(
+                 #   title = "Naming convention"
+                 #   , value = "New text sources are saved as a dataset and as a collection.\nIn case of an CodeBook the dataset, collection and the annotation system will have the same name."
+                 # )
+               )
+             ),
+             box(
+               id = "refi_import_box2"
+               , width = 4
+               , tags$div(
+                 style=""
+                 , DT::dataTableOutput(outputId = "refi_import_table_datasets")
+               )
+             ),
+             box(
+               id = "refi_import_box3"
+               , width = 4
+               , panel(
+                 tags$div(
+                   DT::dataTableOutput(outputId = "refi_import_table_annotation_scheme")
+                 )
+               )
+               , panel(
+                 tags$div(
+                   conditionalPanel(
+                     condition = "input.selectedAnnotationSchemeImport != ''"
+                     , uiOutput("annotation_scheme_list_import")
+                   )
+                 )
+               )
+             )
            )
-         ))
+         )
+)

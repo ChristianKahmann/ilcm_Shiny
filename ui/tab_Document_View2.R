@@ -20,12 +20,15 @@ tabPanel(value = "Document View2",title = "Document View",
          ),
          box(width=8,
              div(style = 'height: 80vh; overflow-y: auto;',
-                 column(11,
-                 tags$h1(textOutput(outputId = "Doc_DV_title"))
+                 fluidRow(style="margin-left:0px;margin-right:0px",
+                          column(11,
+                                 tags$h1(textOutput(outputId = "Doc_DV_title"))
+                          ),
+                          column(1,
+                                 uiOutput("Doc_DV_documentwide_annotations") 
+                          )
                  ),
-                 column(1,
-                        uiOutput("Doc_DV_documentwide_annotations") 
-                        ),
+                 tags$hr(),
                  annotateTextComponent2()
              )
          ),

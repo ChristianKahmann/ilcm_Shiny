@@ -4,12 +4,33 @@ db1<<-1
 db2<<-1
 values$open<-F
 
+#' load data for visualization:
+#'  depends on:
+#'    input$Det_VA_Update: detailes from volatility analysis for updating
+#'    input$Det_VA_Select_Word: detailes from volatility analysis for selected word
+#'    values$va_voldata: data from voality analysis
+#'    values$va_cy: data from cooc years
+#'    values$va_freq: volatility analysis freqeuncy
+#'    values$va_un_dates: unique dates from volatility analysis
+#'    input$max_words: maximum number of words
+#'    input$was: input content (e.g. new content)
+#'    input$Det_VA_minFreq_high: highest value of all minimal frequencies selected for volatility analysis
+#'    values$va_voldata: volatility analysis voldata
+#'    input$Det_VA_maxFreq_low: lowest value of all maximal frequencies selected for volatility analysis
+#'    input$Det_VA_minFreq_low: lowest value of all minimal frequencies selected for volatility analysis
+#'    input$Det_VA_time: selected time-intervall for volatility analysis 
+#'    input$Det_VA_POS: select Part-Of-Speech-Tagging for volatility analysis
+#'    values$va_pos_tags: selected part of speech tags
+#'    input$Det_VA_NER: select Entity (NER)-Tagging
+#'    values$va_ner_tags: selected entity-tags  
+#'    
+#'    
 observeEvent(input$Det_VA_Update,{
   #load data once and make it avaiable for all visulisations
   output$VA_plot<-renderPlotly({
- validate(
-   need(nchar(input$Det_VA_Select_Word)>0,message="Please choose a word.")
- )
+    validate(
+      need(nchar(input$Det_VA_Select_Word)>0,message="Please choose a word.")
+    )
     termss<<-rownames(values$va_freq)
     un_dates<-values$va_un_dates[order(values$va_un_dates,decreasing = F)]
     label<<-un_dates
@@ -138,8 +159,7 @@ observeEvent(input$Det_VA_Update,{
     d<-d[order(d[,2],decreasing = T),]
     d[,2]<-d[,2]/max(d[,2])  
     d[,2]<-d[,2]*20
-    
-    wordcloud2(d,size=0.35,color = colors,backgroundColor = "black",fontFamily = "Helvetica")
+    wordcloud2(d,size=0.4,color = colors,backgroundColor = "black",fontFamily = "Helvetica")
   }) 
   
   output$volat_divergent_headline<-renderUI({
@@ -204,9 +224,10 @@ observeEvent(input$Det_VA_Update,{
   
   output$Det_VA_highest_period<-renderPlotly({
     id<-which(values$va_un_dates==(input$Det_VA_time))
-    frequence<-values$va_freq[,id]
-    volat<-values$va_voldata[,id]
     words<-rownames(values$va_voldata)
+    frequence<-values$va_freq[words,id]
+    volat<-values$va_voldata[,id]
+
     if(input$Det_VA_POS!="all"){
       words<-values$va_pos_tags[which(values$va_pos_tags[,2]==input$Det_VA_POS),1]
       frequence<-frequence[words]
@@ -217,13 +238,22 @@ observeEvent(input$Det_VA_Update,{
       frequence<-frequence[words]
       volat<-volat[words]
     }
-    
     p<-plot_ly(x=frequence,y=volat,text=words,color=volat,size=(volat*frequence),colors=c("firebrick","limegreen"))
     p<-layout(p,yaxis=list(zeroline=FALSE,title="Context Volatility"),xaxis=list(zeroline=FALSE,title="Frequency",type="log"))
     return(p)
   })
 })
 
+#' render wordcloud data for volatility analysis
+#' depends on:
+#'   values$va_voldata: volatility data
+#'   values$va_freq: freqeunces of volatility data
+#'   values$va_un_dates: unique dates for volatility analysis
+#'   input$Det_VA_WC_TIME: selected time intervall for word cloud representation
+#'   values$VA_number_of_plots: number of plots
+#'   values$VA_dates_timeintervall_un: unique dates from time-intervall
+#'   values$VA_dates_timeintervall: dates from time-intervall
+#'   
 output$Det_VA_WC<-renderUI({
   voldata<-values$va_voldata
   freqs<-values$va_freq
@@ -262,7 +292,7 @@ output$Det_VA_WC<-renderUI({
 
 
 
-
+#'
 observeEvent(input$Det_VA_Update,{
   validate(
     need(length(values$VA_number_of_plots)>0,message=FALSE)

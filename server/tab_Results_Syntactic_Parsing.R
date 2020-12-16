@@ -1,6 +1,12 @@
 
 
-#render table with finished results for vectorility analysis
+#' render table with finished results for syntactic parsing
+#' depends on:
+#'    values$reload_parsing_result: releoad syntactic parsing result (if deleted)
+#'    values$collection_selected: selected collection for syntactic parsing
+#'    values$tasks_parsing: syntactic parsing tasks
+#'    values$results_parsing: syntactic parsing results
+#'    
 output$Syntactic_Parsing_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_parsing_result
@@ -125,7 +131,12 @@ output$Syntactic_Parsing_Results <- renderDataTable({
   })
 
 
-#check wheather a certain result was clicked and then switch with needed information to details tab
+#' check wheather a certain result was clicked and then switch with needed information to details tab
+#' input$Syntactic_Parsing_Results_rows_selected: selected rows from list of syntactic parsing results
+#' values$Details_Analysis: details from syntactic parsing analysis 
+#' values$Details_Data_SP: details from syntactic parsing data
+#' values$Parsing_Results_Files: syntactic parsing result files
+#' 
 observeEvent(ignoreInit = T,input$Syntactic_Parsing_Results_rows_selected,{
   s = input$Syntactic_Parsing_Results_rows_selected
   if (length(s)) {
@@ -143,7 +154,12 @@ observeEvent(ignoreInit = T,input$Syntactic_Parsing_Results_rows_selected,{
 
 
 
-#if delete vectorility analysis result is clicked delete files and db entry
+#' if delete vectorility analysis result is clicked delete files and db entry
+#' depends on:
+#'   input$delete_parsing_results: deleted syntactic parsing results
+#'   values$Parsing_Results_Files: syntactic parsing result files
+#'   values$reload_parsing_result: reload syntactic parsing (after deleting)
+#'   
 observeEvent(input$delete_parsing_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_parsing_results, "_")[[1]][5])
@@ -151,13 +167,17 @@ observeEvent(input$delete_parsing_results, {
     unlink(values$Parsing_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_parsing_results\",  "delete_button_parsing_results_0")'))
-    delete_result_from_datbase(isolate(values$results_parsing[selectedRow,]))
     values$reload_parsing_result<-TRUE
   }
 })
 
 
-#if more details button is clicked open modal showing all parameters
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   input$more_details_parsing_results: details from syntactic parsing results
+#'   values$parsing_selected_row: selected rows from syntactic parsing
+#'   values$Det_KE_data: detailed KE data
+#'   values$tasks_parsing: syntactic parsing tasks
 observeEvent(input$more_details_parsing_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_parsing_results, "_")[[1]][6])
@@ -174,6 +194,10 @@ observeEvent(input$more_details_parsing_results,{
   }
 })
 
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   values$parsing_selected_row: selected syntactic parsing result list
+#'   values$tasks_parsing: syntactic parsing tasks
 output$more_details_parsing_table<-DT::renderDataTable({
   validate(
     need(values$parsing_selected_row>0,message=F)

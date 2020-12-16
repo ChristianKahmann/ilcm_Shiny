@@ -1,4 +1,23 @@
-#check wheather Search button was clicked
+#' check wheather Search button was clicked
+#' depends on:
+#'   input$simple_action_Sub: input of search button
+#'   input$collections_rows_selected: selected rows of a certain collection
+#'   values$solr_url: url tp solr 
+#'   input$simple_inputtext_Sub: input text 
+#'   values$Doc_sort: sorted documents
+#'   values$Doc_custom: custemed documents 
+#'   values$Doc_start: start document
+#'   values$Doc_url: url of documents
+#'   values$Doc_q: parameter q
+#'   values$Doc_fq: parameter fq
+#'   values$Doc_fq_init: initialise parameter fq
+#'   values$numFound_Sub: found numbers
+#'   values$Doc_start: start document search
+#'   values$Doc_search: documents to search
+#'   values$search: search command
+#'   values$Doc_solr_query: solr document query
+#'   values$Doc_delete_documents: should documents be deleted?
+#'   values$Sub_search: search values
 observeEvent(input$simple_action_Sub,{
   #for simple search fq is just defined by the chosen dataset
   validate(
@@ -18,9 +37,9 @@ observeEvent(input$simple_action_Sub,{
       s="*"
     }
     #transform input to Solr Query
-    s<-stringr::str_replace_all(string = s,pattern = "\\+",replacement = " AND ")
-    s<-stringr::str_replace_all(string = s,pattern = "\\#",replacement = " OR ")
-    s<-stringr::str_replace_all(string = s,pattern = "\\-",replacement = " NOT ")
+    s<-stringr::str_replace_all(string = s,pattern = '\\+(?=((?:[^"]*"){2})*[^"]*$)',replacement = " AND ")
+    s<-stringr::str_replace_all(string = s,pattern = '\\#(?=((?:[^"]*"){2})*[^"]*$)',replacement = " OR ")
+    s<-stringr::str_replace_all(string = s,pattern = '\\-(?=((?:[^"]*"){2})*[^"]*$)',replacement = " NOT ")
     
     if(nchar(s)>0){
       q<-s
@@ -59,7 +78,10 @@ observeEvent(input$simple_action_Sub,{
   })
 })
 
-#create solr suggest suggestions for simple search
+#' create solr suggest suggestions for simple search
+#' depends on:
+#'   input$simple_inputtext_Sub: input text for search request
+#'   values$solr_url: url to solr
 observe({
   validate(
     need(!is.null(input$simple_inputtext_Sub),message=F)

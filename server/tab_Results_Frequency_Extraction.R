@@ -1,5 +1,12 @@
 
-#render table with finished results for Frequency extraction
+#' render table with finished results for Frequency extraction
+#' depends on: 
+#'   values$reload_fe_result: reload table if a result was deleted
+#'   values$collection_selected: selected collection for frequency extraction
+#'   values$FE_Results_Files: frequency extraction result files
+#'   values$tasks_fe: frequency extraction tasks
+#'   values$results_fe: results of frequency extraction
+#'   
 output$FE_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_fe_result
@@ -116,7 +123,10 @@ output$FE_Results <- renderDataTable({
 })
 
 
-#check wheather a certain result was clicked and then switch with needed information to details tab
+#' check wheather a certain result was clicked and then switch with needed information to details tab
+#' depends on:
+#'   input$FE_Results_rows_selected: selected rows from frequency extraction result list
+#'   values$Details_Analysis: details of frequency extraction analysis
 observe({
   s = input$FE_Results_rows_selected
   if (length(s)) {
@@ -134,7 +144,12 @@ observe({
 
 
 
-#if delete frequency extraction result is clicked delete files and db entry
+#' if delete frequency extraction result is clicked delete files and db entry
+#' depends on:
+#'   input$delete_fe_results: reload result list after one element was deleted
+#'   values$FE_Results_Files: requency extraction result files 
+#'   values$reload_fe_result: reload list of results from frequency extraction after one element was deleted 
+#'   
 observeEvent(input$delete_fe_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_fe_results, "_")[[1]][5])
@@ -142,12 +157,15 @@ observeEvent(input$delete_fe_results, {
     unlink(values$FE_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_fe_results\",  "delete_button_fe_results_0")'))
-    delete_result_from_datbase(isolate(values$results_fe[selectedRow,]))
     values$reload_fe_result<-TRUE
   }
 })
 
-#if more details button is clicked open modal showing all parameters
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   input$more_details_fe_results: more detailes from frequency extraction
+#'   values$fe_selected_row:  selected rows from result list
+#'   
 observeEvent(input$more_details_fe_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_fe_results, "_")[[1]][6])
@@ -163,6 +181,11 @@ observeEvent(input$more_details_fe_results,{
   }
 })
 
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   values$fe_selected_row: selected rows from frequency extraction result list
+#'   values$tasks_fe: frequency extraction tasks
+#'   
 output$more_details_fe_table<-DT::renderDataTable({
   validate(
     need(values$fe_selected_row>0,message=F)

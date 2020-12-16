@@ -1,9 +1,25 @@
 
-#render the parameter set for cooccurrence analysis
+#' render the parameter set for cooccurrence analysis
 output$Analysis_Parameter_CA<-renderUI({
   tagList(
     tags$hr(),
     #standard parameters
+    fluidRow(
+      column(2,
+             checkboxInput(inputId="CA_use_fixed_vocab",label="use fixed vocabulary?",value=F)   %>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Use an already existing vocabulary instead of performing a parameterized preprocessing. Vocabularies can be added and adjusted in Scripts > Vocabularies.", placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             conditionalPanel(condition = 'input.CA_use_fixed_vocab==true',
+                              selectInput(inputId="CA_fixed_vocab",label="found vocabularies",choices=list.files("collections/vocabularies/",full.names = F),multiple=F)
+             )
+      )
+    ),
     fluidRow(
       column(1,
              selectInput(inputId = "CA_baseform",label = "Baseform Reduction",choices = c("lemma","stemming","none"),selected = "none")#,
@@ -17,14 +33,6 @@ output$Analysis_Parameter_CA<-renderUI({
                    )
                )
       ),
-      column(2,
-             sliderInput(inputId = "CA_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
-                     ,html=T)
-               )),
       column(1,
              selectInput(inputId = "CA_ngram",label = "N-grams",choices = c(1,2,3),selected = 1,multiple = T)%>%
                shinyInput_label_embed(
@@ -34,6 +42,17 @@ output$Analysis_Parameter_CA<-renderUI({
                    )
                )),
       column(2,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
+             sliderInput(inputId = "CA_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
+                     ,html=T)
+               )
+               )),
+           column(2,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              textInput(inputId = "CA_remove_custom",label = HTML("Remove custom words"),placeholder ="Add words (Seperated by ,)")%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -41,8 +60,10 @@ output$Analysis_Parameter_CA<-renderUI({
                      title = "Delete specific words from the analysis. Seperate them with ','.", placement = "right"
                    )
                )
+               )
       ),
       column(2,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              textInput(inputId = "CA_keep_custom",label = HTML("Keep custom words"),placeholder ="Add words (Seperated by ,)")%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -50,17 +71,10 @@ output$Analysis_Parameter_CA<-renderUI({
                      title = "Keep specific words in the analysis. Seperate them with ','. If both custom words and whitelist are specified, they will be merged together.", placement = "right"
                    )
                )
+             )
       )
     ),
     fluidRow(
-      column(1,
-             checkboxInput(inputId = "CA_remove_stopwords",label = "Remove Stopwords",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
-                   )
-               )),
       column(1,
              checkboxInput(inputId = "CA_lowercase",label = "Transform tokens to lowercase?",value = T)%>%
                shinyInput_label_embed(
@@ -70,36 +84,54 @@ output$Analysis_Parameter_CA<-renderUI({
                    )
                )),
       column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
+             checkboxInput(inputId = "CA_remove_stopwords",label = "Remove Stopwords",value = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
+                   )
+               )
+               )),
+      column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              checkboxInput(inputId = "CA_remove_numbers",label = "Remove Numbers?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove types which consist of numbers only from the analysis.", placement = "bottom"
                    )
+               )
                )),
       column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              checkboxInput(inputId = "CA_remove_numbers_all",label = "Remove everything containing a number number?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove words which are composed of at least one number.", placement = "right"
                    )
+               )
                )),
       column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              checkboxInput(inputId = "CA_remove_punctuation",label = "Remove Punctuation?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove words, which reflect punctuation from the analysis.", placement = "right"
                    )
+               )
                )),
       column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
              checkboxInput(inputId = "CA_remove_hyphenation",label = "Remove Hyphenation?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove words, which reflect hyphens from the analysis.", placement = "right"
                    )
+               )
                )),
       column(1,
              checkboxInput(inputId = "CA_consolidate_entities",label = "Consolidate Entities?",value = F)%>%
@@ -110,6 +142,7 @@ output$Analysis_Parameter_CA<-renderUI({
                    )
                ))
     ),
+    conditionalPanel(condition='input.CA_use_fixed_vocab==false',
     fluidRow(
       column(1,
              checkboxInput(inputId = "CA_use_custom_blacklist",label = "use custom blacklist?",value = F)%>%
@@ -121,10 +154,8 @@ output$Analysis_Parameter_CA<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.CA_use_custom_blacklist==true",
                               uiOutput(outputId = "CA_blacklist_UI")
-             )
-      ),
+                 ),
       column(1,
              checkboxInput(inputId = "CA_use_custom_whitelist",label = "use custom whitelist?",value = F)%>%
                shinyInput_label_embed(
@@ -135,10 +166,8 @@ output$Analysis_Parameter_CA<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.CA_use_custom_whitelist==true",
                               uiOutput(outputId = "CA_whitelist_UI")
-             )
-      )
+                   )
     ),
     fluidRow(
       conditionalPanel(condition = "input.CA_use_custom_whitelist==true || input.CA_keep_custom.length>=1",
@@ -238,7 +267,7 @@ output$Analysis_Parameter_CA<-renderUI({
                               numericInput(inputId = "CA_max_docfreq_q",label = "max. doc quantile",min = 0,max = 1,step = 0.25,value=NULL)
              )
       )
-      
+    ) 
     ),
     #specific parameters
     tags$hr(),
@@ -264,8 +293,9 @@ output$Analysis_Parameter_CA<-renderUI({
                    )
                )
       ),
-      column(2,
-             selectInput(inputId = "CA_POS_TYPES",label = "POS-Types",
+      column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
+             selectInput(inputId = "CA_POS_TYPES",label = "Include POS-Types",
                          choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X") ,selected = "all",multiple = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -274,18 +304,50 @@ output$Analysis_Parameter_CA<-renderUI({
                      placement = "right"
                    )
                )
+             )
       ),
-      column(2,
-             selectInput(inputId = "CA_ENTITY_TYPES",label = "NER-Tags",
-                         choices =c("all","PERSON","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+      column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
+             selectInput(inputId = "CA_ENTITY_TYPES",label = " Include NER-Tags",
+                         choices =c("all","PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
                                     "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = "all",multiple=T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
-                     title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-tag option causes the consolidation of entities.",
+                     title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-Tag option causes the consolidation of entities.",
                      placement = "right"
                    )
                )
+             )
+      )
+    ),
+    fluidRow(
+      column(1,offset=2,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
+             selectInput(inputId = "CA_POS_TYPES_exclude",label = "Exclude POS-Types",
+                         choices =c("NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X"), selected=character(0),multiple = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Remove words with a certain POS-Tag from the analysis.",
+                     placement = "right"
+                   )
+               )
+             )
+      ),
+      column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
+             selectInput(inputId = "CA_ENTITY_TYPES_exclude",label = "Exclude NER-Tags",
+                         choices =c("PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+                                    "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = character(0),multiple=T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Remove words with a certain NER-Tag from the analysis. Using this option causes the consolitation of entities.",
+                     placement = "right"
+                   )
+               )
+             )
       )
     ),
     bsButton(inputId = "CA_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
@@ -293,45 +355,124 @@ output$Analysis_Parameter_CA<-renderUI({
 })
 
 
+#' show whitelists stored in collections/whitelists
 output$CA_whitelist_UI<-renderUI({
-  values$invalidate_whitelists
   if(length(list.files("collections/whitelists/"))==0){
-    return(HTML("No whitelists available. You can create whitelists in the Scripts-Whitelists Tab"))
+    return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
   }
   else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "CA_whitelist",label = "Whitelists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "CA_whitelist",label = "Whitelists",
+                         choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
   }
 })
 
+#' show whitelist options when whitelist checkbox is TRUE
+#' depends on:
+#'   input$CA_use_custom_whitelist: should a custom whitelist be used?
+observeEvent(ignoreNULL = T,input$CA_use_custom_whitelist,{
+  if(isTRUE(input$CA_use_custom_whitelist)){
+    shinyjs::show(id = "CA_whitelist")
+  }
+  else{
+    shinyjs::hide(id = "CA_whitelist")
+  }
+})
+
+#' show blacklists stored in collections/blacklists
 output$CA_blacklist_UI<-renderUI({
-  values$invalidate_blacklists
   if(length(list.files("collections/blacklists/"))==0){
-    return(HTML("No blacklists available. You can create blacklists in the Scripts-Blacklist Tab"))
+    return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
   }
   else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "CA_blacklist",label = "Blacklists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "CA_blacklist",label = "Blacklists",
+                         choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
+  }
+})
+
+#' show blacklist options when blacklist checkbox is TRUE
+#' depends on:
+#'   input$CA_use_custom_blacklist: should a custom blacklist be used?
+observeEvent(ignoreNULL = T,input$CA_use_custom_blacklist,{
+  if(isTRUE(input$CA_use_custom_blacklist)){
+    shinyjs::show(id = "CA_blacklist")
+  }
+  else{
+    shinyjs::hide(id = "CA_blacklist")
   }
 })
 
 
-#start cooccurrence analysis script, if submit button is clicked
+#' start cooccurrence analysis script, if submit button is clicked
+#' depends on:
+#'   input$CA_Submit_Script: submited script for cooccurrence analysis
+#'   input$CA_min_termfreq_c: minimum term frequency (count)
+#'   input$CA_max_termfreq_c: maximum term frequency (count)
+#'   input$CA_min_termfreq_p: minimum term probability
+#'   input$CA_max_termfreq_p: maximum term probalility
+#'   input$CA_min_termfreq_r: minimum term rank
+#'   input$CA_max_termfreq_r: maximum term rank
+#'   input$CA_min_termfreq_q: minimum term quantile
+#'   input$CA_max_termfreq_q: maximum document quantile
+#'   input$CA_min_docfreq_c: minimum document frequency (count)
+#'   input$CA_max_docfreq_c: maximum document frequency (count)
+#'   input$CA_min_docfreq_p: minimum document probability
+#'   input$CA_max_docfreq_p: maximum document probability
+#'   input$CA_min_docfreq_r: minimum document rank
+#'   input$CA_max_docfreq_r: maximum document rank
+#'   input$CA_min_docfreq_q: minimum document quantile
+#'   input$CA_max_docfreq_q: maximum document quantile
+#'   input$CA_use_fixed_vocab: should a fixed vocabulary be used?
+#'   input$CA_fixed_vocab: fixed vocabulary
+#'   input$CA_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
+#'   input$CA_docfreq_type: choosen document frequency type
+#'   input$collection_selected: selected collection
+#'   input$CA_baseform: should words be reduced to their baseform?
+#'   input$CA_min_char: select minimum of characters
+#'   input$CA_ngram: choose size of n-grams
+#'   input$CA_remove_stopwords: should stopwords be removed
+#'   input$CA_lowercase: should all words be put in lowercase
+#'   input$CA_remove_numbers: should numbers in the documents be removed?
+#'   input$CA_remove_numbers_all: should all words containing number be removed?
+#'   input$CA_remove_punctuation: should the punctuation be removed?
+#'   input$CA_remove_hyphenation: should hyphenation be removed?
+#'   input$CA_min_Cooc_Freq: select a minimum frequence for words for cooccurrence calculation
+#'   input$CA_cooc_type: which type of cooccurrence analysis should be used? 
+#'   input$CA_remove_custom: should custome words be reduced?
+#'   input$CA_consolidate_entities: should entities be consolidated?
+#'   input$CA_blacklist: blacklist of words that should be removed from the texts
+#'   input$CA_POS_TYPES: select part of speech types that should be used
+#'   input$CA_POS_TYPES_exclude: select part of speech types that should be excluded
+#'   input$CA_ENTITY_TYPES: select entity (NER) types that should be used
+#'   input$CA_ENTITY_TYPES_exclude: select entity (NER) types that should be excluded
+#'   input$CA_keep_custom: costume words to keep in analysis
+#'   input$CA_use_custom_blacklist: should a custome blacklist be used?
+#'   input$CA_use_custom_whitelist: should a custome whitelist be used?
+#'   input$CA_whitelist: selected whitelist of words to keep in analysis
+#'   input$CA_whitelist_expand: expand current whitelist
+#'   input$CA_whitelist_only: just use words on whitelist
+#'   input$analysis_selected: selected analysis type
+#'   input$use_custom_script: should a customed script be used?
+#'   input$custom_script_options: options for the custom script
 observeEvent(input$CA_Submit_Script,{
   valid<-check_pruning_parameters(min_t_c = input$CA_min_termfreq_c,max_t_c = input$CA_max_termfreq_c,min_t_p =input$CA_min_termfreq_p,max_t_p =  input$CA_max_termfreq_p
                                   ,min_t_r =input$CA_min_termfreq_r,max_t_r = input$CA_max_termfreq_r,min_t_q = input$CA_min_termfreq_q, max_t_q = input$CA_max_termfreq_q
                                   ,min_d_c = input$CA_min_docfreq_c,max_d_c = input$CA_max_docfreq_c,min_d_p = input$CA_min_docfreq_p,max_d_p = input$CA_max_docfreq_p
                                   ,min_d_r = input$CA_min_docfreq_r,max_d_r = input$CA_max_docfreq_r,min_d_q = input$CA_min_docfreq_q,max_d_q = input$CA_max_docfreq_q)
+  valid_vocab<-check_if_predefined_vocabulary_is_valid(use_predefined_vocab = input$CA_use_fixed_vocab, vocabulary = input$CA_fixed_vocab)
   if(isFALSE(valid)){
     shinyWidgets::confirmSweetAlert(session = session,title = "Check pruning settings!",text = HTML("It seems your current pruning input parameters don't make sense. It's very likely, that the whole vocabulary will be removed.
                            Check <a href='https://quanteda.io/reference/dfm_trim.html' title='quanteda pruning'> Quanteda Pruning Settings </a>"),html=T,inputId="CA_pruning_continue",
                                       type="warning",closeOnClickOutside = T,btn_labels = c("Change Settings","Continue anyway!"))
+  }
+  else if(isFALSE(valid_vocab)){
+    shinyWidgets::confirmSweetAlert(session = session,title = "Check vocabulary",text = HTML("You chose to use a predefined vocabulary. It seems this vocabulary is not present."),html=T,inputId="CA_pruning_continue",
+                                    type="warning",closeOnClickOutside = T,btn_labels = c("Change Settings","Continue anyway!"))
   }
   else{
     #get pruning parameters
@@ -392,7 +533,9 @@ observeEvent(input$CA_Submit_Script,{
                      consolidate_entities=input$CA_consolidate_entities,
                      blacklist=input$CA_blacklist,
                      reduce_POS=input$CA_POS_TYPES,
+                     reduce_POS_exclude=input$CA_POS_TYPES_exclude,
                      reduce_NER=input$CA_ENTITY_TYPES,
+                     reduce_NER_exclude=input$CA_ENTITY_TYPES_exclude,
                      termfreq_type=input$CA_termfreq_type,
                      docfreq_type=input$CA_docfreq_type,
                      keep_custom=input$CA_keep_custom,
@@ -400,7 +543,9 @@ observeEvent(input$CA_Submit_Script,{
                      use_whitelist=input$CA_use_custom_whitelist,
                      whitelist=input$CA_whitelist,
                      whitelist_expand=input$CA_whitelist_expand,
-                     whitelist_only=input$CA_whitelist_only
+                     whitelist_only=input$CA_whitelist_only,
+                     use_fixed_vocab=input$CA_use_fixed_vocab,
+                     fixed_vocab=input$CA_fixed_vocab
     )
     #create process ID
     ID<-get_task_id_counter()+1
@@ -431,7 +576,57 @@ observeEvent(input$CA_Submit_Script,{
 
 
 
-#start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' depends on:
+#'   input$CA_pruning_continue:continue pruning?
+#'   input$CA_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
+#'   input$CA_docfreq_type: choosen document frequency type
+#'   input$CA_min_termfreq_c: minimum term frequency (count)
+#'   input$CA_max_termfreq_c: maximum term frequency (count)
+#'   input$CA_min_docfreq_c: minimum document frequency (count)
+#'   input$CA_max_docfreq_c: maximum document frequency (count)
+#'   input$CA_min_termfreq_r: minimum term rank
+#'   input$CA_max_termfreq_r: maximum term rank
+#'   input$CA_min_docfreq_r: minimum document rank
+#'   input$CA_max_docfreq_r: maximum document rank
+#'   input$CA_min_termfreq_p: minimum term probability
+#'   input$CA_max_termfreq_p: maximum term probalility
+#'   input$CA_min_docfreq_p: minimum document probability
+#'   input$CA_max_docfreq_p: maximum document probability
+#'   input$CA_min_termfreq_q: minimum term quantile
+#'   input$CA_max_termfreq_q: maximum document quantile
+#'   input$CA_min_docfreq_q: minimum document quantile
+#'   input$CA_max_docfreq_q: maximum document quantile
+#'   input$collection_selected: selected collection
+#'   input$CA_baseform: should words be reduced to their baseform?
+#'   input$CA_min_char: select minimum of characters
+#'   input$CA_ngram: choose size of n-grams
+#'   input$CA_remove_stopwords: should stopwords be removed
+#'   input$CA_lowercase: should all words be put in lowercase
+#'   input$CA_remove_numbers: should numbers in the documents be removed?
+#'   input$CA_remove_numbers_all: should all words containing number be removed?
+#'   input$CA_remove_punctuation: should the punctuation be removed?
+#'   input$CA_remove_hyphenation: should hyphenation be removed?
+#'   input$CA_min_Cooc_Freq: select a minimum frequence for words for cooccurrence calculation
+#'   input$CA_cooc_type: which type of cooccurrence analysis should be used? 
+#'   input$CA_remove_custom: should custome words be reduced?
+#'   input$CA_consolidate_entities: should entities be consolidated?
+#'   input$CA_blacklist: blacklist of words that should be removed from the texts
+#'   input$CA_POS_TYPES: select part of speech types that should be used
+#'   input$CA_POS_TYPES_exclude: select part of speech types that should be excluded
+#'   input$CA_ENTITY_TYPES: select entity (NER) types that should be used
+#'   input$CA_ENTITY_TYPES_exclude: select entity (NER) types that should be excluded
+#'   input$CA_keep_custom: costume words to keep in analysis
+#'   input$CA_use_custom_blacklist: should a custome blacklist be used?
+#'   input$CA_use_custom_whitelist: should a custome whitelist be used?
+#'   input$CA_whitelist: selected whitelist of words to keep in analysis
+#'   input$CA_whitelist_expand: expand current whitelist
+#'   input$CA_whitelist_only: just use words on whitelist
+#'   input$CA_use_fixed_vocab: should a fixed vocabulary be used?
+#'   input$CA_fixed_vocab: fixed vocabulary
+#'   input$analysis_selected: selected analysis type
+#'   input$use_custom_script: should a customed script be used?
+#'   input$custom_script_options: options for the custom script
 observeEvent(input$CA_pruning_continue,ignoreInit = T,{
   validate(
     need(isTRUE(input$CA_pruning_continue),message=F)
@@ -494,7 +689,9 @@ observeEvent(input$CA_pruning_continue,ignoreInit = T,{
                    consolidate_entities=input$CA_consolidate_entities,
                    blacklist=input$CA_blacklist,
                    reduce_POS=input$CA_POS_TYPES,
+                   reduce_POS_exclude=input$CA_POS_TYPES_exclude,
                    reduce_NER=input$CA_ENTITY_TYPES,
+                   reduce_NER_exclude=input$CA_ENTITY_TYPES_exclude,
                    termfreq_type=input$CA_termfreq_type,
                    docfreq_type=input$CA_docfreq_type,
                    keep_custom=input$CA_keep_custom,
@@ -502,7 +699,9 @@ observeEvent(input$CA_pruning_continue,ignoreInit = T,{
                    use_whitelist=input$CA_use_custom_whitelist,
                    whitelist=input$CA_whitelist,
                    whitelist_expand=input$CA_whitelist_expand,
-                   whitelist_only=input$CA_whitelist_only
+                   whitelist_only=input$CA_whitelist_only,
+                   use_fixed_vocab=input$CA_use_fixed_vocab,
+                   fixed_vocab=input$CA_fixed_vocab
   )
   #create process ID
   ID<-get_task_id_counter()+1

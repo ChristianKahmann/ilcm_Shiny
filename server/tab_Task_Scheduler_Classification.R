@@ -1,8 +1,25 @@
-
+#' render the parameter set for classification
 output$Analysis_Parameter_CL<-renderUI({
   tagList(
     tags$hr(),
     #standard parameters
+    fluidRow(
+      column(2,
+             checkboxInput(inputId="CL_use_fixed_vocab",label="use fixed vocabulary?",value=F)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Use an already existing vocabulary instead of performing a parameterized preprocessing. Vocabularies can be added and adjusted in Scripts > Vocabularies.", placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             conditionalPanel(condition = 'input.CL_use_fixed_vocab==true',
+                              selectInput(inputId="CL_fixed_vocab",label="found vocabularies",choices=list.files("collections/vocabularies/",full.names = F),multiple=F)
+             )
+      )
+    ),
+    
     fluidRow(
       column(1,
              selectInput(inputId = "CL_baseform",label = "Baseform Reduction",choices = c("lemma","stemming","none"),selected = "none") %>%
@@ -14,14 +31,6 @@ output$Analysis_Parameter_CL<-renderUI({
                )
       ),
       column(2,
-             sliderInput(inputId = "CL_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
-                     ,html=T))
-      ),
-      column(2,
              selectInput(inputId = "CL_ngram",label = "ngrams?",choices = c(1,2,3),selected = 1,multiple = T) %>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -31,6 +40,17 @@ output$Analysis_Parameter_CL<-renderUI({
                )
       ),
       column(2,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
+             sliderInput(inputId = "CL_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
+                     ,html=T))
+             )
+      ),
+      column(2,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
              textInput(inputId = "CL_remove_custom",label = HTML("remove custom words"),placeholder ="Add words (Seperated by ,)")%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -38,8 +58,10 @@ output$Analysis_Parameter_CL<-renderUI({
                      title = "Delete specific words from the analysis. Seperate them with ','.", placement = "right"
                    )
                )
+               )
       ),
       column(2,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
              textInput(inputId = "CL_keep_custom",label = HTML("Keep custom words"),placeholder ="Add words (Seperated by ,)")%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -47,17 +69,10 @@ output$Analysis_Parameter_CL<-renderUI({
                      title = "Keep specific words in the analysis. Seperate them with ','. If both custom words and whitelist are specified, they will be merged together.", placement = "right"
                    )
                )
+             )
       )
     ),
     fluidRow(
-      column(1,
-             checkboxInput(inputId = "CL_remove_stopwords",label = "Remove Stopwords",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
-                   )
-               )),
       column(1,
              checkboxInput(inputId = "CL_lowercase",label = "Transform tokens to lowercase?",value = T)%>%
                shinyInput_label_embed(
@@ -67,38 +82,65 @@ output$Analysis_Parameter_CL<-renderUI({
                    )
                )),
       column(1,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
+             checkboxInput(inputId = "CL_remove_stopwords",label = "Remove Stopwords",value = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
+                   )
+               )
+               )),
+      column(1,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
              checkboxInput(inputId = "CL_remove_numbers",label = "Remove Numbers?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove types which consist of numbers only from the analysis.", placement = "bottom"
                    )
+               )
                )),
       column(1,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
              checkboxInput(inputId = "CL_remove_numbers_all",label = "Remove everything containing a number number?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove words which are composed of at least one number.", placement = "right"
                    )
+               )
                )),
       column(1,
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
              checkboxInput(inputId = "CL_remove_punctuation",label = "Remove Punctuation?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove words, which reflect punctuation from the analysis.", placement = "right"
                    )
+               )
                )),
       column(1,
-             checkboxInput(inputId = "CL_remove_hyphenation",label = "Remove Hyphenation?",value = T)%>%
+             conditionalPanel(condition='input.CL_use_fixed_vocab==false',
+             checkboxInput(inputId = "CL_remove_hyphenation",label = "Remove Hyphenation?",value = F)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Remove words, which reflect hyphens from the analysis.", placement = "right"
                    )
+               )
+               )),
+      column(1,
+             checkboxInput(inputId = "CL_consolidate_entities",label = "Consolidate Entities?",value = F)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Consolidate found entities by binding them together with '_' and treat them as a single word afterwards.", placement = "right"
+                   )
                ))
     ),
+    conditionalPanel(condition='input.CL_use_fixed_vocab==false',
     fluidRow(
       column(1,
              checkboxInput(inputId = "CL_use_custom_blacklist",label = "use custom blacklist?",value = F)%>%
@@ -110,9 +152,7 @@ output$Analysis_Parameter_CL<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.CL_use_custom_blacklist==true",
-                              uiOutput(outputId = "CL_blacklist_UI")
-             )
+             uiOutput(outputId = "CL_blacklist_UI")
       ),
       column(1,
              checkboxInput(inputId = "CL_use_custom_whitelist",label = "use custom whitelist?",value = F)%>%
@@ -124,13 +164,12 @@ output$Analysis_Parameter_CL<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.CL_use_custom_whitelist==true",
-                              uiOutput(outputId = "CL_whitelist_UI")
-             )
+             uiOutput(outputId = "CL_whitelist_UI")
+             
       )
     ),
     fluidRow(
-      conditionalPanel(condition = "input.CL_use_custom_whitelist==true || input.CL_keep_custom.length>=1",
+      conditionalPanel(condition = "input.CL_use_custom_whitelist==true || document.getElementById('CL_keep_custom').value.length>=1",
                        tags$br(),
                        tags$h5("Whitelist Options:"),
                        column(1,
@@ -143,7 +182,7 @@ output$Analysis_Parameter_CL<-renderUI({
                                 )
                        ),
                        column(1,
-                              conditionalPanel(condition = "(input.CL_use_custom_whitelist==true || input.CL_keep_custom.length>=1) && (input.CL_ngram.includes('2') || input.CL_ngram.includes('3'))",
+                              conditionalPanel(condition = "(input.CL_use_custom_whitelist==true || document.getElementById('CL_keep_custom').value.length>=1) && (input.CL_ngram.includes('2') || input.CL_ngram.includes('3'))",
                                                checkboxInput(inputId = "CL_whitelist_expand",label = "Expand whitelist?",value = FALSE)%>%
                                                  shinyInput_label_embed(
                                                    shiny_iconlink() %>%
@@ -157,8 +196,8 @@ output$Analysis_Parameter_CL<-renderUI({
       )
     ),
     fluidRow(
-      column(2,
-             selectInput(inputId = "CL_POS_TYPES",label = "POS-Types",
+      column(1,
+             selectInput(inputId = "CL_POS_TYPES",label = "Include POS-Types",
                          choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X") ,selected = "all",multiple = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -168,14 +207,37 @@ output$Analysis_Parameter_CL<-renderUI({
                    )
                )
       ),
-      column(2,
-             selectInput(inputId = "CL_ENTITY_TYPES",label = "NER-Tags",
-                         choices =c("all","PERSON","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+      column(1,
+             selectInput(inputId = "CL_ENTITY_TYPES",label = " Include NER-Tags",
+                         choices =c("all","PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
                                     "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = "all",multiple=T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
-                     title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-tag option causes the consolidation of entities.",
+                     title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-Tag option causes the consolidation of entities.",
+                     placement = "right"
+                   )
+               )
+      ),
+      column(1,
+             selectInput(inputId = "CL_POS_TYPES_exclude",label = "Exclude POS-Types",
+                         choices =c("NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X"), selected=character(0),multiple = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Remove words with a certain POS-Tag from the analysis.",
+                     placement = "right"
+                   )
+               )
+      ),
+      column(1,
+             selectInput(inputId = "CL_ENTITY_TYPES_exclude",label = "Exclude NER-Tags",
+                         choices =c("PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+                                    "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = character(0),multiple=T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Remove words with a certain NER-Tag from the analysis. Using this option causes the consolitation of entities.",
                      placement = "right"
                    )
                )
@@ -246,9 +308,9 @@ output$Analysis_Parameter_CL<-renderUI({
                               numericInput(inputId = "CL_max_docfreq_q",label = "max. doc quantile",min = 0,max = 1,step = 0.25,value=NULL)
              )
       )
-      
+    )
     ),
-    #specific parameters
+    # specific parameters
     tags$hr(),
     tags$h4("Classification parameters"),
     fluidRow(
@@ -257,7 +319,7 @@ output$Analysis_Parameter_CL<-renderUI({
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
-                     title = "What is the context unit for this classification? Documentwise or sentencewise classification are the available options so far.",
+                     title = "What is the context unit for this classification? Document-wise or sentence-wise classification are the available options so far.",
                      placement = "right",
                      html="true"
                    )
@@ -341,15 +403,17 @@ output$Analysis_Parameter_CL<-renderUI({
              )
       ),
       column(7,
-             conditionalPanel(condition='input.CL_use_dict==true && input.CL_Mode=="Produce 50 new active learning examples"',
-                              uiOutput("CL_dict_ui")
-             )
+             uiOutput("CL_dict_ui")
       )
     ),
     bsButton(inputId = "CL_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
 })
 
+#' start ckassification
+#' depends on:
+#'   input$CL_Context_Unit: select context unit (e.g. sentence)
+#'   input$CL_Mode: select mode
 observeEvent(input$CL_Context_Unit,ignoreInit = T,{
   selected<-input$CL_Mode
   if(input$CL_Context_Unit=="Sentence"){
@@ -373,7 +437,9 @@ observeEvent(input$CL_Context_Unit,ignoreInit = T,{
 })
 
 
-#render categories for chosen project
+#' render categories for chosen project
+#' depends on:
+#'   input$CL_Project: render classification project
 output$CL_UI_Category<-renderUI({
   if(length(input$CL_Project)>0){
     load(paste0("collections/annotation_schemes/",input$CL_Project,".RData"))
@@ -394,48 +460,153 @@ output$CL_UI_Category<-renderUI({
   }
 })
 
+
+#' radio Buttons for dictionaries found in /collections/dictionaries
 output$CL_dict_ui<-renderUI({
-  values$update_dicts
-  shinyWidgets::prettyRadioButtons(inputId = "CL_dict",label = "Dictionaries",
-                                   choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
-                                   fill=T,animation = "tada",selected = NULL,inline = T)  
-  
+  if(length(list.files("collections/dictionaries//"))==0){
+    return(HTML("No dictionaries available. You can create dictionaries in the Scripts-Dictionaries Tab"))
+  }
+  else{
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "CL_dict",label = "Dictionaries",
+                         choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    )
+    )
+  }
 })
 
 
+#' show dictionaries options when mode = "Produce 50 new active learning examples
+#' and use dictionary checkbox is set to TRUE
+#' depends on:
+#'   input$CL_use_dict: used dictionary from classification
+#'   input$CL_Mode: classification mode
+observe({
+  if(isTRUE(input$CL_use_dict) && input$CL_Mode=="Produce 50 new active learning examples"){
+    shinyjs::show(id = "CL_dict")
+  }
+  else{
+    shinyjs::hide(id="CL_dict")
+  }
+})
 
+#' show whitelists stored in collections/whitelists
 output$CL_whitelist_UI<-renderUI({
-  values$invalidate_whitelists
   if(length(list.files("collections/whitelists/"))==0){
     return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
   }
   else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "CL_whitelist",label = "Whitelists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "CL_whitelist",label = "Whitelists",
+                         choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
   }
 })
 
-output$CL_blacklist_UI<-renderUI({
-  values$invalidate_blacklists
-  if(length(list.files("collections/blacklists/"))==0){
-    return(HTML("No blacklists available. You can create blacklists in the Scripts-Blacklist Tab"))
+#' show whitelist options when whitelist checkbox is TRUE
+#' depends on:
+#'   input$CL_use_custom_whitelist: use a custom whitelist?
+observeEvent(ignoreNULL=T,input$CL_use_custom_whitelist,{
+  if(isTRUE(input$CL_use_custom_whitelist)){
+    shinyjs::show(id = "CL_whitelist")
   }
   else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "CL_blacklist",label = "Blacklists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
+    shinyjs::hide(id = "CL_whitelist")
+  }
+})
+
+#' show blacklists stored in collections/blacklists
+output$CL_blacklist_UI<-renderUI({
+  if(length(list.files("collections/blacklists/"))==0){
+    return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
+  }
+  else{
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "CL_blacklist",label = "Blacklists",
+                         choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
+  }
+})
+
+#' show blacklist options when blacklist checkbox is TRUE
+#' depend on:
+#'   input$CL_use_custom_blacklist: use a custome blacklist
+observeEvent(ignoreNULL=T,input$CL_use_custom_blacklist,{
+  if(isTRUE(input$CL_use_custom_blacklist)){
+    shinyjs::show(id = "CL_blacklist")
+  }
+  else{
+    shinyjs::hide(id = "CL_blacklist")
   }
 })
 
 
 
-
-#start classification script, if submit button is clicked
+#' start classification script, if submit button is clicked
+#' depends on:
+#'   input$CL_Submit_Script: submited script for cooccurrence analysis
+#'   input$CL_dict: dictionary for classification
+#'   input$CL_min_termfreq_c: minimum term frequency (count)
+#'   input$CL_max_termfreq_c: maximum term frequency (count)
+#'   input$CL_min_termfreq_p: minimum term probability
+#'   input$CL_max_termfreq_p: maximum term probalility
+#'   input$CL_min_termfreq_r: minimum term rank
+#'   input$CL_max_termfreq_r: maximum term rank
+#'   input$CL_min_termfreq_q: minimum term quantile
+#'   input$CL_max_termfreq_q: maximum document quantile
+#'   input$CL_min_docfreq_c: minimum document frequency (count)
+#'   input$CL_max_docfreq_c: maximum document frequency (count)
+#'   input$CL_min_docfreq_p: minimum document probability
+#'   input$CL_max_docfreq_p: maximum document probability
+#'   input$CL_min_docfreq_r: minimum document rank
+#'   input$CL_max_docfreq_r: maximum document rank
+#'   input$CL_min_docfreq_q: minimum document quantile
+#'   input$CL_max_docfreq_q: maximum document quantile
+#'   input$CL_use_fixed_vocab:  should a fixed vocabulary be used?
+#'   input$CL_fixed_vocab: fixed vocabulary
+#'   input$CL_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
+#'   input$CL_docfreq_type: choosen document frequence type
+#'   input$collection_selected: selected collection
+#'   input$CL_baseform: should words be reduced to their baseform?
+#'   input$CL_min_char: select minimum of characters
+#'   input$CL_ngram: choose size of n-grams
+#'   input$CL_remove_stopwords: should stopwords be removed?
+#'   input$CL_lowercase: should all words be put in lowercase?
+#'   input$CL_remove_numbers: should numbers in the documents be removed?
+#'   input$CL_remove_numbers_all: should all words containing number be removed?
+#'   input$CL_remove_punctuation: should the punctuation be removed?
+#'   input$CL_remove_hyphenation: should hyphenation be removed?
+#'   input$CL_remove_custom: should custome words be reduced?
+#'   input$CL_consolidate_entities: should entities be consolidated?
+#'   input$CL_blacklist: blacklist of words that should be removed from the texts
+#'   input$CL_POS_TYPES: select part of speech types that should be used
+#'   input$CL_POS_TYPES_exclude: select part of speech types that should be excluded
+#'   input$CL_ENTITY_TYPES: select entity (NER) types that should be used
+#'   input$CL_ENTITY_TYPES_exclude: select entity (NER) types that should be excluded
+#'   nput$CL_keep_custom: costume words to keep in analysis
+#'   input$CL_use_custom_blacklist: should a custome blacklist be used?
+#'   input$CL_use_custom_whitelist: should a custome whitelist be used?
+#'   input$CL_whitelist: selected whitelist of words to keep in analysis
+#'   input$CL_whitelist_only: just use words on whitelist
+#'   input$CL_whitelist_expand: just use words on whitelist
+#'   input$CL_Context_Unit: select context unit
+#'   input$CL_Project: select project for classification
+#'   input$CL_Mode: select classification mode
+#'   input$CL_Category: classification category for generating active learning examples
+#'   input$CL_Threshold: classification threshold
+#'   input$CL_use_dict: use a dictionairy
+#'   input$CL_dict: selected dictionairy
+#'   input$CL_active_learning_strategy: selected strategy on which the document selection for active learning examples based on
+#'   input$CL_c: parameter to tell how much to avoid missclassifying each training example
+#'   input$CL_use_fixed_vocab: should a fixed vocabulary be used?
+#'   input$CL_fixed_vocab: fixed vocabulary
+#'   input$collection_selected: selected collection
+#'   input$analysis_selected:  selected analysis type
+#'   input$use_custom_script  should a customed script be used?
+#'   input$custom_script_options: options for the custom script
 observeEvent(ignoreInit = T,input$CL_Submit_Script,{
   #check if input is correct
   continue=TRUE
@@ -459,9 +630,14 @@ observeEvent(ignoreInit = T,input$CL_Submit_Script,{
                                     ,min_t_r =input$CL_min_termfreq_r,max_t_r = input$CL_max_termfreq_r,min_t_q = input$CL_min_termfreq_q, max_t_q = input$CL_max_termfreq_q
                                     ,min_d_c = input$CL_min_docfreq_c,max_d_c = input$CL_max_docfreq_c,min_d_p = input$CL_min_docfreq_p,max_d_p = input$CL_max_docfreq_p
                                     ,min_d_r = input$CL_min_docfreq_r,max_d_r = input$CL_max_docfreq_r,min_d_q = input$CL_min_docfreq_q,max_d_q = input$CL_max_docfreq_q)
+    valid_vocab<-check_if_predefined_vocabulary_is_valid(use_predefined_vocab = input$CL_use_fixed_vocab, vocabulary = input$CL_fixed_vocab)
     if(isFALSE(valid)){
       shinyWidgets::confirmSweetAlert(session = session,title = "Check pruning settings!",text = HTML("It seems your current pruning input parameters don't make sense. It's very likely, that the whole vocabulary will be removed.
                            Check <a href='https://quanteda.io/reference/dfm_trim.html' title='quanteda pruning'> Quanteda Pruning Settings </a>"),html=T,inputId="CL_pruning_continue",
+                                      type="warning",closeOnClickOutside = T,btn_labels = c("Change Settings","Continue anyway!"))
+    }
+    else if(isFALSE(valid_vocab)){
+      shinyWidgets::confirmSweetAlert(session = session,title = "Check vocabulary",text = HTML("You chose to use a predefined vocabulary. It seems this vocabulary is not present."),html=T,inputId="CL_pruning_continue",
                                       type="warning",closeOnClickOutside = T,btn_labels = c("Change Settings","Continue anyway!"))
     }
     else{
@@ -518,9 +694,12 @@ observeEvent(ignoreInit = T,input$CL_Submit_Script,{
                        min_document=min_d,
                        max_document=max_d,
                        remove_custom=input$CL_remove_custom,
+                       consolidate_entities=input$CL_consolidate_entities,
                        blacklist=input$CL_blacklist,
                        reduce_POS=input$CL_POS_TYPES,
+                       reduce_POS_exclude=input$CL_POS_TYPES_exclude,
                        reduce_NER=input$CL_ENTITY_TYPES,
+                       reduce_NER_exclude=input$CL_ENTITY_TYPES_exclude,
                        termfreq_type=input$CL_termfreq_type,
                        docfreq_type=input$CL_docfreq_type,
                        keep_custom=input$CL_keep_custom,
@@ -537,7 +716,9 @@ observeEvent(ignoreInit = T,input$CL_Submit_Script,{
                        use_dictionary=input$CL_use_dict,
                        Dictioanry=input$CL_dict,
                        cl_active_learning_strategy=input$CL_active_learning_strategy,
-                       cl_c=input$CL_c
+                       cl_c=input$CL_c,
+                       use_fixed_vocab=input$CL_use_fixed_vocab,
+                       fixed_vocab=input$CL_fixed_vocab
       )
       #create process ID
       ID<-get_task_id_counter()+1
@@ -570,7 +751,65 @@ observeEvent(ignoreInit = T,input$CL_Submit_Script,{
 
 
 
-#start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' start script after continue anyway is clicked even though pruning settings seem to be wrong
+#' depends on:
+#'   input$CL_pruning_continue: continue pruning?
+#'   input$CL_Mode:  select classification mode
+#'   input$CL_Category:  classification category for generating active learning examples
+#'   input$CL_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
+#'   input$CL_docfreq_type: choosen document frequence type
+#'   input$CL_min_termfreq_c: minimum term frequency (count)
+#'   input$CL_max_termfreq_c: maximum term frequency (count)
+#'   input$CL_min_termfreq_p: minimum term probability
+#'   input$CL_max_termfreq_p: maximum term probalility
+#'   input$CL_min_termfreq_r: minimum term rank
+#'   input$CL_max_termfreq_r: maximum term rank
+#'   input$CL_min_termfreq_q: minimum term quantile
+#'   input$CL_max_termfreq_q: maximum document quantile
+#'   input$CL_min_docfreq_c: minimum document frequency (count)
+#'   input$CL_max_docfreq_c: maximum document frequency (count)
+#'   input$CL_min_docfreq_p: minimum document probability
+#'   input$CL_max_docfreq_p: maximum document probability
+#'   input$CL_min_docfreq_r: minimum document rank
+#'   input$CL_max_docfreq_r: maximum document rank
+#'   input$CL_min_docfreq_q: minimum document quantile
+#'   input$CL_max_docfreq_q: maximum document quantile
+#'   input$collection_selected: selected collection
+#'   input$CL_baseform: should words be reduced to their baseform?
+#'   input$CL_min_char: select minimum of characters
+#'   input$CL_ngram: choose size of n-grams
+#'   input$CL_remove_stopwords: should stopwords be removed?
+#'   input$CL_lowercase: should all words be put in lowercase?
+#'   input$CL_remove_numbers: should numbers in the documents be removed?
+#'   input$CL_remove_numbers_all: should all words containing number be removed?
+#'   input$CL_remove_punctuation: should the punctuation be removed?
+#'   input$CL_remove_hyphenation: should hyphenation be removed?
+#'   input$CL_remove_custom: should custome words be reduced?
+#'   input$CL_consolidate_entities: should entities be consolidated?
+#'   input$CL_blacklist: blacklist of words that should be removed from the texts
+#'   input$CL_POS_TYPES: select part of speech types that should be used
+#'   input$CL_POS_TYPES_exclude: select part of speech types that should be excluded
+#'   input$CL_ENTITY_TYPES: select entity (NER) types that should be used
+#'   input$CL_ENTITY_TYPES_exclude: select entity (NER) types that should be excluded
+#'   input$CL_keep_custom: costume words to keep in analysis
+#'   input$CL_use_custom_blacklist: should a custome blacklist be used?
+#'   input$CL_use_custom_whitelist: should a custome whitelist be used?
+#'   input$CL_whitelist: selected whitelist of words to keep in analysis
+#'   input$CL_whitelist_only: just use words on whitelist
+#'   input$CL_whitelist_expand: just use words on whitelist
+#'   input$CL_Context_Unit: select context unit
+#'   input$CL_Project: select project for classification
+#'   input$CL_Threshold: classification threshold
+#'   input$CL_use_dict: use a dictionairy
+#'   input$CL_dict: selected dictionairy
+#'   input$CL_active_learning_strategy: selected strategy on which the document selection for active learning examples based on
+#'   input$CL_c: parameter to tell how much to avoid missclassifying each training example
+#'   input$CL_use_fixed_vocab: should a fixed vocabulary be used?
+#'   input$CL_fixed_vocab: fixed vocabulary
+#'   input$collection_selected: selected collection
+#'   input$analysis_selected: selected analysis type
+#'   input$use_custom_script: should a customed script be used?
+#'   input$custom_script_options: options for the custom script
 observeEvent(ignoreInit=T,input$CL_pruning_continue,{
   validate(
     need(isTRUE(input$CL_pruning_continue),message=F)
@@ -646,9 +885,12 @@ observeEvent(ignoreInit=T,input$CL_pruning_continue,{
                      min_document=min_d,
                      max_document=max_d,
                      remove_custom=input$CL_remove_custom,
+                     consolidate_entities=input$CL_consolidate_entities,
                      blacklist=input$CL_blacklist,
                      reduce_POS=input$CL_POS_TYPES,
+                     reduce_POS_exclude=input$CL_POS_TYPES_exclude,
                      reduce_NER=input$CL_ENTITY_TYPES,
+                     reduce_NER_exclude=input$CL_ENTITY_TYPES_exclude,
                      termfreq_type=input$CL_termfreq_type,
                      docfreq_type=input$CL_docfreq_type,
                      keep_custom=input$CL_keep_custom,
@@ -665,7 +907,9 @@ observeEvent(ignoreInit=T,input$CL_pruning_continue,{
                      use_dictionary=input$CL_use_dict,
                      Dictioanry=input$CL_dict,
                      cl_active_learning_strategy=input$CL_active_learning_strategy,
-                     cl_c=input$CL_c
+                     cl_c=input$CL_c,
+                     use_fixed_vocab=input$CL_use_fixed_vocab,
+                     fixed_vocab=input$CL_fixed_vocab
     )
     #create process ID
     ID<-get_task_id_counter()+1
@@ -685,7 +929,13 @@ observeEvent(ignoreInit=T,input$CL_pruning_continue,{
     }
     else{
       system(paste('Rscript collections/scripts/Classification_Script.R','&'))
-      #show modal when process is started
+      #show modal when process is started%>%
+      shinyInput_label_embed(
+        shiny_iconlink() %>%
+          bs_embed_popover(
+            title = "Use an already existing vocabulary instead of performing a parameterized preprocessing. Vocabularies can be added and adjusted in Scripts-->Vocabularies.", placement = "right"
+          )
+      )
       showModal(modalDialog(
         title = "Process started",
         "The process was succesfully started. Check details in 'My Tasks'."

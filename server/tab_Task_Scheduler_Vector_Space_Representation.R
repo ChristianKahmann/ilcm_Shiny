@@ -1,5 +1,5 @@
 
-#parameters for sentiment analysis
+#' parameters for vector space representation/ sentiment analysis
 output$Analysis_Parameter_VS<-renderUI({
   tagList(
     tags$hr(),
@@ -143,7 +143,26 @@ output$Analysis_Parameter_VS<-renderUI({
 
 
 
-#start Sentiment analysis script, if submit button is clicked
+#' start vector space representation/ sentiment analysis script, if submit button is clicked
+#' depends on:
+#'   input$VS_Submit_Script: script for vector space representation
+#'   input$collection_selected: selected collection for vector space representation
+#'   input$VS_lowercase: put text to lower case?
+#'   input$VS_ngram: size of N-grams
+#'   input$VS_stopwords: should stopwords be removed?
+#'   input$VS_punctuation: should the puntuation be removed?
+#'   input$VS_min_occ: set minimum occurence for words
+#'   input$VS_vectors: set number of vectors for the output
+#'   input$VS_threads: set a number of threads to run the trainingsprocess on
+#'   input$VS_window: set the window size used in training
+#'   input$VS_iter: number of passes to make over the corpus during training
+#'   input$VS_neg_samples:negative sectioned samples
+#'   input$VS_use_model: use an existing model?
+#'   input$VS_model: selected model
+#'   input$VS_train_dim_reduction: reduction of vector dimension for training 
+#'   input$use_custom_script: should a customed script be used?
+#'   input$analysis_selected: selected analysis method
+#'   input$custom_script_options: should a customed script be used?
 observeEvent(input$VS_Submit_Script,{
   #VSve needed parameters
   parameters<-list(input$collection_selected,input$VS_lowercase,input$VS_ngram,input$VS_stopwords,input$VS_punctuation,input$VS_min_occ,

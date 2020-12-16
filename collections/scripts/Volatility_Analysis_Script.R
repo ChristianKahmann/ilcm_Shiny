@@ -78,8 +78,9 @@ error<-try(expr = {
   dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
-  #calculate co-occurrence statistics
+  #calculate co-occurrence statistics 
   log_to_file(message = "<b>Step 7/10: Calculating diachronic co-occurrence statistics</b>",file = logfile)
+  
   diachron_data<-calculate_diachronic_cooccurrences(dtm = dtm,parameters = parameters,meta = db_data$meta)
   diachron_Coocs<-diachron_data$diachron_Coocs
   word_Frequencies<-diachron_data$word_Frequencies
@@ -91,22 +92,60 @@ error<-try(expr = {
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating co-occurrence slices",logfile)
   
   
+  
+  
   #calculate volatility
   log_to_file(message = "<b>Step 8/10: Calculating volatility statistics</b>",file = logfile)
+  # create method name by combining several input choices
+  method<-""
+  if(parameters$rank_significance=="sig"){
+    method<-paste0(method,"sig")
+    if(parameters$reference_window=="reference"){
+      method<-paste0(method,"_reference")
+      method<-paste0(method,"_",parameters$sig_reference_dist)
+    }
+    if(parameters$reference_window=="window"){
+      method<-paste0(method,"_window")
+      method<-paste0(method,"_",parameters$window_var,"_global")
+    }
+    
+  }
+  if(parameters$rank_significance=="rank"){
+    method<-paste0(method,"rank")
+    method<-paste0(method,"_",parameters$rank_method)
+    if(parameters$rank_method!="minmax"){
+      method<-paste0(method,"_",parameters$window_var)
+    }
+  }
+  
   if(parameters$whitelist_only_results==TRUE){
     log_to_file(message = paste0("&emsp; Creating results only for words in whitelist and keep_custom input"),logfile)
-    voldata<-tmca.contextvolatility::calculate_context_volatility(memory = parameters$va_history,Coocs_TimeSlices = diachron_Coocs,global =global_Coocs,un_dates=un_dates,
+    
+    voldata<-tmca.contextvolatility::calculate_context_volatility(memory = parameters$va_history,
+                                                                  Coocs_TimeSlices = diachron_Coocs,
+                                                                  global =global_Coocs,
+                                                                  un_dates=un_dates,
                                                                   terms = intersect(as.vector(stringr::str_split(string = parameters$keep_custom,pattern = ",",simplify = T)[1,]),terms_to_use),
-                                                                  measure =parameters$va_method,wf = parameters$va_weightfactor,logfile=logfile ) 
+                                                                  measure =method,
+                                                                  wf = parameters$sig_reference_weightfactor,
+                                                                  beta = parameters$rank_minmax_beta,
+                                                                  logfile=logfile ) 
+    
     out_of_vocab_words<-setdiff(as.vector(stringr::str_split(string = parameters$keep_custom,pattern = ",",simplify = T)),terms_to_use)
     out_of_vocab_data<-matrix(c(NA),length(out_of_vocab_words),dim(voldata)[2])
     rownames(out_of_vocab_data)<-out_of_vocab_words
     voldata<-rbind(voldata,out_of_vocab_data)
   }
   else{
-    voldata<-tmca.contextvolatility::calculate_context_volatility(memory = parameters$va_history,Coocs_TimeSlices = diachron_Coocs,global = global_Coocs,un_dates=un_dates,
+    voldata<-tmca.contextvolatility::calculate_context_volatility(memory = parameters$va_history,
+                                                                  Coocs_TimeSlices = diachron_Coocs,
+                                                                  global =global_Coocs,
+                                                                  un_dates=un_dates,
                                                                   terms = terms_to_use,
-                                                                  measure =parameters$va_method,wf = parameters$va_weightfactor,logfile=logfile )
+                                                                  measure =method,
+                                                                  wf = parameters$sig_reference_weightfactor,
+                                                                  beta = parameters$rank_minmax_beta,
+                                                                  logfile=logfile ) 
     if(length(empty_terms)>0){
       empty<-matrix(rep(0,(dim(voldata)[2]*length(empty_terms))),byrow = T,nrow = length(empty_terms))
       rownames(empty)<-colnames(diachron_Coocs[[1]])[empty_terms]
@@ -115,10 +154,20 @@ error<-try(expr = {
   }
   log_to_file(message = " <b style='color:green'> ✔ </b>   Finished calculating volatility statistics",logfile)
   
-  
-  un_dates<-un_dates[(as.numeric(parameters$va_history)+1):length(un_dates)]
-  diachron_Coocs<-diachron_Coocs[(as.numeric(parameters$va_history)+1):length(diachron_Coocs)]
-  freq<-word_Frequencies[,(as.numeric(parameters$va_history)+1):dim(word_Frequencies)[2]]
+  if(grepl("reference",method)){
+      relevant_points_in_time<-(as.numeric(parameters$va_history)+1):length(un_dates)
+  }
+  if(grepl("rank",method) || grepl("window",method)){
+    if(parameters$va_history%/%2==1){
+      relevant_points_in_time<-(as.numeric(ceiling(parameters$va_history/2))):(length(un_dates)-floor(parameters$va_history/2))
+    }
+    else{
+      relevant_points_in_time<-(as.numeric(ceiling(parameters$va_history/2))):(length(un_dates)-floor(parameters$va_history/2))
+    }
+  }
+  un_dates<-un_dates[relevant_points_in_time]
+  diachron_Coocs<-diachron_Coocs[relevant_points_in_time]
+  freq<-word_Frequencies[,relevant_points_in_time]
   
   
   
@@ -131,12 +180,15 @@ error<-try(expr = {
   
   
   #Saving results
+  vocab<-rownames(voldata)
   log_to_file(message = "<b>Step 10/10: Saving results</b>",file = logfile)
   path<-paste(parameters$id,parameters$collection,sep = "_")
   path0<-paste0("collections/results/volatility-analysis/",path,"/")
   dir.create(path0)
   save(diachron_Coocs,file=paste0(path0,"CoocYears.RData"))
   save(ner_tags,pos_tags,file=paste0(path0,"tags.RData"))
+  write(paste(vocab,collapse=","),file = paste0(path0,"vocab_task",parameters$id,".txt"))
+  saveRDS(vocab,file=paste0(path0,"vocab_task",parameters$id,".RDS"))
   save(freq,file = paste0(path0,"freq.RData"))
   save(voldata,file = paste0(path0,"voldata.RData"))
   save(un_dates,file= paste0(path0,"labels.RData"))
@@ -145,7 +197,7 @@ error<-try(expr = {
   save(parameters,file=paste0(path0,"parameters.RData"))
   log_to_file(message = "   <b style='color:green'> ✔ </b> Finished saving results",logfile)
   
-
+  
   
   log_to_file(message = " <b style='color:green'>Process finished successfully. You can check the results in Collection Worker &#8594; Results &#8594; Context Volatility </b>",logfile)
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))

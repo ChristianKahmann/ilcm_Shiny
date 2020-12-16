@@ -1,5 +1,5 @@
 
-#render the parameter set for cooccurrence analysis
+#' render the parameter set for factorial analysis
 output$Analysis_Parameter_FA<-renderUI({
   tagList(
     tags$hr(),
@@ -106,7 +106,47 @@ output$Analysis_Parameter_FA<-renderUI({
 
 
 
-#start cooccurrence analysis script, if submit button is clicked
+#' start cooccurrence analysis script, if submit button is clicked
+#' depends on:
+#'   input$FA_Submit_Script: submited script
+#'   input$FA_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
+#'   input$FA_docfreq_type: choosen document frequence type
+#'   input$FA_min_termfreq_c: minimum term frequency (count)
+#'   input$FA_max_termfreq_c: maximum term frequency (count)
+#'   input$FA_min_docfreq_c: minimum document frequency (count)
+#'   input$FA_max_docfreq_c: maximum document frequency (count)
+#'   input$FA_min_termfreq_r: minimum term rank
+#'   input$FA_max_termfreq_r: maximum term rank
+#'   input$FA_min_docfreq_r: minimum document rank
+#'   input$FA_max_docfreq_r: maximum document rank
+#'   input$FA_min_termfreq_p: minimum term probability
+#'   input$FA_max_termfreq_p: maximum term probalility
+#'   input$FA_min_docfreq_p: minimum document probability
+#'   input$FA_max_docfreq_p: maximum document probability
+#'   input$FA_min_termfreq_q: minimum term quantile
+#'   input$FA_max_termfreq_q: maximum term quantile
+#'   input$FA_min_docfreq_q: minimum document quantile
+#'   input$FA_max_docfreq_q: maximum document quantile
+#'   input$collection_selected: selected collection
+#'   input$FA_baseform: should words be reduced to their baseform?
+#'   input$FA_min_char: select minimum of characters
+#'   input$FA_ngram: choose size of n-grams
+#'   input$FA_remove_stopwords: should stopwords be removed
+#'   input$FA_lowerKAse: shoult all words be put in lowercase
+#'   input$FA_remove_numbers: should numbers in the documents be removed?
+#'   input$FA_remove_punctuation: should the punctuation be removed?
+#'   input$FA_remove_hyphenation: should hyphenation be removed?
+#'   input$FA_remove_custom: should custom words be removed
+#'   input$FA_consolidate_entities: should entities be consolidated?
+#'   input$FA_blacklist: blacklist of words that should be removed from the texts 
+#'   input$FA_POS_TYPES: select part of speech types that should be used
+#'   input$FA_ENTITY_TYPES: select entity (NER) types that should be used
+#'   input$FA_termfreq_type: choose a term frequency type (count, quantile, rank, probability)
+#'   input$FA_docfreq_type: choosen document frequence type
+#'   input$analysis_selected: selected analysis type
+#'   input$use_custom_script: should a customed script be used?
+#'   input$custom_script_options: options for the custom script
+#'   
 observeEvent(input$FA_Submit_Script,{
   #get pruning parameters
   if(input$FA_termfreq_type=="count"){

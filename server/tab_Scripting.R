@@ -1,3 +1,6 @@
+#' output for custom script options
+#' depends on:
+#'   input$analysis_selected_script: selected script for analysis method
 output$script_custom_script_options_UI<-renderUI({
   if(input$analysis_selected_script==""){
     shinyWidgets::sendSweetAlert(session=session,title = "Please select an analysis",text = "Please choose a type of analysis first.",type = "warning")
@@ -17,7 +20,12 @@ output$script_custom_script_options_UI<-renderUI({
   }
 })
 
-
+#' show script of analysis method to allow personalization
+#' depends on:
+#'   input$script_use_custom_script: use a custom script
+#'   input$analysis_selected_script: selcted script for choosen anaylisis method
+#'   input$script_custom_script_options: options for script customization
+#'   input$script_theme: selected script theme
 output$script_UI<-renderUI({
   if(input$script_use_custom_script==TRUE){
     if(file.exists( paste0("collections/scripts/",input$analysis_selected_script,"/",input$script_custom_script_options))){
@@ -91,7 +99,11 @@ output$script_UI<-renderUI({
 })
 
 
-
+#' observe selected analysis model
+#' depends on:
+#'   input$analyses_selected: selected analysis model
+#'   input$use_custom_script: use a custome script
+#'   input$custom_script_options: custome script options
 observe({
   validate(
     need(!is.null(input$analyses_selected),message=F)
@@ -107,7 +119,9 @@ observe({
 })
 
 
-
+#' save cooccurrence analysis modell
+#' depends on:
+#'   input$Save_Script_CA: script selected to be saved
 observeEvent(input$Save_Script_CA,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,
@@ -123,6 +137,10 @@ observeEvent(input$Save_Script_CA,{
   )
 })
 
+#' validate name for saving process
+#' depends on: 
+#'   input$Script_Name_save_CA: name to save the cooccurrence analysis
+#'   input$R_Script_CA: r script from cooccurrence analysis
 observeEvent(input$Script_Name_save_CA,{
   text=input$R_Script_CA
   name<-paste0(input$Script_Name_CA,"_Script.R")
@@ -136,6 +154,9 @@ observeEvent(input$Script_Name_save_CA,{
   }
 })
 
+#' save document deduplication
+#' depends on:
+#'   input$Save_Script_DD: script to save
 observeEvent(input$Save_Script_DD,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,
@@ -151,6 +172,10 @@ observeEvent(input$Save_Script_DD,{
   )
 })
 
+#' validate the name of the file
+#' depends on:
+#'   input$Script_Name_save_DD: name for the script 
+#'   input$R_Script_DD: corresponding r script 
 observeEvent(input$Script_Name_save_DD,{
   text=input$R_Script_DD
   name<-paste0(input$Script_Name_DD,"_Script.R")

@@ -77,7 +77,10 @@ error<-try(expr = {
   log_to_file(message = "<b>Step 8/8: Saving results</b>",file = logfile)
   path0<-paste0("collections/results/cooccurrence-analysis/",paste(process_info[[1]],process_info[[2]],process_info[[4]],sep="_"),"/")
   dir.create(path0)
-
+  
+  vocab<-colnames(dtm)
+  write(paste(vocab,collapse=","),file = paste0(path0,"vocab_task",parameters$id,".txt"))
+  saveRDS(vocab,file=paste0(path0,"vocab_task",parameters$id,".RDS"))
   token<-db_data$token
   save(terms,info,token,file=paste0(path0,"data_Coocs.RData"))
   save(coocs_matrix_dice,file=paste0(path0,"dice.RData"))

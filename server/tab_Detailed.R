@@ -1,3 +1,32 @@
+#' observe inputs for details in analysis methods
+#' depends on:
+#'   input$dataset: choosen dataset
+#'   values$solr_url: create sorl url
+#'   input$Det_vonin: time marker for the beginning of a process
+#'   input$Det_bisin: time marker for the end of a process
+#'   input$Det_mde1:
+#'   input$Det_mde2:
+#'   input$Det_mde3:
+#'   input$Det_mde4:
+#'   input$Det_mde5:
+#'   input$Det_mde6:
+#'   input$Det_mde7:
+#'   input$Det_mde8:
+#'   input$Det_mde9:
+#'   input$Det_Token: choosen token range
+#'   following values are solr query parameters for calls in search results and timseries
+#'   values$start:
+#'   values$custom:
+#'   values$url:
+#'   values$q:
+#'   values$fq:
+#'   values$fq_init:
+#'   values$numFound:
+#'   values$start:
+#'   values$search:
+#'   values$solr_query
+#'   values$delete_documents
+#'   
 observeEvent(input$Det_action,{
   validate(
     need(length(input$dataset)>0,message=FALSE)
@@ -8,9 +37,9 @@ observeEvent(input$Det_action,{
     #get inputstring
     s<-isolate(input$Det_inputtext)
     #transform input to Solr Query
-    s<-stringr::str_replace_all(string = s,pattern = "\\+",replacement = " AND ")
-    s<-stringr::str_replace_all(string = s,pattern = "\\#",replacement = " OR ")
-    s<-stringr::str_replace_all(string = s,pattern = "\\-",replacement = " NOT ")
+    s<-stringr::str_replace_all(string = s,pattern = '\\+(?=((?:[^"]*"){2})*[^"]*$)',replacement = " AND ")
+    s<-stringr::str_replace_all(string = s,pattern = '\\#(?=((?:[^"]*"){2})*[^"]*$)',replacement = " OR ")
+    s<-stringr::str_replace_all(string = s,pattern = '\\-(?=((?:[^"]*"){2})*[^"]*$)',replacement = " NOT ")
     
     if(nchar(s)>0){
       q<-s
@@ -136,6 +165,8 @@ observeEvent(input$Det_action,{
       values$start=1
       values$search<-values$search+1
       values$solr_query<-stringr::str_replace(string=stringr::str_replace(string=response[2],pattern = "&wt=(.)+",replacement = ""),pattern = "start=[0-9]+&rows=[0-9]&",replacement="")
+      # reset the list of documents which were marked to remove when a new search is started     
+       values$delete_documents<-NULL
       #switch to search results tab
       updateTabsetPanel(session = session,inputId = "expl",selected = "Search Results")
     }
@@ -335,6 +366,8 @@ output$Det_von<-renderUI({
   if(length(remove)>0){
     dates<-dates[-remove,]
   }
+  #remove everything that does not look like a date
+  dates<-dates[IsDate(dates[,1]),1,drop=F]
   dates2<-dates
   for(i in 1:length(dates)){
     if(nchar(dates2[1,1])==4){
@@ -364,6 +397,8 @@ output$Det_zu<-renderUI({
   if(length(remove)>0){
     dates<-dates[-remove,]
   }
+  #remove everything that does not look like a date
+  dates<-dates[IsDate(dates[,1]),1,drop=F]
   dates2<-dates
   for(i in 1:length(dates)){
     if(nchar(dates2[1,1])==4){

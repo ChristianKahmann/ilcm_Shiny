@@ -1,5 +1,12 @@
 
-#render table with finished results for topic models
+#' render table with finished results for topic models
+#' depends on:
+#'   values$reload_de_result: reload result list from dictionary extraction after one element was deleted
+#'   values$collection_selected: selected collection for dictionary extraction
+#'   values$DE_Results_Files: dictionary extraction result files
+#'   values$tasks_de: dictionary extraction tasks
+#'   values$results_de: dictionary extraction tasks
+#'   
 output$DE_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_de_result
@@ -115,7 +122,12 @@ output$DE_Results <- renderDataTable({
 })
 
 
-#check wheather a certain result was clicked and then switch with needed information to details tab
+#' check wheather a certain result was clicked and then switch with needed information to details tab
+#' depends on:
+#'   input$DE_Results_rows_selected: selected rows from result list of dictionary extraction
+#'   values$Details_Analysis: details from dictionary extraction analysis
+#'   values$Details_Data_DE: data details from dictionary extraction
+#'   values$DE_Results_Files: result files from dictionary extraction
 observe({
   s = input$DE_Results_rows_selected
   if (length(s)) {
@@ -133,7 +145,11 @@ observe({
 
 
 
-#if delete dictionary extraction result is clicked delete files and db entry
+#' if delete dictionary extraction result is clicked delete files and db entry
+#' depends on:
+#'   input$delete_de_results: delete results from dictionary extraction
+#'   values$DE_Results_Files: result files from dictionary extraction
+#'   values$reload_de_result: reload list of results afte an element was deleted
 observeEvent(input$delete_de_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_de_results, "_")[[1]][5])
@@ -141,13 +157,15 @@ observeEvent(input$delete_de_results, {
     unlink(values$DE_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_de_results\",  "delete_button_de_results_0")'))
-    delete_result_from_datbase(isolate(values$results_de[selectedRow,]))
     values$reload_de_result<-TRUE
   }
 })
 
 
-#if more details button is clicked open modal showing all parameters
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   input$more_details_de_results: more details from dictionary extraction results
+#'   values$de_selected_row: selected rows from dictionary extraction result list
 observeEvent(input$more_details_de_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_de_results, "_")[[1]][6])
@@ -163,6 +181,11 @@ observeEvent(input$more_details_de_results,{
   }
 })
 
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   values$de_selected_row: selected rows from result list
+#'   values$tasks_de: dictionary extraction tasks
+#'   
 output$more_details_de_table<-DT::renderDataTable({
   validate(
     need(values$de_selected_row>0,message=F)

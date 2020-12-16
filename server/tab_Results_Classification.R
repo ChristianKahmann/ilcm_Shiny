@@ -1,7 +1,15 @@
 
 
 
-#render table with finished results for classification task
+#' render table with finished results for classification task
+#' depends on:
+#'   values$reload_classification_result: reload classification result list after element deleted 
+#'   values$collection_selected: selected collection for classification task
+#'   values$reload_classification_result: reload results from classification task list after on element was deleted
+#'   values$collection_selected: selected collection for classification task
+#'   values$Classification_Results_Files: result files for classification
+#'   values$tasks_class: classification task
+#'   
 output$Classification_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_classification_result
@@ -140,7 +148,18 @@ output$Classification_Results <- renderDataTable({
 })
 
 
-#check wheather a certain result was clicked and then switch with needed information to details tab
+#' check wheather a certain result was clicked and then switch with needed information to classification tab
+#' depends on:
+#'   input$Classification_Results_rows_selected: selected rows from classification result list
+#'   values$Details_Analysis: details of classification task
+#'   values$Details_Data_CL: details of classification data
+#'   values$Classification_Results_Files: classification result files
+#'   values$Details_CL_mode: details on selected classification mode
+#'   values$classification_project: selected classification task project
+#'   values$tasks_class: classification tasks
+#'   values$Det_CL_results_complete: complete results of detailed classification
+#'   values$Class_timeseries_data: data from timesiries of classification
+#'   
 observeEvent(input$Classification_Results_rows_selected,ignoreInit = T,{
   s = input$Classification_Results_rows_selected
   if (length(s)) {
@@ -149,14 +168,17 @@ observeEvent(input$Classification_Results_rows_selected,ignoreInit = T,{
               values$Classification_Results_Files[s])
     if(grepl(x = values$Classification_Results_Files[s],pattern = "activeLearning")||grepl(x = values$Classification_Results_Files[s],pattern = "activeLearning_documents")){
       values$Details_CL_mode<-"activeLearning"
-      print("wechsel jetzt")
+      # change selcted sidebar tab to categories
       updateTabItems(session=session,
                      inputId="tabs",
                      selected="Categories")
+      # change selected navbar tab to Classifications
       updateTabsetPanel(session = session,
                         inputId = "category",
                         selected = "Classifications")
-      return(NULL)
+      # update chosen project to used annotation schema in selected task
+       values$classification_project<-values$tasks_class[s,"Project"]
+       return(NULL)
     }
     else{
       if(grepl(x = values$Classification_Results_Files[s],pattern = "evaluateTraining")){
@@ -183,7 +205,12 @@ observeEvent(input$Classification_Results_rows_selected,ignoreInit = T,{
 
 
 
-#if delete classification result is clicked delete files and db entry
+#' if delete classification result is clicked delete files and db entry
+#' depends on:
+#'   input$delete_classification_results: delete classification results
+#'   values$class_selected_row: selected rows from classification result list
+#'   values$Classification_Results_Files: result files from classification task
+#'   values$reload_classification_result: reload result list after one element was deleted
 observeEvent(input$delete_classification_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_classification_results, "_")[[1]][5])
@@ -192,12 +219,15 @@ observeEvent(input$delete_classification_results, {
     unlink(values$Classification_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_classification_results\",  "delete_button_classification_results_0")'))
-    delete_result_from_datbase(isolate(values$results_classification[selectedRow,]))
     values$reload_classification_result<-TRUE
   }
 })
 
-#if more details button is clicked open modal showing all parameters
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   input$more_details_classification_results: details on classification results
+#'   values$class_selected_row: selected rows of classification list
+#'   
 observeEvent(input$more_details_classification_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_classification_results, "_")[[1]][6])
@@ -213,6 +243,11 @@ observeEvent(input$more_details_classification_results,{
   }
 })
 
+#' show chosen parameters for classification results 
+#' depends on:
+#'   values$class_selected_row: selected row from classification result list
+#'   values$tasks_class: classification tasks
+#'   
 output$more_details_classification_table<-DT::renderDataTable({
   validate(
     need(values$class_selected_row>0,message=F)

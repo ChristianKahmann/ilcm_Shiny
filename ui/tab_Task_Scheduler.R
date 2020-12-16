@@ -1,3 +1,4 @@
+#' task scheduler panel to select options
 tabPanel("Task Scheduler",
          tags$div(style='height: 82vh; overflow-y: auto; padding-left:10px;',
                   box(solidHeader = T,width = 12,style="padding-left:30px", 
@@ -18,6 +19,7 @@ tabPanel("Task Scheduler",
                                                                  "Classification"="Classification",
                                                                  "Sentiment Analysis"="Sentiment_Analysis",
                                                                  "Document Deduplication"="Document_Deduplication",
+                                                                 "Dynamic Topic Model"="Dynamic_Topic_Model",
                                                                  "Keyword Extraction"="Keyword_Extraction", 
                                                                  "Syntactic Parsing"="Syntactic_Parsing",
                                                                  #"Factorial Analysis"="Factorial_Analysis",
@@ -28,13 +30,24 @@ tabPanel("Task Scheduler",
                                                      selected = "Cooccurrence Analysis",multiple = F)
                                       
                                ),
-                               column(1,
-                                      checkboxInput(inputId = "use_custom_script",label = "use custom script?",value = FALSE)
-                               ),
-                               column(3,
-                                      conditionalPanel(condition = 'input.use_custom_script==true',
-                                                       uiOutput(outputId = "custom_script_options_UI")
-                                      )
+                               conditionalPanel(condition="input.analysis_selected!='Download Collection as CSV' && input.analysis_selected!='Save Collection as token object' && 
+                                       input.analysis_selected!='Save Collection as meta object'",
+                                                column(1,
+                                                       checkboxInput(inputId = "use_custom_script",label = "use custom script?",value = FALSE)
+                                                ),
+                                                column(2,
+                                                       conditionalPanel(condition = 'input.use_custom_script==true',
+                                                                        uiOutput(outputId = "custom_script_options_UI")
+                                                       )
+                                                ),
+                                                column(1,
+                                                       checkboxInput(inputId="use_parameter_preset",label="Use a saved parameter setting?",value=F)
+                                                ),
+                                                column(2,
+                                                       conditionalPanel(condition = 'input.use_parameter_preset==true',
+                                                                        uiOutput(outputId = "parameter_preset_UI")
+                                                       )
+                                                )
                                )
                       ),
                       conditionalPanel(condition="input.analysis_selected!='Download Collection as CSV' && input.analysis_selected!='Save Collection as token object' && 
@@ -77,6 +90,9 @@ tabPanel("Task Scheduler",
                                        ),
                                        conditionalPanel(condition = "input.analysis_selected=='Syntactic_Parsing'",
                                                         uiOutput(outputId = "Analysis_Parameter_SP") 
+                                       ),
+                                       conditionalPanel(condition = "input.analysis_selected=='Dynamic_Topic_Model'",
+                                                        uiOutput(outputId = "Analysis_Parameter_DTM") 
                                        ),
                                        a("Show Script", onclick = "openTab('Scripts')"),
                                        tags$script(HTML("

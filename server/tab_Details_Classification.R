@@ -1,4 +1,7 @@
-
+#' details on classification tasks
+#' depends on:
+#'   values$Details_Data_CL: data for classification
+#'   
 output$Det_Class_classifier_performance<-renderUI({
   load(paste0(values$Details_Data_CL,"/result.RData"))
   return(tagList(
@@ -22,6 +25,12 @@ output$Det_Class_classifier_performance<-renderUI({
   ))
 })
 
+#' classification for evaluation for micro cosmos
+#' depends on:
+#'   values$Det_CL_results_complete: generating results completed
+#'   input$Det_CL_c: chosen classification parameter c
+#'   input$Det_CL_fold: chosen classification parameter for fold
+#'   
 output$Det_CL_eval_micro<-DT::renderDataTable({
   validate(
     need(!is.null(values$Det_CL_results_complete),message="F")
@@ -32,7 +41,11 @@ output$Det_CL_eval_micro<-DT::renderDataTable({
   datatable(data = data,rownames = F,options = list(dom="t"))
 })
 
-
+#' evaluation for classification in macro cosmos
+#' depends on:
+#'   values$Det_CL_results_complete: show complete results
+#'   input$Det_CL_c: selected classification parameter c
+#'   input$Det_CL_fold: selected classification parameter fold
 output$Det_CL_eval_macro<-DT::renderDataTable({
   validate(
     need(!is.null(values$Det_CL_results_complete),message="F")
@@ -41,7 +54,12 @@ output$Det_CL_eval_macro<-DT::renderDataTable({
   datatable(data=data,options=list(dom="tp"))
 })
 
-
+#' render classifiaction depending on date distribution
+#' depends on:
+#'   input$Det_CL_Time: selected classification time intervall
+#'   values$Details_Data_CL: detailed data from classification
+#'   values$Class_timeseries_data: timeseries from classification data
+#'   
 output$Det_Class_date_distribution<-renderPlotly({
   validate(
     need(!is.null(input$Det_CL_Time),message=F)
@@ -89,7 +107,10 @@ output$Det_Class_date_distribution<-renderPlotly({
 })
 
 
-#render a piechart showing the distribution of found examples > threshold
+#' render a piechart showing the distribution of found examples > threshold
+#' depends on:
+#'   values$Details_Data_CL: details on classification data
+#'   
 output$Det_Class_pie<-plotly::renderPlotly({
   load(paste0(values$Details_Data_CL,"/result.RData"))
   counts<-as.data.frame(table(predictions))
@@ -104,7 +125,9 @@ output$Det_Class_pie<-plotly::renderPlotly({
 })
 
 
-
+#' download classification texts
+#' depends on:
+#'   values$Details_Data_CL: selected detailed data from classification 
 output$Det_CL_download_texts<-downloadHandler(
   filename = function() {
     paste('examples-', Sys.Date(), '.csv', sep='')
@@ -115,6 +138,9 @@ output$Det_CL_download_texts<-downloadHandler(
   }
 )  
 
+#' download timeseries for classification
+#' depends on:
+#'   values$Class_timeseries_data: classification data for timeseries 
 output$Det_CL_download_timeseries<-downloadHandler(
   filename = function() {
     paste('classification_timeseries-', Sys.Date(), '.csv', sep='')
@@ -125,7 +151,9 @@ output$Det_CL_download_timeseries<-downloadHandler(
   }
 )  
 
-
+#' download feature matrix
+#' depends on:
+#'   values$Det_CL_feature_matrix: feature matrix for classification results
 output$Det_CL_download_feature_matrix<-downloadHandler(
   filename = function() {
     paste('feature_matrix-', Sys.Date(), '.csv', sep='')
@@ -137,7 +165,14 @@ output$Det_CL_download_feature_matrix<-downloadHandler(
 )
 
 
-
+#' render visualization for features of classification
+#' depends on:
+#'   values$Det_CL_feature_matrix: classification feature matrix
+#'   input$Det_CL_feature_class: classification feature classes
+#'   input$Det_CL_number_of_features: number of features used in classification
+#'   values$Det_CL_word_counts: classifications word counts
+#'   input$Det_CL_feature_show_labels: shoe labels of features
+#'   
 output$Det_CL_feature_UI<-renderUI({
   validate(
     need(
@@ -146,7 +181,6 @@ output$Det_CL_feature_UI<-renderUI({
     need(!is.null(input$Det_CL_feature_class),message=F
     )
   )
-  #browser()
   data<-values$Det_CL_feature_matrix[input$Det_CL_feature_class,]
   data_pos<-sort(data,decreasing = T)[1:(input$Det_CL_number_of_features/2)]
   data_neg<-sort(data,decreasing = F)[1:(input$Det_CL_number_of_features/2)]
@@ -188,19 +222,33 @@ output$Det_CL_feature_UI<-renderUI({
   )
 })
 
+#' render table for classification features
+#' depends on:
+#'   values$Det_CL_feature_matrix: feauture matrix for classification
+#'   input$Det_CL_feature_class: feature classes for classification
+#'   input$Det_CL_number_of_features: number of features
+#'   values$Det_CL_word_counts: word counts for classification
+#'   
 output$Det_CL_feature_table_pro<-DT::renderDataTable({
   data<-values$Det_CL_feature_matrix[input$Det_CL_feature_class,]
   data_pos<-sort(data,decreasing = T)[1:(input$Det_CL_number_of_features/2)]
   DT::datatable(data = data.frame(weight=data_pos,frequency=values$Det_CL_word_counts[names(data_pos)]),options = list(dom="tp"))
 })
 
+#' contra table for features
+#' depends on:
+#'   values$Det_CL_feature_matrix: feature matrix for classification
+#'   input$Det_CL_feature_class: feature classes for classification
+#'   input$Det_CL_number_of_features: number of features for classification
+#'   values$Det_CL_word_counts: word counts for classification
+#'   
 output$Det_CL_feature_table_contra<-DT::renderDataTable({
   data<-values$Det_CL_feature_matrix[input$Det_CL_feature_class,]
   data_neg<-sort(data,decreasing = F)[1:(input$Det_CL_number_of_features/2)]
   DT::datatable(data = data.frame(weight=data_neg,frequency=values$Det_CL_word_counts[names(data_neg)]),options = list(dom="tp"))
 })
 
-
+#' 
 output$Det_CL_validation_document_UI<-renderUI({
   validate(
     need(
@@ -231,6 +279,8 @@ output$Det_CL_validation<-renderUI({
     sentence_id<-identifier[3]
   }
   token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = sentence_id,host=values$host,port=values$port)
+  # remove idx column from token
+  token<-token[,-ncol(token)]
   load(paste0(values$Details_Data_CL,"/parameters.RData"))
   space_ids<-which(token[,"pos"]=="SPACE")
   if(length(space_ids)>0){
@@ -257,11 +307,11 @@ output$Det_CL_validation<-renderUI({
   rbPal_neg <- colorRampPalette(c('red','white'))
   m<-cbind(m,rep("",dim(m)[1]))
 
-  if(length(intersect(which(!is.na(m$weight)),which(m$weight>0)))>0){
-    m[intersect(which(!is.na(m$weight)),which(m$weight>0)),12]<-  rbPal_pos(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))],breaks = 100))]
+  if(length(intersect(which(!is.na(m$weight)),which(as.numeric(m$weight)>0)))>0){
+    m[intersect(which(!is.na(m$weight)),which(as.numeric(m$weight)>0)),12]<-  rbPal_pos(100)[as.numeric(cut(as.numeric(m$weight[intersect(which(!is.na(m$weight)),which(as.numeric(m$weight)>0))]),breaks = 100))]
   }
-  if(length(intersect(which(!is.na(m$weight)),which(m$weight<0)))>0){
-    m[intersect(which(!is.na(m$weight)),which(m$weight<0)),12]<-  rbPal_neg(100)[as.numeric(cut(m$weight[intersect(which(!is.na(m$weight)),which(m$weight<0))],breaks = 100))]       
+  if(length(intersect(which(!is.na(m$weight)),which(as.numeric(m$weight)<0)))>0){
+    m[intersect(which(!is.na(m$weight)),which(as.numeric(m$weight)<0)),12]<-  rbPal_neg(100)[as.numeric(cut(as.numeric(m$weight[intersect(which(!is.na(m$weight)),which(as.numeric(m$weight)<0))]),breaks = 100))]       
   }
   strings<-apply(m,MARGIN = 1,FUN = function(x){
     if(is.na(x[12])){

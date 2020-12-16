@@ -1,5 +1,5 @@
 
-#parameters for sentiment analysis
+#' parameters for sentiment analysis
 output$Analysis_Parameter_KE<-renderUI({
   tagList(
     tags$hr(),
@@ -29,76 +29,63 @@ output$Analysis_Parameter_KE<-renderUI({
     tags$h4("Keyword extraction parameters"),
     fluidRow(
       column(2,
-             radioButtons(inputId = "KE_Mode",label = "Mode",choices = c("without reference","with reference"),selected = "without reference")%>%
+             selectInput(inputId = "KE_no_ref_method",label = "Method",choices = c("RAKE","PMI Collocation","Phrase Sequence","Textrank"),multiple = F)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
-                     title = "Keywords can be extracted using a reference corpus and comparing which words appear significantly more frequent.
-                     Keywords can also be extracted with a reference corpus using only information available for the given documents.", placement = "right"
-                   )
-               )    
-      )
-    ),
-    fluidRow(
-      conditionalPanel(condition = "input.KE_Mode=='without reference'" ,
-                       column(2,
-                              selectInput(inputId = "KE_no_ref_method",label = "Method",choices = c("RAKE","PMI Collocation","Phrase Sequence","Textrank"),multiple = F)%>%
-                                shinyInput_label_embed(
-                                  shiny_iconlink() %>%
-                                    bs_embed_popover(
-                                      title = "4 methods of identifying keywords in text without a reference corpus are implemented: RAKE (Rapid Automatic Keyword Extraction),
+                     title = "4 methods of identifying keywords in text without a reference corpus are implemented: RAKE (Rapid Automatic Keyword Extraction),
                      Collocation ordering using Pointwise Mutual Information, Parts of Speech phrase sequence detection and Textrank.", placement = "right"
-                                    )
-                                )
-                       ),
+                   )
+               )
+      ),
+      column(2,
+             numericInput(inputId = "KE_no_ref_n_min",label = "Minimal number of occurrences per keyword",value = 1,min = 1,max = 10000000,step = 1)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Integer indicating the frequency of how many times a keywords should at least occur in the data in order to be returned.", placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             numericInput(inputId = "KE_no_ref_ngram_max",label = "Maximal number of words per keyword",value = 8,min = 1,max = 100,step = 1)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Integer indicating the maximum number of words that there should be in each keyword", placement = "right"
+                   )
+               )
+      ),
+      column(2,
+             textInput(inputId = "KE_seperator",label = "Seperator",value = "_")%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Which sign should be used to bind ngrams together. Defaults to '_'", placement = "right"
+                   )
+               )
+             
+      ),
+      conditionalPanel(condition = "input.KE_no_ref_method=='RAKE' || input.KE_no_ref_method=='Textrank'",
                        column(2,
-                              numericInput(inputId = "KE_no_ref_n_min",label = "Minimal number of occurrences per keyword",value = 1,min = 1,max = 10000000,step = 1)%>%
+                              selectInput(inputId = "KE_filter",label = "Relevant POS-Tags",choices = c("NOUN","ADJ","VERB","PROPN","ADP","AUX","CCONJ","DET","INTJ","NUM","PART",
+                                                                                                        "PRON","PUNCT","SCONJ","SYM","X"),
+                                          selected = c("NOUN","ADJ"),multiple = T)%>%
                                 shinyInput_label_embed(
                                   shiny_iconlink() %>%
                                     bs_embed_popover(
-                                      title = "Integer indicating the frequency of how many times a keywords should at least occur in the data in order to be returned.", placement = "right"
+                                      title = "Specify which words (part of speech) are relevant for the current keyword extraction. E.g. nouns + adjectives or verbs + nouns...", placement = "right"
                                     )
                                 )
-                       ),
+                       )
+      ),
+      conditionalPanel(condition = "input.KE_no_ref_method=='Phrase Sequence'",
                        column(2,
-                              numericInput(inputId = "KE_no_ref_ngram_max",label = "Maximal number of words per keyword",value = 8,min = 1,max = 100,step = 1)%>%
+                              textInput(inputId = "KE_phrase",label = "Phrase pattern",value = "(A|N)*N(P+D*(A|N)*N)*")%>%
                                 shinyInput_label_embed(
                                   shiny_iconlink() %>%
                                     bs_embed_popover(
-                                      title = "Integer indicating the maximum number of words that there should be in each keyword", placement = "right"
-                                    )
-                                )
-                       ),
-                       column(2,
-                              textInput(inputId = "KE_seperator",label = "Seperator",value = "_")%>%
-                                shinyInput_label_embed(
-                                  shiny_iconlink() %>%
-                                    bs_embed_popover(
-                                      title = "Which sign should be used to bind ngrams together. Defaults to '_'", placement = "right"
-                                    )
-                                )
-                              
-                              ),
-                       conditionalPanel(condition = "input.KE_no_ref_method=='RAKE' || input.KE_no_ref_method=='Textrank'",
-                                        column(2,
-                                               selectInput(inputId = "KE_filter",label = "Relevant POS-Tags",choices = c("NOUN","ADJ","VERB","PROPN","ADP","AUX","CCONJ","DET","INTJ","NUM","PART",
-                                                                                                                                "PRON","PUNCT","SCONJ","SYM","X"),
-                                                           selected = c("NOUN","ADJ"),multiple = T)%>%
-                                                 shinyInput_label_embed(
-                                                   shiny_iconlink() %>%
-                                                     bs_embed_popover(
-                                                       title = "Specify which words (part of speech) are relevant for the current keyword extraction. E.g. nouns + adjectives or verbs + nouns...", placement = "right"
-                                                     )
-                                                 )
-                                        )
-                       ),
-                       conditionalPanel(condition = "input.KE_no_ref_method=='Phrase Sequence'",
-                                        column(2,
-                                               textInput(inputId = "KE_phrase",label = "Phrase pattern",value = "(A|N)*N(P+D*(A|N)*N)*")%>%
-                                                 shinyInput_label_embed(
-                                                   shiny_iconlink() %>%
-                                                     bs_embed_popover(
-                                                       title = 'Regular expression to identify potential keywords. E.g. simple noun phrase: "(A|N)*N(P+D*(A|N)*N)*.
+                                      title = 'Regular expression to identify potential keywords. E.g. simple noun phrase: "(A|N)*N(P+D*(A|N)*N)*.
                                                        Abbreviations:A: adjective 
 C: coordinating conjuction
 
@@ -111,9 +98,8 @@ N: noun or proper noun
 P: preposition
 
 O: other elements  ', placement = "right"
-                                                     )
-                                                 )
-                                        )
+                                    )
+                                )
                        )
       )
       
@@ -125,7 +111,21 @@ O: other elements  ', placement = "right"
 
 
 
-#start Sentiment analysis script, if submit button is clicked
+#' start Keyword extraction script, if submit button is clicked
+#' depends on:
+#'   input$KE_Submit_Script: submit keyword extraction script
+#'   input$collection_selected: selected collection
+#'   input$KE_baseform: should the words be reduced to their baseform?
+#'   input$KE_Mode: select keyword extraction mode (RAKE, PMI collocation, phrase sequence, text rank)
+#'   input$KE_no_ref_method: referenced methods
+#'   input$KE_no_ref_n_min: referenced minimal n
+#'   input$KE_no_ref_ngram_max: referenced n-gram maximum
+#'   input$KE_filter: choosen key extraction filter
+#'   input$KE_phrase: choosen phrase pattern 
+#'   input$KE_seperator: choosen seperator for phrases
+#'   input$analysis_selected: selected analysis model
+#'   input$use_custom_script: use custom script
+#'   input$custom_script_options: options for a custom script
 observeEvent(input$KE_Submit_Script,{
   #save needed parameters
   parameters<-list(collection=input$collection_selected,

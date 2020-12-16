@@ -1,18 +1,21 @@
 source("global/text_functions.R")
 source("global/log_to_file.R")
 source("global/preprocess_data.R")
+source("global/functions_used_in_scripts.R")
 source("config_file.R")
+source("global/change_annotation_offset_methods.R")
 
 #process
 error<-try(expr = {
   library(Matrix)
   library(dplyr)
   library(spacyr)
+  library(readr)
   library(RMariaDB)
   
   #load parameters
   load("collections/tmp/tmp.RData")
-
+  
   
   metadata<-parameters[[1]]
   write_to_db<-parameters[[2]]
@@ -31,12 +34,10 @@ error<-try(expr = {
   
   spacy_initialize(model = language)
   log_to_file(message = "spacy initialized",logfile)
-  
-  #write import csv for meta and token information
+  # write import csv for meta and token information
   preprocess_data(text = metadata[,"body"],metadata = metadata,process_id = process_info[[1]],offset = (min(as.numeric(metadata[,"id_doc"]))-1),logfile = logfile,date_format = date_format)
-  #write meta metadata csv
+  # write meta metadata csv
   write.csv(x = parameters[[5]],file=paste0("data_import/processed_data/metameta_",metadata[1,"dataset"],"_",process_info[[1]],".csv"),row.names = F)
-  
   log_to_file(message = "finished writing results metadata to database",logfile)
   if(write_to_db==T){
     mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
@@ -68,10 +69,13 @@ error<-try(expr = {
           rs<- dbSendQuery(mydb, query)
         }
       })
-      
-      
       #update meta tables in database
-      data<-data.frame(readtext::readtext(file = paste0("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv") ),stringsAsFactors = F)
+      #data<-data.frame(readtext::readtext(file = paste0("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv") ),stringsAsFactors = F)
+      data<-data.frame(readr::read_delim(file = paste0("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv"), delim=',',
+                                         escape_double=FALSE, escape_backslash=TRUE, quote='"',col_names = F),
+                       stringsAsFactors = F)
+      data<-cbind(rep(paste0("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv"),nrow(data)),data)%>%
+        mutate_all(as.character)
       #date
       dates<-unique(data[,6])
       dates<-cbind(rep(data[1,2],length(dates)),dates)
@@ -198,6 +202,154 @@ error<-try(expr = {
     log_to_file(message = paste0("Finished preprocessing. You can now import the created csv files in Import/Export Importer Upload Data to DB and
                                  Solr with the name:",metadata[1,"dataset"],"_",process_info[[1]] ),logfile)
   }
+  
+  # save annotations?
+  if(length(parameters)==6){
+    if(parameters$save_annotations==TRUE){
+      log_to_file(message = "Save Annotations from imported data to database",logfile)
+      load("collections/tmp/tmp_annotations.RData")
+      source("global/refi/db.R")
+      source("global/refi/xml.R")
+      source("global/refi/io.R")
+      source("global/refi/import.R")
+      source("global/refi/plaintext_selection.R")
+      source("global/refi/interface.R")
+      library(xml2)
+      annotations <- data.frame(
+        anno_id = character(0) # guid von plaintext_selection
+        , User = character(0) # von plaintext_selection
+        , dataset = character(0) # neu
+        , id = character(0) #
+        , from = character(0) # startPosition
+        , to = character(0) # endPosition
+        , Annotation = character(0) # von Codebook targetGuid
+        , color = character(0) # von plaintext_selection
+        , Annotation_Date = character(0)
+        , Anno_set = character(0)
+        , collection = character(0)
+        , global_doc_id = character(0)
+        , text = character(0)
+        , document_annotation = character(0)
+      )
+      
+      # 1. codebook importieren, da annotations sich darauf beziehen
+      xml_document<-xml2::as_xml_document(xml_document)
+      codebook <- xml_find_first(xml_document, "//d1:CodeBook")
+      import_codebook(codebook, name = dataset)
+      
+      load("collections/tmp/tmp.RData")
+      id_docs <-parameters[[1]]$id_doc
+      text_sources <- xml_find_all(xml_document, "//d1:Project/d1:Sources/d1:TextSource")
+      for (text_source in text_sources) {
+        
+        plaintext_selections <- xml_find_all(text_source, "./d1:PlainTextSelection")
+        
+        
+        if (length(plaintext_selections) == 0) {
+          
+        } else if (length(plaintext_selections) >= 1) {
+          # check if plaintext_selection exists, if not --> continue loop
+          plaintext_path <- xml_attr(text_source, 'plainTextPath')
+          plaintext_content <- xml_find_first(text_source, './d1:PlainTextContent')
+          
+          for (selection in plaintext_selections) {
+            
+            
+            if (!is.na(plaintext_path)) {
+              text_source_content <- ""
+              if (stringr::str_detect(plaintext_path, "internal://")) {
+                text_source_filename <- strsplit(plaintext_path, "://")[[1]][2]
+                if("Sources"%in% list.files(import_directory)){
+                  text_source_filepath <- file.path(import_directory, "Sources", text_source_filename)
+                }
+                else{
+                  text_source_filepath <- file.path(import_directory, "sources", text_source_filename)
+                }
+                text_source_content <- readr::read_file(text_source_filepath)
+              }
+              
+            } else if (is.na(plaintext_content)) {
+              text_source_content <- xml_text(plaintext_content)
+            } else {
+              text_source_content <- ""
+            }
+            
+            guid <- xml_attr(selection, "guid")
+            from <- xml_attr(selection, "startPosition")
+            to <- xml_attr(selection, "endPosition")
+            if (stringi::stri_length(text_source_content) >= as.numeric(to)) {
+              text <- substr(text_source_content, as.numeric(from), as.numeric(to))
+            } else {
+              text <- ""
+            }
+            
+            user <- xml_attr(selection, "creatingUser")
+            anno_date <- xml_attr(selection, "creationDateTime")
+            
+            if (is.na(anno_date)) {
+              anno_date <- format(Sys.Date(), "%Y-%m-%d")
+            }
+            
+            if (is.na(user)) {
+              user = "unknown"
+            }
+            
+            id_doc <- xml_attr(text_source, "id_doc")
+            document <- DB_get_document_by_id_and_dataset(id_doc, dataset)
+            global_doc_id <- document$id
+            
+            code_ref <- xml_find_first(selection, './d1:Coding/d1:CodeRef')
+            
+            if (!is.null(code_ref)) {
+              coderef_target_guid <- xml_attr(code_ref, 'targetGUID')
+              code <- xml_find_first(codebook, paste0("//d1:Code[@guid='", coderef_target_guid, "']"))
+              code_name <- xml_attr(code, "name")
+              code_color <- xml_attr(code, 'color')
+            } else {
+              code_name <- "no reference to any code"
+              code_color <- paste0('#', stringi::stri_rand_strings(1,6, "[A-Fa-f0-9]"))
+            }
+            anno <- data.frame(
+              anno_id = guid
+              , User = user
+              , dataset = dataset
+              , id = id_doc
+              , from = from
+              , to = to
+              , Annotation = code_name
+              , color = code_color
+              , Annotation_Date = substr(anno_date,1,min(19,nchar(anno_date)))
+              , Anno_set = dataset
+              , collection = dataset
+              , global_doc_id = global_doc_id
+              , text = text
+              , document_annotation = FALSE
+              ,stringsAsFactors = F
+            )
+            print(id_doc)
+            db_data<-get_token_meta_and_language_from_db_refi(host=host,port=db_port,id=id_doc,dataset=dataset)
+            # change character offset annotations to word offsets
+            anno <- transform_character_offset_to_word_offset(annotations = anno, token = db_data$token)
+            # check if document_annotation==T
+            # assume document annotation if annotation starts with first word and ends with last word
+            if(anno[1,"from"]==1 && anno[1,"to"]==nrow(db_data$token)){
+              anno$document_annotation <- TRUE
+            }
+            annotations <- rbind(annotations, anno)
+          }
+          
+        } else {
+          
+        }
+        
+      }
+      # limit text field to max 10000 chars
+      annotations[which(nchar(annotations$text)>10000),"text"]<-paste0(substr(annotations[which(nchar(annotations$text)>10000),"text"],0,9997),"...")
+      DB_import_annotations(annotations)
+      log_to_file(message = paste0("Succesfully imported ",nrow(annotations)," annotations to the database"),logfile)
+    }
+  }
+  
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))
   
 }) 

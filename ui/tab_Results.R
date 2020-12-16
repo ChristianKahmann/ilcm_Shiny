@@ -18,6 +18,17 @@ tabPanel(icon=icon("list"),
                            )
                   ),
                   box(
+                    title = "Dynamic Topic Models",
+                    solidHeader = T,
+                    collapsed = T,
+                    collapsible = T,
+                    width = 12,
+                    div(
+                      dataTableOutput(outputId = "Dynamic_Topic_Results"),
+                      style="font-size:70%"
+                    )
+                  ),
+                  box(
                     title = "Term Frequency Extraction",
                     solidHeader = T,
                     collapsed = T,

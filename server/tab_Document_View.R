@@ -1,11 +1,16 @@
 values$anno_loaded<-FALSE
-#render title of document
+#' render title of document
+#' depends on:
+#'  values$title: document title
+#'  
 output$DV_title<-renderText({
   title<-(values$title)
   return((title))
 })
 
-#render metadata 
+#' render metadata 
+#' depends on:
+#'   values$meta: document meta data
 output$DV_metadata_UI<-renderUI({
   validate(
     need(!is.null(values$meta),message=F)
@@ -21,34 +26,61 @@ output$DV_metadata_UI<-renderUI({
 })
 
 
-#create reactive object, which stores the made annotations in the document
+#' create reactive object, which stores the made annotations in the document
 values$annotations_marked<-matrix(c(0),0,13)
 values$annotations_show<-matrix(c(0),0,13)
 
-#render the document
+#' render the document
+#' depends on:
+#'   values$Doc_reload: reload documents
+#'   values$token: document token
+#'   input$anno_scheme_selected: selected annotation scheme
+#'   input$anno_id: annotation id
+#'   values$anno_deleted: deleted annotations
+#'   values$new: new session
+#'   values$host: selected host
+#'   values$db_port: chosen data base port
+#'   values$annos_documentwide: documentwide annotation
+#'   values$annotations_show: show annotations
+#'   values$annos: list of annotations
+#'   input$anno_tag: annotation tag
+#'   input$anno_start: start annotation
+#'   input$anno_end: end annotation
+#'   values$user: current used
+#'   values$selected: selected documents
+#'   input$DV_POS: check if POS-tags selected
+#'   values$mark_pos: mark POS-tags
+#'   input$DV_Entity: check if Entity(NER)-tags selected
+#'   values$mark_ner: mark entities
+#'   input$Doc_View_paragraph: view document paragraphs
+#'   values$mark_space: mark spaces
+#'   values$show: show document
+#'   values$new: create a new session
 output$document<-renderUI({
   values$Doc_reload
   validate(
     need(
       !is.null(values$token),
       "no document specified"
-    )
+    ),
+    need((!is.null(input$anno_scheme_selected) || length(list.files("collections/annotation_schemes/"))==0),message=F)
   )
+
   input$anno_id
   values$anno_deleted
   #check if document was opened in this session before
   if(isolate(is.null(isolate(values$new)))){
     #get Annotations from db for this document
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
+    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
     rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
     annotations<-RMariaDB::dbGetQuery(mydb, paste("select * from Annotations where id='",(values$token)[1,2],"'",
-                                                  " and trim(dataset)='",isolate(values$token)[1,1],"' and document_annotation='FALSE';",sep = ""))
+                                                  " and trim(dataset)='",(values$token)[1,1],"' and document_annotation='FALSE';",sep = ""))
     
     annotations_documentwide<-RMariaDB::dbGetQuery(mydb, paste("select * from Annotations where id='",(values$token)[1,2],"'",
-                                                               " and trim(dataset)='",isolate(values$token)[1,1],"' and document_annotation='TRUE';",sep = ""))
+                                                               " and trim(dataset)='",(values$token)[1,1],"' and document_annotation='TRUE';",sep = ""))
     RMariaDB::dbDisconnect(mydb)
-    annotations<-annotations[which(annotations[,"Anno_set"]==input$anno_scheme_selected),1:13]
-    annotations_documentwide<-annotations_documentwide[which(annotations_documentwide[,"Anno_set"]==input$anno_scheme_selected),1:13]
+    annotations<-annotations[which(annotations[,"Anno_set"]==input$anno_scheme_selected),setdiff(1:14,13)]
+    annotations_documentwide<-annotations_documentwide[which(annotations_documentwide[,"Anno_set"]==input$anno_scheme_selected),setdiff(1:14,13)]
     values$annos_documentwide<-data.frame(name=annotations_documentwide$Annotation,user=annotations_documentwide$User,color=annotations_documentwide$color,
                                           annotation_scheme=annotations_documentwide$Anno_set,id=annotations_documentwide$anno_id,stringsAsFactors = F)
 
@@ -73,7 +105,7 @@ output$document<-renderUI({
       colnames(db_annotations)<-colnames(isolate(values$annotations_show))
       isolate(values$annotations_show<-rbind(isolate(values$annotations_show),as.matrix(db_annotations)))
       isolate(values$annotations_show<-rbind(isolate(values$annotations_show),as.matrix(annotations_documentwide)))
-      
+
       #add color tags to text
       if(is.null(isolate(values$annos))){
         isolate(values$annos<-matrix(c(0),0,6))
@@ -181,13 +213,18 @@ output$document<-renderUI({
 })
 
 
-#render select options for POS Tags
+#' render select options for POS Tags
+#' depends on:
+#'   values$token: chosen tokens
 output$DV_POS<-renderUI({
   options<-setdiff(c("None",unique(values$token[,"pos"])),"SPACE")
   radioButtons(inputId = "DV_POS",label = "POS-TAGS",choices = options,selected = "None")
 })
 
-#render select options for Entity Tags
+#' render select options for Entity Tags
+#' depends on:
+#'   values$token: chosen tokens
+#'   
 output$DV_Entity<-renderUI({
   options<-c("None",unique(values$token[,"entity"]))
   options<-options[-which(nchar(options)<2)]
@@ -196,12 +233,19 @@ output$DV_Entity<-renderUI({
   radioButtons(inputId = "DV_Entity",label = "Entity-TAGS",choices = options,selected = "None")
 })
 
+#' observe selected scheme
+#' depends on:
+#'   input$anno_scheme_selected: selected annotation scheme
+#'   values$new: create a new sesion?
 observeEvent(input$anno_scheme_selected,{
   values$new<-NULL
 },priority = 1)
 
 
-
+#' render documentwide annotations
+#' depedns on:
+#'   values$annos_documentwide: documentwide annotations
+#'   
 output$DV_documentwide_annotations<-renderUI({
   validate(
     need(

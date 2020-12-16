@@ -99,8 +99,8 @@ error<-try(expr = {
   })
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished parsing the dictionary",file = logfile)
   
-  
-  #parse dictionaries  
+
+  # parse dictionaries  
   log_to_file(message = "<b>Step 8/9: Calculate frequencies</b>",file = logfile)
   frequencies<-calculate_dictioanry_frequencies(meta =db_data$meta,dtm = dtm,dict_terms = dict_terms,conceptnames = conceptnames,dicts_available = dicts_available,bin_dtm = bin_dtm )
   doc_freqs_year_dict<-frequencies$doc_freqs_year_dict

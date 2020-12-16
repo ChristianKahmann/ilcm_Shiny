@@ -10,7 +10,6 @@ calendarChart <- function(dates){
   {
     tmp_years <- as.integer(stringi::stri_sub(dat2$date,1,4))
     tmp <- dat2[tmp_years == year,  ]
-    
     r1 <- rChartsCalmap::calheatmap(x = 'date', y = 'pts',
                                     height=130,
                                     data = tmp,
@@ -18,7 +17,7 @@ calendarChart <- function(dates){
                                     start = paste0(year,"-01-01"),
                                     displayLegend = FALSE,
                                     onClick = htmlwidgets::JS('function(date, nb){Shiny.onInputChange("heatmap_date", date);}'),
-                                    legend = ceiling(exp(seq(log(1), log(max(dates[,2])-1), length.out = 4))),
+                                    legend = ceiling(exp(seq(log(1), log(max((max(dates[,2])-1),1)), length.out = 4))),
                                     itemName = 'hit',
                                     range = 12,
                                     domain = 'month',
@@ -37,7 +36,7 @@ calendarChart <- function(dates){
                                   start = paste0(year,"-01-01"),
                                   displayLegend = TRUE,
                                   onClick = htmlwidgets::JS('function(date, nb){Shiny.onInputChange("heatmap_date", date);}'),
-                                  legend = ceiling(exp(seq(log(1), log(max(dates[,2])-1), length.out = 4))),
+                                  legend = ceiling(exp(seq(log(1), log(max((max(dates[,2])-1),1)), length.out = 4))),
                                   itemName = 'hit',
                                   range = 12,
                                   domain = 'month',

@@ -1,5 +1,6 @@
 values$last_selected<-character(0)
 
+#' render classification presentation
 output$classification_UI<-renderUI({
   return(tagList(
     tags$h4(paste("Active Learning for project: ",input$project_selected)),
@@ -18,6 +19,10 @@ output$classification_UI<-renderUI({
 })
 
 #####multiple categories######
+#' select multiple categories
+#' depends on:
+#'   input$project_selected: selected project
+#'   
 output$Class_all_categories_avail_UI<-renderUI({
   choices<-list.files(paste0("collections/results/classification/activeLearning_documents/",input$project_selected))
   validate(
@@ -26,7 +31,7 @@ output$Class_all_categories_avail_UI<-renderUI({
   selectInput(inputId = "Class_all_categories_avail",label = "available training sets",choices = choices,multiple = F)
 })
 
-
+#' show all categories
 output$Class_all_categories_UI<-renderUI({
   return(tagList(
     column(2,
@@ -50,6 +55,17 @@ output$Class_all_categories_UI<-renderUI({
   ))  
 })
 
+#' show all documents of a category
+#' depends on:
+#'   input$Class_all_categories_avail: all available categories for classification
+#'   input$project_selected: selected project
+#'   values$Class_all_categories_reload: reload all categories for  classification
+#'   input$anno_tag: annotation tag
+#'   values$Class_all_documents_annos: annotations of all documents
+#'   values$Class_all_documents_labels: all labels in documents
+#'   values$Class_all_documents_texts: all texts in documents
+#'   values$last_selected: last selected elemenet
+#'   values$Class_all_categories_reload_documents: reload all documents from categories
 output$Class_all_categories_documents_UI<-renderUI({
   validate(
     need(length(input$Class_all_categories_avail)>0,message=F),
@@ -87,7 +103,6 @@ output$Class_all_categories_documents_UI<-renderUI({
   }
   
   selected<-choiceValues[1]
-  #browser()
   if(!is.null(isolate(values$last_selected))){
     if(isolate(values$last_selected)%in%choiceValues){
       selected<-isolate(values$last_selected)
@@ -101,11 +116,22 @@ output$Class_all_categories_documents_UI<-renderUI({
   return(res)
 })
 
+#' observe which element was last selected
+#' depends on:
+#'   values$last_selected: last selected elements of lists
+#'   input$Class_all_categories_documents: all documents from categories
 observe({
   values$last_selected<-input$Class_all_categories_documents
 })
 
-
+#'render visualization to show all documents from categories
+#'depends on:
+#'  input$Class_all_categories_avail: all available categories
+#'  input$Class_all_categories_documents: all documents from categories
+#'  input$project_selected: selected project
+#'  values$Class_all_categories_reload_documents: reload all documents from categories
+#'  values$Class_all_documents_texts: all texts from documents
+#'  values$highlight_span: highlight span elements
 output$Class_all_categories_document_UI<-renderUI({
   validate(
     need(length(isolate(input$Class_all_categories_avail))>0,message=F),
@@ -118,7 +144,6 @@ output$Class_all_categories_document_UI<-renderUI({
   dataset<-stringr::str_split(input$Class_all_categories_documents,pattern = "_",simplify = T)[1,1]
   id_doc<-stringr::str_split(input$Class_all_categories_documents,pattern = "_",simplify = T)[1,2]
   data<-isolate(values$Class_all_documents_texts[intersect(which(isolate(values$Class_all_documents_texts[,"id_doc"])==id_doc),which(isolate(values$Class_all_documents_texts[,"dataset"])==dataset)),])
-  #browser()
   validate(
     need(
       dim(data)[1]>0,message=F)
@@ -152,6 +177,17 @@ output$Class_all_categories_document_UI<-renderUI({
 })
 
 
+#' show annotations for all categories
+#' depends:
+#'   input$Class_all_categories_avail: all available categories
+#'   input$Class_all_categories_documents: all documents from categories
+#'   input$Class_all_categories_threshold: threshold of all categories
+#'   values$Class_all_documents_texts: all texts from document
+#'   values$Class_all_documents_labels: all labels from documents
+#'   values$Class_all_documents_annos: annatations from all documents
+#'   values$highlight_spans: highlight spans
+#'   values$Class_spans_to_highlight: show spans to highlight
+#'   
 output$Class_all_categories_annotations<-DT::renderDataTable({
   validate(
     need(length(input$Class_all_categories_avail)>0,message=F),
@@ -247,7 +283,10 @@ $(row).mouseleave(function(){
   )
 },server = F)
 
-#forward right hovered span with corresponding color to document view
+#' forward right hovered span with corresponding color to document view
+#' depends on:
+#'   input$hoverIndexJS: hover java script indexes
+#'   values$highlight_span: highlight span
 observe({
   validate(
     need(!is.null(input$hoverIndexJS),message = F)
@@ -262,7 +301,13 @@ observe({
 })
 
 
-#theshold input for sentence probabilities
+#' theshold input for sentence probabilities
+#' depends on:
+#'   input$Class_all_categories_avail: all available categories
+#'   input$Class_all_categories_documents: all documents from categories
+#'   input$project_selected: selected project
+#'   values$Class_all_documents_labels: all labels from document
+#'   
 output$Class_all_categories_treshold_UI<-renderUI({
   validate(
     need(length(input$Class_all_categories_avail)>0,message=F),
@@ -281,7 +326,11 @@ output$Class_all_categories_treshold_UI<-renderUI({
 
 
 
-
+#' observe text manipulations
+#' depends on:
+#'   values$highlight_spans: higlighted spans
+#'   values$Class_all_documents_texts: all document texts
+#'   
 observe({
   validate(
     need(!is.null((values$highlight_spans)),message=FALSE)
@@ -323,10 +372,18 @@ observe({
   isolate(values$Class_all_documents_texts[ignored,9]<-TRUE)
 })
 
-
+#' save changes of categories
+#' depends on:
+#'   input$Class_all_categories_save: save all categories
+#'   values$Class_all_documents_texts: all texts of the documents
+#'   values$Class_all_documents_labels: all labels from documents
+#'   input$project_selected: selected project
+#'   input$Class_all_categories_avail: all available categories
+#'   values$host: selected host
+#'   values$db_port: selected data base port
+#'   values$Class_all_categories_reload_reload all categories
 observeEvent(input$Class_all_categories_save,{
   withBusyIndicatorServer("Class_all_categories_save", {
-    browser()
     texts<-isolate(values$Class_all_documents_texts)
     labels<-isolate(values$Class_all_documents_labels)
     project<-input$project_selected
@@ -434,35 +491,17 @@ observeEvent(input$Class_all_categories_save,{
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ##############################################
 #####one category######
 ##############################################
+
+#' show one category in data table
+#' depends on:
+#'   values$Class_update_classifications: update classfications 
+#'   input$project_selected: select project
+#'    values$class_anno_names: annoation names
+#'    values$class_anno_selected: selected annotation
+#'   
 output$Class_classifications<-DT::renderDataTable({
   values$Class_update_classifications
   files<-list.files(path = paste0("collections/results/classification/activeLearning/",input$project_selected),full.names = T,include.dirs = F,recursive = T,pattern = "training_examples.RData")
@@ -536,7 +575,10 @@ output$Class_classifications<-DT::renderDataTable({
   table<-datatable(data = table_data$data,options=list(dom="tp",order=list(0,"desc")),rownames = F,escape = F,selection="none",caption = "Classifications for selected project")
   return(table)
 })
-
+#' observe if rerung button is pressed
+#' depends on:
+#'   input$classification_buttons_rerun: check if rerun button is selected
+#'   input$project_selected: selected project
 observeEvent(input$classification_buttons_rerun,{
   file_id<-as.numeric(stringr::str_split(string = input$classification_buttons_rerun,pattern = "_",simplify = "")[1,4])
   #get task_id
@@ -563,7 +605,19 @@ observeEvent(input$classification_buttons_rerun,{
 
 
 
-
+#' observe selected project and actions 
+#' depends on:
+#'   input$project_selected: selected project
+#'   input$classification_buttons: is classification button pressed
+#'   values$class_eval_id_selected: evaluate selected id
+#'   values$Class_eval_data: data to evaluate
+#'   values$class_eval_data_index: index of evaluated data
+#'   values$Class_eval_data_complete: complecte data for evaluation
+#'   values$Class_eval_save_path: save path to evaluation
+#'   values$Class_eval_meta: meta data for evaluation
+#'   values$Class_eval_result: results for evaluation
+#'   values$Class_eval_feature_matrix: feature matrix for evaluation
+#'   
 observe({
   validate(
     need(!is.null(input$project_selected),message=FALSE),
@@ -660,7 +714,11 @@ observe({
 })
 
 
-#plot for feature breakdown for active learning examples
+#'plot for feature breakdown for active learning examples
+#'depends on:
+#'  values$Class_eval_feature_matrix: feature matrix for evaluation
+#'  input$Class_eval_feature_breakdown_n: feature breakdown parameter n for evaluation
+#'  
 output$Class_eval_feature_breakdown_plot<-plotly::renderPlotly({
   validate(
     need(
@@ -683,6 +741,9 @@ output$Class_eval_feature_breakdown_plot<-plotly::renderPlotly({
 })
 
 
+#' log the plot for classification
+#' depends on:
+#'   values$Class_eval_result: evaluate result
 output$Class_log_plot<-renderPlotly({
   result<-values$Class_eval_result
   plot_ly(x=factor(c("0.003", "0.01", "0.03", "0.1", "0.3", "1", "3" , "10", "30", "100"),levels=c("0.003", "0.01", "0.03", "0.1", "0.3", "1", "3" , "10", "30", "100")),y=result,type = "scatter",mode="lines")%>%
@@ -694,7 +755,16 @@ shiny::observeEvent(ignoreInit = T,input$Class_eval_close,{
   shiny::removeModal()
 })
 
-
+#' samples for evaluations
+#' depends on:
+#'   values$Class_eval_meta: meta data for evaluation
+#'   values$Class_eval_data: data for evaluation
+#'   values$host: selected host
+#'   values$db_port: selected data base port
+#'   values$class_eval_id_selected: id of selected project for evaluation
+#'   values$class_anno_names: annotation names
+#'   values$class_anno_selected:selected annotation
+#'   
 output$Class_eval_examples<-renderUI({
   if(values$Class_eval_meta$context_unit=="Document"){
     values_pairs<-paste(paste0("('",stringr::str_split(values$Class_eval_data$doc_id_global,pattern = "_",simplify = T)[,1],"' , ",stringr::str_split(values$Class_eval_data$doc_id_global,pattern = "_",simplify = T)[,2],")"),
@@ -706,6 +776,8 @@ output$Class_eval_examples<-renderUI({
     
     examples<-lapply(X = 1:dim(values$Class_eval_data)[1],FUN = function(x){
       radio_id<-paste0("Class_eval_radio_buttons_",isolate(values$class_eval_id_selected),"_",rownames(values$Class_eval_data)[x])
+      #replace whitespaces in order to get javascript condition to work
+      radio_id<-stringr::str_replace_all(string = radio_id,pattern = " ",replacement = "")
       condition<-paste0('input.',radio_id,'=="deny"')
       selected<-values$Class_eval_data[x,6]
       if(selected==" "){
@@ -735,6 +807,8 @@ output$Class_eval_examples<-renderUI({
   else{
     examples<-lapply(X = 1:dim(values$Class_eval_data)[1],FUN = function(x){
       radio_id<-paste0("Class_eval_radio_buttons_",isolate(values$class_eval_id_selected),"_",rownames(values$Class_eval_data)[x])
+      #replace whitespaces in order to get javascript condition to work
+      radio_id<-stringr::str_replace_all(string = radio_id,pattern = " ",replacement = "")
       condition<-paste0('input.',radio_id,'=="deny"')
       selected<-values$Class_eval_data[x,6]
       if(selected==" "){
@@ -766,11 +840,21 @@ output$Class_eval_examples<-renderUI({
   do.call(tagList,examples)
 })
 
-
+#' evaluate random data
+#' depends on:
+#'  input$Class_eval_random: initiate evaluating random elements
+#'  values$Class_eval_data_complete: evaluate complete data
 observeEvent(input$Class_eval_random,{
   values$Class_eval_data<-values$Class_eval_data_complete[sample(x = 1:50,size = 10,replace = FALSE),]
 })
 
+#' evaluate highest scores
+#' depends on:
+#'   input$Class_eval_highest_scored: evaluations with highest scores
+#'   values$class_eval_data_index: index of evaluation data 
+#'   values$Class_eval_data_complete: complete evaluation data
+#'   values$Class_eval_data: evaluation data
+#'   
 observeEvent(input$Class_eval_highest_scored,{
   if(values$class_eval_data_index==dim(values$Class_eval_data_complete)[1]){
     values$class_eval_data_index<-0
@@ -781,13 +865,19 @@ observeEvent(input$Class_eval_highest_scored,{
 })
 
 
-#change data object if sentences have been approved/denied/ignored
+#' change data object if sentences have been approved/denied/ignored
+#' depends on:
+#'   values$Class_eval_data: evaluation data 
+#'   values$class_eval_id_selected: selected id for evaluation
+#'   values$Class_eval_data_complete: complete evaluation data
 observe({
   validate(
     need(!is.null(values$Class_eval_data),message=FALSE)
   )
   
   x<-unlist(lapply(rownames(values$Class_eval_data),function(i){
+    #replace whitespaces in dataset name
+    i<-stringr::str_replace_all(string = i,pattern = " ",replacement = "")
     if(is.null(input[[paste0("Class_eval_radio_buttons_",isolate(values$class_eval_id_selected),"_",i)]])){
       return(" ")
     }
@@ -796,6 +886,8 @@ observe({
     }
   }))
   y<- unlist(lapply(rownames(values$Class_eval_data),function(i){
+    #replace whitespaces in dataset name
+    i<-stringr::str_replace_all(string = i,pattern = " ",replacement = "")
     if(is.null(input[[paste0("Class_eval_radio_buttons_",isolate(values$class_eval_id_selected),"_",i,"_deny")]])){
       return(" ")
     }
@@ -817,7 +909,11 @@ observe({
   }
 })
 
-
+#' delete classification task
+#' depends on:
+#'   input$class_delete: confirm that delete button was pressed
+#'   values$Class_file_delete: selected file to delete
+#'   values$Class_update_classifications: update classification tasks
 observeEvent(input$class_delete,{
   shiny::removeModal()
   unlink(values$Class_file_delete,recursive = T)
@@ -825,7 +921,17 @@ observeEvent(input$class_delete,{
 })
 
 
-
+#' save classification
+#' depends on:
+#'   input$Class_eval_save: conform to save the evaluation
+#'   values$Class_eval_data_complete: complete evaluation data 
+#'   values$Class_eval_meta: evalutation meta data
+#'   values$Class_eval_result: results of evaluation
+#'   values$Class_eval_save_path: path to save the data
+#'   values$host: selected host
+#'   values$db_port: selected database port
+#'   input$project_selected: selected project
+#'   
 observeEvent(input$Class_eval_save,{
   withBusyIndicatorServer("Class_eval_save", {
     data<-isolate(values$Class_eval_data_complete)
@@ -995,7 +1101,7 @@ observeEvent(input$Class_eval_save,{
 })
 
 
-#document link
+#' document link
 observe({
   validate(
     need(!is.null(values$Class_eval_data),message=FALSE)

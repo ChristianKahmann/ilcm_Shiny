@@ -1,5 +1,7 @@
-
-
+#' document view annotations
+#' depends on:
+#'   values$newscheme: create a new scheme
+#'   
 output$DV_Annotation_Schemes<-renderUI({
   values$newscheme
   validate(validate(need(
@@ -8,7 +10,15 @@ output$DV_Annotation_Schemes<-renderUI({
   selectizeInput(inputId = "anno_scheme_selected",label="Which Annotation Scheme?",choices=stringr::str_replace_all(list.files("collections/annotation_schemes/"),".RData","")) 
 })
 
-
+#' save annotations
+#' depends on:
+#'   input$save_annotations: save annotations
+#'   values$annotations_marked: annotation marks
+#'   values$token: selected tokens
+#'   values$host: select a host
+#'   values$db_port: select a database port
+#'   values$anno_loaded: loaded annotation
+#'   values$made_annotations: make annotation
 observeEvent(input$save_annotations,{
   if(dim(isolate(values$annotations_marked))[1]==0){
     shinyWidgets::sendSweetAlert(session = session,title = "no annotations found",type = "warning")
@@ -38,7 +48,9 @@ observeEvent(input$save_annotations,{
   }
 })
 
-
+#' show annotation cmponents
+#' depends on:
+#'   input$anno_scheme_selected: select annotation scheme
 output$annotationComponents<-renderUI({
   validate(
     need(!is.null(input$anno_scheme_selected),message=FALSE)
@@ -48,7 +60,13 @@ output$annotationComponents<-renderUI({
 })
 
 
-
+#' select annotation
+#' depends on:
+#'   values$annotations_show: show annotations
+#'   input$anno_scheme_selected: selected annotation
+#'   values$highlight_annos: highlight annotation
+#'   values$delete_anno_box_id: delete annotation with id
+#'   
 output$made_annotations<-renderUI({
   validate(
     need(dim(values$annotations_show)[1]>0,message=FALSE)
@@ -89,7 +107,10 @@ output$made_annotations<-renderUI({
   }
 })
 
-#check whether an annotation box was drop in the trash div, if this is
+#' check whether an annotation box was drop in the trash div, if this is
+#' depends on:
+#'   input$delete_annotation_box: box to delete annotation
+#'   
 observe({
   validate(
     need(!is.null(input$delete_annotation_box),message=FALSE)
@@ -107,7 +128,16 @@ observe({
 # })
 
 
-#if user has confiremd to delete annotation, delete the annotation in the database and also the annotation matrices
+#' if user has confiremd to delete annotation, delete the annotation in the database and also the annotation matrices
+#' depends on:
+#'   input$confirm_delete_anno_box: confirm to delete annotation
+#'   values$annotations_marked: selected annotation
+#'   values$annotations_show: show annotation
+#'   values$annos_documentwide: documentwide annotations
+#'   values$annos: annotations
+#'   values$host: used host
+#'   values$db_port: used database port
+#'   values$anno_deleted: deleted annotation
 observeEvent(input$confirm_delete_anno_box,{
   if(isTRUE(input$confirm_delete_anno_box)){
     values$annotations_marked<-isolate(values$annotations_marked[-which(isolate(values$annotations_marked[,1]==isolate(values$delete_anno_box_id))),,drop=F])

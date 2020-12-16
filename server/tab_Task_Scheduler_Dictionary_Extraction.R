@@ -1,5 +1,5 @@
 
-##render the parameter set for dictionary extraction
+#' render the parameter set for dictionary extraction
 output$Analysis_Parameter_DE<-renderUI({
   tagList(
     tags$hr(),
@@ -121,9 +121,7 @@ output$Analysis_Parameter_DE<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.DE_use_custom_blacklist==true",
-                              uiOutput(outputId = "DE_blacklist_UI")
-             )
+             uiOutput(outputId = "DE_blacklist_UI")
       ),
       column(1,
              checkboxInput(inputId = "DE_use_custom_whitelist",label = "use custom whitelist?",value = F)%>%
@@ -135,14 +133,12 @@ output$Analysis_Parameter_DE<-renderUI({
                )
       ),
       column(2,
-             conditionalPanel(condition = "input.DE_use_custom_whitelist==true",
-                              uiOutput(outputId = "DE_whitelist_UI")
-             )
+             uiOutput(outputId = "DE_whitelist_UI")
       )
     ),
     fluidRow(
       conditionalPanel(condition = "input.DE_use_custom_whitelist==true || input.DE_keep_custom.length>=1",
-                     
+                       
                        # column(1,
                        #        checkboxInput(inputId = "DE_whitelist_only",label = "Exclude all words apart from the whitelist entries",value = FALSE)%>%
                        #          shinyInput_label_embed(
@@ -152,11 +148,11 @@ output$Analysis_Parameter_DE<-renderUI({
                        #              )
                        #          )
                        # ),
-                     
-                              conditionalPanel(condition = "(input.DE_use_custom_whitelist==true || input.DE_keep_custom.length>=1) && (input.DE_ngram.includes('2') || input.DE_ngram.includes('3'))",
-                                               tags$br(),
-                                               tags$h5("Whitelist Options:"),
-                                               column(1,
+                       
+                       conditionalPanel(condition = "(input.DE_use_custom_whitelist==true || input.DE_keep_custom.length>=1) && (input.DE_ngram.includes('2') || input.DE_ngram.includes('3'))",
+                                        tags$br(),
+                                        tags$h5("Whitelist Options:"),
+                                        column(1,
                                                checkboxInput(inputId = "DE_whitelist_expand",label = "Expand whitelist?",value = FALSE)%>%
                                                  shinyInput_label_embed(
                                                    shiny_iconlink() %>%
@@ -164,8 +160,8 @@ output$Analysis_Parameter_DE<-renderUI({
                                                        title = "Should the words whitelist be expaned using n-grams?", placement = "right"
                                                      )
                                                  )
-                              )  
-                              
+                                        )  
+                                        
                        )
       )
     ),
@@ -246,8 +242,8 @@ output$Analysis_Parameter_DE<-renderUI({
     tags$hr(),
     tags$h4("Dictionary Extraction parameters"),
     fluidRow(
-      column(2,
-             selectInput(inputId = "DE_POS_TYPES",label = "POS-Types",
+      column(1,
+             selectInput(inputId = "DE_POS_TYPES",label = "Include POS-Types",
                          choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X") ,selected = "all",multiple = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -257,18 +253,43 @@ output$Analysis_Parameter_DE<-renderUI({
                    )
                )
       ),
-      column(2,
-             selectInput(inputId = "DE_ENTITY_TYPES",label = "NER-Tags",
-                         choices =c("all","PERSON","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+      column(1,
+             selectInput(inputId = "DE_ENTITY_TYPES",label = " Include NER-Tags",
+                         choices =c("all","PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
                                     "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = "all",multiple=T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
-                     title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-tag option causes the consolidation of entities.",
+                     title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-Tag option causes the consolidation of entities.",
                      placement = "right"
                    )
                )
       ),
+      column(1,
+             selectInput(inputId = "DE_POS_TYPES_exclude",label = "Exclude POS-Types",
+                         choices =c("NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X"), selected=character(0),multiple = T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Remove words with a certain POS-Tag from the analysis.",
+                     placement = "right"
+                   )
+               )
+      ),
+      column(1,
+             selectInput(inputId = "DE_ENTITY_TYPES_exclude",label = "Exclude NER-Tags",
+                         choices =c("PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+                                    "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = character(0),multiple=T)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Remove words with a certain NER-Tag from the analysis. Using this option causes the consolitation of entities.",
+                     placement = "right"
+                   )
+               )
+      )
+    ),
+    fluidRow(
       column(2,
              checkboxInput(inputId="DE_use_reg_exp",label = "use regexp instead of a dictionary?",value = FALSE)%>%
                shinyInput_label_embed(
@@ -280,26 +301,22 @@ output$Analysis_Parameter_DE<-renderUI({
                      html="true"
                    )
                )
-      )
-    ),
-    fluidRow(
-                 column(6,
-                    conditionalPanel(condition='input.DE_use_reg_exp==false',
-                                     uiOutput("DE_dict_ui")
-                    ),
-                    conditionalPanel(condition='input.DE_use_reg_exp==true',
-                                     textInput(inputId = "DE_regexp_input",label = "regular expression")%>%
-                                       shinyInput_label_embed(
-                                         shiny_iconlink() %>%
-                                           bs_embed_popover(
-                                             title = "Define a regular expression, which matches a set of words, you would like to have aggregated counts for.
+      ),
+      column(4,
+             uiOutput("DE_dict_ui"),
+             conditionalPanel(condition='input.DE_use_reg_exp==true',
+                              textInput(inputId = "DE_regexp_input",label = "regular expression")%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Define a regular expression, which matches a set of words, you would like to have aggregated counts for.
                             For example the regular expression '.{0,10}sustain.' will match words like: unsustainable, sustainable, sustainability,...",
-                                             placement = "right",
-                                             html="true"
-                                           )
-                                       )
-                    )
-                   )
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                )
+             )
+      )
     ),
     fluidRow(
       column(1,
@@ -353,50 +370,141 @@ output$Analysis_Parameter_DE<-renderUI({
   )
 })
 
+#' radio Buttons for dictionaries found in /collections/dictionaries
 output$DE_dict_ui<-renderUI({
-  values$update_dicts
-  shinyWidgets::prettyRadioButtons(inputId = "DE_dict",label = "Dictionaries",
-                                   choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
-                                   fill=T,animation = "tada",selected = NULL,inline = T)%>%
-    bs_embed_popover(
-      title = "Choose one of the existing dictionaries. You can add and modify dictionaries in Scripts - Dictionaries",
-      placement = "right",
-      html="true"
+  if(length(list.files("collections/dictionaries//"))==0){
+    return(HTML("No dictionaries available. You can create dictionaries in the Scripts-Dictionaries Tab"))
+  }
+  else{
+    return((
+      prettyRadioButtons(inputId = "DE_dict",label = "Dictionaries",
+                         choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
     )
+    )
+  }
 })
 
 
+#' show dictionaries options when mode = "Produce 50 new active learning examples
+#' and use dictionary checkbox is set to TRUE
+#' depends on: input$DE_use_reg_exp: use regular expressions?
+observe({
+  if(isFALSE(input$DE_use_reg_exp)){
+    shinyjs::show(id = "DE_dict")
+  }
+  else{
+    shinyjs::hide(id="DE_dict")
+  }
+})
+
+
+#' show whitelists stored in collections/whitelists
 output$DE_whitelist_UI<-renderUI({
-  values$invalidate_whitelists
   if(length(list.files("collections/whitelists/"))==0){
     return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))
   }
   else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "DE_whitelist",label = "Whitelists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "DE_whitelist",label = "Whitelists",
+                         choices = stringr::str_replace_all(string = list.files("collections/whitelists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
   }
 })
 
-output$DE_blacklist_UI<-renderUI({
-  values$invalidate_blacklists
-  if(length(list.files("collections/blacklists/"))==0){
-    return(HTML("No blacklists available. You can create blacklists in the Scripts-Blacklist Tab"))
+#' show whitelist options when whitelist checkbox is TRUE
+#' depends on:
+#'  input$DE_use_custom_whitelist: use a custom whitelist?
+observeEvent(ignoreNULL = T,input$DE_use_custom_whitelist,{
+  if(isTRUE(input$DE_use_custom_whitelist)){
+    shinyjs::show(id = "DE_whitelist")
   }
   else{
-    return(
-      shinyWidgets::prettyRadioButtons(inputId = "DE_blacklist",label = "Blacklists",
-                                       choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "tada",selected = NULL)
-    )
+    shinyjs::hide(id = "DE_whitelist")
+  }
+})
+
+#' show blacklists stored in collections/blacklists
+output$DE_blacklist_UI<-renderUI({
+  if(length(list.files("collections/blacklists/"))==0){
+    return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
+  }
+  else{
+    return(shinyjs::hidden(
+      prettyRadioButtons(inputId = "DE_blacklist",label = "Blacklists",
+                         choices = stringr::str_replace_all(string = list.files("collections/blacklists/"),pattern = ".txt",replacement = ""),
+                         fill=T,animation = "tada",selected = NULL,inline = T)
+    ))  
+  }
+})
+
+#' show blacklist options when blacklist checkbox is TRUE
+#' depends on:
+#'   input$DE_use_custom_blacklist: use a custom blacklist?
+observeEvent(ignoreNULL = T,input$DE_use_custom_blacklist,{
+  if(isTRUE(input$DE_use_custom_blacklist)){
+    shinyjs::show(id = "DE_blacklist")
+  }
+  else{
+    shinyjs::hide(id = "DE_blacklist")
   }
 })
 
 
 
-#start cooccurrence analysis script, if submit button is clicked
+#' start cooccurrence analysis script, if submit button is clicked
+#' depends on:
+#'   input$DE_Submit_Script: submited script
+#'   input$DE_min_termfreq_c: minimum term frequency (count)
+#'   input$DE_max_termfreq_c: maximum term frequency (count)
+#'   input$DE_min_termfreq_p: minimum term probability
+#'   input$DE_max_termfreq_p: maximum term probability
+#'   input$DE_min_termfreq_r: minimum term rank
+#'   input$DE_max_termfreq_r: maximum term rank
+#'   input$DE_min_termfreq_q: minimum term quantile
+#'   input$DE_max_termfreq_q: maximum term quantile
+#'   input$DE_min_docfreq_c: minimum document frequency (count)
+#'   input$DE_max_docfreq_c: maximum document frequency (count)
+#'   input$DE_min_docfreq_p: minimum document probability
+#'   input$DE_max_docfreq_p: maximum document probability
+#'   input$DE_min_docfreq_r: minimum document rank
+#'   input$DE_max_docfreq_r: maximum document rank
+#'   input$DE_min_docfreq_q: minimum document quantile 
+#'   input$DE_max_docfreq_q: maximum document quantile
+#'   input$DE_termfreq_type: term frequency type (count, rank, probability, quantile)
+#'   input$DE_docfreq_type: docuement frequency type
+#'   input$collection_selected: selected collection
+#'   input$DE_baseform: should the words be reduced to their baseform?
+#'   input$DE_min_char: select minimum of characters
+#'   input$DE_ngram: select size of n-grams
+#'   input$DE_remove_stopwords: remove stopwords
+#'   input$DE_lowercase: put all words to lower case?
+#'   input$DE_remove_numbers: should the numbers be reduced?
+#'   input$DE_remove_numbers_all: should all words containing numbers be reduced
+#'   input$DE_remove_punctuation: should the punctutation be removed?
+#'   input$DE_remove_hyphenation: should the hyphentitcation be removed?
+#'   input$DE_remove_custom: should custom words be removed?
+#'   input$DE_consolidate_entities: consolidate found entities?
+#'   input$DE_blacklist: blacklist of words 
+#'   input$DE_POS_TYPES: part of speech types that should be used
+#'   input$DE_POS_TYPES_exclude: part of speech types that should be excluded
+#'   input$DE_ENTITY_TYPES: entity (NER) types that should be used
+#'   input$DE_ENTITY_TYPES_exclude: entity (NER) types that should be excluded
+#'   input$DE_keep_custom: keep customed words
+#'   input$DE_use_custom_blacklist: use a customed blacklist?
+#'   input$DE_use_custom_whitelist: use a customed whitelist?
+#'   input$DE_whitelist: used whitelist of words to keep
+#'   input$DE_whitelist_expand: expand whitelist?
+#'   input$DE_reg_exp: use regular expression
+#'   input$DE_context_unit: specify the window within the specific context has to co-occure within dictionary terms (sentence or document)
+#'   input$DE_Context_Filter: use context filter to just count occurrence of dictionary term 
+#'   input$DE_use_context_filter: should a context filter be used?
+#'   input$DE_use_reg_exp: use regular expressions?
+#'   input$DE_regexp_input: input for regular expressions
+#'   input$DE_dict: use a dictionary?
+#'   input$collection_selected:
+#'   
 observeEvent(input$DE_Submit_Script,{
   valid<-check_pruning_parameters(min_t_c = input$DE_min_termfreq_c,max_t_c = input$DE_max_termfreq_c,min_t_p =input$DE_min_termfreq_p,max_t_p =  input$DE_max_termfreq_p
                                   ,min_t_r =input$DE_min_termfreq_r,max_t_r = input$DE_max_termfreq_r,min_t_q = input$DE_min_termfreq_q, max_t_q = input$DE_max_termfreq_q
@@ -464,7 +572,9 @@ observeEvent(input$DE_Submit_Script,{
                      consolidate_entities=input$DE_consolidate_entities,
                      blacklist=input$DE_blacklist,
                      reduce_POS=input$DE_POS_TYPES,
+                     reduce_POS_exclude=input$DE_POS_TYPES_exclude,
                      reduce_NER=input$DE_ENTITY_TYPES,
+                     reduce_NER_exclude=input$DE_ENTITY_TYPES_exclude,
                      termfreq_type=input$DE_termfreq_type,
                      docfreq_type=input$DE_docfreq_type,
                      keep_custom=input$DE_keep_custom,
@@ -575,7 +685,9 @@ observeEvent(input$DE_pruning_continue,ignoreInit = T,{
                    consolidate_entities=input$DE_consolidate_entities,
                    blacklist=input$DE_blacklist,
                    reduce_POS=input$DE_POS_TYPES,
+                   reduce_POS_exclude=input$DE_POS_TYPES_exclude,
                    reduce_NER=input$DE_ENTITY_TYPES,
+                   reduce_NER_exclude=input$DE_ENTITY_TYPES_exclude,
                    termfreq_type=input$DE_termfreq_type,
                    docfreq_type=input$DE_docfreq_type,
                    keep_custom=input$DE_keep_custom,

@@ -1,5 +1,8 @@
 
-#render FE words to export checkbox
+#' render FE words to export checkbox
+#' depends on:
+#'   input$Det_FE_Word: words for frequency extraction
+#'   
 output$FE_words_to_export<-renderUI({
   validate(
     need(length(input$Det_FE_Word)>0,message = FALSE)
@@ -9,7 +12,25 @@ output$FE_words_to_export<-renderUI({
 
 
 
-#render FE plot
+#' render FE plot
+#' depends on:
+#'   input$Det_FE_Word: words for frequency extraction
+#'   input$Det_FE_use_regexp: choosen words or regular expression
+#'   input$Det_FE_REL_ABS: use relative or absolute values?
+#'   input$Det_FE_Term_Doc: selected terms in document
+#'   input$Det_FE_Time: selected time-intervall
+#'   values$FE_rel_freqs_day: selected relative values for frequency over day-intervall
+#'   values$FE_rel_freqs_week: selected relative values for frequency over week-intervall
+#'   values$FE_rel_freqs_month: selected relative values for frequency over month-intervall
+#'   values$FE_rel_freqs_year: selected relative values for frequency over year-intervall
+#'   input$Det_FE_calc: start detailed frequency calculation
+#'   values$Det_FE_regexp_words: words from regular expression
+#'   values$FE_doc_freqs_day: document frequencies for day-intervall
+#'   values$FE_freqs_week: document frequencies for week-intervall
+#'   values$FE_freqs_month: document frequencies for month-intervall
+#'   values$FE_freqs_year: document frequencies for year-intervall
+#'   values$freq_matrix: frequency-matrix
+#'   
 output$FE_plot<-renderPlotly({
   validate(
     need(length(input$Det_FE_Word)>0 | isTRUE(input$Det_FE_use_regexp),"choose at least one word or use regexp")
@@ -143,7 +164,12 @@ output$FE_plot<-renderPlotly({
   }
 })
 
-#link downloadbutton in FE details to the according time series data
+#' link downloadbutton in FE details to the according time series data
+#' depends on:
+#'   input$Det_FE_use_regexp: use regular expressions
+#'   input$FE_CB_words_to_export: chosen words for export
+#'   values$freq_matrix: frequency matrix
+#'   
 output$download_FE_frequencies<-downloadHandler(
   filename = function() {
     paste('Time_Series-', Sys.Date(), '.csv', sep='')
@@ -152,7 +178,7 @@ output$download_FE_frequencies<-downloadHandler(
     if(input$Det_FE_use_regexp==FALSE){
       if(length(input$FE_CB_words_to_export)==0){
         shinyWidgets::sendSweetAlert(session=session,title = "No words for export chosen.",text = "Please select the words you want to extract the time series data for in the corresponding checkboxes.",
-                               type="warning"  )
+                                     type="warning"  )
         break;
       }
       data<-as.matrix(values$freq_matrix[,input$FE_CB_words_to_export,drop=F])
@@ -166,10 +192,139 @@ output$download_FE_frequencies<-downloadHandler(
   }
 )  
 
+#' render regular expressions for selected words
+#' depends on:
+#'   values$Det_FE_regexp_words: used words for regular expression
+#'   
 output$Det_FE_regexp_words<-renderUI({
   validate(
     need(!is.null(values$Det_FE_regexp_words),message=F)
   )
   return(tags$h6(paste("found words matching regexp:",paste(values$Det_FE_regexp_words,collapse=", "))))
+})
+
+
+###############################################
+#       most frequent words                   #
+###############################################
+
+
+#' get available points in time depending on chosen timeintervall and present it as a select input
+#' depends on:
+#'   input$Det_FE_most_frequent_words_timeintervall: most frequent words in a time intervall
+#'   values$FE_freqs_day: word frequences in daly intervall
+#'   values$FE_freqs_week: word frequences in weekly intervall
+#'   values$FE_freqs_month: word frequences in monthly intervall
+#'   values$FE_freqs_year: word frequences in yearly intervall
+output$Det_FE_most_frequent_words_points_in_time_UI<-renderUI({
+  validate(
+    need(!is.null(input$Det_FE_most_frequent_words_timeintervall),message=F)
+  )
+  timeintervall<-input$Det_FE_most_frequent_words_timeintervall
+  if(timeintervall=="Day"){
+    choices<-rownames(values$FE_freqs_day)
+  }
+  if(timeintervall=="Week"){
+    choices<-rownames(values$FE_freqs_week)
+  }
+  if(timeintervall=="Month"){
+    choices<-rownames(values$FE_freqs_month)
+  }
+  if(timeintervall=="Year"){
+    choices<-rownames(values$FE_freqs_year)
+  }
+  return(selectizeInput(inputId="Det_FE_most_frequent_words_points_in_time",label="Points in time",choices=choices,multiple=T))
+})
+
+
+#' renderTable and Wordcloud showing the most frequent words at chosen point(s) in time
+#' depends on:
+#'   input$Det_FE_most_frequent_words_use_whole_time: word frequency over whole time intervalls
+#'   input$Det_FE_most_frequent_words_timeintervall: word frequency for selected time intervall
+#'   input$Det_FE_most_frequent_words_points_in_time: word frequency for different points in timeline
+#'   values$FE_freqs_day: frequency for selected dayly time intevall
+#'   values$FE_freqs_week: frequency for selected weekly time intervall
+#'   values$FE_freqs_month: frequency for selected monthly time intervall
+#'   values$FE_freqs_year: frequency for selected yearly time intervall
+#'   values$Det_FE_most_frequent_words_counts: detailed frequency extraction for most frequent words counts
+#'   
+output$Det_FE_most_frequent_words_UI<-renderUI({
+  input$Det_FE_most_frequent_words_use_whole_time
+  input$Det_FE_most_frequent_words_timeintervall
+  input$Det_FE_most_frequent_words_points_in_time
+  validate(
+    need(!is.null(input$Det_FE_most_frequent_words_use_whole_time),message=F)
+  )
+  if(input$Det_FE_most_frequent_words_use_whole_time==TRUE){
+    counts<-colSums(values$FE_freqs_day)
+    counts<-data.frame(names=names(counts),counts=counts)
+  }
+  else{
+    validate(
+      need(length(input$Det_FE_most_frequent_words_points_in_time)>0,message="Please select atleast one point in time.")
+    )
+    if(input$Det_FE_most_frequent_words_timeintervall=="Day"){
+      counts<-colSums(values$FE_freqs_day[input$Det_FE_most_frequent_words_points_in_time,,drop=F])
+      counts<-data.frame(names=names(counts),counts=counts)
+    }
+    if(input$Det_FE_most_frequent_words_timeintervall=="Week"){
+      counts<-colSums(values$FE_freqs_week[input$Det_FE_most_frequent_words_points_in_time,,drop=F])
+      counts<-data.frame(names=names(counts),counts=counts)
+    }
+    if(input$Det_FE_most_frequent_words_timeintervall=="Month"){
+      counts<-colSums(values$FE_freqs_month[input$Det_FE_most_frequent_words_points_in_time,,drop=F])
+      counts<-data.frame(names=names(counts),counts=counts)
+    }
+    if(input$Det_FE_most_frequent_words_timeintervall=="Year"){
+      counts<-colSums(values$FE_freqs_year[input$Det_FE_most_frequent_words_points_in_time,,drop=F])
+      counts<-data.frame(names=names(counts),counts=counts)
+    }
+  }
+  values$Det_FE_most_frequent_words_counts<-counts
+  return(
+    tagList(
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(6,
+                      box(solidHeader = T,width = 12,title = "Table",status = "primary",
+                        DT::dataTableOutput(outputId = "Det_FE_most_frequent_words_table")
+                      )
+               ),
+               column(6,
+                      box(solidHeader = T,width = 12,title = "Wordcloud",status = "primary",
+                        wordcloud2::wordcloud2Output(outputId = "Det_FE_most_frequent_words_wc")
+                      )
+               )
+      )
+    )
+  )
+})
+
+#' datatable showing the counts of words per time point(s)
+#' depends on:
+#'  values$Det_FE_most_frequent_words_counts: most frequent words from data table
+#'   
+output$Det_FE_most_frequent_words_table<-DT::renderDataTable({
+  validate(
+    need(!is.null(values$Det_FE_most_frequent_words_counts),message=F)
+  )
+  data<- values$Det_FE_most_frequent_words_counts
+  data<-data[order(data$counts,decreasing=T),]
+  datatable(data=data,rownames = F,selection = "none")
+})
+
+
+
+#' wordcloud showing the counts of words per time point(s)
+#' depends on:
+#'   values$Det_FE_most_frequent_words_counts: most frequent words from counts
+#'      
+output$Det_FE_most_frequent_words_wc<-wordcloud2::renderWordcloud2({
+  validate(
+    need(!is.null(values$Det_FE_most_frequent_words_counts),message=F)
+  )
+  data<- values$Det_FE_most_frequent_words_counts
+  data<-data[order(data$counts,decreasing=T),]
+  wordcloud2(data = data,size=0.9,fontFamily = "Helvetica",color = "random-light",minSize = 0.2,backgroundColor = "black",minRotation = -pi/2,maxRotation = -pi/2)
+  
 })
 

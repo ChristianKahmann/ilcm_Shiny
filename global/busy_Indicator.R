@@ -9,10 +9,10 @@
 # Need to use with the corresponding `withBusyIndicator` server function
 withBusyIndicatorUI <- function(button) {
   id <- button[['attribs']][['id']]
-  div(
+  shiny::div(
     `data-for-btn` = id,
     button,
-    span(
+    shiny::span(
       class = "btn-loading-container",
       hidden(
         img(src = "ajax-loader-bar.gif", class = "btn-loading-indicator"),
@@ -20,10 +20,10 @@ withBusyIndicatorUI <- function(button) {
       )
     ),
     hidden(
-      div(class = "btn-err",
-          div(icon("exclamation-circle"),
+      shiny::div(class = "btn-err",
+          shiny::div(icon("exclamation-circle"),
               tags$b("Error: "),
-              span(class = "btn-err-msg")
+              shiny::span(class = "btn-err-msg")
           )
       )
     )

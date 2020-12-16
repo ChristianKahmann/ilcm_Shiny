@@ -2,7 +2,12 @@ values$control<-0
 values$sort<-""
 values$reload_keep<-FALSE
 
-#get metadata fields for selected corpora
+#' get metadata fields for selected corpora
+#' depends on:
+#'   input$dataset: input of dataset
+#'   values$metadata_available: available meta data
+#'   values$host: used host to data base
+#'   values$db_port: used data base port
 observeEvent(input$dataset,{
   values$metadata_available<-NULL
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
@@ -14,7 +19,21 @@ observeEvent(input$dataset,{
 })
 
 
-#render output table for search results
+#' render output table for search results
+#' depends on:
+#'   values$numFound: found numbers
+#'   input$SR_row_sel: sected rows
+#'   values$reload_keep: keep reloaded data
+#'   values$custom_inputtext: customed input text
+#'   values$url: parameter for url
+#'   values$q: parameter q
+#'   input$sort: sorting order
+#'   values$fq: parameter fq
+#'   values$metadata_available: available meta data
+#'   values$Search_Results: search results 
+#'   values$custom: customed parameters 
+#'   values$delete_documents: deleted documents
+#'   input$control: control elements   
 output$search_results_datatable<-DT::renderDataTable({
   validate(
     need(values$numFound>0,
@@ -88,7 +107,7 @@ output$search_results_datatable<-DT::renderDataTable({
   meta<-colnames(ind_new)[which(!colnames(ind_new)%in%c("id_doc","dataset","title","date","language","token","id","score","keyword and context"))]
   if(length(meta)>0){
     ind_new<-ind_new[,intersect(colnames(ind_new),c("id_doc","id","dataset","score","title","date","token","language",meta,"keyword and context"))]
-    }
+  }
   
   ind<-ind_new
   
@@ -124,11 +143,12 @@ output$search_results_datatable<-DT::renderDataTable({
       if(nchar(isolate(input$sort))>0){
         remove_existing_checkboxes(1:10)
         data<-datatable(data.frame(data,keep=shinyInput_checkbox(checkboxInput,dim(data)[1],"cbox_",values=!(data[,"id"]%in%isolate(values$delete_documents)),label=NULL))
-                        ,selection = "single",rownames = FALSE,escape = F,class = "row-border compact",options = list(
+                        ,selection = "single",rownames = FALSE,escape = F,class = "row-border compact",extensions = "Buttons",
+                        options = list(
                           preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
                           drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
-                          dom="t",
-                          columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=c(4,7:(dim(data)[2])))),
+                          dom="tB", buttons = I('colvis'),
+                          columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=c(2,4,8:(dim(data)[2])))),
                           order=list((which(colnames(data)==stringr::str_replace_all(string = stringr::str_replace_all(isolate(input$sort)," .+",""),pattern = "_[a-z]+$",replacement = ""))-1),str_split(isolate(input$sort),pattern = " ")[[1]][2])
                         ),
                         callback = JS(
@@ -232,15 +252,16 @@ $(".sorting_asc").on("click",function() {
       }
     }
     else{
-      data<-datatable(data.frame(data,keep=shinyInput_checkbox(checkboxInput,dim(data)[1],"cbox_",values=!(data[,"id"]%in%isolate(values$delete_documents)),label=NULL)),selection = "single",rownames = FALSE,class = "row-border compact",escape = F,options = list(
-        preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
-        drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
-        dom="t",
-        order=list(3,"desc"),
-        columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=c(4,7:(dim(data)[2]))))
-      ),
-      callback = JS(
-        '$(".sorting").on("click",function() {
+      data<-datatable(data.frame(data,keep=shinyInput_checkbox(checkboxInput,dim(data)[1],"cbox_",values=!(data[,"id"]%in%isolate(values$delete_documents)),label=NULL)),selection = "single",
+                      rownames = FALSE,class = "row-border compact",escape = F, extensions = "Buttons", options = list(
+                        preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
+                        drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
+                        dom="Bt", buttons = I('colvis'),
+                        order=list(7,"desc"),
+                        columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=c(2,4,8:(dim(data)[2]))))
+                      ),
+                      callback = JS(
+                        '$(".sorting").on("click",function() {
       i = this.innerHTML;
       o = this.outerHTML;
       if (o.includes("column ascending")){
@@ -310,7 +331,7 @@ $(".sorting_desc").on("click",function() {
       e.stopPropagation()
       });
       '
-      )
+                      )
       )
     }
   }
@@ -330,7 +351,10 @@ $(".sorting_desc").on("click",function() {
 
 values$numFound<-0
 
-#slider for paging
+#' slider for paging
+#' depends on:
+#'   values$numFound: found numbers
+#'   
 output$SR_row<-renderUI({
   if(values$numFound>0){
     return(tagList(
@@ -339,7 +363,14 @@ output$SR_row<-renderUI({
   }
 })
 
-#check wheather a document is selected in Search_results datatable // if yes get data from db and switch to document view
+#' check wheather a document is selected in Search_results datatable // if yes get data from db and switch to document view
+#' depends on:
+#'   input$search_results_datatable_rows_selected: selected rows in a datable 
+#'   values$Search_Results: search results in data table
+#'   values$new: new values
+#'   values$Doc_reload: reload documents
+#'   values$annotations_show: show annotations
+#'   values$annos: all annotations
 observe({
   s = input$search_results_datatable_rows_selected
   if (length(s)) {
@@ -377,7 +408,10 @@ observe({
   }
 })
 
-#render an outputline telling the user how many results were found for the current search
+#' render an outputline telling the user how many results were found for the current search
+#' depends on:
+#'   values$numFound: found numbers
+#'   
 output$SR_Num_Found<-renderText({
   validate(
     need(values$numFound>0,
@@ -387,7 +421,12 @@ output$SR_Num_Found<-renderText({
 })
 
 
-#check which documents should be excluded from collection
+#' check which documents should be excluded from collection
+#' depends on:
+#'   input$cbox_1: input of check box 1
+#'   values$Search_Results: search results
+#'   values$delete_documents: deleted documents
+#'   
 observe({
   a<-lapply(X = 1:10,FUN=function(x){return(input[[paste0("cbox_",x)]])})
   validate(
@@ -400,13 +439,19 @@ observe({
   isolate(values$delete_documents<-c(isolate(values$delete_documents),isolate(values$Search_Results[which(a==F),"id"])))
 })
 
-#reset the list for documents marked for deletion when corpus is changed
+#' reset the list for documents marked for deletion when corpus is changed
+#' depends on:
+#'   input$dataset: input dataset
 observeEvent(input$dataset,{
   values$delete_documents<-NULL
 })
 
 
-#reset the list for documents marked for deletion when refresh button for keep is pressed and trigger a reload of the search results table
+#' reset the list for documents marked for deletion when refresh button for keep is pressed and trigger a reload of the search results table
+#' depends on:
+#'   input$Search_results_reset_delete: reset deleted elements of search results
+#'   values$delete_documents: deleted documents
+#'   values$reload_keep: reload elements to keep them
 observeEvent(input$Search_results_reset_delete,{
   values$delete_documents<-NULL
   values$reload_keep<-TRUE

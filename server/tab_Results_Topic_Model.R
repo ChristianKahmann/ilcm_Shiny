@@ -1,7 +1,14 @@
 source("global/functions_used_in_scripts.R")
 
 
-#render table with finished results for topic models
+#' render table with finished results for topic models
+#' depends on:
+#'    values$reload_topic_result: reload topic model results
+#'    values$collection_selected: selected collection
+#'    values$Topic_Results_Files: topic model result files
+#'    values$Details_Analysis: details for topic model analysis
+#'    values$tasks_tm: topic model tasks
+#'    
 output$Topic_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_topic_result
@@ -125,13 +132,19 @@ output$Topic_Results <- renderDataTable({
 })
 
 
-#check wheather a certain result was clicked and then switch with needed information to details tab
+#' check wheather a certain result was clicked and then switch with needed information to details tab
+#' depends on:
+#'   input$Topic_Results_rows_selected: selected rowa from topic model result-list
+#'   values$Details_Analysis: details of selected analysis
+#'   values$Details_Data_TM: details from topic model data
+#'   values$Topic_Results_Files: result files from topic model analysis
+#'   values$current_task_id: id of current task
+#'   values$results_topic: topic model results
+#'   
 observe({
   s = input$Topic_Results_rows_selected
   if (length(s)) {
     values$Details_Analysis <- "TM"
-    print(s)
-    print(values$Topic_Results_Files)
     isolate(values$Details_Data_TM <-
               values$Topic_Results_Files[s])
     
@@ -143,7 +156,12 @@ observe({
   }
 })
 
-#if delete topic model result is clicked delete files and db entry
+#' if delete topic model result is clicked delete files and db entry
+#' depends on:
+#'   input$delete_topic_results: deleted topic model results
+#'   values$Topic_Results_Files: topic model result files
+#'   values$tm_selected_row: selected rows from topic model
+#'   values$reload_topic_result: reload topic model result
 observeEvent(input$delete_topic_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_topic_results, "_")[[1]][5])
@@ -151,12 +169,14 @@ observeEvent(input$delete_topic_results, {
     unlink(values$Topic_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_topic_results\",  "delete_button_topic_results_0")'))
-    delete_result_from_datbase(isolate(values$results_topic[selectedRow,]))
     values$reload_topic_result<-TRUE
   }
 })
 
-#if more details button is clicked open modal showing all parameters
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   input$more_details_topic_results: more details of topic model results
+#'   values$tm_selected_row: selected row from topic model result list
 observeEvent(input$more_details_topic_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_topic_results, "_")[[1]][6])
@@ -172,6 +192,10 @@ observeEvent(input$more_details_topic_results,{
   }
 })
 
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   values$tm_selected_row: selected row from topic model result list
+#'   values$tasks_tm: topic model tasks
 output$more_details_topic_table<-DT::renderDataTable({
   validate(
     need(values$tm_selected_row>0,message=F)

@@ -97,7 +97,7 @@ error<-try(expr = {
       
     }
   }
-  
+
   useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter <- F 
   
   # define functions to retrieve needed data from inputData containing dtm
@@ -209,9 +209,8 @@ error<-try(expr = {
   print("Process of geocoding finished successfully")
 })
 
-# if(class(error)=="try-error"){
-#   system(paste("mv ",logfile," collections/logs/failed/",sep=""))
-#   RMariaDB::dbDisconnect(mydb)
-#   log_to_file(message=error[[1]],file = stringr::str_replace(string = logfile,pattern = "running",replacement = "failed"))
-# }
-#   
+if(class(error)=="try-error"){
+  system(paste("mv ",logfile," collections/logs/failed/",sep=""))
+  RMariaDB::dbDisconnect(mydb)
+  log_to_file(message=error[[1]],file = stringr::str_replace(string = logfile,pattern = "running",replacement = "failed"))
+}

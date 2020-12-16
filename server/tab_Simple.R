@@ -1,4 +1,19 @@
-#check wheather Search button was clicked
+#' check wheather Search button was clicked
+#' depends on:
+#'   input$simple_action: observation of button event
+#'   input$dataset: dataset input
+#'   values$solr_url: url to solr
+#'   values$sort: paramter to sort documents
+#'   values$custom: customed parameter
+#'   values$start: initiat start
+#'   values$url: url parameter
+#'   values$q: parameter q
+#'   values$fq: parameter fq
+#'   values$fq_init: initialize parameter fq
+#'   values$numFound: found numbers 
+#'   values$search: search request
+#'   values$solr_query: query in solr
+#'   values$delete_documents:    deleted documents
 observeEvent(input$simple_action,{
   withBusyIndicatorServer("simple_action", {
     #for simple search fq is just defined by the chosen dataset
@@ -23,9 +38,9 @@ observeEvent(input$simple_action,{
       s<-isolate(input$simple_inputtext)
       
       #transform input to Solr Query
-      s<-stringr::str_replace_all(string = s,pattern = "\\+",replacement = " AND ")
-      s<-stringr::str_replace_all(string = s,pattern = "\\#",replacement = " OR ")
-      s<-stringr::str_replace_all(string = s,pattern = "\\-",replacement = " NOT ")
+      s<-stringr::str_replace_all(string = s,pattern = '\\+(?=((?:[^"]*"){2})*[^"]*$)',replacement = " AND ")
+      s<-stringr::str_replace_all(string = s,pattern = '\\#(?=((?:[^"]*"){2})*[^"]*$)',replacement = " OR ")
+      s<-stringr::str_replace_all(string = s,pattern = '\\-(?=((?:[^"]*"){2})*[^"]*$)',replacement = " NOT ")
       
       if(nchar(s)>0){
         q<-s
@@ -64,7 +79,10 @@ observeEvent(input$simple_action,{
   })
 })
 
-#create solr suggest suggestions for simple search
+#' create solr suggest suggestions for simple search
+#' depends on:
+#'   input$simple_inputtext: inputtext suggestions
+#'   values$solr_url: url to solr
 observe({
   validate(
     need(!is.null(input$simple_inputtext),message=F)

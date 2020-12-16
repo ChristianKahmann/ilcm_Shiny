@@ -107,7 +107,7 @@ myReactiveValues <- reactiveValues(dataLoaded = FALSE,
                                    idsAllDataInCommon = NA
                                    
                                    
-                                   )
+)
 
 
 # output$textWithSelectedCollection <- reactive({
@@ -137,7 +137,7 @@ observe({
                       label = "select geocoding results",
                       choices = c("Sorry, no geocoding results available for given collection. Please select another collection")
                       #choices = NULL
-                      )
+    )
   }else{
     updateSelectInput(session, "geocodingResult",
                       label = "select geocoding results",
@@ -160,7 +160,6 @@ output$dataLoaded <- reactive({
 outputOptions(output, "dataLoaded", suspendWhenHidden = FALSE)
 
 observeEvent(input$loadDataForCollection,{
-  
   #---------------------
   # load geocoding data
   #---------------------
@@ -169,100 +168,103 @@ observeEvent(input$loadDataForCollection,{
   selectedGeoResult <- input$geocodingResult
   fileNameGeoResult <- availableGeocodingResults[grep(x = availableGeocodingResults, pattern = selectedGeoResult, fixed = T)]
   folderpathWithGeoResults <- paste0(folderpathGeoCodingResults,fileNameGeoResult)
-  
-  load(file = paste0(folderpathWithGeoResults,"/geocodingResult.RData"))
-  geocodingResult$latlon <- paste(geocodingResult$lat, geocodingResult$lon, sep = " ")
-  
-  geocodingResult_allDataAsList$geocodingResult <- geocodingResult
-  
-  load(file = paste0(folderpathWithGeoResults,"/geocodingResultForCountries.RData"))
-  geocodingResult_allDataAsList$geocodingResultForCountries <- geocodingResultForCountries
-  
-  load(file = paste0(folderpathWithGeoResults,"/parameters.RData"))
-  geocodingResult_allDataAsList$parameters <- parameters
-  
-  load(file = paste0(folderpathWithGeoResults,"/info.RData")) # info about the used collection
-  geocodingResult_allDataAsList$collectionInfoForGeocodingResult <- info
-  
-  load(file = paste0(folderpathWithGeoResults,"/dtm.RData")) # only includes string entities of geolocations, so shouldn't be used for something else
-  geocodingResult_allDataAsList$dtm <- dtm
-  
-  geocodingResult_allDataAsList$geocodingResult_columnNames <- names(geocodingResult_allDataAsList$geocodingResult)
-  
-  print(paste0("Georesult loaded: ", dim(geocodingResult_allDataAsList$geocodingResult)[1]))
-  
-  myReactiveValues$geocodingResult_dataLoaded <- geocodingResult_allDataAsList$geocodingResult # just the geocodingResult
-  myReactiveValues$geocodingResult_columnNames <- names(myReactiveValues$geocodingResult_dataLoaded)
-  myReactiveValues$geocodingResult_furtherMetaData <- geocodingResult_allDataAsList
-  
-  
-  
-  
-  #---------------------
-  # load meta data 
-  #---------------------
-  metaData_dataLoaded <- list()
-  collectionInfoForGeocodingResult <- myReactiveValues$geocodingResult_furtherMetaData$collectionInfoForGeocodingResult
-  metaData <- getMetaData(collectionIDs = collectionInfoForGeocodingResult[[1]], collectionDataSet = collectionInfoForGeocodingResult[[2]], host = host, port = db_port)
-  metaData <- metaData$meta # nicer for code to work just with the name metaData
-  metaData$areaId <- paste(metaData$dataset, metaData$id_doc, sep = "_") # Attention! this needs to be compliant with the way area IDs are assigned in GeocodingScript.R!
-  
-  myReactiveValues$metaData_dataLoaded <- metaData
-  myReactiveValues$metaData_columnNames <- names(metaData)
-  
-
-  #---------------------
-  # calc ids in common and data to use (intersect)
-  #---------------------
-  myReactiveValues$idsAllDataInCommon <- intersect(
-    myReactiveValues$metaData_dataLoaded[[metaData_columnNameForMatchWithOtherData]], 
-    myReactiveValues$geocodingResult_dataLoaded[[geocodingResult_columnNameForMatchWithOtherData]]) 
-  
-  myReactiveValues$metaData_dataToUse <- metaData[which(metaData[[metaData_columnNameForMatchWithOtherData]] %in% myReactiveValues$idsAllDataInCommon),]
-  myReactiveValues$geocodingResult_dataToUse <- myReactiveValues$geocodingResult_dataLoaded[which(myReactiveValues$geocodingResult_dataLoaded[[geocodingResult_columnNameForMatchWithOtherData]] %in% myReactiveValues$idsAllDataInCommon),]
-  
-  
-  #---------------------
-  # initialze metaData_columnsConfig
-  #---------------------
-  
-  myReactiveValues$metaData_columnsConfig <- data.frame(
-    columnNameForField=myReactiveValues$metaData_columnNames,
-    isMultiValue = rep(as.logical(FALSE)),
-    multiValueSeparator = rep(as.String(",")),
-    useForFiltering = rep(as.logical(TRUE)),
-    useForStatsToCalcDistributions = rep(as.logical(FALSE)),
-    useForStatsToCalcNumericInfos = rep(as.logical(FALSE)),
-    #type = rep(as.String("String")), # c(String,Numeric,Date)
-    stringsAsFactors = FALSE
-  )
-  
-  #---------------------
-  # initialze geocodingResult_columnsConfig
-  #---------------------
-  myReactiveValues$geocodingResult_columnsConfig <- data.frame(
-    columnNameForField=myReactiveValues$geocodingResult_columnNames,
-    isMultiValue = rep(as.logical(FALSE)),
-    multiValueSeparator = rep(as.String(",")),
+  if(!file.exists( paste0(folderpathWithGeoResults,"/geocodingResult.RData"))){
+    shinyWidgets::sendSweetAlert(session=session,title = "No file found",text = "Make sure you start a Geolocation-Extraction in the Task Scheduler before!",type = "warning")
+  }
+  else{
+    load(file = paste0(folderpathWithGeoResults,"/geocodingResult.RData"))
+    geocodingResult$latlon <- paste(geocodingResult$lat, geocodingResult$lon, sep = " ")
     
-    useForFiltering = rep(as.logical(TRUE)),
-    useForStatsToCalcDistributions = rep(as.logical(FALSE)),
-    useForStatsToCalcNumericInfos = rep(as.logical(FALSE)),
-    #type = rep(as.String("String")), # c(String,Numeric,Date)
-    stringsAsFactors = FALSE
-  )
-  
-  # set default values (just for convenience)
-  myReactiveValues$geocodingResult_columnsConfig <- setConfigForCertainColumnNames(configToUse = myReactiveValues$geocodingResult_columnsConfig, configFieldNameToUse = "useForStatsToCalcDistributions", listOfColumnNamesTheConfigFieldNameShouldChange = geocodingResult_columnsToCalcDistributions_default, valueToUse = TRUE)
-  myReactiveValues$geocodingResult_columnsConfig <- setConfigForCertainColumnNames(configToUse = myReactiveValues$geocodingResult_columnsConfig, configFieldNameToUse = "useForStatsToCalcNumericInfos", listOfColumnNamesTheConfigFieldNameShouldChange = geocodingResult_columnsToCalcNumericInfos_default, valueToUse = TRUE)
-  myReactiveValues$geocodingResult_columnsConfig <- setConfigForCertainColumnNames(configToUse = myReactiveValues$geocodingResult_columnsConfig, configFieldNameToUse = "useForFiltering", listOfColumnNamesTheConfigFieldNameShouldChange = geocodingResult_columnsToUseForFiltering_default, valueToUse = TRUE)
-  
-  # initialize values based on config values (in case the user doesn't configures & doesn't hit apply config button)
-  setValuesBasedOnConfig()
-  
-  
-  myReactiveValues$dataLoaded <- TRUE
-  
+    geocodingResult_allDataAsList$geocodingResult <- geocodingResult
+    
+    load(file = paste0(folderpathWithGeoResults,"/geocodingResultForCountries.RData"))
+    geocodingResult_allDataAsList$geocodingResultForCountries <- geocodingResultForCountries
+    
+    load(file = paste0(folderpathWithGeoResults,"/parameters.RData"))
+    geocodingResult_allDataAsList$parameters <- parameters
+    
+    load(file = paste0(folderpathWithGeoResults,"/info.RData")) # info about the used collection
+    geocodingResult_allDataAsList$collectionInfoForGeocodingResult <- info
+    
+    load(file = paste0(folderpathWithGeoResults,"/dtm.RData")) # only includes string entities of geolocations, so shouldn't be used for something else
+    geocodingResult_allDataAsList$dtm <- dtm
+    
+    geocodingResult_allDataAsList$geocodingResult_columnNames <- names(geocodingResult_allDataAsList$geocodingResult)
+    
+    print(paste0("Georesult loaded: ", dim(geocodingResult_allDataAsList$geocodingResult)[1]))
+    
+    myReactiveValues$geocodingResult_dataLoaded <- geocodingResult_allDataAsList$geocodingResult # just the geocodingResult
+    myReactiveValues$geocodingResult_columnNames <- names(myReactiveValues$geocodingResult_dataLoaded)
+    myReactiveValues$geocodingResult_furtherMetaData <- geocodingResult_allDataAsList
+    
+    
+    
+    
+    #---------------------
+    # load meta data 
+    #---------------------
+    metaData_dataLoaded <- list()
+    collectionInfoForGeocodingResult <- myReactiveValues$geocodingResult_furtherMetaData$collectionInfoForGeocodingResult
+    metaData <- getMetaData(collectionIDs = collectionInfoForGeocodingResult[[1]], collectionDataSet = collectionInfoForGeocodingResult[[2]], host = host, port = db_port)
+    metaData <- metaData$meta # nicer for code to work just with the name metaData
+    metaData$areaId <- paste(metaData$dataset, metaData$id_doc, sep = "_") # Attention! this needs to be compliant with the way area IDs are assigned in GeocodingScript.R!
+    
+    myReactiveValues$metaData_dataLoaded <- metaData
+    myReactiveValues$metaData_columnNames <- names(metaData)
+    
+    
+    #---------------------
+    # calc ids in common and data to use (intersect)
+    #---------------------
+    myReactiveValues$idsAllDataInCommon <- intersect(
+      myReactiveValues$metaData_dataLoaded[[metaData_columnNameForMatchWithOtherData]], 
+      myReactiveValues$geocodingResult_dataLoaded[[geocodingResult_columnNameForMatchWithOtherData]]) 
+    
+    myReactiveValues$metaData_dataToUse <- metaData[which(metaData[[metaData_columnNameForMatchWithOtherData]] %in% myReactiveValues$idsAllDataInCommon),]
+    myReactiveValues$geocodingResult_dataToUse <- myReactiveValues$geocodingResult_dataLoaded[which(myReactiveValues$geocodingResult_dataLoaded[[geocodingResult_columnNameForMatchWithOtherData]] %in% myReactiveValues$idsAllDataInCommon),]
+    
+    
+    #---------------------
+    # initialze metaData_columnsConfig
+    #---------------------
+    
+    myReactiveValues$metaData_columnsConfig <- data.frame(
+      columnNameForField=myReactiveValues$metaData_columnNames,
+      isMultiValue = rep(as.logical(FALSE)),
+      multiValueSeparator = rep(as.String(",")),
+      useForFiltering = rep(as.logical(TRUE)),
+      useForStatsToCalcDistributions = rep(as.logical(FALSE)),
+      useForStatsToCalcNumericInfos = rep(as.logical(FALSE)),
+      #type = rep(as.String("String")), # c(String,Numeric,Date)
+      stringsAsFactors = FALSE
+    )
+    
+    #---------------------
+    # initialze geocodingResult_columnsConfig
+    #---------------------
+    myReactiveValues$geocodingResult_columnsConfig <- data.frame(
+      columnNameForField=myReactiveValues$geocodingResult_columnNames,
+      isMultiValue = rep(as.logical(FALSE)),
+      multiValueSeparator = rep(as.String(",")),
+      
+      useForFiltering = rep(as.logical(TRUE)),
+      useForStatsToCalcDistributions = rep(as.logical(FALSE)),
+      useForStatsToCalcNumericInfos = rep(as.logical(FALSE)),
+      #type = rep(as.String("String")), # c(String,Numeric,Date)
+      stringsAsFactors = FALSE
+    )
+    
+    # set default values (just for convenience)
+    myReactiveValues$geocodingResult_columnsConfig <- setConfigForCertainColumnNames(configToUse = myReactiveValues$geocodingResult_columnsConfig, configFieldNameToUse = "useForStatsToCalcDistributions", listOfColumnNamesTheConfigFieldNameShouldChange = geocodingResult_columnsToCalcDistributions_default, valueToUse = TRUE)
+    myReactiveValues$geocodingResult_columnsConfig <- setConfigForCertainColumnNames(configToUse = myReactiveValues$geocodingResult_columnsConfig, configFieldNameToUse = "useForStatsToCalcNumericInfos", listOfColumnNamesTheConfigFieldNameShouldChange = geocodingResult_columnsToCalcNumericInfos_default, valueToUse = TRUE)
+    myReactiveValues$geocodingResult_columnsConfig <- setConfigForCertainColumnNames(configToUse = myReactiveValues$geocodingResult_columnsConfig, configFieldNameToUse = "useForFiltering", listOfColumnNamesTheConfigFieldNameShouldChange = geocodingResult_columnsToUseForFiltering_default, valueToUse = TRUE)
+    
+    # initialize values based on config values (in case the user doesn't configures & doesn't hit apply config button)
+    setValuesBasedOnConfig()
+    
+    
+    myReactiveValues$dataLoaded <- TRUE
+  }
 })
 
 
@@ -272,7 +274,7 @@ observeEvent(input$loadDataForCollection,{
 #############################
 
 output$metaData_config <- renderRHandsontable({
-    rhandsontable(myReactiveValues$metaData_columnsConfig)
+  rhandsontable(myReactiveValues$metaData_columnsConfig)
 })
 
 output$geocodingResult_config <- renderRHandsontable({
@@ -467,7 +469,7 @@ observeEvent(input$performRegexMatching,{
   
   # reduce regex data to those contained in ids in common
   myReactiveValues$regexData_dataToUse <-   myReactiveValues$regexData_dataLoaded[which(myReactiveValues$regexData_dataLoaded[[regexData_columnNameForMatchWithOtherData]] %in% myReactiveValues$idsAllDataInCommon),]
-
+  
   # retrieve available values (needed later for stats)
   myReactiveValues$regexData_availableValues <- getAvailableValuesForGivenColumns(dataToUse = myReactiveValues$regexData_dataToUse, columnNames = myReactiveValues$regexData_columnNames,columnNamesContainingMultiValues = NULL, separatorsToUseForColumnsWithMultivalues = NULL)
   
@@ -510,7 +512,7 @@ output$regexResults <- renderRHandsontable({
   regexData <- myReactiveValues$regexData_dataLoaded
   dataIsAvaialble <- (myReactiveValues$regexData_performRegexMatching && dim(regexData)[1]>0)
   validate(need(dataIsAvaialble, message = ""))
-
+  
   #aggregate
   separatorForRegexMatches <- input$regex_separatorForMatchesDisplay
   matchesByDoc <- aggregate(regexData$regexMatch ~ areaId, data = regexData, paste, collapse = separatorForRegexMatches)
@@ -530,7 +532,7 @@ output$regexResults <- renderRHandsontable({
   numberOfMatchesToShow <- input$regex_showMatches_topX
   typeDocsOrDocsWithMatches <- input$regex_showMatches_typeDocsOrDocsWithMatches
   
-   
+  
   if(typeDocsOrDocsWithMatches == "documents"){
     dataToShow <- dataToShow
   }
@@ -656,7 +658,7 @@ regexData_filtered <- reactive({
   result <- myReactiveValues$regexData_dataToUse
   result <- result[which(result[[regexData_columnNameForMatchWithOtherData]] %in% idsAfterFiltering()),] # this just filters for certain docs. As a doc might include several regEx matches, the filter of regex is not applied yet correctly and needs to be re-applied to the given docs
   result <- filterDataBasedOnInputFilterFields(dataToFilter = result, columnNamesOfDataToFilter = myReactiveValues$regexData_columnNames,columnsNamesWithMultiValueData = c(), filterInput = input,prefixInFilterNameForUniqueIdentification = regexData_prefixFoUniqueIdentificationInInputFilters)
-
+  
 })
 
 geoDataToUseForMap_filtered <- reactive({
@@ -679,22 +681,22 @@ geoDataToUseForMap_filtered <- reactive({
 # stats for filtered data 
 ##############################
 metaData_stats <- reactive({
-    #print("re-calc stats for meta data")
-    validate(
-      need(dim(metaData_filtered())[1]>0, message = "There is no data available to calculate stats. You might try to adjust the filters.")
-    )
-    dataForStats <- metaData_filtered()
-    
-    stats <- calcStatsMetaData(metaData = dataForStats, 
-                               columnsToCalcDistributions = myReactiveValues$metaData_columnsToCalcDistributions,
-                               availableValues = myReactiveValues$metaData_availableValues,
-                               includeValuesNotUsedForDistribution = F,
-                               columnsWithMultiValues = myReactiveValues$metaData_columnsWithMultiValueData, 
-                               separatorsForMultiValues = myReactiveValues$metaData_multiValueSeparators, 
-                               nameEmptyStringInStatsAs = nameEmptyStringInStatsAs,
-                               columnsToUseForNumericStats = myReactiveValues$metaData_columnsToCalcNumericInfos)
-    
-  })
+  #print("re-calc stats for meta data")
+  validate(
+    need(dim(metaData_filtered())[1]>0, message = "There is no data available to calculate stats. You might try to adjust the filters.")
+  )
+  dataForStats <- metaData_filtered()
+  
+  stats <- calcStatsMetaData(metaData = dataForStats, 
+                             columnsToCalcDistributions = myReactiveValues$metaData_columnsToCalcDistributions,
+                             availableValues = myReactiveValues$metaData_availableValues,
+                             includeValuesNotUsedForDistribution = F,
+                             columnsWithMultiValues = myReactiveValues$metaData_columnsWithMultiValueData, 
+                             separatorsForMultiValues = myReactiveValues$metaData_multiValueSeparators, 
+                             nameEmptyStringInStatsAs = nameEmptyStringInStatsAs,
+                             columnsToUseForNumericStats = myReactiveValues$metaData_columnsToCalcNumericInfos)
+  
+})
 
 geocodingResult_stats <- reactive({
   validate(
@@ -718,16 +720,16 @@ regexData_stats <- reactive({
   validate(need(dataIsAvaialable, message = "There is no data available to calculate stats for regex. You might try to adjust the filters or the regex under configuration."))
   dataForStats <- regexData_filtered()
   stats <- calcStatsGeneralData(inputData = dataForStats, 
-                             columnsToCalcDistributions = myReactiveValues$regexData_columnsToCalcDistributions,
-                             availableValues = myReactiveValues$regexData_availableValues,
-                             includeValuesNotUsedForDistribution = F,
-                             columnsWithMultiValues = NULL, 
-                             separatorsForMultiValues = NULL, 
-                             nameEmptyStringInStatsAs = nameEmptyStringInStatsAs,
-                             columnsToUseForNumericStats = myReactiveValues$regexData_columnsToCalcNumericInfos)
+                                columnsToCalcDistributions = myReactiveValues$regexData_columnsToCalcDistributions,
+                                availableValues = myReactiveValues$regexData_availableValues,
+                                includeValuesNotUsedForDistribution = F,
+                                columnsWithMultiValues = NULL, 
+                                separatorsForMultiValues = NULL, 
+                                nameEmptyStringInStatsAs = nameEmptyStringInStatsAs,
+                                columnsToUseForNumericStats = myReactiveValues$regexData_columnsToCalcNumericInfos)
   
 })
-  
+
 ##############################
 # output number of results & stats
 ##############################
@@ -784,11 +786,11 @@ output$geocodingResult_stats_distributions_plots <-  renderUI({# this a bit comp
   validate(need(length(myReactiveValues$geocodingResult_columnsToCalcDistributions)>0, message = "GeocodingResult: Calculation of stats (distributions): There are no fields configured. You can do this under 'Configuration'"))
   tablesToCreate <- c("GeocodingResult_distribution_plots")
   lapply(tablesToCreate, function(nameToUse) {
-      id <- paste0("geocodingResult_stats_distributions_plots","_", nameToUse)
-      dataToUseHere <- geocodingResult_stats()$distributions
-      output[[id]] <- renderPlotly(createPlotsForDistributionData(dataToUseHere, statsOfdistributions_sortByValueDesc))
-    })
-
+    id <- paste0("geocodingResult_stats_distributions_plots","_", nameToUse)
+    dataToUseHere <- geocodingResult_stats()$distributions
+    output[[id]] <- renderPlotly(createPlotsForDistributionData(dataToUseHere, statsOfdistributions_sortByValueDesc))
+  })
+  
 })
 
 output$regexData_stats_distributions_plots <- renderUI({# this a bit complicated looking construct is used here for correct display of stats AND correct error message when no fields selected (and the error message doesn't slide down over the other outputs). This was the working solution I found, might be improved for nicer/better code
@@ -802,7 +804,7 @@ output$regexData_stats_distributions_plots <- renderUI({# this a bit complicated
     output[[id]] <- renderPlotly(createPlotsForDistributionData(dataToUseHere, statsOfdistributions_sortByValueDesc))
   })
 })  
-  
+
 # stats numeric tables
 metaData_stats_numeric <- reactive({# needed for user error message when no columns selected for calculation 
   validate(need(length(myReactiveValues$metaData_columnsToCalcNumericInfos)>0, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'Configuration'"))
@@ -892,7 +894,7 @@ observe({
                                                 metaData_columnsToCalcNumericInfos = myReactiveValues$metaData_columnsToCalcNumericInfos,
                                                 metaData_columnNameForMatchWithOtherData = metaData_columnNameForMatchWithOtherData)
     
-
+    
     # output general infos
     clickedMarker_infos<-renderText({
       heading <- paste0("INFORMATION ABOUT CLICKED MARKER: \"",unique(clickedMarker_geoData$entityName),"\"\n===========================\n")
@@ -1034,7 +1036,7 @@ observe({
         h4("meta data info for docs containing this marker"),
         clickedMarker_metaData_distributions_tables,
         clickedMarker_metaData_numeric_tables
-        )
+      )
       if(myReactiveValues$regexData_performRegexMatching){
         result <- tagList(
           # clicked marker infos is not included here but used separatetely because verbatimTextOutput should be used for nicer output
@@ -1051,7 +1053,7 @@ observe({
           clickedMarker_regexData_numeric_tables
         )
       }
-       
+      
       return (result)
     }
     )

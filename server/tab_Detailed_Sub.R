@@ -1,3 +1,34 @@
+#' detailed subs
+#' depends on:
+#'   input$Det_action_Sub: detailed action for subs
+#'   input$collections_rows_selected: selected rows of a specific collection
+#'   values$solr_url: url to solr
+#'   input$Det_inputtext_Sub: detailed input text for sub
+#'   input$Det_vonin_Sub: detailed sub - from input
+#'   input$Det_bisin_Sub: detailed sub - to (till) input 
+#'   input$Det_mde1_Sub: detailed input of mde1
+#'   input$Det_mde2_Sub: detailed input of mde2
+#'   input$Det_mde3_Sub: detailed input of mde3
+#'   input$Det_mde4_Sub: detailed input of mde4
+#'   input$Det_mde5_Sub: detailed input of mde5
+#'   input$Det_mde6_Sub: detailed input of mde6
+#'   input$Det_mde7_Sub: detailed input of mde7
+#'   input$Det_mde8_Sub: detailed input of mde8
+#'   input$Det_mde9_Sub: detailed input of mde9
+#'   input$Det_Token_Sub: detailed sub token
+#'   values$Doc_start: start of document
+#'   values$Doc_custom: customed document
+#'   values$Doc_url: document url
+#'   values$Doc_q: docuemnt parameter q
+#'   values$Doc_fq: document parameter fq
+#'   values$Doc_fq_init: initialize parameter fq
+#'   values$numFound_Sub: found numbers in sub
+#'   values$Doc_search: search for document
+#'   values$Doc_solr_query: document query for solr
+#'   values$Sub_search: search for sub
+#'   values$Doc_delete_documents: delete documents
+#'   
+#'   
 observeEvent(input$Det_action_Sub,{
   validate(
     need(length(input$collections_rows_selected)>0,"no Collection specified")
@@ -13,9 +44,9 @@ observeEvent(input$Det_action_Sub,{
       s="*"
     }
     #transform input to Solr Query
-    s<-stringr::str_replace_all(string = s,pattern = "\\+",replacement = " AND ")
-    s<-stringr::str_replace_all(string = s,pattern = "\\#",replacement = " OR ")
-    s<-stringr::str_replace_all(string = s,pattern = "\\-",replacement = " NOT ")
+    s<-stringr::str_replace_all(string = s,pattern = '\\+(?=((?:[^"]*"){2})*[^"]*$)',replacement = " AND ")
+    s<-stringr::str_replace_all(string = s,pattern = '\\#(?=((?:[^"]*"){2})*[^"]*$)',replacement = " OR ")
+    s<-stringr::str_replace_all(string = s,pattern = '\\-(?=((?:[^"]*"){2})*[^"]*$)',replacement = " NOT ")
     
     if(nchar(s)>0){
       q<-s
@@ -122,17 +153,25 @@ observeEvent(input$Det_action_Sub,{
     values$Doc_search<-values$search+1
     values$Doc_solr_query<-stringr::str_replace(string=stringr::str_replace(string=response[2],pattern = "&wt=(.)+",replacement = ""),pattern = "start=[0-9]+&rows=[0-9]&",replacement="")
     values$Sub_search<-T
+    # reset list of documents that were marked for removal when a new search is started
+    values$Doc_delete_documents<-NULL
     shiny::removeModal()
   })
 })
 
 
 
-#render input fields for detailed search depending on queries to maria db
+#' render input fields for detailed search depending on queries to maria db
 
 
-#render input fields for detailed search depending on queries to maria db
-#set choices for mde1 if avaiable
+#' render input fields for detailed search depending on queries to maria db
+#' set choices for mde1 if avaiable
+#' depends on:
+#'   input$navbar_search_Sub: search-input (sub) located in navigation bar
+#'   values$metadata_available_Sub: avialable meta data for sub
+#'   values$host: selected host
+#'   values$db_port: used database port
+#'   values$dataset_Sub: dataset of sub
 observe({
   shinyjs::hideElement(id = "Det_mde1_Sub")
   validate(
@@ -152,7 +191,14 @@ observe({
 
 
 
-#set choices for mde2 if avaiable
+#' set choices for mde2 if avaiable
+#' depends on:
+#'   input$navbar_search_Sub: search-input (sub) located in navigation bar
+#'   values$metadata_available_Sub: avialable meta data for sub
+#'   values$host: selected host
+#'   values$db_port: used database port
+#'   values$dataset_Sub: dataset of sub
+#'   
 observe({
   shinyjs::hideElement(id = "Det_mde2_Sub")
   validate(
@@ -169,7 +215,13 @@ observe({
   }
 })
 
-#set choices for mde3 if avaiable
+#' set choices for mde3 if avaiable
+#' depends on:
+#'   input$navbar_search_Sub: search-input (sub) located in navigation bar
+#'   values$metadata_available_Sub: avialable meta data for sub
+#'   values$host: selected host
+#'   values$db_port: used database port
+#'   values$dataset_Sub: dataset of sub
 observe({
   shinyjs::hideElement(id = "Det_mde3_Sub")
   validate(
@@ -186,7 +238,13 @@ observe({
   }
 })
 
-#set choices for mde4 if avaiable
+#' set choices for mde4 if avaiable
+#' depends on:
+#'   input$navbar_search_Sub: search-input (sub) located in navigation bar
+#'   values$metadata_available_Sub: avialable meta data for sub
+#'   values$host: selected host
+#'   values$db_port: used database port
+#'   values$dataset_Sub: dataset of sub
 observe({
   shinyjs::hideElement(id = "Det_mde4_Sub")
   validate(
@@ -203,7 +261,13 @@ observe({
   }
 })
 
-#set choices for mde5 if avaiable
+#' set choices for mde5 if avaiable
+#' depends on:
+#'   input$navbar_search_Sub: search-input (sub) located in navigation bar
+#'   values$metadata_available_Sub: avialable meta data for sub
+#'   values$host: selected host
+#'   values$db_port: used database port
+#'   values$dataset_Sub: dataset of sub
 observe({
   shinyjs::hideElement(id = "Det_mde5_Sub")
   validate(
@@ -221,7 +285,13 @@ observe({
 })
 
 
-#set choices for mde6 if avaiable
+#' set choices for mde6 if avaiable
+#' depends on:
+#'   input$navbar_search_Sub: search-input (sub) located in navigation bar
+#'   values$metadata_available_Sub: avialable meta data for sub
+#'   values$host: selected host
+#'   values$db_port: used database port
+#'   values$dataset_Sub: dataset of sub
 observe({
   shinyjs::hideElement(id = "Det_mde6_Sub")
   validate(
@@ -239,7 +309,13 @@ observe({
 })
 
 
-#set choices for mde7 if avaiable
+#' set choices for mde7 if avaiable
+#' depends on:
+#'   input$navbar_search_Sub: search-input (sub) located in navigation bar
+#'   values$metadata_available_Sub: avialable meta data for sub
+#'   values$host: selected host
+#'   values$db_port: used database port
+#'   values$dataset_Sub: dataset of sub
 observe({
   shinyjs::hideElement(id = "Det_mde7_Sub")
   validate(
@@ -257,7 +333,13 @@ observe({
 })
 
 
-#set choices for mde8 if avaiable
+#' set choices for mde8 if avaiable
+#' depends on:
+#'   input$navbar_search_Sub: search-input (sub) located in navigation bar
+#'   values$metadata_available_Sub: avialable meta data for sub
+#'   values$host: selected host
+#'   values$db_port: used database port
+#'   values$dataset_Sub: dataset of sub
 observe({
   shinyjs::hideElement(id = "Det_mde8_Sub")
   validate(
@@ -275,7 +357,13 @@ observe({
 })
 
 
-#set choices for mde9 if avaiable
+#' set choices for mde9 if avaiable
+#' depends on:
+#'   input$navbar_search_Sub: search-input (sub) located in navigation bar
+#'   values$metadata_available_Sub: avialable meta data for sub
+#'   values$host: selected host
+#'   values$db_port: used database port
+#'   values$dataset_Sub: dataset of sub
 observe({
   shinyjs::hideElement(id = "Det_mde9_Sub")
   validate(
@@ -301,7 +389,12 @@ observe({
 
 
 
-#get token information from database and render slider input with received min and max value
+#' get token information from database and render slider input with received min and max value
+#' depends on:
+#'   values$Doc_dataset: dateset of document
+#'   values$host: selected host
+#'   values$db_port: used database port
+#'   
 output$Det_token_Sub<-renderUI({
   validate(
     need(length(values$Doc_dataset)>0,message="Please choose at least one dataset")
@@ -314,7 +407,12 @@ output$Det_token_Sub<-renderUI({
 })
 
 
-#get earliest date from database meta_data table to render DateInput Starting Point
+#' get earliest date from database meta_data table to render DateInput Starting Point
+#' depends on:
+#'   values$Doc_dataset: dataset of document
+#'   values$host: selected host
+#'   values$db_port: used database port
+#'   
 output$Det_von_Sub<-renderUI({
   validate(
     need(length(values$Doc_dataset)>0,message=FALSE)
@@ -330,6 +428,8 @@ output$Det_von_Sub<-renderUI({
   if(length(remove)>0){
     dates<-dates[-remove,]
   }
+  #remove everything that does not look like a date
+  dates<-dates[IsDate(dates[,1]),1,drop=F]
   dates2<-dates
   #if only years available add "-01-01" to make input work
   for(i in 1:length(dates)){
@@ -348,7 +448,10 @@ output$Det_von_Sub<-renderUI({
 })
 
 
-#get latest date from database meta_data table to render DateInput End Point
+#' get latest date from database meta_data table to render DateInput End Point
+#' values$Doc_dataset: document dataset
+#' values$host: selected host
+#' values$db_port: used database port
 output$Det_zu_Sub<-renderUI({
   validate(
     need(length(values$Doc_dataset)>0,message=FALSE)
@@ -364,6 +467,8 @@ output$Det_zu_Sub<-renderUI({
   if(length(remove)>0){
     dates<-dates[-remove,]
   }
+  #remove everything that does not look like a date
+  dates<-dates[IsDate(dates[,1]),1,drop=F]
   dates2<-dates
   #if only years available add "-01-01" to make input work
   for(i in 1:length(dates)){
@@ -382,7 +487,10 @@ output$Det_zu_Sub<-renderUI({
 })
 
 
-#create solr suggest suggestions for detailed search
+#' create solr suggest suggestions for detailed search
+#' depends on:
+#'   input$Det_inputtext_Sub: detailed input text for sub
+#'   
 observe({
   validate(
     need(!is.null(input$Det_inputtext_Sub),message=F)

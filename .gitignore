@@ -60,15 +60,26 @@ packrat/lib*/
 /collections/results/volatility-analysis/*
 !/collections/results/volatility-analysis/.gitkeep
 /collections/results/syntactic-parsing/*
+!/collections/results/dynamic-topic-model/.gitkeep
+/collections/results/dynamic-topic-model/*
 !/collections/results/syntactic-parsing/.gitkeep
 /collections/results/geocoding/*
 !/collections/results/geocoding/.gitkeep
-
 /collections/tmp/*
+!/collections/tmp/refi/.gitkeep
 !/collections/tmp/.gitkeep
 /collections/ecpmf_resources/*
 !/collections/ecpmf_resources/.gitkeep
+/data_import/refi/*
+!/data_import/refi/xsd
 /play/*
+/Tutorials/*
+!/Tutorials/.gitkeep
+/collections/vocabularies/*
+!/collections/vocabularies/.gitkeep
+/collections/parameter_settings/Dynamic_Topic_Model/*
+!/collections/parameter_settings/Dynamic_Topic_Model/.gitkeep
+/Tutorials DEval/
 config_file.R
 /global/escape_quotes.R
 /global/task_id_counter.RData

@@ -53,22 +53,22 @@ getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defa
     assign("geonamesCountryCode", NULL, env=countryInfoEnvironment)
     
     print(paste("latlon not yet saved in hashtable,  need to query geonames for ", lat, lon, sep =" "))
- 
+    
     tryCatch({
       geonamesCountryCode <- GNcountryCode(lat = lat, lng = lon, lang = "en", radius = defaultRadius)
       assign("geonamesCountryCode", geonamesCountryCode, env = countryInfoEnvironment)
       assign("successType", "success", env=countryInfoEnvironment)
-
+      
     },
     
     error = function(e){
-
+      
       if(grepl(x = e$message, pattern = "no country code found", fixed = T)){
         assign("successType", "noCountryFoundInGivenRadius", env=countryInfoEnvironment)
         assign("radiusToUse", get("radiusToUse", env=countryInfoEnvironment)+get("stepSize", env=countryInfoEnvironment), env=countryInfoEnvironment)
         
         #print(paste0("- Warning: for lat lon ", lat, ", ", lon, " no country could be found within radius ",get("radiusToUse", env=countryInfoEnvironment), "."))
-      
+        
       }else{
         assign("successType", e$message, env=countryInfoEnvironment)
         assign("timeoutAttempts", get("timeoutAttempts", env=countryInfoEnvironment)+1, env=countryInfoEnvironment)
@@ -79,32 +79,32 @@ getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defa
       #while(radiusToUse <= maxRadiusIfDefaultRadiusLeadsToNoResults && timeoutAttempts <= maxTimeOutAttempts){
       while(get("radiusToUse", env=countryInfoEnvironment) <= get("maxRadiusToUse", env=countryInfoEnvironment) && get("timeoutAttempts",env=countryInfoEnvironment) <= get("maxTimeOutAttempts",env=countryInfoEnvironment)){
         tryCatch({
-            geonamesCountryCode <- GNcountryCode(lat = lat, lng = lon, lang = "en", radius = get("radiusToUse", env=countryInfoEnvironment))
-            assign("geonamesCountryCode", geonamesCountryCode, env=countryInfoEnvironment)
-            assign("successType", "success", env=countryInfoEnvironment) #successType <- "success"
-            #print(paste0("- Success for lat lon ", lat, lon, " finally found with radius ", get("radiusToUse", env=countryInfoEnvironment),": ",geonamesCountryCode$countryName))
+          geonamesCountryCode <- GNcountryCode(lat = lat, lng = lon, lang = "en", radius = get("radiusToUse", env=countryInfoEnvironment))
+          assign("geonamesCountryCode", geonamesCountryCode, env=countryInfoEnvironment)
+          assign("successType", "success", env=countryInfoEnvironment) #successType <- "success"
+          #print(paste0("- Success for lat lon ", lat, lon, " finally found with radius ", get("radiusToUse", env=countryInfoEnvironment),": ",geonamesCountryCode$countryName))
+          
+          break
+        },
+        error = function(e){
+          
+          if(grepl(x = e$message, pattern = "no country code found", fixed = T)){
             
-            break
-            },
-            error = function(e){
-
-              if(grepl(x = e$message, pattern = "no country code found", fixed = T)){
-
-                assign("successType", "noCountryFoundInGivenRadius", env=countryInfoEnvironment) # #successType <- "noCountryFoundInGivenRadius"
-                assign("radiusToUse", get("radiusToUse", env=countryInfoEnvironment)+get("stepSize", env=countryInfoEnvironment), env=countryInfoEnvironment) #  #radiusToUse <- radiusToUse + stepSize
-                #print(paste0("- Warning: for lat lon ", lat, ", ", lon, " no country could be found within radius ",get("radiusToUse", env=countryInfoEnvironment), "."))
-                
-              }else{
-                assign("successType", e$message, env=countryInfoEnvironment) #successType <- e$message
-                assign("timeoutAttempts", get("timeoutAttempts", env=countryInfoEnvironment)+1, env=countryInfoEnvironment)  #timeoutAttempts <- timeoutAttempts+1
-                #print(paste0("- Warning: for lat lon ", lat, ", ", lon, " no country could be found based on error: ", e$message))
-                
-              }
-            }# end of error function 2
-          )
+            assign("successType", "noCountryFoundInGivenRadius", env=countryInfoEnvironment) # #successType <- "noCountryFoundInGivenRadius"
+            assign("radiusToUse", get("radiusToUse", env=countryInfoEnvironment)+get("stepSize", env=countryInfoEnvironment), env=countryInfoEnvironment) #  #radiusToUse <- radiusToUse + stepSize
+            #print(paste0("- Warning: for lat lon ", lat, ", ", lon, " no country could be found within radius ",get("radiusToUse", env=countryInfoEnvironment), "."))
+            
+          }else{
+            assign("successType", e$message, env=countryInfoEnvironment) #successType <- e$message
+            assign("timeoutAttempts", get("timeoutAttempts", env=countryInfoEnvironment)+1, env=countryInfoEnvironment)  #timeoutAttempts <- timeoutAttempts+1
+            #print(paste0("- Warning: for lat lon ", lat, ", ", lon, " no country could be found based on error: ", e$message))
+            
+          }
+        }# end of error function 2
+        )
         
       } # end of while loop
-      } # end of error function 1
+    } # end of error function 1
     )# end of try catch
     
     
@@ -128,15 +128,15 @@ getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defa
     }else{
       entryToWrite <- paste0("UNKNOWN_because_of Error: ", successType)
       createdValue <- data.frame(lat = lat, lon = lon, countryCode = entryToWrite, countryName = entryToWrite, countryLanguages = entryToWrite, stringsAsFactors = F)
-
+      
       warningMessage <- paste0("WARNING: for lat lon ", lat, ", ", lon, " no country could be found within radius ",get("radiusToUse", env=countryInfoEnvironment), ". Result will be: ", entryToWrite)
       #print(warningMessage)
       log_to_file(message = warningMessage,file = logfile)
-     }
+    }
     
     return(createdValue)
     
-
+    
   } # end of else query geonames
   
 }
@@ -155,7 +155,7 @@ applyCountryInfosForLatLonForDataframe <- function(hashtableLatLonCountryInfos, 
       #print(paste (i, " nothing found for " , ecpmfDataFromCSV$Location.lat[i], " ", ecpmfDataFromCSV$Location.lon[i], ": " , indexesOfFoundCountry, sep = " ", collapse = NULL))
       inputDataframe[[targetColumnnameForCountryName]][i] <- "UNKNOWN"
       inputDataframe[[targetColumnNameForCountryCode]][i] <- "UNKNOWN"
-
+      
     }
   }
   save(hashtableLatLonCountryInfos, file = filenpathHashtableCoordLatLonCountryInfos)
@@ -184,16 +184,15 @@ getGeolocationForString <- function(inputString, hashtableCachedGeoInformation, 
   }
   # already in cache?
   if(!is.null(hashtableCachedGeoInformation[[searchKey]])){
-   # print("already in cache")
-    log_to_file(message = paste("<b>Geododing string \"", searchKey, "\": already in cache</b>"),file = logfile)
+    # print("already in cache")
+    # log_to_file(message = paste("Geododing string <b>\"", searchKey, "\"</b>: already in cache"),file = logfile)
     
     result <- hashtableCachedGeoInformation[[searchKey]]
     return(result)
   }
   
   #print("not in cache. needs to be queried")
-  log_to_file(message = paste("<b>Geododing string \"", searchKey, "\": not in cache. needs to be queried</b>"),file = logfile)
-  
+  # log_to_file(message = paste("Geododing string <b>\"", searchKey, "\"</b>: not in cache. needs to be queried"),file = logfile)
   result <- geocodingFunction(searchKey)
   if(result$successType == "success"){
     hashtableCachedGeoInformation[[searchKey]] <- result
@@ -222,56 +221,56 @@ getGeolocationForString <- function(inputString, hashtableCachedGeoInformation, 
 #' 
 getGeolocationForStringUsingOSMDefault <- function(inputString, hashtableCachedGeoInformation){
   
-  log_to_file(message = paste("<b>Geocoding: get OSM geolocation for \"", inputString,"\"</b>"),file = logfile)
+  #log_to_file(message = paste("Geocoding: get OSM geolocation for <b>\"", inputString,"\"</b>"),file = logfile)
   result <- list()
   result <- getGeolocationForString(inputString, hashtableCachedGeoInformation, 
-                                      geocodingFunction = function(x){ 
-                                        result <- NULL
-                                        tryCatch({
-                                          osmResult <- geocode_OSM(q=inputString, return.first.only = F,details = T, as.data.frame = T)
-
-                                          if(!is.null(osmResult$message)){
-                                            if(grepl(x = osmResult$message, pattern = "No results found", fixed = TRUE)){
-                                              #no results found
-                                              result$successType <- "noResultsFound" #sometimes an warning is thrown when no results were found, this is catched further down
-                                              result$result <- NULL
-                                            }else{
-                                              #other problem
-                                              result$successType <- "problemOccured"
-                                              result$result <- osmResult
-                                            }
-                                          }
-                                          else{#success
-                                            result$successType <- "success"
-                                            result$result <- osmResult
-                                            return (result)
-                                          }
-                                        }, error = function(e) {
-
-                                            print(paste("A problem (error) occured when trying to retrieve geolocation for ", inputString, "This is the Error:" , message(e), sep =" " ))
+                                    geocodingFunction = function(x){ 
+                                      result <- NULL
+                                      tryCatch({
+                                        osmResult <- geocode_OSM(q=inputString, return.first.only = F,details = T, as.data.frame = T,server = "https://nominatim.openstreetmap.org")
+                                        
+                                        if(!is.null(osmResult$message)){
+                                          if(grepl(x = osmResult$message, pattern = "No results found", fixed = TRUE)){
+                                            #no results found
+                                            result$successType <- "noResultsFound" #sometimes an warning is thrown when no results were found, this is catched further down
+                                            result$result <- NULL
+                                          }else{
+                                            #other problem
                                             result$successType <- "problemOccured"
-                                            result$result <- e
-                                            return (result)
-                                        }, warning = function(w) {
-
-                                            if(!is.null(w$message)){
-                                              if(grepl(x = w$message, pattern = "No results found", fixed = TRUE)){
-                                                #no results found
-                                                result$successType <- "noResultsFound"
-                                                result$result <- NULL
-                                              }else{
-                                                #other problem
-                                                #print(paste("A problem (warning) occured when trying to retrieve geolocation for ", inputString, "This is the Error:" , message(w), sep =" " ))
-                                                result$successType <- "problemOccured"
-                                                result$result <- osmResult
-                                              }
-                                            }
-                                            return (result)
+                                            result$result <- osmResult
+                                          }
                                         }
+                                        else{#success
+                                          result$successType <- "success"
+                                          result$result <- osmResult
+                                          return (result)
+                                        }
+                                      }, error = function(e) {
+                                        
+                                        print(paste("A problem (error) occured when trying to retrieve geolocation for ", inputString, "This is the Error:" , message(e), sep =" " ))
+                                        result$successType <- "problemOccured"
+                                        result$result <- e
+                                        return (result)
+                                      }, warning = function(w) {
+                                        
+                                        if(!is.null(w$message)){
+                                          if(grepl(x = w$message, pattern = "No results found", fixed = TRUE)){
+                                            #no results found
+                                            result$successType <- "noResultsFound"
+                                            result$result <- NULL
+                                          }else{
+                                            #other problem
+                                            #print(paste("A problem (warning) occured when trying to retrieve geolocation for ", inputString, "This is the Error:" , message(w), sep =" " ))
+                                            result$successType <- "problemOccured"
+                                            result$result <- osmResult
+                                          }
+                                        }
+                                        return (result)
+                                      }
                                       ) # end try catch
-                                     } # end function definition
-                                    ) # end call getGeolocationForString
-
+                                    } # end function definition
+  ) # end call getGeolocationForString
+  
   
   return (result)
 }
@@ -355,7 +354,7 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
   # now all entities are in cache and can be queried from there
   
   
-
+  
   log_to_file(message = "<b>Geocoding: get area ids</b>",file = logfile)
   if(useWholeDataInsteadOfPerAreaIDToRetrieveLocationFrequenciesAndToApplySecondFilter){
     areaIds <- c("all")
@@ -373,13 +372,14 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
     belongsToClusterWithMinDistanceToCenterOfGravity = logical()
   )
   geoDataAllAreas <- initialDataFrameForGeoData
-  
-  
+  loghelper<-floor(seq(1,length(areaIds),length.out = 11))[2:11]
+  names(loghelper)<-c(10,20,30,40,50,60,70,80,90,100)
+  count=0
   for(areaId in areaIds){ # for each area (document/paragraph/collection,...). If selected "all" the whole data is regarded as same area
-    
+    count=count+1 
     #print(areaId)
     
-    log_to_file(message = paste("<b>Geocoding: perform geocoding calculation for area id", areaId,"</b>"),file = logfile)
+    #log_to_file(message = paste("Geocoding: perform geocoding calculation for area id <b>", areaId,"</b>"),file = logfile)
     
     # get location tokens for area
     entitydistributionsInArea <- functionToGetLocationStringsAndFrequencyForGivenAreaId(inputDataForLocationStringsAndOptionalAreaIds, areaId)
@@ -438,7 +438,7 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
     # only use those tokens having coordinates (no NAs), meaning only those tokens to which lat/lon coordinates could be assigned
     indicesWithoutNA <- which(!is.na(geoDataForArea$lat))
     geoDataForArea <-  geoDataForArea[indicesWithoutNA,]
-
+    
     if(dim(geoDataForArea)[1]>0){
       geoResultDetailsForArea <-  geoResultDetailsForArea[indicesWithoutNA,]
       
@@ -451,9 +451,13 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
       
       
       geoDataAllAreas <- rbind(geoDataAllAreas, geoDataForAreaInclGeoResultDetails)
-
+      
     }
-    log_to_file(message = paste("<b>Geocoding: finished performing geocoding calculation for area id", areaId,"</b>"),file = logfile)
+    # log_to_file(message = paste("Geocoding: finished performing geocoding calculation for area id<b>", areaId,"</b>"),file = logfile)
+    if(count %in% loghelper){
+      gc()
+      log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of documents processed"),logfile)
+    } 
     
   }# end for each areaID
   
@@ -545,7 +549,7 @@ performClustering_returnIndicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravi
     }
     
     indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity <- which(clusters==clusterWithMinDistanceToCenterOfGravity)
-
+    
   }else if (numberOfEntries ==1){
     
     indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity <- c(1)
@@ -687,4 +691,4 @@ functionToGetLocationStringssAndFrequencyForGivenAreaId_country <- function(inpu
 functionToFilterOrSelectGeoResultForALocationString_country <- function(geocodingResultresult){
   result <- geocodingResultresult %>% filter(type == "administrative") %>% filter(class == "boundary")
   result <- selectBasedOnMaxValue(result, "importance")
-  }
+}

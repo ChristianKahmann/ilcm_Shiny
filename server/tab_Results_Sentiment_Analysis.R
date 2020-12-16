@@ -3,7 +3,11 @@
 
 
 
-#render table with finished results for Sentiment analysis task
+#' render table with finished results for Sentiment analysis task
+#' depends on:
+#'   values$reload_senti_result: reload result table from sentiment analysis after a result was deleted
+#'   values$collection_selected: selected collection
+#'   values$results_senti: results of sentiments analysis 
 output$Senti_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_senti_result
@@ -121,7 +125,15 @@ output$Senti_Results <- renderDataTable({
   })
 
 
-#check wheather a certain result was clicked and then switch with needed information to details tab
+#' check wheather a certain result was clicked and then switch with needed information to details tab
+#' depends on:
+#'   input$Senti_Results_rows_selected: selected rows from sentiment analysis result list
+#'   values$Details_Analysis: details of sentiment analysis
+#'   values$Details_Data_SA: details of sentiment analysis data
+#'   values$Senti_Results_Files: sentiment anlysis result files
+#'   values$current_task_id: id of curent task
+#'   values$results_senti: results of sentiment analysis
+#'   
 observe({
   s = input$Senti_Results_rows_selected
   if (length(s)) {
@@ -136,7 +148,11 @@ observe({
   }
 })
 
-#if delete Sentiment analysisresult is clicked delete files and db entry
+#' if delete Sentiment analysisresult is clicked delete files and db entry
+#' depends on:
+#'   input$delete_senti_results: delete sentiment analysis results
+#'   values$Senti_Results_Files: sentiment analysis result files
+#'   values$reload_senti_result: reload reselts of sentiment analysis afte one element was deleted from list
 observeEvent(input$delete_senti_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_senti_results, "_")[[1]][5])
@@ -144,13 +160,17 @@ observeEvent(input$delete_senti_results, {
     unlink(values$Senti_Results_Files[selectedRow],recursive = T)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_senti_results\",  "delete_button_senti_results_0")'))
-    delete_result_from_datbase(isolate(values$results_senti[selectedRow,]))
     values$reload_senti_result<-TRUE
   }
 })
 
 
-#if more details button is clicked open modal showing all parameters
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   input$more_details_senti_results: load more details from sentiment analysis results
+#'   values$senti_selected_row: selected rows from result list
+#'   values$tasks_senti: sentiment analysis tasks
+#'   
 observeEvent(input$more_details_senti_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_senti_results, "_")[[1]][6])
@@ -166,6 +186,11 @@ observeEvent(input$more_details_senti_results,{
   }
 })
 
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   values$senti_selected_row: selected rows from sentiment analysis result list
+#'   values$tasks_senti: sentiment analysis tasks
+#'   
 output$more_details_senti_table<-DT::renderDataTable({
   validate(
     need(values$senti_selected_row>0,message=F)

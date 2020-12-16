@@ -18,7 +18,7 @@ error<-try(expr = {
   #load parameters
   load("collections/tmp/tmp.RData")
   parameters_original<-parameters
-
+  
   
   
   #load collection 
@@ -480,7 +480,7 @@ error<-try(expr = {
     colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
     #delete bias term from feature matrix
     feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-    
+
     word_counts<-colSums(dtm) 
     log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
     
@@ -502,6 +502,8 @@ error<-try(expr = {
     
     log_to_file(message = "<b>Step 13/13: Saving results</b>",file = logfile)
     dir.create(path = path0,recursive = T)
+    saveRDS(features,file=paste0(path0,"vocab_task",parameters$id,".RDS"))
+    write(paste(features,collapse=","),file = paste0(path0,"vocab_task",parameters$id,".txt"))
     save(learning_meta,data,result,file=paste0(path0,"training_examples.RData"))
     save(results_complete,file = paste0(path0,"results_complete.RData"))
     save(feature_matrix,word_counts,file=paste0(path0,"feature_matrix.RData"))
@@ -545,6 +547,8 @@ error<-try(expr = {
     log_to_file(message = "<b>Step 13/13: Saving results</b>",file = logfile)
     dir.create(path = path0,recursive = T)
     save(result,file=paste0(path0,"result.RData"))
+    saveRDS(features,file=paste0(path0,"vocab_task",parameters$id,".RDS"))
+    write(paste(features,collapse=","),file = paste0(path0,"vocab_task",parameters$id,".txt"))
     save(results_complete,file = paste0(path0,"results_complete.RData"))
     save(parameters,file=paste0(path0,"parameters.RData"))
     save(info,file=paste0(path0,"info.RData"))
@@ -633,6 +637,8 @@ error<-try(expr = {
     dir.create(path = path0,recursive = T)
     project<-parameters$Project
     save(texts,labels,project,file=paste0(path0,"examples.RData"))
+    saveRDS(features,file=paste0(path0,"vocab_task",parameters$id,".RDS"))
+    write(paste(features,collapse=","),file = paste0(path0,"vocab_task",parameters$id,".txt"))
     save(parameters,file=paste0(path0,"parameters.RData"))
     save(info,file=paste0(path0,"info.RData"))
     RMariaDB::dbDisconnect(mydb)
@@ -660,9 +666,13 @@ error<-try(expr = {
     
     feature_matrix<-model$W
     colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
-    #delete bias term from feature matrix
+    # delete bias term from feature matrix
     feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-    
+    # if only 2 categories were used, transform feature matrix
+    if(nrow(feature_matrix)==1){
+      feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))
+      rownames(feature_matrix)<-unique(gold_table[,2])
+    }
     word_counts<-colSums(dtm)  
     
     testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
@@ -723,6 +733,8 @@ error<-try(expr = {
     lang<-db_data$language
     save(dates,predictions,labels,probabilities,result,file=paste0(path0,"result.RData"))
     save(feature_matrix,word_counts,file=paste0(path0,"feature_matrix.RData"))
+    saveRDS(features,file=paste0(path0,"vocab_task",parameters$id,".RDS"))
+    write(paste(features,collapse=","),file = paste0(path0,"vocab_task",parameters$id,".txt"))
     save(results_complete,file = paste0(path0,"results_complete.RData"))
     save(original_text,file=paste0(path0,"texts.RData"))
     parameters<-parameters_original

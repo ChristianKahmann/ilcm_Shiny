@@ -1,4 +1,12 @@
-#get annotations from database and render them in a datatable
+#' get annotations from database and render them in a datatable
+#' depends on:
+#'   input$update_annotations: update annotations
+#'   values$host: selected host
+#'   values$db_port: selected data base port
+#'   input$project_selected: selected project
+#'   input$annotation_filter: annotation filter by category
+#'   values$annotations_all: all annotations
+#'   
 output$annotations<-renderDataTable({
   input$update_annotations
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
@@ -54,7 +62,12 @@ output$download_token<-downloadHandler(
 )  
 
 
-#if delete annotation is clicked delete db entry
+#' if delete annotation is clicked delete db entry
+#' depends on:
+#'   input$delete_annotation: delete annotation
+#'   values$host: selected host
+#'   values$db_port: selected data base port
+#'   values$annotations_all: all annotations
 observeEvent(input$delete_annotation, {
   selectedRow <-
     as.numeric(strsplit(input$delete_annotation, "_")[[1]][4])
@@ -72,7 +85,25 @@ observeEvent(input$delete_annotation, {
 
 
 
-#check wheather a document is selected in annotations datatable // if yes get data from db 
+#' check wheather a document is selected in annotations datatable // if yes get data from db 
+#' depends on:
+#'   input$annotations_rows_selected: selected rows from annotations
+#'   values$host: selected host
+#'   values$db_port: selected database port
+#'   values$Anno_selected: selected annotation
+#'   values$annotations_all: all annotations
+#'   values$Anno_id_global: global id of annotation
+#'   values$Anno_dataset: annotation dataset
+#'   values$Anno_token: annotation token
+#'   values$Anno_meta: meta data of annotation
+#'   values$Anno_scheme_changed: changed annotation scheme
+#'   values$set_Anno_anno_scheme: set of annotation schemes
+#'   input$project_selected: selected project
+#'   values$Anno_new: new annotation
+#'   values$Anno_annotations_show: show annotations
+#'   values$Anno_Doc_reload: reload documents of annotation
+#'   values$Anno_annos: annotations
+#'   
 observeEvent(input$annotations_rows_selected,{
   s = input$annotations_rows_selected
   if (length(s)) {

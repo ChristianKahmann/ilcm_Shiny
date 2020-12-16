@@ -1,10 +1,28 @@
+#' reset user input
+#' depends on:
+#'   input$Det_DD_reset_user_input: confirmation to reset
+#'   values$DD_whitelist: customed whitelist
+#'   values$DD_blacklist customed blacklist
+#'   
 observeEvent(ignoreInit = T,input$Det_DD_reset_user_input,{
   values$DD_whitelist<-NULL
   values$DD_blacklist<-NULL
 })
 
 
-
+#' details on deduplication
+#' depends on:
+#'   values$Det_DD_results: deduplication results
+#'   input$Det_DD_strategy: deduplication strategy
+#'   input$Det_DD_threshold: deduplication threshold
+#'   values$invalidate_deduplication_visulisation: invalidate visualisation of deduplication
+#'   values$Det_DD_node_degree: node degree for deduplication
+#'   values$Det_DD_meta: meta data from deduplication
+#'   values$Det_DD_data_display: display data from deduplication 
+#'   values$Det_DD_current_table: show current table for deduplication
+#'   values$blacklist: customed blacklist
+#'   values$whitelist: customed whitelist
+#'   
 observe({
   validate(
     need(!is.null(values$Det_DD_results),message=F),
@@ -13,8 +31,7 @@ observe({
   )
   input$Det_DD_strategy
   input$Det_DD_threshold
-  
-  
+  values$invalidate_deduplication_visulisation
   data<-data.frame(a=values$Det_DD_results[,1],token_a=0,date_a=0,b=values$Det_DD_results[,2],token_b=0,date_b=0,similarity=values$Det_DD_results[,3],keep_a=0,keep_b=0,stringsAsFactors = F)
   data<-data[which(data$similarity>input$Det_DD_threshold),]
   data<-data[order(data$similarity,decreasing = T),]
@@ -26,54 +43,63 @@ observe({
     data<-merge(data,y = x,by.x = "b",by.y = "Var1")
     data<-data[,c("a","token_a","date_a","b","token_b","date_b","similarity","keep_a","keep_b","Freq.x","Freq.y")]
     final_remove<-matrix(c(0),dim(data)[1],2)
-    #browser()
-    for(i in 1:dim(data)[1]){
-      if(input$Det_DD_strategy=="longest"){
-        try({
-          remove<-which.max(c(values$Det_DD_meta[data[i,1],"token"],values$Det_DD_meta[data[i,4],"token"]))
-        })
-        if(length(remove)==0){
-          remove<-sample(x = c(1,2),size = 1)
-        }
-      }  
-      if(input$Det_DD_strategy=="shortest"){
-        try({
-          remove<-which.min(c(values$Det_DD_meta[data[i,1],"token"],values$Det_DD_meta[data[i,4],"token"]))
-        })
-        if(length(remove)==0){
-          remove<-sample(x = c(1,2),size = 1)
-        }
-      }
-      if(input$Det_DD_strategy=="latest"){
-        try({
-          remove<-which.max(c(values$Det_DD_meta[data[i,1],"date"],values$Det_DD_meta[data[i,4],"date"]))
-        })
-        if(length(remove)==0){
-          remove<-sample(x = c(1,2),size = 1)
-        }
-      }
-      if(input$Det_DD_strategy=="earliest"){
-        try({
-          remove<-which.min(c(values$Det_DD_meta[data[i,1],"date"],values$Det_DD_meta[data[i,4],"date"]))
-        })
-        if(length(remove)==0){
-          remove<-sample(x = c(1,2),size = 1)
-        }
-      }
-      if(input$Det_DD_strategy=="maximum node degree"){
-        #browser()
-        try({
-          remove<-which.max(c(data[i,"Freq.x"],data[i,"Freq.y"]))
-        })
-        if(length(remove)==0){
-          remove<-sample(x = c(1,2),size = 1)
-        }
-      }
-      if(input$Det_DD_strategy=="random"){
+    
+    ############
+    if(input$Det_DD_strategy=="longest"){
+      try({
+        relevant_data<-cbind(values$Det_DD_meta[data[,1],"token"],values$Det_DD_meta[data[,4],"token"])
+        remove<-apply(relevant_data,MARGIN = 1,FUN = which.max)
+        final_remove<-matrix(c(0),dim(data)[1],2)
+        final_remove[which(remove==1),1]<-1
+        final_remove[which(remove==2),2]<-1
+      })
+    } 
+    if(input$Det_DD_strategy=="shortest"){
+      try({
+        relevant_data<-cbind(values$Det_DD_meta[data[,1],"token"],values$Det_DD_meta[data[,4],"token"])
+        remove<-apply(relevant_data,MARGIN = 1,FUN = which.min)
+        final_remove<-matrix(c(0),dim(data)[1],2)
+        final_remove[which(remove==1),1]<-1
+        final_remove[which(remove==2),2]<-1
+      })
+    }
+    if(input$Det_DD_strategy=="latest"){
+      try({
+        relevant_data<-cbind(values$Det_DD_meta[data[,1],"date"],values$Det_DD_meta[data[,4],"date"])
+        remove<-apply(relevant_data,MARGIN = 1,FUN = which.max)
+        final_remove<-matrix(c(0),dim(data)[1],2)
+        final_remove[which(remove==1),1]<-1
+        final_remove[which(remove==2),2]<-1
+      })
+    } 
+    if(input$Det_DD_strategy=="earliest"){
+      try({
+        relevant_data<-cbind(values$Det_DD_meta[data[,1],"date"],values$Det_DD_meta[data[,4],"date"])
+        remove<-apply(relevant_data,MARGIN = 1,FUN = which.min)
+        final_remove<-matrix(c(0),dim(data)[1],2)
+        final_remove[which(remove==1),1]<-1
+        final_remove[which(remove==2),2]<-1
+      })
+    }
+    if(input$Det_DD_strategy=="maximum node degree"){
+      try({
+        relevant_data<-cbind(values$Det_DD_meta[data[,1],"Freq.x"],values$Det_DD_meta[data[,4],"Freq.y"])
+        remove<-apply(relevant_data,MARGIN = 1,FUN = which.max)
+        final_remove<-matrix(c(0),dim(data)[1],2)
+        final_remove[which(remove==1),1]<-1
+        final_remove[which(remove==2),2]<-1
+      })
+      if(length(remove)==0){
         remove<-sample(x = c(1,2),size = 1)
       }
-      final_remove[i,remove]<-1
     }
+    if(input$Det_DD_strategy=="random"){
+      remove<-sample(x = c(1,2),size = dim(data)[1],replace = T)
+      final_remove<-matrix(c(0),dim(data)[1],2)
+      final_remove[which(remove==1),1]<-1
+      final_remove[which(remove==2),2]<-1
+    }
+    
     data[,8:9]<-final_remove
     data[,2]<-values$Det_DD_meta[data[,1],"token"]
     data[,3]<-values$Det_DD_meta[data[,1],"date"]
@@ -106,7 +132,6 @@ observe({
       sort<-sample(x = 1:dim(data)[1],size = dim(data)[1],replace = T)
       data<-data[order(sort,decreasing = T),]
     }
-    #browser()
     values$Det_DD_data_display<-data
   }
   else{
@@ -117,15 +142,20 @@ observe({
   }
 })
 
-
+#' display data 
+#' depends on:
+#'   values$Det_DD_data_display: data to display
+#'   values$DD_whitelist: customed whitelist
+#'   values$DD_blacklist: customed blacklist
+#'   input$Det_DD_strategy: deduplications strategy
+#'   values$Det_DD_current_table: current table for defuplication
+#'   
 observe({
   validate(
     need(dim(values$Det_DD_data_display)[1]>0,message=F)
   )
-
   d_tmp<-values$Det_DD_data_display
   documents<-unique(union(d_tmp[,"a"],d_tmp[,"b"]))
-  
   #user decisions
   user_whitelist<-(values$DD_whitelist)
   user_blacklist<-(values$DD_blacklist)
@@ -138,72 +168,21 @@ observe({
   if(length(blacklist)>0){
     d_tmp<-d_tmp[-union(which(d_tmp[,"a"]%in%blacklist),which(d_tmp[,"b"]%in%blacklist)),,drop=F]
   }
+  count=0
   if(dim(d_tmp)[1]>0){
-      repeat({
+    repeat({
+      count=count+1
       top_pair<-d_tmp[1,,drop=F]
       id_del<-decide_which_document_to_delete(pair=top_pair,strategy = input$Det_DD_strategy)
       blacklist<-c(blacklist,id_del)
       d_tmp<-d_tmp[-union(which(d_tmp[,"a"]%in%blacklist),which(d_tmp[,"b"]%in%blacklist)),,drop=F]
       if(dim(d_tmp)[1]==0){
         break
-        }
+      }
     })
   }
   
   whitelist<-setdiff(documents,blacklist)
-  
-  # #set by user
-  # values$DD_whitelist<-unique(c(union(d_tmp[which(d_tmp[,"keep_a"]==9),"a"],d_tmp[which(d_tmp[,"keep_b"]==9),"b"]),isolate(values$DD_whitelist)))
-  # values$DD_blacklist<-setdiff(unique(c(union(d_tmp[which(d_tmp[,"keep_a"]==8),"a"],d_tmp[which(d_tmp[,"keep_b"]==8),"b"]),isolate(values$DD_blacklist))),values$DD_whitelist)
-  # 
-  # blacklist<-setdiff(unique(c(values$DD_blacklist,union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(isolate(values$DD_whitelist))),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(isolate(values$DD_whitelist))),"a"]))),values$DD_whitelist)
-  # whitelist<-unique(c(values$DD_whitelist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(blacklist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(blacklist)),"a"]),union(values$DD_whitelist,blacklist))[1]))
-  # whitelist<-whitelist[!is.na(whitelist)]
-  # 
-  # repeat({
-  #   repeat({
-  #     lenB<-length(blacklist)
-  #     blacklist<-unique(c(blacklist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(whitelist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(whitelist)),"a"]),union(blacklist,whitelist))))
-  #     blacklist<-blacklist[!is.na(blacklist)]
-  #     if(length(blacklist)==lenB ){break}
-  #   })
-  #   lenW<-length(whitelist)
-  #   whitelist<-unique(c(whitelist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(blacklist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(blacklist)),"a"]),union(whitelist,blacklist))[1]))
-  #   whitelist<-whitelist[!is.na(whitelist)]
-  #   if(length(whitelist)==lenW ){break}
-  # })
-  # 
-  # repeat({
-  #   seen<-unique(union(c(which(d_tmp[,"a"]%in%whitelist),which(d_tmp[,"b"]%in%whitelist)),c(which(d_tmp[,"a"]%in%blacklist),which(d_tmp[,"b"]%in%blacklist))))
-  #   if(length(seen)==0){
-  #     d_rest<-d_tmp
-  #   }
-  #   else{
-  #     d_rest<-d_tmp[-seen,]
-  #   }
-  #   if(dim(d_rest)[1]==0){break}
-  #   if(d_rest[1,"keep_a"]==1){
-  #     whitelist<-unique(c(whitelist,d_rest[1,"a"]))
-  #   }
-  #   else{
-  #     whitelist<-unique(c(whitelist,d_rest[1,"b"]))
-  #   }
-  #   
-  #   #browser()
-  #   repeat({
-  #     repeat({
-  #       lenB<-length(blacklist)
-  #       blacklist<-unique(c(blacklist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(whitelist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(whitelist)),"a"]),union(blacklist,whitelist))))
-  #       blacklist<-blacklist[!is.na(blacklist)]
-  #       if(length(blacklist)==lenB ){break}
-  #     })
-  #     lenW<-length(whitelist)
-  #     whitelist<-unique(c(whitelist,setdiff(union(d_tmp[which(d_tmp[,c("a")]%in%as.numeric(blacklist)),"b"],d_tmp[which(d_tmp[,c("b")]%in%as.numeric(blacklist)),"a"]),union(whitelist,blacklist))[1]))
-  #     whitelist<-whitelist[!is.na(whitelist)]
-  #     if(length(whitelist)==lenW ){break}
-  #   })
-  # })
-  
   
   values$Det_DD_current_table<-values$Det_DD_data_display
   values$blacklist<-blacklist
@@ -211,7 +190,12 @@ observe({
 })
 
 
-
+#' show data table from deduplication with blacklist information
+#' depends on:
+#'   values$blacklist: values of selected blacklist
+#'   values$DD_blacklist: customed blacklist
+#'   values$Det_DD_meta: deduplication meta data
+#'   
 output$Det_DD_Table_Black<-DT::renderDataTable({
   validate(
     need(length(values$blacklist)>0,message="No duplicates found.")
@@ -263,7 +247,12 @@ output$Det_DD_Table_Black<-DT::renderDataTable({
 
 
 
-
+#' show data table from deduplication with whitelist information
+#' depends on:
+#'   values$whitelist: values of whitelist
+#'   values$DD_whitelist: customed whitelist
+#'   values$Det_DD_meta: meta data from deduplication
+#'   
 output$Det_DD_Table_White<-DT::renderDataTable({
   validate(
     need(length(values$whitelist)>0,message="No duplicates found")
@@ -317,7 +306,12 @@ output$Det_DD_Table_White<-DT::renderDataTable({
 
 
 
-
+#' compare documents and find differences with blacklist
+#' depends on:
+#'   input$show_diff: differences in result
+#'   values$blacklist: values of blacklist
+#'   values$Det_DD_current_table: current table of deduplication results
+#'   values$documents_for_diff: selected documents to show differences between them 
 observeEvent(input$show_diff,ignoreInit = T,{
   id<-stringr::str_split(string =input$show_diff,pattern = "_",simplify = T )[1,3]
   validate(
@@ -335,7 +329,12 @@ observeEvent(input$show_diff,ignoreInit = T,{
   ))
 })
 
-
+#' show document differences
+#' depends on:
+#'   values$Det_DD_meta: meta data of deduplication
+#'   values$documents_for_diff: selected documents for comparision
+#'   input$DD_table_modal_diff_select: selected tables for modal differences
+#'   
 output$Det_DD_diffr<-diffr::renderDiffr({
   file1 = tempfile()
   writeLines(values$Det_DD_meta[as.numeric(values$documents_for_diff),"body"], con = file1)
@@ -345,7 +344,12 @@ output$Det_DD_diffr<-diffr::renderDiffr({
 })
 
 
-
+#' keep blacklist
+#' depends on:
+#'   input$DD_Keep_Black: initiate keeping blacklist
+#'   values$DD_whitelist: customed whitelist
+#'   values$DD_blacklist: customed blacklist
+#'   
 observeEvent(input$DD_Keep_Black,ignoreInit = T,{
   id<-as.numeric(values$blacklist[as.numeric(stringr::str_split(string = input$DD_Keep_Black,pattern = "_",simplify = T)[1,2])])
   validate(
@@ -358,6 +362,13 @@ observeEvent(input$DD_Keep_Black,ignoreInit = T,{
 })
 
 
+#' remove blacklist
+#' depends on:
+#'   input$DD_Remove_Black: initiate removing of blacklist
+#'   values$blacklist: values from blacklist
+#'   values$DD_blacklist: customed blacklist
+#'   values$DD_whitelist: custome whitelist
+#'   
 observeEvent(input$DD_Remove_Black,ignoreInit = T,{
   id<-as.numeric(values$blacklist[as.numeric(stringr::str_split(string = input$DD_Remove_Black,pattern = "_",simplify = T)[1,2])])
   validate(
@@ -373,7 +384,13 @@ observeEvent(input$DD_Remove_Black,ignoreInit = T,{
 
 
 
-
+#' compare documents and find differences with whitelist
+#' depends on:
+#'   input$show_diff_White: initiate calculation
+#'   values$whitelist: values of whitelist
+#'   values$Det_DD_current_table: current table of deduplication results
+#'   values$documents_for_diff_white: selected documents for difference calculation
+#'   
 observeEvent(input$show_diff_White,ignoreInit = T,{
   id<-stringr::str_split(string =input$show_diff_White,pattern = "_",simplify = T )[1,4]
   validate(
@@ -391,7 +408,11 @@ observeEvent(input$show_diff_White,ignoreInit = T,{
   ))
 })
 
-
+#' show difference calculation
+#' depends on:
+#'   values$Det_DD_meta: meta data
+#'   values$documents_for_diff_white: selected documents for calculation
+#'   input$DD_table_modal_diff_select_white: show table of  modals for selected documents
 output$Det_DD_diffr_white<-diffr::renderDiffr({
   file1 = tempfile()
   writeLines(values$Det_DD_meta[as.numeric(values$documents_for_diff_white),"body"], con = file1)
@@ -401,7 +422,14 @@ output$Det_DD_diffr_white<-diffr::renderDiffr({
 })
 
 
-
+#' keep whitelist 
+#' depends on:
+#'   input$DD_Keep_White: initiate keeping whitelist
+#'   values$whitelist: values of whitelist
+#'   values$DD_whitelist: customed whitelist
+#'   values$DD_blacklist: customed blacklist
+#'   values$DD_recalc: initiate recalculation
+#'   
 observeEvent(input$DD_Keep_White,ignoreInit = T,{
   id<-as.numeric(values$whitelist[as.numeric(stringr::str_split(string = input$DD_Keep_White,pattern = "_",simplify = T)[1,3])])
   validate(
@@ -413,7 +441,14 @@ observeEvent(input$DD_Keep_White,ignoreInit = T,{
   isolate(shinyjs::runjs('Shiny.onInputChange(\"DD_Keep_White\",  "DDkeep_white_0")'))
 })
 
-
+#' remove whitelist
+#' depends on:
+#'   input$DD_Remove_White: initiate removing whitelist
+#'   values$whitelist: values of whitelist
+#'   values$DD_blacklist: customed blacklist
+#'   values$DD_whitelist: customed whitelist
+#'   values$DD_recalc: start recalculation
+#'   
 observeEvent(input$DD_Remove_White,ignoreInit = T,{
   id<-as.numeric(values$whitelist[as.numeric(stringr::str_split(string = input$DD_Remove_White,pattern = "_",simplify = T)[1,3])])
   validate(
@@ -432,10 +467,22 @@ observeEvent(input$DD_Remove_White,ignoreInit = T,{
 
 
 
-
+#' show deduplication network
+#' depends on:
+#'   values$Det_DD_current_table: render table with current deduplication results
+#'   values$blacklist: values of blacklist
+#'   values$whitelist: values of whitelist
+#'   values$DD_whitelist: customed whitelist
+#'   values$DD_blacklist: customed blacklist
+#'   input$Det_DD_use_igraph_layout: chosen igraph layout
+#'   values$Det_DD_meta: meta data from deduplication
+#'   
+#'   
 output$Det_DD_Network<-visNetwork::renderVisNetwork({
   validate(
-    need(!is.null(values$Det_DD_current_table),message=F),
+    need(!is.null(values$Det_DD_current_table),message="Calculating...")
+  )
+  validate(
     need(dim(values$Det_DD_current_table)[1]>0,message="No duplicates found.")
   )
   t<-values$Det_DD_current_table
@@ -477,6 +524,10 @@ output$Det_DD_Network<-visNetwork::renderVisNetwork({
     title=t[,"similarity"],
     color=fifer::number.to.colors(value = t[,"similarity"],colors = c("gold","orange1","orangered1","red2"))
   )
+  
+  # get document titles from db
+  titles <- values$Det_DD_meta[,"title"]
+  nodes$label<-titles[as.numeric(nodes$id)]
   if(input$Det_DD_use_igraph_layout==TRUE){
     network<-visNetwork::visNetwork(nodes = nodes,edges = edges) %>%
       visNetwork::visIgraphLayout(randomSeed = 1)%>%
@@ -487,9 +538,7 @@ output$Det_DD_Network<-visNetwork::renderVisNetwork({
       visNetwork::visEdges(scaling=list(min=2,max=8))%>%
       visNetwork::visLegend(position = "right")%>%
       visNetwork::visEvents(type = "on",doubleClick = "function(properties) {
-                 Shiny.onInputChange(\"DD_graph_node_selected\",  properties.nodes)
-            }"
-      )
+                 Shiny.onInputChange(\"DD_graph_node_selected\",  properties.nodes)            }")
   }
   else{
     network<-visNetwork::visNetwork(nodes = nodes,edges = edges) %>%
@@ -507,6 +556,12 @@ output$Det_DD_Network<-visNetwork::renderVisNetwork({
   }
 })
 
+#' observe if a node from graph is selected
+#' depends on:
+#'   input$DD_graph_node_selected: selected node from graph
+#'   values$Det_DD_current_table: current table for deduplication
+#'   values$Det_DD_meta: meta data from deduplication
+#'   
 observeEvent(input$DD_graph_node_selected,ignoreNULL = T,{
   validate(
     need(input$DD_graph_node_selected!=0,message=F)
@@ -539,16 +594,24 @@ observeEvent(input$DD_graph_node_selected,ignoreNULL = T,{
                 ),footer=actionButton("deduplication_dissmiss_modal",label="Dismiss")
     )
   )
-
+  
 })
 
+#' observe dissmissing of modals
+#' depends on:
+#'   input$deduplication_dissmiss_modal: dissmiss modals of deduplication
 observeEvent(ignoreNULL = T,input$deduplication_dissmiss_modal,{
   removeModal()
   isolate(shinyjs::runjs('Shiny.onInputChange(\"DD_graph_node_selected\",  0)'))
 })
 
 
-
+#' deduplication for differences calculation in graph
+#' depends on:
+#'   values$Det_DD_meta: meta data from deduplication
+#'   input$DD_graph_node_selected: selected node from deduplication graph
+#'   input$DD_graph_modal_diff_select: selected modals from graph differences
+#'   
 output$Det_DD_diffr_graph<-diffr::renderDiffr({
   file1 = tempfile()
   writeLines(values$Det_DD_meta[as.numeric(input$DD_graph_node_selected),"body"], con = file1)
@@ -557,7 +620,13 @@ output$Det_DD_diffr_graph<-diffr::renderDiffr({
   diffr::diffr(file1,file2, before = paste0("Document: ", input$DD_graph_node_selected), after = paste0("Document: ",input$DD_graph_modal_diff_select))
 })
 
-
+#' observe the keeping of elements in graph
+#' depends on:
+#'   input$Det_DD_graph_keep: elements from keeping functions
+#'   input$DD_graph_node_selected: selected node in graph
+#'   values$DD_whitelist: customed whitelist
+#'   values$DD_blacklist: customed blacklist
+#'   values$DD_recalc: start recalculation
 observeEvent(input$Det_DD_graph_keep,ignoreInit = T,{
   id<-input$DD_graph_node_selected
   validate(
@@ -572,7 +641,14 @@ observeEvent(input$Det_DD_graph_keep,ignoreInit = T,{
   values$DD_recalc<-runif(1,0,1)
 })
 
-
+#' observe remove-action in graph
+#' depends on:
+#'   input$Det_DD_graph_remove: initiate removing of element in graph
+#'   input$DD_graph_node_selected: selected nodes
+#'   values$DD_blacklist: customed blacklist
+#'   values$DD_whitelist: customed whitelist 
+#'   values$DD_recalc: start recalculation
+#'   
 observeEvent(input$Det_DD_graph_remove,ignoreInit = T,{
   id<-input$DD_graph_node_selected
   validate(
@@ -587,7 +663,9 @@ observeEvent(input$Det_DD_graph_remove,ignoreInit = T,{
   values$DD_recalc<-runif(1,0,1)
 })
 
-
+#' obsere help-icon is selected
+#' depends on:
+#'   input$DD_help: help icon selected
 observeEvent(input$DD_help,{
   showModal(
     modalDialog(title = "How to use graph:",
@@ -597,6 +675,15 @@ observeEvent(input$DD_help,{
   
 })
 
+#' observe if saving of collaction is selected
+#' depends on:
+#'   input$Det_DD_save_collection: initiate saving of collection
+#'   values$blacklist: values from blacklist
+#'   values$update_solr_url: update solr url
+#'   values$update_solr_port: update port from solr
+#'   values$coll_saved: collection saved successfully
+#'   values$num_collections: number from collection
+#'   
 observeEvent(ignoreInit = T,input$Det_DD_save_collection,{
   if(length(values$blacklist)>0){
     final_remove<-as.numeric(values$blacklist)
@@ -630,6 +717,8 @@ observeEvent(ignoreInit = T,input$Det_DD_save_collection,{
     
     save(info,file=paste("collections/collections/",info[[5]],".RData",sep = ""))
     save_collection_to_db(info)
+    values$coll_saved<-runif(1,min = 0,max = 1)
+    values$num_collections<-length(list.files("collections/collections/"))
     shinyWidgets::sendSweetAlert(session=session,title = "Collection created",text = paste0("new collection with name:",paste0(info[[5]])," has been created"),type = "success")
   }
   else{
@@ -637,3 +726,32 @@ observeEvent(ignoreInit = T,input$Det_DD_save_collection,{
   }
 })
 
+#' handle download of deduplication
+#' depends on:
+#'    values$Det_DD_meta: meta data from deduplication
+#'    values$blacklist: values from blacklist
+output$Det_DD_download_clean<-downloadHandler(
+  filename = function() {
+    paste('duplicate_free_collection', Sys.Date(), '.csv', sep='')
+  },
+  content = function(con) {
+    export_data<-as.matrix(values$Det_DD_meta[-as.numeric(values$blacklist),])
+    export_data<-apply(X = export_data,MARGIN = 2,FUN = function(x){stringr::str_replace_all(string = x,pattern = '"',replacement = "'")})
+    write.table(export_data, con,col.names = F,row.names = F,sep=",",quote = T)
+  }
+)
+
+#' download duplicates
+#' depends on:
+#'   values$Det_DD_meta:  deduplication meta data
+#'   values$blacklist: values from blacklist
+output$Det_DD_download_duplicates<-downloadHandler(
+  filename = function() {
+    paste('duplicates', Sys.Date(), '.csv', sep='')
+  },
+  content = function(con) {
+    export_data<-as.matrix(values$Det_DD_meta[as.numeric(values$blacklist),])
+    export_data<-apply(X = export_data,MARGIN = 2,FUN = function(x){stringr::str_replace_all(string = x,pattern = '"',replacement = "'")})
+    write.table(export_data, con,col.names = F,row.names = F,sep=",",quote = T)
+  }
+)
