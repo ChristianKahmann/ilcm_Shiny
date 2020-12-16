@@ -86,3 +86,4 @@ config_file.R
 config_file_local.R
 /stm-visualization/*
 /collections/geolocations/*
+!/collections/geolocations/.gitkeep
