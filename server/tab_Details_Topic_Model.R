@@ -1704,7 +1704,7 @@ output$Det_meta_select_ui<-renderUI({
     conditionalPanel(condition="input.Det_TM_meta_multi_valued==true",
                      textInput(inputId = "Det_TM_meta_multi_valued_seperator", label = "value seperator", value = "/")
     ),
-    checkboxInput(inputId ="Det_TM_meta_use_quantiles", label = "Use Quantiles if metadata is numeric", FALSE),
+    checkboxInput(inputId ="Det_TM_meta_use_quantiles", label = "Use Quantiles if metadata is numeric", TRUE),
     conditionalPanel(condition='input.Det_TM_meta_use_quantiles==true',
                      tableOutput(outputId = "Det_TM_meta_quantiles")
     ),

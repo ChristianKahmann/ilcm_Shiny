@@ -31,10 +31,10 @@ observeEvent(input$Det_VA_Update,{
     validate(
       need(nchar(input$Det_VA_Select_Word)>0,message="Please choose a word.")
     )
-    termss<<-rownames(values$va_freq)
+    values$Det_VA_termss<-rownames(values$va_freq)
     un_dates<-values$va_un_dates[order(values$va_un_dates,decreasing = F)]
-    label<<-un_dates
-    p1<-plot_ly(source = as.character(input$Det_VA_Select_Word),x=label,y=( values$va_voldata[isolate({input$Det_VA_Select_Word}),]),type="scatter",mode="lines",name=paste0("volatility(",isolate(input$Det_VA_Select_Word),")"))
+    values$Det_VA_label<-un_dates
+    p1<-plot_ly(source = as.character(input$Det_VA_Select_Word),x=values$Det_VA_label,y=( values$va_voldata[isolate({input$Det_VA_Select_Word}),]),type="scatter",mode="lines",name=paste0("volatility(",isolate(input$Det_VA_Select_Word),")"))
     p1<-add_trace(p=p1,y = (values$va_freq[isolate({input$Det_VA_Select_Word}),]), name = paste0("frequency(",isolate(input$Det_VA_Select_Word),")"), mode = 'lines',yaxis="y2")
     layout(p1,margin=list(r=50,b=150),legend=list(orientation="h",yanchor="bottom",xanchor="center",x=0.5,y=1),yaxis2=list(rangemode="tozero",tickfont = list(color = "red"),overlaying = "y",side = "right",title = "Frequency"),paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',xaxis=list(autotick=T,showgrid=T,showgrid = TRUE,showline = FALSE,showticklabels = TRUE,tickcolor = 'rgb(127,127,127)', ticks = 'outside', zeroline = FALSE,side="bottom"),margin=list(b=80),yaxis=list(rangemode = "tozero",title="Context Volatility",type="linear",showgrid=T,showgrid = TRUE,showline = FALSE,showticklabels = TRUE,tickcolor = 'rgb(127,127,127)', ticks = 'outside', zeroline = T))
   })
@@ -59,11 +59,12 @@ observeEvent(input$Det_VA_Update,{
   },options = list(pageLength = 5, autoWidth = TRUE),
   rownames= FALSE)
   
+  
   output$volat_coocs_headline<-renderUI({
     eventdata<-event_data("plotly_click",source = as.character(input$Det_VA_Select_Word))
     validate(need(!is.null(eventdata), message=FALSE))
     datapoint<-as.numeric(eventdata$pointNumber)[1]
-    date<-label[datapoint+1]
+    date<-values$Det_VA_label[datapoint+1]
     tags$h4(paste0("Top co-occurrences for ",date))
   })
   
@@ -101,7 +102,7 @@ observeEvent(input$Det_VA_Update,{
     
     # data<-NULL
     diff<-daten2-daten1
-    names(diff)<-termss
+    names(diff)<-values$Det_VA_termss
     diff<-diff[which(diff!=0)]
     
     #values$open<-T
@@ -128,7 +129,7 @@ observeEvent(input$Det_VA_Update,{
     # data<-NULL
     
     diff<-daten2-daten1
-    names(diff)<-termss
+    names(diff)<-values$Det_VA_termss
     diff<-diff[which(diff!=0)]
     
     idx<-order(abs(diff),decreasing = T)[1:min(length(diff),as.numeric(input$max_words))]
@@ -165,8 +166,8 @@ observeEvent(input$Det_VA_Update,{
   output$volat_divergent_headline<-renderUI({
     eventdata<-event_data("plotly_click",source = as.character(input$Det_VA_Select_Word))
     validate(need(!is.null(eventdata), message=FALSE))
-    date1<-label[db1]
-    date2<-label[db2]
+    date1<-values$Det_VA_label[db1]
+    date2<-values$Det_VA_label[db2]
     tags$h4(paste0("Top divergent co-occurrences from ",date1," to ", date2))
   })
   
@@ -227,7 +228,7 @@ observeEvent(input$Det_VA_Update,{
     words<-rownames(values$va_voldata)
     frequence<-values$va_freq[words,id]
     volat<-values$va_voldata[,id]
-
+    
     if(input$Det_VA_POS!="all"){
       words<-values$va_pos_tags[which(values$va_pos_tags[,2]==input$Det_VA_POS),1]
       frequence<-frequence[words]

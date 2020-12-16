@@ -151,7 +151,7 @@ ui <- dashboardPage(
     # enable shinyjs
     shinyjs::useShinyjs(),
     # add extra function to shinyjs to reset the count value of a button
-    shinyjs::extendShinyjs(text = "shinyjs.resetClick = function() { Shiny.onInputChange('.clientValue-plotly_click-A', 'null'); }"),
+    shinyjs::extendShinyjs(functions ="resetClick" ,text = "shinyjs.resetClick = function() { Shiny.onInputChange('.clientValue-plotly_click-A', 'null'); }"),
     # add extra function to shinyjs to get type of input to update this input when using a parameter preset in task scheduler
     shinyjs::extendShinyjs("www/app-shinyjs.js", functions = c("getInputType")),
     # use custom css to style certain elements
