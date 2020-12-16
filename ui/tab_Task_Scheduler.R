@@ -14,6 +14,7 @@ tabPanel("Task Scheduler",
                                                                  "Frequency Extraction"="Frequency_Extraction",
                                                                  "Volatility Analysis"="Volatility_Analysis",
                                                                  "Topic Model"="Topic_Model",
+                                                                 "Geocoding"="Geocoding",
                                                                  "Dictionary Extraction"="Dictionary_Extraction",
                                                                  "Classification"="Classification",
                                                                  "Sentiment Analysis"="Sentiment_Analysis",
@@ -62,6 +63,9 @@ tabPanel("Task Scheduler",
                                        ),
                                        conditionalPanel(condition = "input.analysis_selected=='Topic_Model'",
                                                         uiOutput(outputId = "Analysis_Parameter_TM")            
+                                       ),
+                                       conditionalPanel(condition = "input.analysis_selected=='Geocoding'",
+                                                        uiOutput(outputId = "Analysis_Parameter_Geocoding")            
                                        ),
                                        conditionalPanel(condition = "input.analysis_selected=='Dictionary_Extraction'",
                                                         uiOutput(outputId = "Analysis_Parameter_DE")       

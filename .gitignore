@@ -63,7 +63,9 @@ packrat/lib*/
 !/collections/results/dynamic-topic-model/.gitkeep
 /collections/results/dynamic-topic-model/*
 !/collections/results/syntactic-parsing/.gitkeep
-/collections/tmp/*  
+/collections/results/geocoding/*
+!/collections/results/geocoding/.gitkeep
+/collections/tmp/*
 !/collections/tmp/refi/.gitkeep
 !/collections/tmp/.gitkeep
 /collections/ecpmf_resources/*
@@ -83,4 +85,4 @@ config_file.R
 /global/task_id_counter.RData
 config_file_local.R
 /stm-visualization/*
-
+/collections/geolocations/*

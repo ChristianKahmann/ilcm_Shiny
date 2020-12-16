@@ -1,13 +1,13 @@
-##no docker##
+##no docker compose##
 url<-'http://0.0.0.0:8983/solr/iLCM/select/'
 update_solr_url<-'0.0.0.0'
 update_solr_port<-'8983'
 host<-'0.0.0.0'
-version<-"0.998"
+version<-"0.991"
 db_port='3306'
 max_upload_file_size=500
 random_seed=1236
-#docker##
+#docker compose##
 #url<-"http://tmca_solr-1_1:8081/solr/iLCM/select/"
 #host = 'tmca_db_1'
 #update_solr_url<-"tmca_solr-1_1"
@@ -24,9 +24,11 @@ c25 <- rainbow(25)
 # version<-"0.9.7"
 # db_port="3852"
 
-
 #set python path
 Sys.setenv(PATH="/home/rstudio/miniconda3/bin:/usr/local/bin:/usr/bin:/bin")
+
+
+geonamesUsername <- "unknown"
 
 #login credentials
 library(sodium)
@@ -45,4 +47,6 @@ if(hide_login==TRUE){
 }else{
   waiter_wait_object<-"body_UI"
 }
+
+
 

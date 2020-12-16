@@ -666,7 +666,7 @@ error<-try(expr = {
     
     feature_matrix<-model$W
     colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
-    #d elete bias term from feature matrix
+    # delete bias term from feature matrix
     feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
     # if only 2 categories were used, transform feature matrix
     if(nrow(feature_matrix)==1){

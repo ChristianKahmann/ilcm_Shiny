@@ -38,6 +38,7 @@ library(shinyjs)
 library(promises)
 library(future)
 library(shinyjqui)
+library(stm)
 library(waiter)
 library(glue)
 library(uuid)
@@ -258,6 +259,8 @@ server <- function(input, output, session) {
   source(file.path("server","tab_Annotations.R"),local = T)$value
   # server part for the facet view in Explorer
   source(file.path("server","tab_Facets.R"),local = T)$value
+  # server part for the GeoExplorer
+  source(file.path("server","tab_GeoExplorer.R"),local = T)$value
   # server part for the time series plots in explorer
   source(file.path("server","tab_Time_Series.R"),local = T)$value
   # server part for managing the projects in categories

@@ -12,7 +12,9 @@ output$body_UI<-renderUI({
                               # show and annotate documents
                               source(file.path("ui","tab_Document_View.R"),local = T)$value,
                               # show facetted view of the found documents metadata
-                              source(file.path("ui","tab_Facets.R"),local = T)$value
+                              source(file.path("ui","tab_Facets.R"),local = T)$value,
+                              # show geoExplorer
+                              source(file.path("ui","tab_GeoExplorer.R"),local = T)$value
                    )
             ),
             # column on the right shows search, annotation and collection saving UI depending on the active window in column on the left side
