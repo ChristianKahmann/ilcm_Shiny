@@ -1,3 +1,4 @@
+#' top for prokects with annotations
 tabPanel("Projects",
          uiOutput(outputId = "projects"),
          tags$hr(),

@@ -1,3 +1,4 @@
+#' tab for scripting analysis for subscripts
 tabPanel("Scripting Analysis",icon=icon("subscript"),
          fluidRow(
            column(2,selectizeInput(inputId = "analysis_selected_script",label = "Analysis:",choices = c("Cooccurrence_Analysis","Frequency_Extraction",

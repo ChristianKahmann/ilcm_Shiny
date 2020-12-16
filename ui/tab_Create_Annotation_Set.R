@@ -1,3 +1,4 @@
+#' panel to create an annotation set an manipulate the tagsets
 tabPanel("Create Annotation Set",
          fluidRow(
            column(2,
