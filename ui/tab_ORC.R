@@ -1,4 +1,5 @@
-
+#' tabbox for ORC
+#' to select active columns or suplementary categorial variable and so on
 tabBox(
   id = "tabBox_ORC",
   width = 12,

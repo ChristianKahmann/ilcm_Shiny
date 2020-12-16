@@ -1,3 +1,5 @@
+#' panel to show documents
+#' options to display number of documents, search for subcollections, ...
 tabPanel("Documents",
          column(10,
                 div(style = 'height: 80vh; overflow-y: auto;',

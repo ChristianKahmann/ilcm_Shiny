@@ -1,3 +1,4 @@
+#' panel for vocabularies to import and edit vocalulary lists
 tabPanel(icon=icon("keyboard"),
          "Vocabularies",
          fluidRow(style="margin-left:0px;margin-right:0px",

@@ -1,3 +1,4 @@
+#' panel for classification tasks
 tabPanel("Classifications",
          tags$div(
            style = 'height:82vh; overflow-y:auto;',

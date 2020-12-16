@@ -1,3 +1,4 @@
+#' panel to modify dictionaries
 tabPanel(icon=icon("edit"),
          "Dictionaries",
          shinyBS::bsButton(inputId = "Dict_create",label = "Create dictionary",icon = icon("add"),style = "info"),

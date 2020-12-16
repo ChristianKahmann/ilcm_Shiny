@@ -1,3 +1,4 @@
+#' annotation panel for downloading token or update annotations
 tabPanel("Annotations",title = "Annotations",
          div(style = 'height: 81vh; overflow-y: auto; overflow-x:auto;',        
              downloadButton(outputId = "download_token",label = "Download Annotations"),

@@ -1,3 +1,4 @@
+#' panel for detailed input (text, mde1-mde9, etc.)
 tabPanel("Detailed",
          textOutput(outputId = "Det_text_Sub"),
          shinyTypeahead::typeaheadInput(inputId = "Det_inputtext_Sub",label = "Keyword",value = '',choices = c(),items = 10,minLength = 1),

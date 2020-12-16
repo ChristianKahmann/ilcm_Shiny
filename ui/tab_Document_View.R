@@ -1,3 +1,6 @@
+#' panel for document view 
+#' to set meta data visulization, entity-tags, POS-tags, show paragraph, etc.
+#' (viewed on the left side in document view tab)
 tabPanel("Document View",type="tabs",
          div(style = 'height: 80vh; overflow-y: auto;',
              box(width=2,
