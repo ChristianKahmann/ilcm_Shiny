@@ -1,12 +1,12 @@
-# All the code in this file needs to be copied to your Shiny app, and you need
-# to call `withBusyIndicatorUI()` and `withBusyIndicatorServer()` in your app.
-# You can also include the `appCSS` in your UI, as the example app shows.
+#' All the code in this file needs to be copied to your Shiny app, and you need
+#' to call `withBusyIndicatorUI()` and `withBusyIndicatorServer()` in your app.
+#' You can also include the `appCSS` in your UI, as the example app shows.
 
 # =============================================
 
-# Set up a button to have an animated loading indicator and a checkmark
-# for better user experience
-# Need to use with the corresponding `withBusyIndicator` server function
+#' Set up a button to have an animated loading indicator and a checkmark
+#' for better user experience
+#' Need to use with the corresponding `withBusyIndicator` server function
 withBusyIndicatorUI <- function(button) {
   id <- button[['attribs']][['id']]
   shiny::div(
@@ -30,8 +30,8 @@ withBusyIndicatorUI <- function(button) {
   )
 }
 
-# Call this function from the server with the button id that is clicked and the
-# expression to run when the button is clicked
+#' Call this function from the server with the button id that is clicked and the
+#' expression to run when the button is clicked
 withBusyIndicatorServer <- function(buttonId, expr) {
   # UX stuff: show the "busy" message, hide the other messages, disable the button
   loadingEl <- sprintf("[data-for-btn=%s] .btn-loading-indicator", buttonId)
@@ -57,7 +57,7 @@ withBusyIndicatorServer <- function(buttonId, expr) {
   }, error = function(err) { errorFunc(err, buttonId) })
 }
 
-# When an error happens after a button click, show the error
+#' When an error happens after a button click, show the error
 errorFunc <- function(err, buttonId) {
   errEl <- sprintf("[data-for-btn=%s] .btn-err", buttonId)
   errElMsg <- sprintf("[data-for-btn=%s] .btn-err-msg", buttonId)

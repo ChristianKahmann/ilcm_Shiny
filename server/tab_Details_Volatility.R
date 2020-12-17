@@ -293,7 +293,21 @@ output$Det_VA_WC<-renderUI({
 
 
 
-#'
+#' observe updating volatility analysis
+#' depends on:
+#'   values$VA_number_of_plots: number of plots
+#'   values$VA_dates_timeintervall: dates in a certain timeintervall
+#'   values$VA_dates_timeintervall_un: dates for timeintervall
+#'   values$va_voldata: data for volatility analysis
+#'   values$va_freq: frequence for volatility analysis
+#'   input$Det_VA_WC_POS: selected part of speech tags
+#'   input$Det_VA_WC_NER: selected entity (NER) tags
+#'   values$va_pos_tags: all part of speech tags
+#'   values$va_ner_tags: all entity (NER) tags
+#'   input$DET_VA_WC_N: selected parameter n
+#'   input$Det_VA_WC_maxFreq_low: selected maximal frequence
+#'   input$Det_VA_WC_minFreq_low: selected minimal frequence
+#'   
 observeEvent(input$Det_VA_Update,{
   validate(
     need(length(values$VA_number_of_plots)>0,message=FALSE)

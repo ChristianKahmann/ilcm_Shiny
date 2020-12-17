@@ -58,7 +58,15 @@ getMetaData <- function(collectionIDs, collectionDataSet, host, port){
   
   return(list(meta = meta, meta_names = meta_names))
 }
-
+#' getFullDocDataFromDB: get full document data from data base with given id and datasets
+#' @param collectionIDs
+#' @param collectionDataSet
+#' @param host
+#' @param port
+#' 
+#' @return selected document data from database
+#' @export
+#' @examples 
 getFullDocDataFromDB <- function(collectionIDs, collectionDataSet, host, port){
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=port)
   rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
@@ -84,6 +92,19 @@ getFullDocDataFromDB <- function(collectionIDs, collectionDataSet, host, port){
   
 }
 
+#' get_token_meta_and_language_from_db for given id and dataset
+#' @param id
+#' @param dataset
+#' 
+#' @return list of the following elements
+#' list:
+#'          tokens
+#'          meta data
+#'          language
+#'          global of documents
+#'          
+#' @export
+#' @return 
 get_token_meta_and_language_from_db<-function(get_meta=T,get_language=T,get_global_doc_ids=F,host=NULL,port=NULL,id,dataset){
   token<-NULL
   meta=NULL
@@ -146,7 +167,18 @@ get_token_meta_and_language_from_db<-function(get_meta=T,get_language=T,get_glob
 }
 
 
-
+#' get token meta and language from db refi for given id and dataset
+#' @param id
+#' @param dataset
+#' 
+#' @return list of the following elements
+#' list:
+#'          tokens
+#'          meta data
+#'          language
+#'          global of documents
+#' @export
+#' @examples 
 get_token_meta_and_language_from_db_refi<-function(get_meta=T,get_language=T,get_global_doc_ids=F,host=NULL,port=NULL,id,dataset){
   token<-NULL
   meta=NULL
@@ -203,7 +235,13 @@ get_token_meta_and_language_from_db_refi<-function(get_meta=T,get_language=T,get
   return(list(token=token,meta=meta,language=language,global_doc_ids=global_doc_ids))
 }
 
-
+#' prepare_input_parameters for given parameter 
+#' @param param
+#' 
+#' @return parameter prepared for usage
+#' 
+#' @export
+#' @examples 
 prepare_input_parameters<-function(param){
   #stemming?
   param$stemming<-FALSE
@@ -274,7 +312,14 @@ prepare_input_parameters<-function(param){
   return(param)
 }
 
-
+#' prepare_token_object for given token and parameters
+#' @param token
+#' @param parameters
+#' 
+#' @return prepared tokens
+#' 
+#' @export
+#' @examples 
 prepare_token_object<-function(token,parameters){
   #consolidate entities
   token<-token[,c(2,3,4,5,6,7,8)]
@@ -366,7 +411,10 @@ prepare_token_object<-function(token,parameters){
   return(token)
 }
 
-
+#' if_empty_return_NULL depends on given string
+#' 
+#' @return NULL if string is empty
+#' @return vector if given string not empty
 if_empty_return_NULL<-function(string){
   vector<-unique(unlist(stringr::str_split(string = string,pattern = ",")))
   if(nchar(vector)==0){
@@ -377,7 +425,16 @@ if_empty_return_NULL<-function(string){
   }
 }
 
-
+#' calculate_dtm for given token, parameter, language
+#' @param token
+#' @param parameters
+#' @param lang
+#' 
+#' @return feature_list if tibble is true
+#' @return docuement term matrix else
+#' 
+#' @export
+#' @example 
 calculate_dtm<-function(token,parameters,tibble=F,lang){
   # if useser chooses to use a predefined vocabulary
   if(!is.null(parameters$use_fixed_vocab)){
@@ -496,7 +553,22 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
 }
 
 
-
+#' calculate_diachronic_cooccurrences for document term matrix, parameter, meta data
+#' @param dtm
+#' @param parameters
+#' @param meta
+#' 
+#' @return list of the following elements
+#' lists:
+#'           diachron cooccurrences
+#'           word frequencies
+#'           terms
+#'           terms to use
+#'           empty terms
+#'           un_dates
+#'
+#' @export
+#' @example 
 calculate_diachronic_cooccurrences<-function(dtm,parameters,meta){
   ids<-stringr::str_split(string = rownames(dtm),pattern = "_",simplify = T)[,1:2]
   ids<-paste(ids[,1],ids[,2],sep="_")
@@ -567,7 +639,18 @@ calculate_diachronic_cooccurrences<-function(dtm,parameters,meta){
 }
 
 
-
+#'get_ner_and_pos_tags for given token, parameters and terms
+#' @param token
+#' @param parameters
+#' @param terms
+#' 
+#' @return  list of the folowing elements
+#' list: 
+#'       Part of speech tags
+#'       Entity (NER) tags
+#'       
+#' @export
+#' @example 
 get_ner_and_pos_tags<-function(token,parameters,terms){
   if(parameters$baseform_reduction=="lemma"){
     ner_tags<-token[which(tolower(token[,"lemma"])%in%terms),c("lemma","entity")]
@@ -597,7 +680,14 @@ get_ner_and_pos_tags<-function(token,parameters,terms){
 }
 
 
-
+#' calculate_sentiments_analysis_tokens_object with given parameter and meta data
+#' @param parameters
+#' @param meta
+#' 
+#' @return x (process data)
+#' 
+#' @export
+#' @example 
 calculate_sentiments_analysis_tokens_object<-function(parameters,meta){
   control=list(
     tokenize="word",
@@ -628,7 +718,13 @@ calculate_sentiments_analysis_tokens_object<-function(parameters,meta){
   return(x)
 }
 
-
+#'get_original_documents with a given token
+#'@param token
+#'
+#'@return original_text of a certain object
+#'
+#' @export
+#' @example  
 get_original_documents<-function(token){
   TOW = tmca.util::TextObjectWrapper$new()
   class(token) <- c("spacyr_parsed", "data.frame")
@@ -641,7 +737,18 @@ get_original_documents<-function(token){
 }
 
 
-
+#' calculate_cooccurrences_all_measures for given document term matrix
+#' @param dtm
+#' 
+#' @return a list of the following elements
+#' list:
+#'          dice cooccurrence matrix
+#'          count cooccurrence matrix
+#'          log likelihoof cooccurrence matrix
+#'          mutual information cooccurrence matric
+#'          terms
+#' @export
+#' @example 
 calculate_cooccurrences_all_measures<-function(dtm){
   #process data and get dtm
   dtm<-tmca.util::make_binary(dtm = dtm)
@@ -687,7 +794,20 @@ calculate_cooccurrences_all_measures<-function(dtm){
 }
 
 
-
+#' get_meta_data_for_detailed_topic_analysis with given ids, datasets and tokens
+#' @param host
+#' @param port
+#' @param ids
+#' @param datasets
+#' @param token
+#' 
+#' @return list of the following elements
+#' list:
+#'       meta data
+#'       names for meta data
+#'       
+#' @export
+#' @example 
 get_meta_data_for_detailed_topic_analysis<-function(host,port,ids,datasets,token){
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
   ids<- paste(ids[,1],collapse=", ")
@@ -707,7 +827,15 @@ get_meta_data_for_detailed_topic_analysis<-function(host,port,ids,datasets,token
   ))
 }
 
-
+#' calculate_diachron_frequencies for given document term matrix and meta data
+#' @param dtm
+#' @param meta
+#' 
+#' @return list with the following elements:
+#' list:
+#'           document frequencies in yearly overview
+#'           document frequencies in monthly overview
+#'           .....
 calculate_diachron_frequencies<-function(dtm,meta){
   meta<-meta[which(meta[,1]%in%rownames(dtm)),]
   
