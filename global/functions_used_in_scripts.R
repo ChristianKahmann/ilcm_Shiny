@@ -835,7 +835,23 @@ get_meta_data_for_detailed_topic_analysis<-function(host,port,ids,datasets,token
 #' list:
 #'           document frequencies in yearly overview
 #'           document frequencies in monthly overview
-#'           .....
+#'           document frequencies in weekly overview
+#'           document frequencies in daily overview
+#'           frequencies in years
+#'           frequencies in months
+#'           frequencies in weeks
+#'           frequencies in days
+#'           relative document frequencies in yearly overview
+#'           relative document frequencies in monthly overview
+#'           relative document frequencies in weekly overview
+#'           relative document frequencies in daily overview
+#'           relative frequencies in years
+#'           relative frequencies in months
+#'           relative frequencies in weeks
+#'           relative frequencies in days
+#'  
+#'  @export
+#'  @example   
 calculate_diachron_frequencies<-function(dtm,meta){
   meta<-meta[which(meta[,1]%in%rownames(dtm)),]
   
@@ -1005,7 +1021,15 @@ calculate_diachron_frequencies<-function(dtm,meta){
 
 
 
-
+#' calculate_dtm_for_dictionary_extraction with given parameters, language and tokens
+#' @param parameters
+#' @param lang
+#' @param token
+#' 
+#' @return document term matrix
+#' 
+#' @export
+#' @example 
 calculate_dtm_for_dictionary_extraction<-function(parameters,lang,token){
   tow<-tmca.util::TextObjectWrapper$new()
   control=plyr::compact(
@@ -1247,7 +1271,33 @@ calculate_dtm_for_dictionary_extraction<-function(parameters,lang,token){
   return(dtm)
 }
 
-
+#' calculate_dictionary_frequencies from given meta data, dtm, dictionary terms, conceptnames, available dictionaries, bin dtm
+#' @param meta
+#' @param dtm
+#' @param dict_terms
+#' @param conceptnames
+#' @param dicts_available
+#' @param bin_dtm
+#' 
+#' @return list of the following elements
+#' list:
+#'         dictionary of document frequencies over years
+#'         dictionary of document frequencies over months 
+#'         dictionary of document frequencies over weeks 
+#'         dictionary of document frequencies over days 
+#'         dictionary frequencies over years
+#'         dictionary frequencies over months
+#'         dictionary frequencies over weeks
+#'         dictionary frequencies over days
+#'         dictionary of relative document frequencies over years
+#'         dictionary of relative document frequencies over months 
+#'         dictionary of relative document frequencies over weeks 
+#'         dictionary of relative document frequencies over days 
+#'         dictionary relative frequencies over years
+#'         dictionary relative frequencies over months
+#'         dictionary relative frequencies over weeks
+#'         dictionary relative frequencies over days
+#'         
 calculate_dictioanry_frequencies<-function(meta,dtm,dict_terms,conceptnames,dicts_available,bin_dtm){
   #transform dates
   dates_day<-meta[,2]
@@ -1381,10 +1431,16 @@ calculate_dictioanry_frequencies<-function(meta,dtm,dict_terms,conceptnames,dict
 }
 
 
-# function to copy a list but remove values being NULL and character values being empty
-# work around for:
-# parameters are set via GUI/App, which result in empty character values when not set, this should be equal to not being set
-# for all optional parameters not set (=NULL), they will be removed from the resulting parameter list, because parent abstract class of tm_abstr stops with error when parameters have a value of NULL
+#' function to copy a list but remove values being NULL and character values being empty
+#' work around for:
+#' parameters are set via GUI/App, which result in empty character values when not set, this should be equal to not being set
+#' for all optional parameters not set (=NULL), they will be removed from the resulting parameter list, because parent abstract class of tm_abstr stops with error when parameters have a value of NULL
+#' @param inputList
+#' 
+#' @return resultList (elements depend on inputList)
+#' 
+#' @export
+#' @example 
 copyListButRemoveNullValuesAndEmptyStringValues = function(inputList){
   
   if(!is.list(inputList)){
@@ -1408,8 +1464,15 @@ copyListButRemoveNullValuesAndEmptyStringValues = function(inputList){
   
 }
 
-# function
-# meta data: set names from mde1/mde2 etc to real meta names
+#' combineMetaDataWithMetaNamesForMDEs
+#' meta data: set names from mde1/mde2 etc to real meta names
+#' @param meta
+#' @param meta_names
+#' 
+#' @return metaDataToUse
+#' 
+#' @export
+#' @example
 combineMetaDataWithMetaNamesForMDEs <- function(meta, meta_names){
   colNamesUsed <- colnames(meta)
   colnamesInclMetaNames <- character(length(colNamesUsed))
@@ -1427,16 +1490,31 @@ combineMetaDataWithMetaNamesForMDEs <- function(meta, meta_names){
   return (metaDataToUse)
 }
 
+#' getParameterFromRData depending on selected results
+#' @param pathToResultsFolder
+#' @param specificFolderName
+#' 
+#' @return parameters
+#' 
+#' @export
+#' @example 
 getParametersFromRData <- function(pathToResultsFolder, specificFolderName){
   load(paste(pathToResultsFolder,specificFolderName,"/parameters.RData", sep=""))
   return(parameters)
 }
 
 
-# data is a matrix having columns "task id", "collection" and "creation time" as first 3 elements in this order from which the sepcific folder name is created by pasting with underscore e.g. "165_myCollection_2019-11-27 15:20:40"
-# this data object is created at output$more_details_topic_table selecting the selected row from values$tasks_tm (which is a matrix like described above but with multiple entries for all results) created by output$Topic_Results in the value "data_finished"
-# this is used as a work around to not refactor all existing code but to also get parameters from RData object using the given data produced with the existing code before.
-# it is necessary to get parameters from RData object because Structural Topic Models have many additional parameters than used before. The storage of these parameters in the database would lots of additional code work and it is planned to read them from RData in the furture and skip storage of parameters in database 
+#' getSpecificResultFolderNameFromSelectedTopic
+#' data is a matrix having columns "task id", "collection" and "creation time" as first 3 elements in this order from which the sepcific folder name is created by pasting with underscore e.g. "165_myCollection_2019-11-27 15:20:40"
+#' this data object is created at output$more_details_topic_table selecting the selected row from values$tasks_tm (which is a matrix like described above but with multiple entries for all results) created by output$Topic_Results in the value "data_finished"
+#' this is used as a work around to not refactor all existing code but to also get parameters from RData object using the given data produced with the existing code before.
+#' it is necessary to get parameters from RData object because Structural Topic Models have many additional parameters than used before. The storage of these parameters in the database would lots of additional code work and it is planned to read them from RData in the furture and skip storage of parameters in database 
+#' @param data
+#' 
+#' @return specificResultFolderName
+#' 
+#' @export
+#' @example 
 getSpecificResultFolderNameFromSelectedTopic <- function(data){
   specificResultFolderName <- paste(data[1],data[2],data[3], sep = "_")
   
@@ -1444,7 +1522,13 @@ getSpecificResultFolderNameFromSelectedTopic <- function(data){
 }
 
 
-# convenience function to get available distinct values even if column contains multiple values separated by separator
+#' getAvailableValues
+#' convenience function to get available distinct values even if column contains multiple values separated by separator
+#' @param dataToUse
+#' @param columnName
+#' @param columnContainsMultipleValues
+#' 
+#' @return collected result values
 getAvailableValues <- function(dataToUse, columnName, columnContainsMultipleValues = F, separator = ",", replaceNullWith = NULL, replaceNAWith = NA, replaceEmptyWith =""){
   if(!columnContainsMultipleValues){
     result <- unique(dataToUse[[columnName]])
@@ -1461,6 +1545,16 @@ getAvailableValues <- function(dataToUse, columnName, columnContainsMultipleValu
   return (result)
 }
 
+#' getAvailableValuesForGivenColumns
+#' @param dataToUse
+#' @param columnNames
+#' @param columnNamesContainingMultiValues
+#' @param separatorsToUseForColumnsWithMultivalues
+#' 
+#' @result available valuse for given columns 
+#' 
+#' @export
+#' @example 
 getAvailableValuesForGivenColumns <- function(dataToUse, columnNames, columnNamesContainingMultiValues, separatorsToUseForColumnsWithMultivalues){
   result <- vector("list", length(columnNames))
   names(result) <- columnNames
@@ -1686,7 +1780,12 @@ filterDataBasedOnInputFilterFields <- function(dataToFilter,columnNamesOfDataToF
   return (result)
 }
 
-#create select input lists
+#'create select input lists for columns and values
+#'@param fieldNamesToUse
+#'@param fieldNamesWithValues
+#'@param prefixForUniqueIdentificationUsedForInputId
+#'
+#'@result selectionInputList 
 createSelectInputsForColumnsAndValues <- function(fieldNamesToUse, fieldNamesWithValues,prefixForUniqueIdentificationUsedForInputId){
   availableFieldNames <- fieldNamesToUse
   selectionInputList <- list(length(availableFieldNames))
@@ -1698,6 +1797,21 @@ createSelectInputsForColumnsAndValues <- function(fieldNamesToUse, fieldNamesWit
   return(selectionInputList)
 }
 
+
+#' calcStatsGeocodingResult 
+#' @param geocodingResultData
+#' @param columnsToCalcDistributuins
+#' @param availableValues
+#' @param includeValuesNotUsedForDistribution
+#' @param separatorsForMultiValues
+#' @param nameEmptyStringInStatsAs
+#' @param columnsToUseForNumericStats
+#' 
+#' @result list of important stats
+#' 
+#' @export
+#' @example
+#' 
 calcStatsGeocodingResult <- function(geocodingResultData, columnsToCalcDistributions,availableValues,includeValuesNotUsedForDistribution, columnsWithMultiValues, separatorsForMultiValues, nameEmptyStringInStatsAs, columnsToUseForNumericStats){
   stats <- list()
   dataForStats <- geocodingResultData
@@ -1709,6 +1823,17 @@ calcStatsGeocodingResult <- function(geocodingResultData, columnsToCalcDistribut
   return(stats)
 }
 
+#' calcStatsMetaData
+#' @param metaData
+#' @param columnsToCalcDistributions
+#' @param availableValues
+#' @param includeValuesNotUsedForDistribution
+#' @param columnsWithMultiValues
+#' @param separatorsForMultiValues
+#' @param nameEmptyStringInStatsAs
+#' @param columnsToUseForNumericStats
+#' 
+#' @results stats for meta data
 calcStatsMetaData <- function(metaData, columnsToCalcDistributions,availableValues,includeValuesNotUsedForDistribution, columnsWithMultiValues, separatorsForMultiValues, nameEmptyStringInStatsAs, columnsToUseForNumericStats){
   stats <- list()
   dataForStats <- metaData
@@ -1718,6 +1843,20 @@ calcStatsMetaData <- function(metaData, columnsToCalcDistributions,availableValu
   return(stats)
 }
 
+#' calcStatsGeneralData
+#' @param inputData
+#' @param columnsToCalcDistributions
+#' @param availableValues 
+#' @param includeValuesNotUsedForDistribution
+#' @param columnsWithMultiValues
+#' @param separatorsForMultiValues
+#' @param nameEmptyStringInStatsAs
+#' @param columnsToUseForNumericStats
+#' 
+#' @result stats for general data
+#' 
+#' @export
+#' @example 
 calcStatsGeneralData <- function(inputData,  columnsToCalcDistributions,availableValues,includeValuesNotUsedForDistribution, columnsWithMultiValues, separatorsForMultiValues, nameEmptyStringInStatsAs, columnsToUseForNumericStats ){
   stats <- list()
   dataForStats <- inputData
@@ -1727,6 +1866,29 @@ calcStatsGeneralData <- function(inputData,  columnsToCalcDistributions,availabl
   return(stats)
 }
 
+#' calcStatsPerMapPoint
+#' @param geocodingResultReducedToPointData
+#' @param geocodingResult_columnsToCalcDistributions
+#' @param geocodingResult_availableValues
+#' @param geocodingResult_columnsWithMultiValues
+#' @param geocodingResult_separatorsForMultiValues
+#' @param geocodingResult_nameEmptyStringInStatsAs
+#' @param geocodingResult_columnsToCalcNumericInfos
+#' @param geocodingResult_includeValuesNotUsed
+#' @param metaDataReducedToPointData
+#' @param metaData_columnsToCalcDistributions
+#' @param metaData_availableValues
+#' @param metaData_columnsWithMultiValues
+#' @param metaData_separatorsForMultiValues
+#' @param metaData_nameEmptyStringInStatsAs
+#' @param metaData_columnsToCalcNumericInfos
+#' @param metaData_includeValuesNotUsed
+#' @param metaData_columnNameForMatchWithOtherData
+#' 
+#' @result stats per Map-Points
+#' 
+#' @export
+#' @examples
 calcStatsPerMapPoint <- function(geocodingResultReducedToPointData, 
                                  geocodingResult_columnsToCalcDistributions, 
                                  geocodingResult_availableValues, 
@@ -1769,6 +1931,11 @@ calcStatsPerMapPoint <- function(geocodingResultReducedToPointData,
   return(stats)
 }
 
+#' crearePlotsForDistributionData
+#' @param statsDistributionData
+#' @param sortByValueDesc
+#' 
+#' @return subplot of final plots for distribution data
 createPlotsForDistributionData <- function(statsDistributionData, sortByValueDesc){
     
     finalPlots <- list()
@@ -1791,7 +1958,12 @@ createPlotsForDistributionData <- function(statsDistributionData, sortByValueDes
 
 
 
-
+#' remove_locations
+#' @param token
+#' 
+#' @result 
+#' @export
+#' @example
 remove_locations<-function(token){
   locations<-readtext::readtext(file = "officialnamesofcountries.pdf")$text
   locations<-substr(x = locations,start=58,stop = nchar(locations))
