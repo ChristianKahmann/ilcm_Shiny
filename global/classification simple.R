@@ -8,14 +8,14 @@ annotatedDTM <- quanteda::as.dfm(dtm[gold_table[,1], ])
 annotatedDTM <- convertMatrixToSparseM(annotatedDTM)
 annotatedLabels <- gold_table[,2]
 
-# split into training and test set
+#' split into training and test set
 selector_idx <- rep(c(rep(TRUE, 4), FALSE), length.out = nrow(gold_table))
 trainingDTM <- annotatedDTM[selector_idx, ]
 trainingLabels <- annotatedLabels[selector_idx]
 testDTM <- annotatedDTM[!selector_idx, ]
 testLabels <- annotatedLabels[!selector_idx]
 
-# create LR classification model
+#' create LR classification model
 model <- LiblineaR(trainingDTM, trainingLabels)
 summary(model)
 
@@ -29,7 +29,15 @@ print(accuracy)
 
 F.measure(predictedLabels, testLabels, positiveClassName = "Handball")
 
-
+#' get_k_fold_logical_indexes
+#' @param j
+#' @param k
+#' @param n
+#' 
+#' @return folder with logical indexes (fold_lidx)
+#' 
+#' @export
+#' @example get_k_fold_logical_indexes(1, k = 10, n = 12)
 get_k_fold_logical_indexes <- function(j, k, n) {
   if (j > k) stop("Cannot select fold larger than nFolds")
   fold_lidx <- rep(FALSE, k)
@@ -38,7 +46,7 @@ get_k_fold_logical_indexes <- function(j, k, n) {
   return(fold_lidx)
 }
 
-# Example usage
+#' Example usage
 get_k_fold_logical_indexes(1, k = 10, n = 12)
 
 

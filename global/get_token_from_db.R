@@ -1,3 +1,14 @@
+#' get_token_from_db
+#' @param dataset
+#' @param doc_ids
+#' @param sentence_ids
+#' @param host
+#' @param port
+#' 
+#' @return token from data base
+#' 
+#' @export
+#' @example 
 get_token_from_db<-function(dataset=NULL,doc_ids=NULL,sentence_ids=NULL,host=NULL,port=NULL){
   if(!is.null(sentence_ids)){
     if(length(sentence_ids)!=length(doc_ids)){

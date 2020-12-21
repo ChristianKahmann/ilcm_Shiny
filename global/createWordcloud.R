@@ -4,7 +4,10 @@ library(memoise)
 
 # The list of valid books
 
-# Using "memoise" to automatically cache the results
+#' Using "memoise" to automatically cache the results
+#' getTermMatrix
+#' @param text
+#' 
 getTermMatrix <- memoise(function(text) {
 
   

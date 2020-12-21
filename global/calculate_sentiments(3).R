@@ -1,17 +1,17 @@
-#laden der deutschen Listen
+#' load the german lists
 SWS_neg <- read.delim("SentiWS_v1.8c_Negative.txt", header=FALSE, stringsAsFactors=FALSE)
 SWS_pos <- read.delim("SentiWS_v1.8c_Positive.txt", header=FALSE, stringsAsFactors=FALSE)
-#laden der engliśchen Listen
+#' load english lists
 senti_eng <- read.delim("AFINN-111.txt", header=FALSE, stringsAsFactors=FALSE)
 senti_eng[,2]<-senti_eng[,2]/5
 senti_pos<-senti_eng[which(senti_eng[,2]>0),]
 senti_neg<-senti_eng[which(senti_eng[,2]<0),]
 
 
-#Pos tag information entfernen
+#' delete POS-tag information
 SWS_neg[,1]<-stringr::str_replace_all(string = SWS_neg[,1],pattern = "\\|[A-Za-z]+",replacement = "")
 SWS_pos[,1]<-stringr::str_replace_all(string = SWS_pos[,1],pattern = "\\|[A-Za-z]+",replacement = "")
-#prepare sentiWS data for sentiment_score function
+#' prepare sentiWS data for sentiment_score function
 for(i in 1:dim(SWS_neg)[1]){
   Flektionen<-as.character(SWS_neg[i,3])
   if(nchar(Flektionen)>0){
@@ -37,7 +37,7 @@ for(i in 1:dim(SWS_pos)[1]){
 }
 SWS_pos<-SWS_pos[,1:2]
 
-#hilfsvariablen löschen
+#' variable needed for deleting elements
 rm(add_matrix)
 rm(Worte)
 rm(Flektionen)
@@ -68,7 +68,7 @@ calcuate_sentiment_score(text = text2,pos_dict = SWS_pos,neg_dict = SWS_neg)
 
 
 
-#bezüglich des datums aufsplitten
+#' splt elements depending on dates
 
 dates<-substring(as.character(meta[,"date"]),1,7)
 unique_dates<-unique(dates)

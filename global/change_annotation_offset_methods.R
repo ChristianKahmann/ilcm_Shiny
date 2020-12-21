@@ -1,3 +1,11 @@
+#' transform_word_offset_to_character_offset
+#' @param token
+#' @param annotations
+#' 
+#' @return annotations
+#' 
+#' @export
+#' @example 
 transform_word_offset_to_character_offset <- function(token, annotations){
   # convert word annotations to character annotations
   for(i in 1:nrow(annotations)){
@@ -9,7 +17,14 @@ transform_word_offset_to_character_offset <- function(token, annotations){
 }
 
 
-
+#' tranform_character_offset_to_word_offset
+#' @param token
+#' @param annotations
+#' 
+#' @return annotations
+#' 
+#' @export
+#' @example 
 transform_character_offset_to_word_offset <- function(token, annotations){
   # convert character annotations to word annotations
   for( i in 1:nrow(annotations)){

@@ -1,3 +1,9 @@
+#' DF_to_Dict
+#' @param DF
+#' 
+#' @return 
+#' @export
+#' @example 
 DF_to_Dict<-function(DF){
   Dict<-list()
   for(i in 1:dim(DF)[2]){
@@ -6,6 +12,13 @@ DF_to_Dict<-function(DF){
   Dict<-quanteda::dictionary(x = Dict,tolower=T)
 }
 
+#' Dict_to_DF
+#' @param Dict
+#' 
+#' @return DF (dataframe)
+#' 
+#' @export
+#' @example 
 Dict_to_DF<-function(Dict){
   DF<-t(plyr::ldply(Dict,rbind))
   colnames(DF)<-DF[1,]

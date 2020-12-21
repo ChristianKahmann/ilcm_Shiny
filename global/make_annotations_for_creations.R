@@ -1,5 +1,13 @@
 
-
+#' operateOnAnnotationSystem 
+#' @param parent_id
+#' @param annotation_system
+#' @param operation
+#' @param updateElement
+#' 
+#' @return
+#' @export
+#' @example 
 operateOnAnnotationSystem <- function(parent_id = NULL, annotation_system = NULL, operation = "add", updateElement = NULL)
 {
   #If there is no parent id we assume to add a category to the upper level
@@ -73,6 +81,13 @@ operateOnAnnotationSystem <- function(parent_id = NULL, annotation_system = NULL
   annotation_system
 }
 
+#' addCategory
+#' @param edit_list
+#' 
+#' @return edit_list of categories
+#' 
+#' @export
+#' @example
 addCategory <- function(edit_list){
   tmp <- list()
   tmp[[stringi::stri_rand_strings(1, 5, '[A-Z0-9]')]] <- list(
@@ -85,6 +100,11 @@ addCategory <- function(edit_list){
   return(edit_list)
 }
 
+#' persistEdit
+#' @param listEntry
+#' @param updateEntry
+#' 
+#' @return updated listEntry
 persistEdit <- function(listEntry, updateEntry){
   
   listEntry$name <- updateEntry$name
@@ -95,7 +115,15 @@ persistEdit <- function(listEntry, updateEntry){
   return(listEntry)
 }
 
-
+#' getElementsForEntry_creation
+#' @param annotations
+#' @param level
+#' @param edit_id
+#' 
+#' @return new_div (presentation of element list after new entry was insert)
+#' 
+#' @export
+#' @example 
 getElementsForEntry_creation <- function(annotations, level, edit_id = NULL) {
   
   gray_out_class <- ""
@@ -171,6 +199,16 @@ getElementsForEntry_creation <- function(annotations, level, edit_id = NULL) {
   })
 }
 
+#' editElements 
+#' @param category_name
+#' @param id
+#' @param color
+#' @param isDocument
+#' @param description
+#' 
+#' @return 
+#' @export
+#' @example
 editElements <- function(category_name, id, color, isDocument, description)
 {
   elements <- tagList(
@@ -184,6 +222,13 @@ editElements <- function(category_name, id, color, isDocument, description)
   )
 }
 
+#' annotateTextComponent_div_for_creation
+#' @param edit_id
+#' 
+#' @return annotation
+#' 
+#' @export
+#' @example 
 annotateTextComponent_div_for_creation <- function(edit_id = NULL) {
   
   elements <- getElementsForEntry_creation(anno, 1,edit_id = edit_id)

@@ -1,4 +1,8 @@
-
+#' scalecolors
+#' @param nodes
+#' @param palette
+#' 
+#' 
 scalecolors <- function(nodes, palette) {
   n <- max(unique(nodes$group))
   cols <- rev(RColorBrewer::brewer.pal(n, palette))
@@ -6,9 +10,16 @@ scalecolors <- function(nodes, palette) {
   networkD3::JS(paste0('d3.scaleOrdinal().domain([0,', n, ']).range([', cols, '])'))
 }
 
+#' coocsChart
+#' @param nodes
+#' @param links
+#' @param charge
+#' 
+#' @return r1 (Network from calculated cooccurrences)
+#' 
+#' @export
+#' @example 
 coocsChart <- function(nodes,links,charge){
-  
-  
   g <- igraph::graph_from_data_frame(links, directed = FALSE, vertices = NULL)
   names(igraph::edge_attr(g))[which(names(igraph::edge_attr(g)) == "value")] <- "weight"
   b <- igraph::betweenness(g, v = igraph::V(g), directed = F, #weights = NULL,

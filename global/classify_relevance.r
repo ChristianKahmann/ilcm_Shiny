@@ -13,7 +13,7 @@ source("global/classification_model.R")
 source("global/TextProcessingBackend.R")
 source("global/TextObjectWrapper.R")
 
-#Diese Funktion liest Daten ein und konvertiert diese in ein Tibble basiertes Darstellungsformat
+#' read data and convert it to tibble based format
 readData <- function() {
   if (!file.exists("sources.Rdata")) {
     

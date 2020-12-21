@@ -1,4 +1,9 @@
-
+#' calenderChart
+#' @param dates
+#' 
+#' @return 
+#' @export
+#' @example 
 calendarChart <- function(dates){
   #dat <- read.csv('http://t.co/mN2RgcyQFc')[,c('date', 'pts')]
   dat2 <- transform(dates, date = (as.Date(date)))

@@ -3,7 +3,10 @@ minhash <- minhash_generator(n = 240, seed = 3552)
 
 minhash("das ist ein toller Satz2")
 
-
+#' dokumente
+#' 
+#' @param x
+#' document deduplication with minihash and locality-sensitive hashing
 dokumente<-lapply(unique(token[,2]),FUN = function(x){
   paste(token[which(token[,2]==x),5],collapse=" ")
 }

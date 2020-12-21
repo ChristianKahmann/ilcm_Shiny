@@ -3,16 +3,16 @@ library(tmca.unsupervised)
 load(file="/home/christian/R/reuters3000speedtestset.rdata")
 
 
-#Number Of Rund to avarage on
+#' Number Of Rund to avarage on
 runs = 5
 
-#Create the data frame
+#' Create the data frame
 header = list(expr = 0., min = 0., lq = 0., mean = 0., median = 0., uq = 0., max = 0. , neval = 0.)
 evaluation = data.frame(header)
 attr(evaluation, "Units") = "seconds"
 
 
-# Speed test every registered algorithm.
+#' Speed test every registered algorithm.
 for (funcname in names(tmca.unsupervised::register)){
   t <- tmodel$new(method = funcname)
   t$.__enclos_env__$private$silent = T

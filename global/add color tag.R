@@ -1,15 +1,34 @@
+#' add_colortag
+#' @param text
+#' @param color
+#' 
+#' @return marked_text
+#' 
+#' @export
+#' @example 
 add_colortag<-function(text,color){
   marked_text<-paste("<u style='color:",color,"'>",text,"</u>",sep = "")
   return(marked_text)  
 }
 
+#' add_marktag
+#' @param text
+#' 
+#' @return marker tag-name
+#' 
+#' @export
+#' @example 
 add_marktag<-function(text){
   return(paste("<mark>",text,"</mark>",sep = ""))
 }
 
 
 
-
+#' add_Entitytag
+#' @param text
+#' @param tag
+#' 
+#' @return highlighted entities 
 add_Entitytag<-function(text,tag){
   return(paste0("<span style='background-color:#7FDBFF;'>",text,"</span>"))
 }
@@ -17,7 +36,13 @@ add_Entitytag<-function(text,tag){
 
 
 
-
+#' add_Entitytag_alt
+#' @param text
+#' @param tag
+#' 
+#' @return 
+#' @export
+#' @example  
 add_Entitytag_alt<-function(text,tag){
   switch(tag,
          PERSON={return(paste0("<span style='background-color:#7FDBFF;'>",text,"</span>"))
@@ -57,6 +82,15 @@ add_Entitytag_alt<-function(text,tag){
   )
 }
 
+#' add_tags
+#' @param x
+#' @param annos
+#' @param pos
+#' @param ner
+#' @param space
+#' @param anno_highlight
+#' 
+#' @return x (visualization of annotations)
 add_tags<-function(x,annos,pos,ner,space,anno_highlight){
   count=0
   if(dim(annos)[1]>0){

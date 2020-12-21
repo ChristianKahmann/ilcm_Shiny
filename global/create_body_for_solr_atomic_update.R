@@ -1,4 +1,11 @@
-
+#' create_body_solr_update_set
+#' @param ids
+#' @param field_name
+#' @param values
+#' 
+#' @return 
+#' @export
+#' @example 
 create_body_solr_update_set<-function(ids,field_name,values){
   body<-"["
   body<-paste0(body,'{"id":"',ids[1],'","',field_name,'":{"set":"',values[1],'"}}')
@@ -9,7 +16,14 @@ create_body_solr_update_set<-function(ids,field_name,values){
   body<-paste0(body,"]") 
 }
 
-
+#' create_body_solr_update_add
+#' @param ids
+#' @param field_name
+#' @param values
+#' 
+#' @return 
+#' @export
+#' @example 
 create_body_solr_update_add<-function(ids,field_name,values){
   body<-"["
   body<-paste0(body,'{"id":"',ids[1],'","',field_name,'":{"add":"',values[1],'"}}')
@@ -20,6 +34,14 @@ create_body_solr_update_add<-function(ids,field_name,values){
   body<-paste0(body,"]") 
 }
 
+#' create_body_solr_update_remove
+#' @param ids
+#' @param field_name
+#' @param values
+#' 
+#' @return 
+#' @export
+#' @example 
 create_body_solr_update_remove<-function(ids,field_name,values){
   body<-"["
   body<-paste0(body,'{"id":"',ids[1],'","',field_name,'":{"remove":"',values[1],'"}}')

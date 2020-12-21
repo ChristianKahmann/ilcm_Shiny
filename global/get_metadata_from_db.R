@@ -1,3 +1,13 @@
+#' get_metadata_from_db
+#' @param dataset
+#' @param doc_ids
+#' @param host
+#' @param port
+#' 
+#' @return meta data
+#' 
+#' @export
+#' @example 
 get_metadata_from_db<-function(dataset=NULL,doc_ids=NULL,host=NULL,port=NULL){
   if(length(dataset>1)){
     if(length(dataset)!=length(doc_ids)){

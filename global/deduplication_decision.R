@@ -1,3 +1,11 @@
+#' decide_which_document_to_delete
+#' @param pair
+#' @param strategy
+#' 
+#' @return id_del (id of element you wish to delete)
+#' 
+#' @export
+#' @example 
 decide_which_document_to_delete<-function(pair,strategy){
   if(strategy=="latest"){
     if(pair[,"date_a"]>pair[,"date_b"]){

@@ -1,3 +1,8 @@
+#' addaplha (for color scaling)
+#' @param colors
+#' @param alpha
+#' 
+#' @return rgb(r[1,], r[2,], r[3,], r[4,])
 addalpha <- function(colors, alpha=1.0) {
   r <- col2rgb(colors, alpha=T)
   # Apply alpha
@@ -6,7 +11,12 @@ addalpha <- function(colors, alpha=1.0) {
   return(rgb(r[1,], r[2,], r[3,], r[4,]))
 }
 
-# colorRampPaletteAlpha()
+#' colorRampPaletteAlpha 
+#' @param colors
+#' @param n
+#' @param interpolate
+#' 
+#' @return cr (updated colorRamp)
 colorRampPaletteAlpha <- function(colors, n=32, interpolate='linear') {
   # Create the color ramp normally
   cr <- colorRampPalette(colors, interpolate=interpolate)(n)

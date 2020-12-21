@@ -1196,7 +1196,7 @@ cmodel <- R6Class(
 
 
 
-# A 'static' environment function to print out the registered function names
+#' A 'static' environment function to print out the registered function names
 # [ToDo]: Perhaps a Description for each name?
 #
 cmodel$list_methods <- function() {

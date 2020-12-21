@@ -1,3 +1,11 @@
+#' get_quantile_belonging
+#' @param all_data
+#' @param sample
+#' 
+#' @return sample
+#' 
+#' @export
+#' @example 
 get_quantile_belonging<-function(all_data,sample){
   quantiles<-quantile(as.numeric(all_data),na.rm = T)
   sample<-as.numeric(sample)

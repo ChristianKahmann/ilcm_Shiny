@@ -1,4 +1,14 @@
-
+#' ccoocs
+#' @param binDTM
+#' @param measure
+#' @param significanceThreshold
+#' @param minCoocFreq
+#' @param cores
+#' 
+#' switching between different measurements
+#'
+#' @return cooccurrence matrix (final signigicance matrix)
+#' 
 ccoocs <- function(binDTM, measure = "DICE", significanceThreshold = 1.0, minCoocFreq = 1,cores=3) {
   
   #if(class(binDTM)[1] != "dgCMatrix") stop("DTM must be \"dsCMatrix\" of package \"Matrix\".")
