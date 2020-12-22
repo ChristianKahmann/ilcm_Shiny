@@ -1,3 +1,12 @@
+#' shinyInput_checkbox
+#' @param FUN
+#' @param len
+#' @param id
+#' @param values
+#' 
+#' @return 
+#' @export
+#' @example 
 shinyInput_checkbox = function(FUN, len, id, values,...) { 
   inputs = character(len) 
   for (i in seq_len(len)) { 
@@ -6,7 +15,11 @@ shinyInput_checkbox = function(FUN, len, id, values,...) {
   inputs 
 } 
 
-
+#' shinyInput_checkbox_Doc
+#' @param FUN
+#' @param len
+#' @param id
+#' @param values
 shinyInput_checkbox_Doc = function(FUN, len, id, values,...) { 
   inputs = character(len) 
   for (i in seq_len(len)) { 
@@ -15,7 +28,13 @@ shinyInput_checkbox_Doc = function(FUN, len, id, values,...) {
   inputs 
 } 
 
-
+#' shinyValue
+#' @param id
+#' @param len
+#' 
+#' @return 
+#' @export
+#' @example 
 shinyValue = function(id, len) { 
   unlist(lapply(seq_len(len), function(i) { 
     value = input[[paste0(id, i)]] 
@@ -25,6 +44,16 @@ shinyValue = function(id, len) {
   )
 }
 
+#' shinyInput_material
+#' @param FUN
+#' @param len
+#' @param id
+#' @param values 
+#' @param status
+#' 
+#' @return 
+#' @export
+#' @example 
 shinyInput_material = function(FUN, len, id, values,status,...) { 
   inputs = character(len) 
   for (i in seq_len(len)) { 

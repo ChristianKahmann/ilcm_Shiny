@@ -1,3 +1,13 @@
+#' rBind_huge
+#' @param x (matrix)
+#' @param y (matrix)
+#' @param fill
+#' @param out.class
+#' 
+#' @return result (matching rows from matrix x and y)
+#' 
+#' @export
+#' @example 
 rBind_huge<-function(x,y,fill=NULL,out.class=class(x))
 {
   out.class<-force(out.class)
@@ -43,7 +53,17 @@ rBind_huge<-function(x,y,fill=NULL,out.class=class(x))
   return(result)
 }
 
-
+#' rsparsematrix_huge
+#' @param nrow
+#' @param ncol
+#' @param density
+#' @param nnz
+#' @param symmetric
+#' @param rand.x
+#' 
+#' @return 
+#' @export
+#' @example 
 rsparsematrix_huge<-function (nrow, ncol, density, nnz = round(density * maxE), symmetric = FALSE, 
           rand.x = function(n) signif(rnorm(n), 2), ...) 
 {

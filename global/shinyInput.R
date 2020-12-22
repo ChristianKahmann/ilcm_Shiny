@@ -1,3 +1,11 @@
+#' shinyInput
+#' @param FUN
+#' @param len
+#' @param id
+#' 
+#' @return 
+#' @export
+#' @example 
 shinyInput <- function(FUN, len, id, ...) {
   inputs <- character(len)
   for (i in seq_len(len)) {
@@ -6,7 +14,14 @@ shinyInput <- function(FUN, len, id, ...) {
   inputs
 }
 
-
+#' shinyInput_big
+#' @param FUN
+#' @param len
+#' @param id
+#' 
+#' @return 
+#' @export
+#' @example 
 shinyInput_big <- function(FUN, len, id, ...) {
   inputs <- character(len)
   inputs[1]<-as.character(FUN(paste0(id, 1), ...))

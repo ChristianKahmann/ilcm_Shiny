@@ -1,4 +1,10 @@
-
+#' match_language_udpipe
+#' @param lang_abbr
+#' 
+#' @return lang (selected language)
+#' 
+#' @export
+#' @example 
 match_language_udpipe<-function(lang_abbr){
   if(lang_abbr=="de"){
     lang<-"german"

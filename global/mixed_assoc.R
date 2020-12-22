@@ -1,4 +1,11 @@
-
+#' mixed_assoc
+#' @param df
+#' @param cor_method
+#' @param adjust_cramersv_bias
+#' 
+#' @return 
+#' @export
+#' @example 
 mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
   library(tidyverse)
   library(rcompanion)

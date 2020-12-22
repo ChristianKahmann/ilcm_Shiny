@@ -1,5 +1,11 @@
-
-
+#' make_ready_for_hist
+#' @param counts
+#' @param breaks
+#' 
+#' @return result
+#' 
+#' @export
+#' @example 
 make_ready_for_hist<-function(counts,breaks){
   result<-list()
   erg<-list()

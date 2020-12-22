@@ -1,3 +1,9 @@
+#' remove_existing_checkboxes
+#' @param ids
+#' 
+#' @return 
+#' @export
+#' @example 
 remove_existing_checkboxes<-function(ids){
   for(i in ids){
     shiny::removeUI(immediate = T,selector = paste0("div#dcbox_",i))

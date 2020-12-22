@@ -1,3 +1,7 @@
+#' numberOfDays
+#' @param date
+#' 
+#' @return number of dates (integer)
 numberOfDays <- function(date) {
   m <- format(date, format="%m")
   

@@ -1,9 +1,18 @@
+#' log_to_file
+#' @param message
+#' @param file
+#' 
 log_to_file<-function(message,file){
   message<-paste(Sys.time(),message,sep = ": ")
   write(message,file = file,append = T)
 }
 
-
+#' write_metadata_to_database
+#' @param parameters
+#' @param host
+#' @param port
+#' 
+#' @return 
 write_metadata_to_database<-function(parameters,host,port){
   entry_for_db<-data.frame(matrix(c(NA),1,70))
   if(!is.null(parameters$id)){
@@ -304,6 +313,10 @@ write_metadata_to_database<-function(parameters,host,port){
 # it seems that a matrix is required listing the taskIds and the collection names, however a metadata<-matrix(metadata,ncol=3) is performed meaning 3 columns though only the first 2 are used?
 # additionally this function doesn't seem to be at the correct place (logtofile.R)
 # further question: why are the parameters retrieved from database, they are also stored in collections/results/ For getting other things like the calculation result or metadata this folder is used and not the database. Why is it different here?
+#' get_parameters_from_database 
+#' @param metadata
+#' 
+#' @return unique parameters from database
 get_parameters_from_database<-function(metadata){
   source("config_file.R")
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
@@ -325,7 +338,10 @@ get_parameters_from_database<-function(metadata){
   }
 }
 
-
+#' replace_TRUE_FALSE
+#'  @param dt
+#'  
+#'  @return dt with TRUE-FALSE pattern
 replace_TRUE_FALSE<-function(dt){
   for(i in 1:dim(dt)[2]){
     dt[,i]<- stringr::str_replace_all(string =dt[,i] ,pattern = "TRUE",replacement =  as.character(shiny::icon("check",class = "check")))

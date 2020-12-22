@@ -1,4 +1,16 @@
-
+#' getElementsForEntry
+#' @param annotations
+#' @param level
+#' @param edit_id
+#' 
+#' @return new_div depending of:
+#' div:
+#'       class
+#'       id
+#'       content
+#'       style
+#' @export
+#' @example 
 getElementsForEntry <- function(annotations, level,edit_id = NULL) {
   gray_out_class <- ""
   
@@ -56,6 +68,13 @@ getElementsForEntry <- function(annotations, level,edit_id = NULL) {
   })
 }
 
+#' annotateTextComponent_div
+#' @param anno
+#' 
+#' @return annotations
+#' 
+#' @export
+#' @example 
 annotateTextComponent_div <- function(anno) {
   
   elements <- getElementsForEntry(anno, 1)
@@ -248,7 +267,14 @@ background: rgb(106, 156, 237) !important; /* make this whatever you want */
   return(annotation)
 }
 
-
+#' annotateTextComponent_div2
+#' 
+#' @param anno
+#' 
+#' @return annotations
+#' 
+#' @export
+#' @example 
 annotateTextComponent_div2 <- function(anno) {
  
     elements <- getElementsForEntry(anno, 1)
@@ -439,7 +465,13 @@ background: rgb(106, 156, 237) !important; /* make this whatever you want */
 }
 
 
-
+#' annotateTextComponent_div3
+#' @param anno
+#' 
+#' @result annotations
+#' 
+#' @export
+#' @example 
 annotateTextComponent_div3 <- function(anno) {
  
   elements <- getElementsForEntry(anno, 1)
@@ -631,7 +663,15 @@ background: rgb(106, 156, 237) !important; /* make this whatever you want */
 
 
 
-
+#' annotateTextComponent
+#' 
+#' @return tagList depending of
+#' list
+#'         script (tag-script)
+#'         document (html-document)
+#'         
+#'@export
+#'@example
 annotateTextComponent <- function() {
   script <- "
   
@@ -715,7 +755,15 @@ annotateTextComponent <- function() {
 }
 
 
-
+#' annotateTextComponent2
+#' 
+#' @return tagList 
+#' list
+#'         script (tag-script)
+#'         document (html-document)
+#'
+#' @export
+#' @example 
 annotateTextComponent2 <- function() {
   script <- "
   
@@ -800,7 +848,12 @@ annotateTextComponent2 <- function() {
 
 
 
-
+#' annotateTextComponent3
+#' 
+#' @return tagList
+#' list
+#'         script (tag-script)
+#'         anno-document (annotation document)
 annotateTextComponent3 <- function() {
   script <- "
   

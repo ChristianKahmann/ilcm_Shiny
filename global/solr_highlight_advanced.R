@@ -1,3 +1,53 @@
+#' highlight
+#' @param q
+#' @param  hl.fl
+#' @param  hl.snippets
+#' @param  hl.fragsize 
+#' @param  hl.q
+#' @param  hl.mergeContiguous
+#' @param  hl.requireFieldMatch
+#' @param  hl.maxAnalyzedChars 
+#' @param  hl.alternateField
+#' @param  hl.maxAlternateFieldLength
+#' @param  hl.preserveMulti 
+#' @param  hl.maxMultiValuedToExamine
+#' @param  hl.maxMultiValuedToMatch 
+#' @param  hl.formatter 
+#' @param  hl.simple.pre 
+#' @param  hl.simple.post 
+#' @param  hl.fragmenter 
+#' @param  hl.fragListBuilder 
+#' @param  hl.fragmentsBuilder
+#' @param  hl.boundaryScanner 
+#' @param  hl.bs.maxScan 
+#' @param  hl.bs.chars 
+#' @param  hl.bs.type 
+#' @param  hl.bs.language
+#' @param  hl.bs.country 
+#' @param  hl.useFastVectorHighlighter
+#' @param  hl.usePhraseHighlighter 
+#' @param  hl.highlightMultiTerm
+#' @param  hl.regex.slop 
+#' @param  hl.regex.pattern 
+#' @param  hl.regex.maxAnalyzedChars 
+#' @param  start 
+#' @param  rows 
+#' @param  wt 
+#' @param  raw 
+#' @param  key
+#' @param  base 
+#' @param  callopts 
+#' @param  fl 
+#' @param  fq 
+#' @param  parsetype 
+#' @param  verbose 
+#' @param  sort
+#' @param  facet.field 
+#' 
+#' @return highlighted text or output and parsed text
+#' 
+#' @export
+#' @example 
 highlight<-function (q, hl.fl = NULL, hl.snippets = NULL, hl.fragsize = NULL, 
                      hl.q = NULL, hl.mergeContiguous = NULL, hl.requireFieldMatch = NULL, 
                      hl.maxAnalyzedChars = NULL, hl.alternateField = NULL, hl.maxAlternateFieldLength = NULL, 
@@ -52,7 +102,44 @@ highlight<-function (q, hl.fl = NULL, hl.snippets = NULL, hl.fragsize = NULL,
 
 
 
-
+#' facet_date
+#' @param q 
+#' @param fq
+#' @param facet.query 
+#' @param facet.field 
+#' @param facet.prefix 
+#' @param facet.sort 
+#' @param facet.limit 
+#' @param facet.offset 
+#' @param facet.mincount 
+#' @param facet.missing 
+#' @param facet.method 
+#' @param facet.enum.cache.minDf 
+#' @param facet.threads 
+#' @param facet.date 
+#' @param facet.date.start 
+#' @param facet.date.end 
+#' @param facet.date.gap 
+#' @param facet.date.hardend  
+#' @param facet.date.other 
+#' @param facet.date.include 
+#' @param facet.range
+#' @param facet.range.start 
+#' @param facet.range.end 
+#' @param facet.range.gap
+#' @param facet.range.hardend 
+#' @param facet.range.other 
+#' @param facet.range.include 
+#' @param key 
+#' @param base 
+#' @param wt 
+#' @param raw 
+#' @param callopts 
+#' @param fl
+#' @param facet
+#' @param verbose 
+#' 
+#' @return facet date in text format
 facet_date<-function (q = "*:*", fq=NULL,facet.query = NA, facet.field = NA, facet.prefix = NA, 
           facet.sort = NA, facet.limit = NA, facet.offset = NA, facet.mincount = NA, 
           facet.missing = NA, facet.method = NA, facet.enum.cache.minDf = NA, 
@@ -86,6 +173,12 @@ facet_date<-function (q = "*:*", fq=NULL,facet.query = NA, facet.field = NA, fac
   }
 }
 
+#' makemultiargs
+#' @param x
+#' 
+#' @return 
+#' @export
+#' @example 
 makemultiargs <- function(x){
   value <- get(x, envir = parent.frame(n = 2))
   if( length(value) == 0 ){ NULL } else {
@@ -99,7 +192,12 @@ makemultiargs <- function(x){
   }
 }
 
-
+#' collectargs 
+#' @param x
+#' 
+#' @return 
+#' @export
+#' @example 
 collectargs <- function(x){
   outlist <- list()
   for(i in seq_along(x)){
@@ -108,7 +206,47 @@ collectargs <- function(x){
   as.list(unlist(plyr::compact(outlist)))
 }
 
-
+#' facet_meta 
+#' @param q 
+#' @param fq
+#' @param facet.query 
+#' @param facet.field 
+#' @param facet.prefix 
+#' @param facet.sort 
+#' @param facet.limit 
+#' @param facet.offset 
+#' @param facet.mincount 
+#' @param facet.missing 
+#' @param facet.method 
+#' @param facet.enum.cache.minDf 
+#' @param facet.threads 
+#' @param facet.date 
+#' @param facet.date.start 
+#' @param facet.date.end 
+#' @param facet.date.gap 
+#' @param facet.date.hardend 
+#' @param facet.date.other 
+#' @param facet.date.include 
+#' @param facet.range 
+#' @param facet.range.start 
+#' @param facet.range.end 
+#' @param facet.range.gap 
+#' @param facet.range.hardend 
+#' @param facet.range.other
+#' @param facet.range.include 
+#' @param start 
+#' @param rows 
+#' @param key 
+#' @param base 
+#' @param wt 
+#' @param raw 
+#' @param callopts 
+#' @param verbose
+#' 
+#' @result out (text consisting of meta data facets)
+#' 
+#' @export
+#' @example 
 facet_meta<-function (q = "*:*",fq=NA, facet.query = NA, facet.field = NA, facet.prefix = NA, 
           facet.sort = NA, facet.limit = NA, facet.offset = NA, facet.mincount = NA, 
           facet.missing = NA, facet.method = NA, facet.enum.cache.minDf = NA, 

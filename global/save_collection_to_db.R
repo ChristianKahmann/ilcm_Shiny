@@ -1,3 +1,9 @@
+#' save_collection_to_db
+#' @param info
+#' 
+#' @return 
+#' @export
+#' @example 
 save_collection_to_db<-function(info){
   source("config_file.R")
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
@@ -15,6 +21,12 @@ save_collection_to_db<-function(info){
   RMariaDB::dbDisconnect(mydb)
 }
 
+#' delete_collection_from_db
+#' @param name
+#' 
+#' @return 
+#' @export
+#' @example 
 delete_collection_from_db<-function(name){
   source("config_file.R")
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
