@@ -1,3 +1,9 @@
+#' read_data
+#' @param path
+#' @param directory
+#' @param datatype
+#' 
+#' @return data table of found data and corresponding dates
 read_data<-function(path,directory=FALSE,datatype="*"){
 
   if (directory==FALSE){

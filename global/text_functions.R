@@ -1,6 +1,13 @@
 chunk2 <- function(x,n) split(x, cut(seq_along(x), n, labels = FALSE)) 
 
-
+#' create_Matrix_Worte
+#' @param coocsYears
+#' @param vocabIns
+#' 
+#' @return Matrix_Worte_Brexit
+#' 
+#' @export
+#' @example 
 create_Matrix_Worte<-function(coocsYears,vocabIns)
 {
   
@@ -21,6 +28,14 @@ create_Matrix_Worte<-function(coocsYears,vocabIns)
   close(pb5)
   return(Matrix_Worte_Brexit)
 }
+#' create_Liste_Worte
+#' @param coocsYears
+#' @param vocabIns
+#' 
+#' @return Liste_Worte (list of words)
+#' 
+#' @export
+#' @example 
 create_Liste_Worte<-function(coocsYears,vocabIns)
 {
   Liste_Worte<-vector("list",length(vocabIns))
@@ -45,6 +60,17 @@ create_Liste_Worte<-function(coocsYears,vocabIns)
   print(length(Liste_Worte))
   return(Liste_Worte)
 }
+#' calculate_volat
+#' @param coocsYears
+#' @param h
+#' @param method
+#' @param vocabIns
+#' @param datesTmp
+#' @param terms
+#' 
+#' @return volatility_data
+#' @export
+#' @example 
 calculate_volat<-function(coocsYears,h,method,vocabIns,datesTmp,terms)
 {
   if(method=="globalno_zero"){method<-"no_zero"}
@@ -238,7 +264,14 @@ calculate_volat<-function(coocsYears,h,method,vocabIns,datesTmp,terms)
   return(volatility_data)
 }  
 #------------------------------------------------------------------------------------------------------------  
-#calculate IQR of given array  
+#' calculate IQR of given array  
+#' @param array
+#' @param terms
+#' 
+#' @return IQRM (IQR matrix)
+#' 
+#' @export
+#' @example 
 getIQR<-function(array,terms)
 {
   pb<-txtProgressBar(min = 1,max=length(terms),style = 3,width = 50,title = "get IQR")
@@ -253,7 +286,13 @@ getIQR<-function(array,terms)
   close(pb)
   return(IQRM)
 }
-#calculate varcoef
+#' calculate varcoef
+#' @param array
+#' @param term
+#' 
+#' @return VCM (variable coefficient matrix)
+#' @export
+#' @example 
 getVarCoef<-function(array,terms)
 {
   pb<-txtProgressBar(min = 1,max=length(terms),style = 3,width = 50,title = "get VarCoef")
@@ -268,6 +307,14 @@ getVarCoef<-function(array,terms)
   close(pb)
   return(VCM)
 }
+#' get SD
+#' @param array
+#' @param terms
+#' 
+#' @return VCM (value coefficient matrix)
+#' 
+#' @export
+#' @example 
 getSD<-function(array,terms)
 {
   pb<-txtProgressBar(min = 1,max=length(terms),style = 3,width = 50,title = "get SD")
@@ -282,18 +329,27 @@ getSD<-function(array,terms)
   close(pb)
   return(VCM)
 }
+#' VarCoef
+#' @param x
+#' @return calculated Variable Coefficient for given x
 VarCoef<-function(x)
 {
   return(sd(x)/mean(x))
 }
 #------------------------------------------------------------------------------------------------------------   
-#function to calculate IQR and rooming NA-Values
+#' function to calculate IQR and rooming NA-Values
+#' @param x
+#' 
+#' @return IQR for given x
 IQRNA<-function(x)
 {
   return(IQR(x,na.rm = TRUE))
 }  
 #------------------------------------------------------------------------------------------------------------   
-#for every wordvector, get indices of those words that were apparent in the given time h   
+#' for every wordvector, get indices of those words that were apparent in the given time h
+#' @param data
+#' 
+#' @return indices  
 getIndices<-function(data)
 {  
   indices<-vector("list",dim(data[[1]])[2])  
@@ -309,13 +365,26 @@ getIndices<-function(data)
   return(indices)
 }
 #------------------------------------------------------------------------------------------------------------   
-#apply rank for 1 wordvector beginning by 1. for the biggest value, keeping na's  
+#' apply rank for 1 wordvector beginning by 1. for the biggest value, keeping na's
+#' @param wordvector
+#' 
+#' @return rank of given wordvector  
 rangDecr<-function(wordvector)
 {
   return(rank(-wordvector,ties.method = "min",na.last = "keep"))
 }
 #------------------------------------------------------------------------------------------------------------ 
-#applying ranks depending on used method
+#' applying ranks depending on used method
+#' @param Term_Term_Matrix
+#' @param method
+#' @param indices
+#' @param terms
+#' @param index_max
+#' 
+#' @return Rank_Matrix or Rank_Matrices
+#' 
+#' @export
+#' @example 
 apply_Rank<-function(Term_Term_Matrix,method,indices,terms,index_max)
 {
   switch(method,
@@ -420,6 +489,15 @@ apply_Rank<-function(Term_Term_Matrix,method,indices,terms,index_max)
   )
 }
 
+#' adjust_wordvector
+#' @param TT_matrix
+#' @param word
+#' @param indices
+#' 
+#' @return wordvector_adjusted
+#' 
+#' @export
+#' @example 
 adjust_wordvector<-function(TT_matrix,word,indices)
 {
   kooks_word<-unlist(Liste_Worte[which(colnames(TT_matrix)==word)])
@@ -461,6 +539,15 @@ adjust_wordvector<-function(TT_matrix,word,indices)
   return(wordvector_adjusted)
   
 }
+#' adjust Rank-Matrix 
+#' @param Rank_Matrix
+#' @param indices
+#' @param terms
+#' 
+#' @return Matrix_adjusted
+#' 
+#' @export
+#' @example 
 adjust_Matrix<-function(Rank_Matrix,indices,terms)
 {
   Matrix_adjusted<-Rank_Matrix
@@ -476,7 +563,15 @@ adjust_Matrix<-function(Rank_Matrix,indices,terms)
   return(Matrix_adjusted)
 }
 
-
+#' calculate distance
+#' @param testarray
+#' @param terms
+#' @param indices
+#' 
+#' @return AbstandsMatrix (distance matrix)
+#' 
+#' @export
+#' @example 
 berechneAbstand<-function(testarray,terms,indices)
 {
   pb3<-txtProgressBar(min = 1,max=length(terms),style = 3,width = 50)
@@ -541,7 +636,13 @@ berechneAbstand<-function(testarray,terms,indices)
 }  
 
 
-
+#' help function 
+#' @param x
+#' 
+#' @return sentence
+#' 
+#' @export
+#' @example 
 help_function<-function(x)
 {
   i=x
@@ -558,7 +659,13 @@ help_function<-function(x)
 
 
 
-
+#' split_by_sentence
+#' @param text
+#' 
+#' @return result (string idealy of splitted sentences)
+#' 
+#' @export
+#' @example 
 split_by_sentence <- function (text) {
   
   # split based on periods, exclams or question marks
@@ -576,7 +683,11 @@ split_by_sentence <- function (text) {
 }
 
 
-
+#' preporcess text
+#' @param text
+#' @param lang
+#' 
+#' @return text (preprocessed: remove stopwords, punctuation, etc.)
 preprocess <- function(text, lang="en")
 {
   test<-as.character(text)
@@ -591,14 +702,26 @@ preprocess <- function(text, lang="en")
   
   return(text)
 }
-
+#' dehyphenation
+#' @param text
+#' 
+#' @return text now with dehyphenation heuristic
+#' 
+#' @export
+#' @example 
 dehyphenation <- function(text){
   # very simple dehyphenation heuristic
   text <- stringr::str_replace_all(text,"(\\p{Ll}+)[-??????][\\r\\n](\\p{Ll}+)", "\\1\\2\n")
   return(text)
 }
 
-
+#' delete special characters in a given text
+#' @param text
+#' 
+#' @return text
+#' 
+#' @export
+#' @example 
 deleteSpecialCharacters <- function(text){
   # very simple dehyphenation heuristic
   text <- stringr::str_replace_all(text,"[^\\p{L}\\p{Nd}-\\s]+", "")
@@ -607,7 +730,15 @@ deleteSpecialCharacters <- function(text){
 
 
 
-
+#' calc_volat_model
+#' @param terms
+#' @param history
+#' @param GlobalCoocs
+#' @param global
+#' @param method
+#' @param wf
+#' 
+#' @return result terms
 calc_volat_model<-function(terms,history,GlobalCoocs,global,method,wf="linear"){
   #initialize history for each term with its global mean values for the cooccurrences
   #  history_sig<<-list()
@@ -671,7 +802,17 @@ calc_volat_model<-function(terms,history,GlobalCoocs,global,method,wf="linear"){
 
 
 
-
+#' new_func 
+#' @param local 
+#' @param j
+#' @param history
+#' @param idx
+#' @param method
+#' 
+#' @return result matrix
+#' 
+#' @export
+#' @example 
 new_func<-function(local,j,history,idx,method){
   
   if(j<(history+1)){
@@ -747,29 +888,74 @@ new_func<-function(local,j,history,idx,method){
 
 
 
-
+#' varKoef
+#' @param vector
+#' @param local 
+#' 
+#' @return calculted variable coefficient
+#' 
+#' @export
+#' @example 
 varKoef<-function(vector,local){
   vector<-abs(vector)
   return((sd(vector)/mean(local)))
 }
-
+#' absolute sum (mean cacluclation)
+#' @param vector
+#' 
+#' @return sum of given vector
+#' 
+#' @export
+#' @example 
 absSumMean<-function(vector){
   vector<-abs(vector)
   return(sum(vector)*mean(vector[which(vector!=0)]))
 }
+
+#' euklidean calculation 
+#' @param vector
+#' 
+#' @return euklidean sum of given vector
+#' 
+#' @export
+#' @example 
 euklid<-function(vector){
   vector<-abs(vector)
   return(sqrt(sum(vector)))
 }
+#' minimum calculation
+#' @param vector
+#' @return minimum of given vector
 miin<-function(vector){return(min(vector,na.rm=T))}
+#' maximum calculation
+#' @param vector
+#' @return maximum of given vector
 maax<-function(vector){return(max(vector,na.rm=T))}
+#' mean calculation 
+#' @param vector
+#' @return mean of given vector
 meean<-function(vector){return(mean(vector,na.rm=T))}
+#' sum calculation
+#' @param vector
+#' @return sum of given vector
 suum<-function(vector){return(sum(vector,na.rm=T))}
 abs_sum<-function(vector){vector<-abs(vector);return(sum(vector))}
+#' absolute mean calculation
+#' @param vector 
+#' @result mean of absolute values of given vector
 abs_mean<-function(vector){vector<-abs(vector);return(mean(vector))}
+#' absolute mean logarithmic calculation
+#' @param vector
+#' @return absolute values from vector and prodocut of mean from vector times logaritmic length of vector
 abs_mean_log<-function(vector){vector<-abs(vector);return((mean(vector)*log(length(vector))))}
+#' absolute mean TI calculation
+#' @param vector
+#' @result TI of mean of absolute values from vector 
 abs_mean_TI<-function(vector){vector<-abs(vector);vector<-vector[which(vector!=0)];return(mean(vector))}
 
+#' sd_b 
+#' @param vector 
+#' @result sd resutl of given vector 
 sd_b<-function(vector){return((1000*sd(vector)))}
 
 #t1<-Sys.time()
@@ -781,7 +967,9 @@ sd_b<-function(vector){return((1000*sd(vector)))}
 
 library(Matrix)
 library(stringi)
-#functions
+#' split text b sentence 
+#' @param text 
+#' @return result string (of split sentences)
 split_by_sentence <- function (text) {
   
   # split based on periods, exclams or question marks
@@ -798,7 +986,16 @@ split_by_sentence <- function (text) {
   return (result)
 }
 
-
+#' cooccurrence calculation
+#' @param binDTM
+#' @param measure
+#' @param significanceThreshold
+#' @param minCoocFreq
+#' 
+#' @return cooccurrence matrix depeneding on selected measurement
+#' 
+#' @export
+#' @example 
 ccoocs <- function(binDTM, measure = "DICE", significanceThreshold = 1.0, minCoocFreq = 1,cores=3) {
 
   #if(class(binDTM)[1] != "dgCMatrix") stop("DTM must be \"dsCMatrix\" of package \"Matrix\".")
@@ -908,6 +1105,9 @@ ccoocs <- function(binDTM, measure = "DICE", significanceThreshold = 1.0, minCoo
   )
 }
 
+#' mode
+#' @param x
+#' @return 
 Mode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]
