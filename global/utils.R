@@ -1,3 +1,10 @@
+#' convert Slam to Matrix
+#' @param DTM
+#' 
+#' @return document term matrix (DTM)
+#' 
+#' @export
+#' @example 
 convertSlamToMatrix <- function(DTM) {
   if (slam::is.simple_triplet_matrix(DTM)) {
     DTM <- Matrix::sparseMatrix(i=DTM$i, j=DTM$j, x=DTM$v, dims=c(DTM$nrow, DTM$ncol), dimnames = dimnames(DTM))
@@ -5,7 +12,10 @@ convertSlamToMatrix <- function(DTM) {
   return(DTM)
 }
 
-
+#' convert matrix to sparse matrix
+#' @param X (matrix to convert)
+#' 
+#' @return transformed matrix X
 convertMatrixToSparseM <- function(X) {
   X.csc <- new("matrix.csc", ra = X@x,
                ja = X@i + 1L,
@@ -14,14 +24,29 @@ convertMatrixToSparseM <- function(X) {
   return(as.matrix.csr(X.csc))
 }
 
-
+#' convert slam to sparse matrix
+#' @param DTM
+#' 
+#' @return convertert matrix
+#' 
+#' @export
+#' @example 
 convertSlamToSparseM <- function(DTM) {
   return(convertMatrixToSparseM(convertSlamToMatrix(DTM)))
 }
 
 
-# MICRO AVERAGE: TP,FP,FN over all category decisions first, then F1
-# MACRO AVERAGE: F1 over each individual categories first, then average
+#' MICRO AVERAGE: TP,FP,FN over all category decisions first, then F1
+#' MACRO AVERAGE: F1 over each individual categories first, then average
+#' function for measurements
+#' @param inPred
+#' @param inLabels
+#' @param positiveClassName
+#' 
+#' @return f.list
+#' 
+#' @export
+#' @example 
 F.measure <- function(inPred,inLabels, positiveClassName = NULL) {
   
   # PREPARE DATA
@@ -159,7 +184,15 @@ F.measure <- function(inPred,inLabels, positiveClassName = NULL) {
   return (fList);
 }
 
-
+#' get k fold logical indexes
+#' @param j
+#' @param k
+#' @param n
+#' 
+#' @return fold_lidx
+#' 
+#' @export
+#' @example 
 get_k_fold_logical_indexes <- function(j, k, n) {
   if (j > k) stop("Cannot select fold larger than nFolds")
   fold_lidx <- rep(FALSE, k)
@@ -168,7 +201,19 @@ get_k_fold_logical_indexes <- function(j, k, n) {
   return(fold_lidx)
 }
 
-
+#' k fold cross validation
+#' @param labledDTM
+#' @param classesOfDocuments
+#' @param k
+#' @param cost
+#' 
+#' @return result list depending of
+#' list:
+#'         evaluation measures
+#'         complete_results
+#'
+#' @export
+#' @example 
 k_fold_cross_validation <- function(labeledDTM, classesOfDocuments, k = 10, cost = 10, ...) {
   evaluationMeasures <- NULL
   complete_results<-list()
@@ -202,7 +247,15 @@ k_fold_cross_validation <- function(labeledDTM, classesOfDocuments, k = 10, cost
 }
 
 
-
+#' optimize_C
+#' @param trainingDTM
+#' @param trainingLabels
+#' @param plot_graph
+#' 
+#' @return bestC 
+#' 
+#' @export
+#' @example 
 optimize_C <- function(trainingDTM, trainingLabels, plot_graph = F) {
   cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
   fValues <- NULL

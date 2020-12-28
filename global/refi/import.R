@@ -1,3 +1,14 @@
+#' refi to collection
+#' @param qdpx_file
+#' @param dataset
+#' 
+#' @return r as list depending on:
+#' list:
+#'       data
+#'       xml_document
+#'       importDirectory
+#' @export
+#' @example 
 refi_to_collection <- function(qdpx_file, dataset){
   unpacked_dir <- IO_unpack_project(qdpx_file$datapath)
   qde_file <- file.path(unpacked_dir, list.files(unpacked_dir,recursive = T, pattern = "qde"))
@@ -27,6 +38,15 @@ refi_to_collection <- function(qdpx_file, dataset){
   return(r)
 }
 
+#' import text sources
+#' @param test_sources
+#' @param unpacked_dir
+#' @param dataset
+#' 
+#' @return data (imported documents/texts as dataframe)
+#' 
+#' @export
+#' @example 
 import_text_sources <- function(text_sources, unpacked_dir, dataset){
   id_doc <- 0
   data <- data.frame(
@@ -129,7 +149,13 @@ import_text_sources <- function(text_sources, unpacked_dir, dataset){
 #     , document_annotation = character(0)
 #   )
 # }
-
+#' get codebook
+#' @param node
+#' 
+#' @return annotation scheme
+#' 
+#' @export
+#' @example 
 get_codebook <- function(node){
   anno_scheme <- list()
   hash <- NULL
@@ -160,7 +186,20 @@ get_codebook <- function(node){
   return(anno_scheme)
 }
 
-
+#' add_category
+#' @param edit_list
+#' @param name
+#' @param color
+#' @param description
+#' 
+#' @return list depending on:
+#' list:
+#'          hash
+#'          temporary list (name, color, isDocumentAnnotation, description)
+#'          edit_list
+#'
+#' @export
+#' @example 
 add_category <- function(edit_list, name = NULL, color = NULL, description = NULL){
   tmp <- list()
   hash <- stringi::stri_rand_strings(1, 5, '[A-Z0-9]')
@@ -174,7 +213,13 @@ add_category <- function(edit_list, name = NULL, color = NULL, description = NUL
   return(list(hash = hash, newList = append(tmp,edit_list)))
 }
 
-
+#' import codebook
+#' @param codebook
+#' @param name
+#' 
+#' @return 
+#' @export
+#' @example 
 import_codebook <- function(codebook, name){
   codes <- xml_find_first(codebook, ".//d1:Codes")
   anno <- list()
@@ -187,6 +232,7 @@ import_codebook <- function(codebook, name){
   })
 }
 
+#' import function
 import_function <- function(){
   source("global/text_functions.R")
   source("global/log_to_file.R")

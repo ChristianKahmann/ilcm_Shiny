@@ -1,3 +1,7 @@
+#' dataframe - prepare dataframe for plain text selection
+#' @param dataframe
+#' 
+#' @return dataframe
 DF_prepare_dataframe_for_plain_text_selection <- function(dataframe) {
   if (!"end_position" %in% colnames(dataframe)){
     dataframe$end_eosition <- str_count(dataframe$body)
@@ -5,11 +9,19 @@ DF_prepare_dataframe_for_plain_text_selection <- function(dataframe) {
   return(dataframe)
 }
 
+#' dataframe - load RData
+#' @param filename
+#' 
+#' @return 
 DF_loadRData <- function(filename){
   load(filename)
   get(ls()[ls() != "filename"])
 }
 
+#' dataframe - info to dataframe
+#' @param df
+#' 
+#' @return d (datframe consisting of: id_doc, dataset, global_doc_id, date, score)
 DF_info_to_dataframe <- function(df){
   d <- data.frame(
     'id_doc'=df[[1]]$x....id_doc_i..
@@ -21,6 +33,12 @@ DF_info_to_dataframe <- function(df){
   return(d)
 }
 
+#' dataframe - create refi users
+#' @param usernames
+#' 
+#' @return users
+#' @export
+#' @example 
 DF_create_refi_users <- function(usernames){
   user_name <- paste0(unique(usernames))
   user_guid <- sapply(seq(length(user_name)), function(x) UUIDgenerate(TRUE))
@@ -28,6 +46,12 @@ DF_create_refi_users <- function(usernames){
   return(users)
 }
 
+#' dataframe - create refi sets
+#' @param collection_names
+#' 
+#' @return sets
+#' @export
+#' @example 
 DF_create_refi_sets <- function(collection_names){
   set_name <- c(collection_names)
   set_guid <- sapply(seq(length(set_name)), function(x) UUIDgenerate(TRUE))
@@ -35,6 +59,13 @@ DF_create_refi_sets <- function(collection_names){
   return(sets)
 }
 
+#' dataframe - create refi codes from annotation scheme
+#' @param anno_scheme
+#' 
+#'  @return codes
+#'  
+#'  @export
+#'  @example  
 DF_create_refi_codes_from_anno_schemes <- function(anno_scheme){
   if (!is.null(anno_scheme)){
     anno_file <- file.path(ANNO_SCHEME_HOME, paste0(anno_scheme, ".RData"))
@@ -50,6 +81,13 @@ DF_create_refi_codes_from_anno_schemes <- function(anno_scheme){
   return(codes)
 }
 
+#' dataframe create refi text sources
+#' @param documents
+#' 
+#' @return text_sources
+#' 
+#' @export
+#' @example 
 DF_create_refi_text_sources <- function(documents){
   text_sources_guids <- sapply(seq(nrow(documents)), function(x) UUIDgenerate(TRUE))
   text_sources_paths <- paste0("internal://", text_sources_guids, ".txt")
@@ -63,7 +101,16 @@ DF_create_refi_text_sources <- function(documents){
   )
   return(text_sources)
 }
-
+#' dataframe - create refi plaintext selections
+#' @param annotations
+#' @param text_sources
+#' @param users 
+#' @param codes
+#' 
+#' @return plaintext_selections
+#' 
+#' @export
+#' @example 
 DF_create_refi_plaintext_selections <- function(annotations, text_sources, users, codes){
   if (!is.data.frame(codes) && nrow(codes) <= 0) {
     return(data.frame())
@@ -80,6 +127,17 @@ DF_create_refi_plaintext_selections <- function(annotations, text_sources, users
   return(plaintext_selections)
 }
 
+#' dataframe - create refi plaintext selections for topic models 2
+#' @param text_sources
+#' @param users
+#' @param codes 
+#' @param topic_model_file
+#' @param token
+#' 
+#' @return plaintext selections
+#' 
+#' @export
+#' @example 
 DF_create_refi_plaintext_selections_for_topic_models2 <- function(text_sources, users, codes, topic_model_file,token){
   load(topic_model_file)
   user <- users[1]
@@ -142,6 +200,19 @@ DF_create_refi_plaintext_selections_for_topic_models2 <- function(text_sources, 
 #   return(plaintext_selections)
 # }
 
+#' dataframe - create refi plaintext selections for classifications 2
+#' @param original_text
+#' @param text_sources
+#' @param users
+#' @param codes
+#' @param classification
+#' @param anno_scheme
+#' @param token
+#' 
+#' @return plaintext_selections
+#' 
+#' @export
+#' @example 
 DF_create_refi_plaintext_selections_for_classification2 <- function(original_text, text_sources, users, codes, classification, anno_scheme,token){
   user <- users[1]
   plaintext_selections <- data.frame(
@@ -195,6 +266,18 @@ DF_create_refi_plaintext_selections_for_classification2 <- function(original_tex
   return(plaintext_selections)
 }
 
+#' dataframe - create refi plaintext selections for classification
+#' @param annotations
+#' @param text_sources
+#' @param users
+#' @param codes
+#' @param classification
+#' @param anno_scheme
+#' 
+#' @return plaintext_selections
+#' 
+#' @export
+#' @example 
 DF_create_refi_plaintext_selections_for_classification <- function(annotations, text_sources, users, codes, classification, anno_scheme){
   classification_file <- file.path(ANALYSIS_RESULTS_HOME, "classification", "classifyCollection", classification, "texts.RData")
   if (!file.exists(classification_file)){
@@ -218,6 +301,14 @@ DF_create_refi_plaintext_selections_for_classification <- function(annotations, 
   return(plaintext_selections)
 }
 
+#' dataframe - create refi codes from topics
+#' @param selected_topics
+#' @param topic_model_file
+#' 
+#' @return dataframe topics
+#' 
+#' @export
+#' @example 
 DF_create_refi_codes_from_topics <- function(selected_topics, topic_model_file){
   load(topic_model_file)
   topics <- c()

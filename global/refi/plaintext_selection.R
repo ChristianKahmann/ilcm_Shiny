@@ -1,3 +1,14 @@
+#' new plaintext selection
+#' @param  guid
+#' @param start_position
+#' @param end_position
+#' @param name
+#' @param creating_user
+#' @param creation_datetime
+#' @param description
+#' @param code_ref
+#' 
+#' @return datframe with parameters (like above)
 T_new_plaintext_selection <- function(
   guid = guid
   , start_position = start_position

@@ -1,3 +1,11 @@
+#' export collection
+#' @param output_directory
+#' @param projectname
+#' @param collection_name
+#' @param annotation_scheme
+#' @param session
+#' 
+#' @return out (collection to refi)
 export_collection <- function(output_directory, projectname, collection_name, annotation_scheme = "all",session) {
   if (annotation_scheme == "all") {
     # change this method
@@ -15,6 +23,17 @@ export_collection <- function(output_directory, projectname, collection_name, an
   return(out)
 }
 
+#' collection to refi
+#' @param output_directory
+#' @param projectname
+#' @param collection_name
+#' @param anno_scheme
+#' @param session
+#' 
+#' @return refi_export_collection_success and datframe with collection-details
+#' 
+#' @export
+#' @example 
 collection_to_refi <- function(output_directory, projectname, collection_name, anno_scheme = NULL,session){
   refi_export_collection_success=F
   collection_file <- file.path(COLLECTIONS_HOME, paste0(collection_name, ".RData"))
@@ -64,7 +83,15 @@ collection_to_refi <- function(output_directory, projectname, collection_name, a
 }
 
 
-
+#' export topic model
+#' @param output_directory
+#' @param projectname
+#' @param collection_name
+#' @param topic_model_file
+#' @param selected_topics
+#' @param session
+#' 
+#' @return refi_export_collection_success and dataframe with topic model information
 export_topic_model <- function(output_directory, projectname, collection_name, topic_model_file, selected_topics,session){
   refi_export_collection_success=F
   collection_file <- file.path(COLLECTIONS_HOME, paste0(collection_name, ".RData"))
@@ -109,7 +136,14 @@ export_topic_model <- function(output_directory, projectname, collection_name, t
   )
   return(out)
 }
-
+#' export classification
+#' @param output_directory
+#' @param projectnme
+#' @param collection_name
+#' @param classification
+#' @param session
+#' 
+#' @return refi_export_collection_success and out (datframe with classification information)
 export_classification <- function(output_directory, projectname, collection_name, classification,session){
   refi_export_collection_success=F
   collection_file <- file.path(COLLECTIONS_HOME, paste0(collection_name, ".RData"))
@@ -174,6 +208,13 @@ export_classification <- function(output_directory, projectname, collection_name
   return(out)
 }
 
+#' export_codebook
+#' @param projectname
+#' @param annotation_scheme
+#' @param output_directory
+#' @param session
+#' 
+#' @return refi_export_codebook_success and out (dataframe for codebook information)
 export_codebook <- function(projectname, annotation_scheme, output_directory,session){
   refi_export_codebook_success<-F
   out<-tryCatch(

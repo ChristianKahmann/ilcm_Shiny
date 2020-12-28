@@ -1,4 +1,4 @@
-DB_USER <<- 'root'
+DB_USER <<- 'root' 
 DB_PASS <<- 'ilcm'
 DATABASE <<- 'ilcm'
 SHOW_WARNINGS <<- TRUE

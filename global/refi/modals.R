@@ -1,3 +1,4 @@
+#' dialog annotation scheme export
 dialog_annotation_scheme_export <- function(failed= FALSE){
   modalDialog(
     textInput(
@@ -18,6 +19,7 @@ dialog_annotation_scheme_export <- function(failed= FALSE){
   )
 }
 
+#' dialog collection export
 dialog_collection_export <- function(failed= FALSE){
   modalDialog(
     textInput(
@@ -38,6 +40,7 @@ dialog_collection_export <- function(failed= FALSE){
   )
 }
 
+#' dialog_collection with annotation scheme export
 dialog_collection_with_annotation_scheme_export <- function(failed= FALSE){
   modalDialog(
     textInput(
@@ -58,6 +61,7 @@ dialog_collection_with_annotation_scheme_export <- function(failed= FALSE){
   )
 }
 
+#' dialog topic model export
 dialog_topic_model_export <- function(failed= FALSE){
   modalDialog(
     textInput(
@@ -78,6 +82,7 @@ dialog_topic_model_export <- function(failed= FALSE){
   )
 }
 
+#' dialof classification export
 dialog_classification_export <- function(failed= FALSE){
   modalDialog(
     textInput(

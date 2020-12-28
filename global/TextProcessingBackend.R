@@ -506,5 +506,5 @@ SpacyrBackend = R6::R6Class(
       s
     }
     
-  )
+  ) 
 )

@@ -1,9 +1,19 @@
+#' get database connection
+#' 
+#' @return database
 DB_get_database_connection <- function(){
   database <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user=DB_USER, password=DB_PASS, dbname=DATABASE, host=host,port=db_port)
   RMariaDB::dbSendStatement(database, 'set character set "utf8"')
   return(database)
 }
 
+#' data base - get documents by id
+#' @param document_ids
+#' 
+#' @return documents
+#' 
+#' @export
+#' @example 
 DB_get_documents_by_id <-function(document_ids){
   connection <- DB_get_database_connection()
   query <- glue_sql("SELECT * FROM documents WHERE id IN ({doc_ids*})", doc_ids = unique(document_ids), .con = connection)
@@ -12,6 +22,13 @@ DB_get_documents_by_id <-function(document_ids){
   return(documents)
 }
 
+#' database - get document by id
+#' @param id
+#' 
+#' @return document
+#' 
+#' @export
+#' @example 
 DB_get_document_by_id <-function(id){
   connection <- DB_get_database_connection()
   query <- paste0("SELECT * FROM documents WHERE id = '", id, "';")
@@ -20,6 +37,14 @@ DB_get_document_by_id <-function(id){
   return(document)
 }
 
+#' database - get document by id and dataset
+#' @param document_id
+#' @param dataset
+#' 
+#' @return document
+#' 
+#' @export
+#' @example 
 DB_get_document_by_id_and_dataset <-function(document_id, dataset){
   connection <- DB_get_database_connection()
   query <- sprintf("SELECT * FROM documents WHERE id_doc = %s AND dataset = '%s'", document_id, dataset)
@@ -28,6 +53,14 @@ DB_get_document_by_id_and_dataset <-function(document_id, dataset){
   return(document)
 }
 
+#' database - get annotations by global document ids with annotation scheme 
+#' @param global_documnt_ids
+#' @param anno_set
+#' 
+#' @return annotations
+#' 
+#' @export
+#' @example 
 DB_get_annotations_by_global_document_ids_with_anno_scheme <- function(global_document_ids, anno_set){
   connection <- DB_get_database_connection()
   query <- glue_sql("SELECT * FROM Annotations WHERE global_doc_id IN ({doc_ids*}) AND Anno_set = {anno_set};", doc_ids = unique(global_document_ids), anno_set = anno_set, .con = connection)
@@ -36,6 +69,14 @@ DB_get_annotations_by_global_document_ids_with_anno_scheme <- function(global_do
   return(annotations)
 }
 
+#' database - get annotations by global document ids
+#' @param global_document_ids
+#' @param anno_set
+#' 
+#' @return annotations
+#' 
+#' @export
+#' @example 
 DB_get_annotations_by_global_document_ids <- function(global_document_ids, anno_set){
   connection <- DB_get_database_connection()
   query <- glue_sql("SELECT * FROM Annotations WHERE global_doc_id IN ({doc_ids*});", doc_ids = unique(global_document_ids), .con = connection)
@@ -44,6 +85,13 @@ DB_get_annotations_by_global_document_ids <- function(global_document_ids, anno_
   return(annotations)
 }
 
+#' database - get used annotation schemes
+#' @param collection
+#' 
+#' @return anno_sets
+#' 
+#' @export
+#' @example 
 DB_get_used_annotation_schemes <- function(collection){
   connection <- DB_get_database_connection()
   query <- sprintf("SELECT DISTINCT Anno_set FROM Annotations WHERE collection = '%s';", collection)
@@ -52,6 +100,9 @@ DB_get_used_annotation_schemes <- function(collection){
   return(anno_sets)
 }
 
+#' database - get collection names
+#' 
+#' @return result names of collection
 DB_get_collection_names <- function(){
   connection <- DB_get_database_connection()
   result <- RMariaDB::dbGetQuery(connection, "SELECT DISTINCT name FROM Collections;")
@@ -59,6 +110,10 @@ DB_get_collection_names <- function(){
   return(result$name)
 }
 
+#' database - get collection
+#' @param collection
+#' 
+#' @return result (collection)
 DB_get_collections <- function(collection){
   connection <- DB_get_database_connection()
   query <- paste0("SELECT DISTINCT id, name, created, `number of documents` FROM Collections WHERE name = '", collection, "';")
@@ -67,6 +122,12 @@ DB_get_collections <- function(collection){
   return(result)
 }
 
+#' database - get datasets
+#' 
+#' @return result (dataset)
+#' 
+#' @export
+#' @example 
 DB_get_datasets <- function(){
   connection <- DB_get_database_connection()
   query <- "SELECT DISTINCT dataset FROM ilcm.metadata_names;"
@@ -75,6 +136,10 @@ DB_get_datasets <- function(){
   return(result)
 }
 
+#' database - import annotations
+#' @param annotations
+#' 
+#' @return update string
 DB_import_annotations <- function(annotations){
   connection <- DB_get_database_connection()
   RMariaDB::dbBegin(conn = connection)
@@ -89,6 +154,8 @@ DB_import_annotations <- function(annotations){
   RMariaDB::dbDisconnect(connection)
 }
 
+#' database - delete dataset 
+#' @param dataset
 DB_delete_dataset <- function(dataset){
   connection <- DB_get_database_connection()
   RMariaDB::dbBegin(conn = connection)

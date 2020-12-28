@@ -1,3 +1,7 @@
+#' HTML - get annotation scheme
+#' @param anno_file
+#' 
+#' @return document root
 HTML_get_annotation_scheme <- function(anno_file){
   load(anno_file)
   doc <- xml_new_root("ul")
@@ -5,7 +9,15 @@ HTML_get_annotation_scheme <- function(anno_file){
   return(toString(xml_root(doc)))
 }
 
-
+#' HTML - get nested ul
+#' @param anno
+#' @param parent
+#' @param doc
+#' 
+#' @return parent
+#' 
+#' @export
+#' @example 
 HTML_get_nested_ul <- function(anno, parent, doc){
   ids <- names(anno)
   if (length(ids) > 0) {

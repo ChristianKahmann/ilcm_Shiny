@@ -1,3 +1,10 @@
+#' IO unpack project
+#' @param qdpx_file
+#' 
+#' @return temporary_working_directory
+#' 
+#' @export
+#' @example 
 IO_unpack_project <- function(qdpx_file) {
   temporary_working_directory <- IO_create_tempdir(parent_dir = "data_import/refi/")
   unzip(zipfile = qdpx_file, exdir = temporary_working_directory)
@@ -14,7 +21,13 @@ IO_unpack_project <- function(qdpx_file) {
   temporary_working_directory <- list.dirs(temporary_working_directory,recursive = F)
   return(temporary_working_directory)
 }
-
+#' IO create temporary directory
+#' @param parent_dir
+#' 
+#' @return temporary working directory
+#' 
+#' @export
+#' @example 
 IO_create_tempdir <- function(parent_dir) {
   temporary_working_directory <- file.path(parent_dir, stri_rand_strings(1, 8, "[A-Za-z]"))
   if(!dir.exists(temporary_working_directory)){
@@ -23,6 +36,12 @@ IO_create_tempdir <- function(parent_dir) {
   return(temporary_working_directory)
 }
 
+#' IO get annotation schemes
+#' 
+#' @return annotation schemes
+#' 
+#' @export
+#' @example 
 IO_get_annotation_schemes <- function(){
   anno_schemes <- list.files(ANNO_SCHEME_HOME, pattern = ".RData")
   anno_schemes <- lapply(anno_schemes, FUN = function(x){tools::file_path_sans_ext(x)})
@@ -31,6 +50,13 @@ IO_get_annotation_schemes <- function(){
   return(anno_schemes$schemes)
 }
 
+#' IO get topics
+#' @param topic_model
+#' 
+#' @return topics or nothing if the topic model is empty
+#' 
+#' @export
+#' @example 
 IO_get_topics <- function(topic_model){
   if (is.null(topic_model)){
     return(c(""))
@@ -49,6 +75,14 @@ IO_get_topics <- function(topic_model){
   return(topics)
 }
 
+#' IO get analysis
+#' @param collection
+#' @param analysis
+#' 
+#' @return analysis files
+#' 
+#' @export
+#' @example 
 IO_get_analysis <- function(collection, analysis){
   if (analysis == 'Classfication') {
     path_analysis_rdata <- file.path("collections/results", "classification", "classifyCollection")
@@ -61,11 +95,24 @@ IO_get_analysis <- function(collection, analysis){
   return(analysis_files)
 }
 
+#' IO get classification project
+#' 
+#' @return annotation schemes
+#' 
+#' @export
+#' @example 
 IO_get_classification_projects <- function(){
   anno_schemes <- list.files(file.path("collections/results", "classification", "classifyCollection"))
   return(anno_schemes)
 }
 
+#' IO is valid qde files
+#' @param qde_file
+#' 
+#' @return qde
+#' 
+#' @export
+#' @example 
 IO_is_valid_qde_file <- function(qde_file) {
   qde <- FALSE
   tryCatch(
@@ -79,11 +126,25 @@ IO_is_valid_qde_file <- function(qde_file) {
   return(qde)
 }
 
+#' IO get classification
+#' @param collection
+#' 
+#' @return annotation schemes
+#' 
+#' @export
+#' @example 
 IO_get_classifications <- function(collection){
   anno_schemes <- list.files(file.path("collections/results", "classification", "classifyCollection"), pattern = paste0("[0-9]*_", collection, "_[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"))
   return(anno_schemes)
 }
 
+#' IO annotation scheme to dataframe
+#' @param anno
+#' 
+#' @return codes
+#' 
+#' @export
+#' @example 
 IO_anno_scheme_to_dataframe <- function(anno){
   codes <- data.frame(
     guid = character(0)
@@ -97,6 +158,16 @@ IO_anno_scheme_to_dataframe <- function(anno){
   return(codes)
 }
 
+#' IO get annotation data frame
+#' @param anno
+#' @param parent
+#' @param parent_guid
+#' @param codes
+#' 
+#' @return codes
+#' 
+#' @export
+#' @example 
 IO_get_anno_df <- function(anno, parent = "", parent_guid = "", codes){
   ids <- names(anno)
   if (length(ids) > 0) {

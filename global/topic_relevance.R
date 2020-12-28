@@ -25,4 +25,4 @@ calculate_topic_relevance<-function(lambda=0.3, phi, theta, doc.length){
   lift <- phi/term.proportion
   relevance <- lambda*log(phi) + (1 - lambda)*log(lift)
   return(relevance)
-}
+} 
