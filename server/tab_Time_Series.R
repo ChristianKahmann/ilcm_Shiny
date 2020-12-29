@@ -165,7 +165,7 @@ output$TS_plot<-renderPlotly({
 #' depends on:
 #'   values$fq: time stamp of requests
 #'   input$TS_timeintervall: choosen time intervall (days, months, years)
-#'   values$numFound:  number of documents in the stack
+#'   values$numFound: number of documents in the stack
 #'   values$start: start point for the searched time (=1) 
 observeEvent(event_data("plotly_click",source = "TI"),{
   #get date clicked on in timeseries plot
@@ -246,7 +246,7 @@ observeEvent(event_data("plotly_click",source = "TI"),{
 #' render select button for memorized Times Series
 #' depends on:
 #'   values$TS_memory: object to store the plot data
-#'   values$mem: clarrifies what should be saved
+#'   values$mem: data to save
 output$TS_memory<-renderUI({
   if(length(values$TS_memory)>0){
     mem<-values$TS_memory[[1]][[3]]
@@ -268,8 +268,8 @@ output$TS_memory<-renderUI({
 #' check if delete was clicked, and then remove corresponding memorized time series
 #' depends on:
 #'   input$TS_delete_memory: time series that will be deletet from the memory
-#'   values$mem: clarrifies what should be saved
-#' input$TS_Select_Memory: selected data from memory
+#'   values$mem: saved data
+#'   input$TS_Select_Memory: selected data from memory
 observeEvent(input$TS_delete_memory,{
   values$TS_memory[[which(values$mem==input$TS_Select_Memory)]]<-NULL
   print("delete")
@@ -302,8 +302,8 @@ observeEvent(input$TS_reset,{
 
 #' create download link for time series memory
 #' depends on:
-#'   values$mem: clarrifies what should be saved
-#'   values$TS_memory: time series in memory
+#'   values$mem: data to save
+#'   values$TS_memory: time series from memory
 #'   input$TS_Select_Memory: selected time series from memory
 output$TS_download_memory<-downloadHandler(
   filename=function(){
