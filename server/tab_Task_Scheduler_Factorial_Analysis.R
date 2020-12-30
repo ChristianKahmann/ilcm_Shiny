@@ -210,5 +210,5 @@ observeEvent(input$FA_Submit_Script,{
       title = "Process started",
       "The process was succesfully started. Check details in 'My Tasks'."
     ))
-  }
+  } 
 })

@@ -84,7 +84,7 @@ output$Analysis_Parameter_SA<-renderUI({
 #'   input$SA_remove_custom: remove custome words
 #'   input$analysis_selected: what analysis model is selected
 #'   input$use_custom_script: use a custome script?
-#'   input$custom_script_options: option for a customed script
+#'   input$custom_script_options: selected option for a customed script
 observeEvent(input$SA_Submit_Script,{
   #save needed parameters
   parameters<-list(collection=input$collection_selected,

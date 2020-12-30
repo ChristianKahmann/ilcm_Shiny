@@ -358,8 +358,8 @@ output$TS_calender<-renderUI({
     }
 })
 
-#' get documents for clicked calender heatmap
-#' depends on: input$heatmap_date: choosen heatmap document
+#' get documents for selected calender heatmap
+#' depends on: input$heatmap_date: choosen date from heatmap
 observe({
   print(input$heatmap_date)
 })

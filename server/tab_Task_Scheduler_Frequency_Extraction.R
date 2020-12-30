@@ -691,6 +691,6 @@ observeEvent(input$FE_pruning_continue,ignoreInit = T,{
     showModal(modalDialog(
       title = "Process started",
       "The process was succesfully started. Check details in 'My Tasks'."
-    ))
+    )) 
   }
 })

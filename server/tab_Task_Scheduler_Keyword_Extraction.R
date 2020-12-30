@@ -124,8 +124,8 @@ O: other elements  ', placement = "right"
 #'   input$KE_phrase: choosen phrase pattern 
 #'   input$KE_seperator: choosen seperator for phrases
 #'   input$analysis_selected: selected analysis model
-#'   input$use_custom_script: use custom script
-#'   input$custom_script_options: options for a custom script
+#'   input$use_custom_script: use custom script?
+#'   input$custom_script_options: selected options for a custom script
 observeEvent(input$KE_Submit_Script,{
   #save needed parameters
   parameters<-list(collection=input$collection_selected,

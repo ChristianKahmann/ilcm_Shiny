@@ -32,7 +32,7 @@ output$Analysis_Parameter_DL<-renderUI({
 
 #' get documents from database
 #' depends on:
-#'  input$Prepare_Documents: prepared documents
+#'  input$Prepare_Documents: prepared documents (from selection)
 #'  values$host: used host for upload/download of database
 #'  values$db_port: used database port
 #'  values$token_tmp: temporary tokens

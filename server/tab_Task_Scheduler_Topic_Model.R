@@ -1,6 +1,5 @@
 
 #' render the parameter set for topic modeling
-#' 
 output$Analysis_Parameter_TM<-renderUI({
   tagList(
     tags$hr(),
@@ -553,7 +552,7 @@ output$TM_whitelist_UI<-renderUI({
   }
 })
 
-#' show whitelist options when whitelist checkbox is TRUE
+#' show whitelist options when whitelist checkbox is ticked
 #' depends on: input$TM_use_custom_whitelist: check if whitlist checkbox is ticked 
 observeEvent(ignoreNULL = T,input$TM_use_custom_whitelist,{
   if(isTRUE(input$TM_use_custom_whitelist)){
@@ -578,7 +577,7 @@ output$TM_blacklist_UI<-renderUI({
   }
 })
 
-#' show blacklist options when blacklist checkbox is TRUE
+#' show blacklist options when blacklist checkbox is ticked
 #' depends on: input$TM_use_custom_blacklist: is blacklist checkbox ticked?
 observeEvent(ignoreNULL = T,input$TM_use_custom_blacklist,{
   if(isTRUE(input$TM_use_custom_blacklist)){
@@ -966,7 +965,7 @@ observeEvent(input$TM_pruning_continue,ignoreInit = T,{
   #'   input$analysis_selected: selected analysis model
   #'   input$collection_selected: selected collection
   #'   input$use_custom_script: is a customed script used?
-  #'   input$custom_script_options: options for custom scripts
+  #'   input$custom_script_options: selected options for custom scripts
   ID<-get_task_id_counter()+1
   set_task_id_counter(ID)
   #save metadata for process

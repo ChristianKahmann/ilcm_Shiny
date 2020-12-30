@@ -1,5 +1,5 @@
 
-#' parameters for syntactic parsing
+#' render parameters for syntactic parsing
 output$Analysis_Parameter_SP<-renderUI({
   tagList(
     #specific parameters

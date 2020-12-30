@@ -74,10 +74,10 @@ output$Analysis_Parameter_DD<-renderUI({
 
 
 
-#' start Sentiment analysis script, if submit button is clicked
+#' start document deduplication script, if submit button is clicked
 #' depends on:
 #'   input$DD_Submit_Script: submited script
-#'   input$DD_similarity_measure: picl similarity measurement (jaccard similarity, jaccard bag similarity)
+#'   input$DD_similarity_measure: picked similarity measurement (jaccard similarity, jaccard bag similarity)
 #'   input$DD_threshold: treshold for document deduplication
 #'   input$DD_strategy: strategy for document deduplication
 #'   input$collection_selected: selected collection
