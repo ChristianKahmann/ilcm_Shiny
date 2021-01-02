@@ -8,10 +8,10 @@
 #'   values$Doc_custom: custemed documents 
 #'   values$Doc_start: start document
 #'   values$Doc_url: url of documents
-#'   values$Doc_q: parameter q
-#'   values$Doc_fq: parameter fq
-#'   values$Doc_fq_init: initialise parameter fq
-#'   values$numFound_Sub: found numbers
+#'   values$Doc_q: selected character / phrase from dropdown menu
+#'   values$Doc_fq: time stamp of document request
+#'   values$Doc_fq_init: initial time the request was made
+#'   values$numFound_Sub: found numbers of documents in stack
 #'   values$Doc_start: start document search
 #'   values$Doc_search: documents to search
 #'   values$search: search command

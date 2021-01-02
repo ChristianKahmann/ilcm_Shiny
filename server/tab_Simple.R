@@ -7,13 +7,13 @@
 #'   values$custom: customed parameter
 #'   values$start: initiat start
 #'   values$url: url parameter
-#'   values$q: parameter q
-#'   values$fq: parameter fq
-#'   values$fq_init: initialize parameter fq
-#'   values$numFound: found numbers 
+#'   values$q:selected character from dropdown menu
+#'   values$fq: time stamp of request
+#'   values$fq_init: initial time stamp
+#'   values$numFound: found numbers of documents in stack
 #'   values$search: search request
 #'   values$solr_query: query in solr
-#'   values$delete_documents:    deleted documents
+#'   values$delete_documents: deleted documents
 observeEvent(input$simple_action,{
   withBusyIndicatorServer("simple_action", {
     #for simple search fq is just defined by the chosen dataset

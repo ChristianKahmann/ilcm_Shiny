@@ -695,7 +695,6 @@ observeEvent(input$VA_Submit_Script,{
 
 
 #' show whitelists stored in collections/whitelists
-#' 
 output$VA_whitelist_UI<-renderUI({
   if(length(list.files("collections/whitelists/"))==0){
     return(HTML("No whitelists available. You can create whitelist in the Scripts-Whitelist Tab"))

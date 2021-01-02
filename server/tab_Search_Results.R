@@ -26,9 +26,9 @@ observeEvent(input$dataset,{
 #'   values$reload_keep: keep reloaded data
 #'   values$custom_inputtext: customed input text
 #'   values$url: parameter for url
-#'   values$q: parameter q
+#'   values$q: selected character from dropdown menu
 #'   input$sort: sorting order
-#'   values$fq: parameter fq
+#'   values$fq: time stamp of request
 #'   values$metadata_available: available meta data
 #'   values$Search_Results: search results 
 #'   values$custom: customed parameters 
@@ -354,7 +354,6 @@ values$numFound<-0
 #' slider for paging
 #' depends on:
 #'   values$numFound: found numbers
-#'   
 output$SR_row<-renderUI({
   if(values$numFound>0){
     return(tagList(
@@ -411,7 +410,6 @@ observe({
 #' render an outputline telling the user how many results were found for the current search
 #' depends on:
 #'   values$numFound: found numbers
-#'   
 output$SR_Num_Found<-renderText({
   validate(
     need(values$numFound>0,
@@ -426,7 +424,6 @@ output$SR_Num_Found<-renderText({
 #'   input$cbox_1: input of check box 1
 #'   values$Search_Results: search results
 #'   values$delete_documents: deleted documents
-#'   
 observe({
   a<-lapply(X = 1:10,FUN=function(x){return(input[[paste0("cbox_",x)]])})
   validate(

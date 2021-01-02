@@ -206,6 +206,6 @@ observeEvent(input$VS_Submit_Script,{
     showModal(modalDialog(
       title = "Process started",
       "The process was succesfully started. Check details in 'My Tasks'."
-    ))
+    )) 
   }
 })
