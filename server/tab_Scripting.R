@@ -23,7 +23,7 @@ output$script_custom_script_options_UI<-renderUI({
 #' show script of analysis method to allow personalization
 #' depends on:
 #'   input$script_use_custom_script: use a custom script
-#'   input$analysis_selected_script: selcted script for choosen anaylisis method
+#'   input$analysis_selected_script: selected script for choosen anaylisis method
 #'   input$script_custom_script_options: options for script customization
 #'   input$script_theme: selected script theme
 output$script_UI<-renderUI({
@@ -119,7 +119,7 @@ observe({
 })
 
 
-#' save cooccurrence analysis modell
+#' save cooccurrence analysis model
 #' depends on:
 #'   input$Save_Script_CA: script selected to be saved
 observeEvent(input$Save_Script_CA,{
@@ -140,7 +140,7 @@ observeEvent(input$Save_Script_CA,{
 #' validate name for saving process
 #' depends on: 
 #'   input$Script_Name_save_CA: name to save the cooccurrence analysis
-#'   input$R_Script_CA: r script from cooccurrence analysis
+#'   input$R_Script_CA: r-script from cooccurrence analysis
 observeEvent(input$Script_Name_save_CA,{
   text=input$R_Script_CA
   name<-paste0(input$Script_Name_CA,"_Script.R")
@@ -156,7 +156,7 @@ observeEvent(input$Script_Name_save_CA,{
 
 #' save document deduplication
 #' depends on:
-#'   input$Save_Script_DD: script to save
+#'   input$Save_Script_DD: document deduplication script to save
 observeEvent(input$Save_Script_DD,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,
@@ -174,8 +174,8 @@ observeEvent(input$Save_Script_DD,{
 
 #' validate the name of the file
 #' depends on:
-#'   input$Script_Name_save_DD: name for the script 
-#'   input$R_Script_DD: corresponding r script 
+#'   input$Script_Name_save_DD: name for the document deduplication script 
+#'   input$R_Script_DD: corresponding r-script 
 observeEvent(input$Script_Name_save_DD,{
   text=input$R_Script_DD
   name<-paste0(input$Script_Name_DD,"_Script.R")
@@ -190,7 +190,9 @@ observeEvent(input$Script_Name_save_DD,{
 })
 
 
-
+#' save acustomized keyword extraction script
+#' depends on:
+#'   input$Save_Script_KE: initiate saving process for keyword extraction script
 observeEvent(input$Save_Script_KE,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,
@@ -206,6 +208,10 @@ observeEvent(input$Save_Script_KE,{
   )
 })
 
+#' validate name of customized keyword extraction script
+#' depends on:
+#'    input$Script_Name_save_KE: name of the customized keyword extraction script
+#'    input$R_Script_KE: corresponding r-script for keyword extraction (actual code you wish to save)
 observeEvent(input$Script_Name_save_KE,{
   text=input$R_Script_KE
   name<-paste0(input$Script_Name_KE,"_Script.R")
@@ -221,7 +227,9 @@ observeEvent(input$Script_Name_save_KE,{
 
 
 
-
+#' save customed script for frequency extraction
+#' depends on:
+#'   input$Save_Script_FE: save customized frequency extraction script
 observeEvent(input$Save_Script_FE,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,
@@ -236,6 +244,10 @@ observeEvent(input$Save_Script_FE,{
     )
   )
 })
+#' choosen name for saving the script
+#' depends on:
+#'   input$Script_Name_save_FE: choosen name for the customized frequency extraction script
+#'   input$R_Script_FE: corresponding r-script (actual code you want to save)
 observeEvent(input$Script_Name_save_FE,{
   text=input$R_Script_FE
   name<-paste0(input$Script_Name_FE,"_Script.R")
@@ -251,7 +263,9 @@ observeEvent(input$Script_Name_save_FE,{
 
 
 
-
+#' save customized volatility analysis script
+#' depends on:
+#'   input$Save_Script_VA: initiate to save customed volatility analysis script
 observeEvent(input$Save_Script_VA,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,
@@ -266,6 +280,11 @@ observeEvent(input$Save_Script_VA,{
     )
   )
 })
+
+#' select a name for the cusomized volatility analysis script
+#' depends on:
+#'    input$Script_Name_save_VA: choosen name for customized volatility analysis script
+#'    input$R_Script_VA: corresponding r-script (actual code you want to save)
 observeEvent(input$Script_Name_save_VA,{
   text=input$R_Script_VA
   name<-paste0(input$Script_Name_VA,"_Script.R")
@@ -281,7 +300,9 @@ observeEvent(input$Script_Name_save_VA,{
 
 
 
-
+#' save customized topic model script
+#' depends on:
+#'   input$Save_Script_TM: initiate to save the customed script
 observeEvent(input$Save_Script_TM,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,
@@ -296,6 +317,10 @@ observeEvent(input$Save_Script_TM,{
     )
   )
 })
+#' validate name of customized topic model script
+#' depends on:
+#'   input$Script_Name_save_TM: choosen name for the customized script
+#'   input$R_Script_TM: corresponding r-script (actual code you want to save)
 observeEvent(input$Script_Name_save_TM,{
   text=input$R_Script_TM
   name<-paste0(input$Script_Name_TM,"_Script.R")
@@ -310,7 +335,9 @@ observeEvent(input$Script_Name_save_TM,{
 })
 
 
-
+#' save customized dictionary extraction script
+#' depends on:
+#'   input$Save_Script_DE: initiate saving the script
 observeEvent(input$Save_Script_DE,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,
@@ -325,6 +352,10 @@ observeEvent(input$Save_Script_DE,{
     )
   )
 })
+#' validate name to save customized dictionary extaction script
+#' depends on:
+#'   input$Script_Name_save_DE: choosen name for the customized dictionary extraction script
+#'   input$R_Script_DE: corresponding r-script (actual code you want to save)
 observeEvent(input$Script_Name_save_DE,{
   text=input$R_Script_DE
   name<-paste0(input$Script_Name_DE,"_Script.R")
@@ -339,7 +370,7 @@ observeEvent(input$Script_Name_save_DE,{
 })
 
 
-
+#' 
 observeEvent(input$Save_Script_CL,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,

@@ -80,8 +80,8 @@ observeEvent(input$simple_action_Sub,{
 
 #' create solr suggest suggestions for simple search
 #' depends on:
-#'   input$simple_inputtext_Sub: input text for search request
-#'   values$solr_url: url to solr
+#'   input$simple_inputtext_Sub: input text for search request (simple search selected)
+#'   values$solr_url: url to solr query
 observe({
   validate(
     need(!is.null(input$simple_inputtext_Sub),message=F)
