@@ -1,12 +1,9 @@
-
-
 #' render table with finished results for syntactic parsing
 #' depends on:
 #'    values$reload_parsing_result: releoad syntactic parsing result (if deleted)
 #'    values$collection_selected: selected collection for syntactic parsing
 #'    values$tasks_parsing: syntactic parsing tasks
 #'    values$results_parsing: syntactic parsing results
-#'    
 output$Syntactic_Parsing_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_parsing_result
@@ -136,7 +133,6 @@ output$Syntactic_Parsing_Results <- renderDataTable({
 #' values$Details_Analysis: details from syntactic parsing analysis 
 #' values$Details_Data_SP: details from syntactic parsing data
 #' values$Parsing_Results_Files: syntactic parsing result files
-#' 
 observeEvent(ignoreInit = T,input$Syntactic_Parsing_Results_rows_selected,{
   s = input$Syntactic_Parsing_Results_rows_selected
   if (length(s)) {
@@ -159,7 +155,6 @@ observeEvent(ignoreInit = T,input$Syntactic_Parsing_Results_rows_selected,{
 #'   input$delete_parsing_results: deleted syntactic parsing results
 #'   values$Parsing_Results_Files: syntactic parsing result files
 #'   values$reload_parsing_result: reload syntactic parsing (after deleting)
-#'   
 observeEvent(input$delete_parsing_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_parsing_results, "_")[[1]][5])
@@ -176,7 +171,7 @@ observeEvent(input$delete_parsing_results, {
 #' depends on:
 #'   input$more_details_parsing_results: details from syntactic parsing results
 #'   values$parsing_selected_row: selected rows from syntactic parsing
-#'   values$Det_KE_data: detailed KE data
+#'   values$Det_KE_data: detailed keyword extraction data
 #'   values$tasks_parsing: syntactic parsing tasks
 observeEvent(input$more_details_parsing_results,{
   selectedRow <-

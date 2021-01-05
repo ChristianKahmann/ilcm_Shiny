@@ -1,8 +1,3 @@
-
-
-
-
-
 #' render table with finished results for Sentiment analysis task
 #' depends on:
 #'   values$reload_senti_result: reload result table from sentiment analysis after a result was deleted
@@ -133,7 +128,6 @@ output$Senti_Results <- renderDataTable({
 #'   values$Senti_Results_Files: sentiment anlysis result files
 #'   values$current_task_id: id of curent task
 #'   values$results_senti: results of sentiment analysis
-#'   
 observe({
   s = input$Senti_Results_rows_selected
   if (length(s)) {
@@ -148,7 +142,7 @@ observe({
   }
 })
 
-#' if delete Sentiment analysisresult is clicked delete files and db entry
+#' if delete Sentiment analysis result is clicked delete files and db entry
 #' depends on:
 #'   input$delete_senti_results: delete sentiment analysis results
 #'   values$Senti_Results_Files: sentiment analysis result files
@@ -170,7 +164,6 @@ observeEvent(input$delete_senti_results, {
 #'   input$more_details_senti_results: load more details from sentiment analysis results
 #'   values$senti_selected_row: selected rows from result list
 #'   values$tasks_senti: sentiment analysis tasks
-#'   
 observeEvent(input$more_details_senti_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_senti_results, "_")[[1]][6])
@@ -190,7 +183,6 @@ observeEvent(input$more_details_senti_results,{
 #' depends on:
 #'   values$senti_selected_row: selected rows from sentiment analysis result list
 #'   values$tasks_senti: sentiment analysis tasks
-#'   
 output$more_details_senti_table<-DT::renderDataTable({
   validate(
     need(values$senti_selected_row>0,message=F)

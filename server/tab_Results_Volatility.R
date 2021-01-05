@@ -4,7 +4,6 @@
 #'   values$collection_selected: selected collection
 #'   values$Volat_Results_Files: volatility analysis result files
 #'   values$tasks_volat: volatitlity analysis tasks
-#'   
 output$Volat_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_volat_result

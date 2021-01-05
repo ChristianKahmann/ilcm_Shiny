@@ -10,8 +10,8 @@
 #'   input$Collection_limit_binary: are there binary limits for the collection
 #'   input$Collection_limit_method: limit method (e.g.: most relevant documents, random sample)
 #'   values$solr_url: url to solr
-#'   values$q: parameter q
-#'   values$fq: parameter fq
+#'   values$q: selected character/words from dropdown menu
+#'   values$fq: time stamp for request
 #'   input$Collection_limit: limit for collection
 #'   values$delete_documents: deleted documents
 #'   values$user: user who wants to save a collection:
@@ -114,7 +114,7 @@ observeEvent(input$save_Collection,{
 })
 
 #' show collection limitation
-#'  values$numFound: number of found docuemnts for collection
+#'  values$numFound: number of found docuemnts for collection in stack
 output$Collection_limit_UI<-renderUI({
   validate(
     need(values$numFound>0,message = "no document in result set")

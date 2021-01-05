@@ -6,7 +6,6 @@
 #'   values$FE_Results_Files: frequency extraction result files
 #'   values$tasks_fe: frequency extraction tasks
 #'   values$results_fe: results of frequency extraction
-#'   
 output$FE_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_fe_result
@@ -149,7 +148,6 @@ observe({
 #'   input$delete_fe_results: reload result list after one element was deleted
 #'   values$FE_Results_Files: requency extraction result files 
 #'   values$reload_fe_result: reload list of results from frequency extraction after one element was deleted 
-#'   
 observeEvent(input$delete_fe_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_fe_results, "_")[[1]][5])
@@ -165,7 +163,6 @@ observeEvent(input$delete_fe_results, {
 #' depends on:
 #'   input$more_details_fe_results: more detailes from frequency extraction
 #'   values$fe_selected_row:  selected rows from result list
-#'   
 observeEvent(input$more_details_fe_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_fe_results, "_")[[1]][6])
@@ -185,7 +182,6 @@ observeEvent(input$more_details_fe_results,{
 #' depends on:
 #'   values$fe_selected_row: selected rows from frequency extraction result list
 #'   values$tasks_fe: frequency extraction tasks
-#'   
 output$more_details_fe_table<-DT::renderDataTable({
   validate(
     need(values$fe_selected_row>0,message=F)

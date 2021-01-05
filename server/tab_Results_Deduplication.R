@@ -1,5 +1,3 @@
-
-
 #' render table with finished results for vectorility analysis
 output$Deduplication_Results <- renderDataTable({
   #reload table if a result was deleted
@@ -118,7 +116,12 @@ output$Deduplication_Results <- renderDataTable({
   })
 
 
-#check wheather a certain result was clicked and then switch with needed information to details tab
+#' check wheather a certain result was clicked and then switch with needed information to details tab
+#' depends on:
+#'   input$Deduplication_Results_rows_selected: selected rows from deduplication results
+#'   values$Details_Analysis: details on analysis
+#'   values$Details_Data_DD: details on data deduplication
+#'   values$Deduplication_Results_Files: deduplication result files
 observeEvent(ignoreInit = T,input$Deduplication_Results_rows_selected,{
   s = input$Deduplication_Results_rows_selected
   if (length(s)) {
@@ -136,7 +139,11 @@ observeEvent(ignoreInit = T,input$Deduplication_Results_rows_selected,{
 
 
 
-#if delete vectorility analysis result is clicked delete files and db entry
+#' if delete vectorility analysis result is clicked delete files and db entry
+#' depends on:
+#'   input$delete_deduplication_results: delete a chosen deduplication result
+#'   values$Deduplication_Results_Files: all deduplication result files
+#'   values$reload_deduplication_result: relpad deduplication results afte elements were deleted
 observeEvent(input$delete_deduplication_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_deduplication_results, "_")[[1]][5])
@@ -149,7 +156,10 @@ observeEvent(input$delete_deduplication_results, {
 })
 
 
-#if more details button is clicked open modal showing all parameters
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   input$more_details_deduplication_results: show more details of selected deduplication results
+#'   values$deduplication_selected_row: selected row in deduplication results
 observeEvent(input$more_details_deduplication_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_deduplication_results, "_")[[1]][6])
@@ -165,6 +175,9 @@ observeEvent(input$more_details_deduplication_results,{
   }
 })
 
+#' show more details in deduplication table 
+#' depends on:
+#'   values$deduplication_selected_row: selected row from deduplication results
 output$more_details_deduplication_table<-DT::renderDataTable({
   validate(
     need(values$deduplication_selected_row>0,message=F)

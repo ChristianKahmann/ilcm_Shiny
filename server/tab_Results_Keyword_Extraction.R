@@ -189,7 +189,6 @@ observeEvent(input$more_details_keyword_results,{
 #'  depends on:
 #'    values$keyword_selected_row: selected rows from keyword extraction result list
 #'    values$tasks_keyword: keyword extraction tasks
-#'    
 output$more_details_keyword_table<-DT::renderDataTable({
   validate(
     need(values$keyword_selected_row>0,message=F)

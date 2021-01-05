@@ -370,7 +370,9 @@ observeEvent(input$Script_Name_save_DE,{
 })
 
 
-#' 
+#' save customed classification script
+#' depends on:
+#'   input$Save_Script_CL: customed classification script you want to save
 observeEvent(input$Save_Script_CL,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,
@@ -385,6 +387,10 @@ observeEvent(input$Save_Script_CL,{
     )
   )
 })
+#' valiate name to save customed classification script
+#' depends on:
+#'   input$Script_Name_save_CL: choosen name to save the customized classification script
+#'   input$R_Script_CL: corresponding r-script
 observeEvent(input$Script_Name_save_CL,{
   text=input$R_Script_CL
   name<-paste0(input$Script_Name_CL,"_Script.R")
@@ -399,7 +405,10 @@ observeEvent(input$Script_Name_save_CL,{
 })
 
 
-
+#' validate name of customized factorial analysis script
+#' depends on: 
+#'   input$Script_Name_save_FA: choosen name to save the customized factorial analysis script
+#'   input$R_Script_FA: corresponding r-script
 observeEvent(input$Script_Name_save_FA,{
   text=input$R_Script_FA
   name<-paste0(input$Script_Name_FA,"_Script.R")
@@ -412,6 +421,9 @@ observeEvent(input$Script_Name_save_FA,{
     shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
   }
 })
+#' save customized factorial analysis script
+#' depends on:
+#'   input$Save_Script_FA: save script for customized factorial analysis
 observeEvent(input$Save_Script_FA,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,
@@ -427,7 +439,10 @@ observeEvent(input$Save_Script_FA,{
   )
 })
 
-
+#' validate name for customized sentiment analysis script
+#' depends on:
+#'    input$Script_Name_save_SA: chosen name for customized sentiment analysis script
+#'    input$R_Script_SA: corresponding r-script
 observeEvent(input$Script_Name_save_SA,{
   text=input$R_Script_SA
   name<-paste0(input$Script_Name_SA,"_Script.R")
@@ -440,6 +455,9 @@ observeEvent(input$Script_Name_save_SA,{
     shinyWidgets::sendSweetAlert(session=session,title = "File saved",type = "success") 
   }
 })
+#' save customized sentiment analysis script
+#' depends on:
+#'   input$Save_Script_SA: start saving customized sentiment analysis script
 observeEvent(input$Save_Script_SA,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,
@@ -455,6 +473,10 @@ observeEvent(input$Save_Script_SA,{
   )
 })
 
+#' save customized script
+#' depends on:
+#'   input$Save_Script_custom: start saving customized script
+#'   input$script_custom_script_options : options for customized script
 observeEvent(input$Save_Script_custom,{
   showModal(
     modalDialog(title = "Name your Script",easyClose = F,
@@ -469,7 +491,10 @@ observeEvent(input$Save_Script_custom,{
     )
   )
 })
-
+#' validate name of customized script
+#' depends on:
+#'   input$Script_Name_save_custom: chosen name of customized script
+#'   input$R_Script_custom: corresponding r-script
 observeEvent(input$Script_Name_save_custom,{
   text=input$R_Script_custom
   name<-input$Script_Name_custom

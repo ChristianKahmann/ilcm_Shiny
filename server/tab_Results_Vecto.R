@@ -4,10 +4,9 @@
 #' depends on:
 #'   values$reload_vector_result: relord vector space representation results
 #'   values$collection_selected: selected collection
-#'    values$Vector_Results_Files: result files for vector space representation
-#'    values$tasks_vector: taks from vector space representation 
-#'    values$results_vector: results from vector space representation
-#'    
+#'   values$Vector_Results_Files: result files for vector space representation
+#'   values$tasks_vector: taks from vector space representation 
+#'   values$results_vector: results from vector space representation
 output$Vector_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_vector_result
@@ -125,7 +124,14 @@ output$Vector_Results <- renderDataTable({
 })
 
 
-#check wheather a certain result was clicked and then switch with needed information to details tab
+#' check wheather a certain result was clicked and then switch with needed information to details tab
+#' depends on:
+#'   input$Vector_Results_rows_selected: selected rows as vector result
+#'   values$Details_Analysis: details of selected analysis
+#'   values$Details_Data_VS: visualize details from data 
+#'   values$Vector_Results_Files: files of result vectors
+#'   values$vs_pca: visualize pca
+#'   values$vs_tsne: viualize tsne
 observe({
   s = input$Vector_Results_rows_selected
   if (length(s)) {
@@ -145,7 +151,11 @@ observe({
 
 
 
-#if delete vectorility analysis result is clicked delete files and db entry
+#' if delete vectorility analysis result is clicked delete files and db entry
+#' depends on:
+#'   input$delete_vector_results: delete selected result vetor 
+#'   values$Vector_Results_Files: all result vector files
+#'   values$reload_vector_result: reload result vectors after elements were deleted
 observeEvent(input$delete_vector_results, {
   selectedRow <-
     as.numeric(strsplit(input$delete_vector_results, "_")[[1]][5])
@@ -158,7 +168,11 @@ observeEvent(input$delete_vector_results, {
 })
 
 
-#if more details button is clicked open modal showing all parameters
+#' if more details button is clicked open modal showing all parameters
+#' depends on:
+#'   input$more_details_vector_results: more details of selected result vectors
+#'   values$vector_selected_row: selected rows on result vectors
+#'   values$tasks_vector: vector tasks
 observeEvent(input$more_details_vector_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_vector_results, "_")[[1]][6])
@@ -178,7 +192,6 @@ observeEvent(input$more_details_vector_results,{
 #' depends on:
 #'   values$vector_selected_row: selected row of resltlist for vector space representation
 #'   values$tasks_vector: vector representation tasks 
-#'   
 output$more_details_vector_table<-DT::renderDataTable({
   validate(
     need(values$vector_selected_row>0,message=F)

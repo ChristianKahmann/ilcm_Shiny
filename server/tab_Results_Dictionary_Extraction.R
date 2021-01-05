@@ -6,7 +6,6 @@
 #'   values$DE_Results_Files: dictionary extraction result files
 #'   values$tasks_de: dictionary extraction tasks
 #'   values$results_de: dictionary extraction tasks
-#'   
 output$DE_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_de_result
@@ -185,7 +184,6 @@ observeEvent(input$more_details_de_results,{
 #' depends on:
 #'   values$de_selected_row: selected rows from result list
 #'   values$tasks_de: dictionary extraction tasks
-#'   
 output$more_details_de_table<-DT::renderDataTable({
   validate(
     need(values$de_selected_row>0,message=F)
