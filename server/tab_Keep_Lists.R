@@ -1,7 +1,6 @@
 #' user interface to keep files
 #' depends on:
-#'    alues$invalidate_whitelists: invalidaze whitelists
-#'    
+#'    values$invalidate_whitelists: invalidate whitelists
 output$UI_files_keep<-renderUI({
   values$invalidate_whitelists
   validate(
@@ -14,7 +13,7 @@ output$UI_files_keep<-renderUI({
 
 #' select lists to keep
 #' depends on:
-#'   input$new_keep_list:new list to keep
+#'   input$new_keep_list: new list to keep
 #'   input$new_keep_list: text to keep
 observeEvent(input$new_keep_list,{
   values$keep_text<-""

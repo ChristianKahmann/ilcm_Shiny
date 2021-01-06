@@ -1,7 +1,6 @@
 #' remove files from list
 #' depends on:
 #'   values$invalidate_blacklists: invalidated blacklist
-#'   
 output$UI_files_remove<-renderUI({
   values$invalidate_blacklists
   validate(
@@ -25,7 +24,6 @@ observeEvent(input$new_remove_list,{
 #'   input$change_remove_list: change removed elements from list
 #'   input$files_remove: remove files
 #'   values$remove_text: remove text
-#'   
 observeEvent(input$change_remove_list,{
   if(is.null(input$files_remove)){
     shinyWidgets::sendSweetAlert(type = "warning",session = session,title = "No list to update")
@@ -35,10 +33,9 @@ observeEvent(input$change_remove_list,{
   }
 })
 
-#' tremove textarea
+#' remove textarea
 #' depends on:
 #'   values$remove_text: remove text
-#'   
 output$UI_remove_textarea<-renderUI({
   if(is.null(values$remove_text)){
     values$remove_text<-""

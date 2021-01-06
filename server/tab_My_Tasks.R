@@ -131,7 +131,7 @@ observeEvent(input$button_box_failed,{
 })
 
 
-#' render information in logfile
+#' render information in log-file
 #' depends on:
 #'   input$log_table_rows_selected: selected rows from log table
 #'   values$log_files: log files

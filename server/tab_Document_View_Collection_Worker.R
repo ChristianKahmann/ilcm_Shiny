@@ -42,7 +42,6 @@ values$Doc_annotations_show<-matrix(c(0),0,13)
 #'   values$Doc_mark_ner: mark that Entity-Tags are selected
 #'   input$Doc_Doc_View_paragraph: should the document be shown with paragraphs
 #'   values$Doc_mark_space: mark spaces between paragraphs
-#'   
 output$Doc_document<-renderUI({
   values$Doc_Doc_reload
   validate(
@@ -249,7 +248,6 @@ observeEvent(eventExpr = input$Doc_anno_scheme_selected,handlerExpr = {
 #' render annotation schemes
 #' depends on:
 #'   values$newscheme: create a new scheme
-#'   
 output$Doc_DV_Annotation_Schemes<-renderUI({
   values$newscheme
   validate(validate(need(
@@ -266,7 +264,6 @@ output$Doc_DV_Annotation_Schemes<-renderUI({
 #'   values$host: selected host
 #'   values$db_port: selected database port
 #'   values$Doc_anno_loaded: loaded annotation for document
-#'   
 observeEvent(input$Doc_save_annotations,{
   if(dim(isolate(values$Doc_annotations_marked))[1]==0){
     shinyWidgets::sendSweetAlert(session = session,title = "no annotations found",type = "warning")
@@ -300,7 +297,6 @@ observeEvent(input$Doc_save_annotations,{
 #' render data table to show document legend
 #' depends on:
 #'   input$Doc_anno_scheme_selected: selected Document annotation scheme
-#'   
 output$Doc_Legend_Table<-renderDataTable({
   try({
     load(paste("collections/annotation_schemes/",input$Doc_anno_scheme_selected,sep=""))
@@ -406,7 +402,6 @@ output$Doc_made_annotations<-renderUI({
 #' check whether an annotation box was drop in the trash div, if this is
 #' depends on:
 #'   input$Doc_delete_annotation_box: check if delete box for annotation is ticked
-#'   
 observe({
   validate(
     need(!is.null(input$Doc_delete_annotation_box),message=FALSE)
@@ -425,7 +420,6 @@ observe({
 #'  values$Doc_delete_anno_box_id: id of box check if delete-annotation-box is ticked
 #'  values$host: selected host
 #'  values$db_port: selected database port
-#'  
 observeEvent(input$Doc_confirm_delete_Doc_box,{
   if(isTRUE(input$Doc_confirm_delete_Doc_box)){
     values$Doc_annotations_marked<-isolate(values$Doc_annotations_marked[-which(isolate(values$Doc_annotations_marked[,1]==isolate(values$Doc_delete_Doc_box_id))),,drop=F])
@@ -443,7 +437,6 @@ observeEvent(input$Doc_confirm_delete_Doc_box,{
 #' visualization of documentwide annotations
 #' depends on:
 #'   values$Doc_annos_documentwide: documentwide annotation
-#'   
 output$Doc_DV_documentwide_annotations<-renderUI({
   validate(
     need(

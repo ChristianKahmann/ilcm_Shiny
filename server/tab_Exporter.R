@@ -23,7 +23,6 @@ output$export_results_resultset_ui<-renderUI({
 #'   input$export_results_resultset_class: export class of result set
 #'   values$export_results_files: export result files
 #'   values$export_results_table: result table for export
-#'   
 output$export_results_files_ui<-DT::renderDataTable({
   validate(
     need(!is.null(input$export_results_resultset),message=F)
@@ -59,7 +58,6 @@ output$export_results_files_ui<-DT::renderDataTable({
 #' depends on:
 #'   input$export_results_buttons: clicked export button?
 #'   values$export_results_download_selected: export result for selected download
-#'   
 observeEvent(ignoreInit = T,input$export_results_buttons,{
   validate(
     need(input$export_results_buttons!="export_results_files_dl_0",message=F)
@@ -89,7 +87,6 @@ output$export_results_final_dl<-downloadHandler(
 #' depends on:
 #'   input$export_results_resultset: result set for exported results
 #'   input$export_results_analysis: result of certain analysis
-#'   
 output$export_results_extra<-renderUI({
   validate(
     need(!is.null(input$export_results_resultset),message=F)
@@ -107,7 +104,6 @@ output$export_results_extra<-renderUI({
 #' export special topic theta results
 #' depends on:
 #'   input$export_results_resultset: result set for export
-#'   
 output$export_results_special_topic_theta<-downloadHandler(
   filename = function(){
     paste0(input$export_results_resultset,"_theta",".csv")
@@ -139,8 +135,7 @@ output$export_results_special_topic_phi<-downloadHandler(
 #' depends on:
 #'   input$export_update_annotations: update annotations for export
 #'   values$host: host for export
-#'   values$db_port: databse port for export
-#'   
+#'   values$db_port: database port for export
 output$export_annotations<-DT::renderDataTable({
   input$export_update_annotations
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)

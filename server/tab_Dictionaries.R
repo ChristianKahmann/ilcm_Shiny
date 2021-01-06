@@ -11,7 +11,6 @@ observeEvent(input$Dict_create,{
 #' change a dictionary
 #' depends on:
 #'    input$Dict_change: initiate to change a dictionary
-#'    
 observeEvent(input$Dict_change,{
   showModal(modalDialog(easyClose = F,
                         title = "Which Dictionary would like to change?",
@@ -43,7 +42,6 @@ observeEvent(input$dict_change_accept,{
 #' delete dictionary
 #' depends on:
 #'   input$Dict_delete: initiate deleting a dictionary
-#'   
 observeEvent(input$Dict_delete,{
   showModal(modalDialog(easyClose = F,
                         title = "Which Dictionary would like to delete?",
@@ -80,7 +78,6 @@ observeEvent(input$dict_confirm_delete,{
 #' render table of dictionaries
 #' depends on:
 #'   values$dict_data: dictionary data
-#'   
 output$Dict_table_ui<-renderRHandsontable({
   validate(
     need(!is.null(values$dict_data),message=FALSE
@@ -93,7 +90,6 @@ output$Dict_table_ui<-renderRHandsontable({
 #' save dictionary
 #' depends on:
 #'   values$dict_data: dictionary data
-#'   
 output$dict_save_ui<-renderUI({
   validate(
     need(!is.null(values$dict_data),message=FALSE
@@ -148,7 +144,6 @@ observe({
 #'   input$Dict_table_ui: dictionary user interface 
 #'   input$CL_dict: dictionary from classification
 #'   input$DE_dict: dictionary from dictionary extraction
-#'   
 observeEvent(input$dict_save_really,{
   if(any(nchar(values$dict_headers)==0)){
     shinyWidgets::sendSweetAlert(session=session,title = "Not all categories have names!",text = "Please specify a name for every category!",type = "warning")

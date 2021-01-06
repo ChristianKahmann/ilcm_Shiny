@@ -2,7 +2,6 @@ values$anno_loaded<-FALSE
 #' render title of document
 #' depends on:
 #'  values$title: document title
-#'  
 output$DV_title<-renderText({
   title<-(values$title)
   return((title))
@@ -224,7 +223,6 @@ output$DV_POS<-renderUI({
 #' render select options for Entity Tags
 #' depends on:
 #'   values$token: chosen tokens
-#'   
 output$DV_Entity<-renderUI({
   options<-c("None",unique(values$token[,"entity"]))
   options<-options[-which(nchar(options)<2)]
@@ -245,7 +243,6 @@ observeEvent(input$anno_scheme_selected,{
 #' render documentwide annotations
 #' depedns on:
 #'   values$annos_documentwide: documentwide annotations
-#'   
 output$DV_documentwide_annotations<-renderUI({
   validate(
     need(

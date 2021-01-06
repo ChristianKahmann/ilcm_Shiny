@@ -1,7 +1,6 @@
 #' document view annotations
 #' depends on:
 #'   values$newscheme: create a new scheme
-#'   
 output$DV_Annotation_Schemes<-renderUI({
   values$newscheme
   validate(validate(need(
@@ -66,7 +65,6 @@ output$annotationComponents<-renderUI({
 #'   input$anno_scheme_selected: selected annotation
 #'   values$highlight_annos: highlight annotation
 #'   values$delete_anno_box_id: delete annotation with id
-#'   
 output$made_annotations<-renderUI({
   validate(
     need(dim(values$annotations_show)[1]>0,message=FALSE)
@@ -110,7 +108,6 @@ output$made_annotations<-renderUI({
 #' check whether an annotation box was drop in the trash div, if this is
 #' depends on:
 #'   input$delete_annotation_box: box to delete annotation
-#'   
 observe({
   validate(
     need(!is.null(input$delete_annotation_box),message=FALSE)

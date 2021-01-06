@@ -135,7 +135,6 @@ output$Coocs_Results <- DT::renderDataTable({
 #'   values$Details_Analysis: details of cooccurrence analysis 
 #'   values$Details_Data_CO: details of cooccurrence analysis data
 #'   values$Coocs_Results_Files: result files for cooccurrence analysis
-#'   
 observe({
   s = input$Coocs_Results_rows_selected
   if (length(s)) {
@@ -171,7 +170,6 @@ observeEvent(input$delete_coocs_results, {
 #' depends on:
 #'   input$more_details_coocs_results: details on cooccurrence analysis results
 #'   values$coocs_selected_row: selected rows from cooccurrence result list
-#'   
 observeEvent(input$more_details_coocs_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_coocs_results, "_")[[1]][6])
@@ -191,7 +189,6 @@ observeEvent(input$more_details_coocs_results,{
 #' depends on:  
 #'   values$coocs_selected_row: selected rows from cooccurrence result list
 #'   values$tasks_coocs: cooccurrence tasks
-#'   
 output$more_details_coocs_table<-DT::renderDataTable({
   validate(
     need(values$coocs_selected_row>0,message=F)

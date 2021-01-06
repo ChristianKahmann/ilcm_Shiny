@@ -5,7 +5,8 @@
 #'   input$Det_SP_subject: detailes for syntactic parsinf subject
 #'   input$Det_SP_predicate: details for synactic parsing predicate 
 #'   input$Det_SP_object: details for syntactic parsing object
-#'   ...
+#'   values$Det_SP_data: detailed syntactic parsing data
+#'   
 observe({
   validate(
     need(!is.null(values$Det_SP_annotations),message=F),
@@ -90,7 +91,9 @@ observe({
   }
 })
 
-
+#' render detailed slider for syntactic parsing
+#' depends on:
+#'   values$Det_SP_data: detailed syntactic parsing data
 output$Det_SP_slider_ui<-renderUI({
   validate(
     need(
@@ -101,7 +104,10 @@ output$Det_SP_slider_ui<-renderUI({
   sliderInput(inputId = "Det_SP_slider",label = "",min = 1,max = max,value = 1,step = 1)
 })
 
-
+#' render detailed syntactic parsing sentences
+#' depends on:
+#'   values$Det_SP_data: detailed syntactic parsing data 
+#'   input$Det_SP_slider: slider for detailed syntactic parsing
 output$Det_SP_sentences<-renderUI({
   validate(
     need(!is.null(values$Det_SP_data),message=F),
@@ -127,7 +133,7 @@ output$Det_SP_sentences<-renderUI({
   return(tagList(sentences))
 })
 
-
+#' observe is user clicked the button ...
 observeEvent(ignoreInit = T,input$show_syntax_button,{
   id<-as.numeric(stringr::str_split(string = input$show_syntax_button,pattern = "_",simplify = T)[1,3])
   if(id>0){

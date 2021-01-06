@@ -44,7 +44,6 @@ values$Anno_annotations_show<-matrix(c(0),0,13)
 #'   values$Anno_mark_space: mark spaces for annotation
 #'   values$Anno_token: annotation tokens
 #'   values$Anno_new: new annotation
-#'   
 output$Anno_document<-renderUI({
   values$Anno_Doc_reload
   
@@ -202,7 +201,6 @@ output$Anno_document<-renderUI({
 #' render metadata 
 #' depends on:
 #'   values$Anno_meta: annotation meta data
-#'   
 output$Anno_DV_metadata_UI<-renderUI({
   validate(
     need(!is.null(values$Anno_meta),message=F)
@@ -220,7 +218,6 @@ output$Anno_DV_metadata_UI<-renderUI({
 #' render select options for POS Tags
 #' depends on:
 #'   values$Anno_token: annotation token
-#'   
 output$Anno_DV_POS<-renderUI({
   options<-c("None",unique(values$Anno_token[,"pos"]))
   radioButtons(inputId = "Anno_DV_POS",label = "POS-TAGS",choices = options,selected = "None")
@@ -229,7 +226,6 @@ output$Anno_DV_POS<-renderUI({
 #' render select options for Entity Tags
 #' depends on:
 #'   values$Anno_token: annotation token
-#'   
 output$Anno_DV_Entity<-renderUI({
   options<-c("None",unique(values$Anno_token[,"entity"]))
   options<-options[-which(nchar(options)<2)]
@@ -256,7 +252,6 @@ observeEvent(input$Anno_anno_scheme_selected,{
 #'   values$newscheme: create a new scheme
 #'   values$set_Anno_anno_scheme: set annotation scheme
 #'   values$Anno_scheme_changed: changed annotation scheme
-#'   
 output$Anno_DV_Annotation_Schemes<-renderUI({
   values$newscheme
   if(!is.null(values$set_Anno_anno_scheme)){
@@ -316,7 +311,6 @@ observeEvent(input$Anno_save_annotations,{
 #' show annotation components 
 #' depends on:
 #'   input$Anno_anno_scheme_selected: selected annotation scheme
-#'   
 output$annotationComponents3<-renderUI({
   validate(
     need(!is.null(input$Anno_anno_scheme_selected),message=FALSE)
@@ -332,7 +326,6 @@ output$annotationComponents3<-renderUI({
 #'   input$Anno_anno_scheme_selected: selected annotation scheme
 #'   values$Anno_highlight_annos: highlight annotations
 #'   values$Anno_delete_anno_box_id: check annotation-delete-box is ticked
-#'   
 output$Anno_made_annotations<-renderUI({
   validate(
     need(dim(values$Anno_annotations_show)[1]>0,message=FALSE)
@@ -373,7 +366,6 @@ output$Anno_made_annotations<-renderUI({
 #' check whether an annotation box was drop in the trash div, if this is
 #' depends on:
 #'   input$Anno_delete_annotation_box: check if annotation-delete-box is ticked
-#'   
 observe({
   validate(
     need(!is.null(input$Anno_delete_annotation_box),message=FALSE)
@@ -408,7 +400,6 @@ observeEvent(input$Anno_confirm_delete_anno_box,{
 #' render documentwide annotations
 #' depends on:
 #'   values$Anno_annos_documentwide: docuemntwide annotation
-#'   
 output$Anno_DV_documentwide_annotations<-renderUI({
   validate(
     need(

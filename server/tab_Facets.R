@@ -2,7 +2,6 @@
 #' depends on:
 #'    values$metadata_available: available meta data
 #'    values$facet_names: names of facets
-#'    
 output$Fac_meta_UI<-renderUI({
   ava<-(values$metadata_available)
   empty_metadata<-names(which(apply(ava,MARGIN = 2,function(x){all(is.na(x))})))
@@ -131,7 +130,6 @@ output$Fac_meta_UI<-renderUI({
 #'   values$q: parameter q
 #'   values$fq: parameter fq
 #'   input$Fac_mde1_minOcc: facets mde1 of minimal Occurrence
-#'   
 output$Fac_mde1_abs<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -243,8 +241,8 @@ output$Fac_mde1_rel<-renderUI({
 #' depends on:
 #'   values$Fac_mde2_abs: absolute values of facets mde2
 #'   values$url: used url
-#'   values$q: parameter q
-#'   values$fq: parameter fq
+#'   values$q: selected character/words from dropdown menu
+#'   values$fq: time stamp of request
 #'   input$Fac_mde2_minOcc: facets of mde2 for minimal Occurrence
 #'   values$facet_names: facet names
 output$Fac_mde2_abs<-renderUI({
@@ -356,11 +354,10 @@ output$Fac_mde2_rel<-renderUI({
 #' depends on:
 #'   values$url: selected url
 #'   values$Fac_mde3_abs: absolute values of facets from mde3
-#'   values$q: parameter q
-#'   values$fq: parameter fq
+#'   values$q: selected character/words from dropdown menu
+#'   values$fq: time stamp of request
 #'   input$Fac_mde3_minOcc: facets of mde3 for minimal occurrence
 #'   values$facet_names: names of facets
-#'   
 output$Fac_mde3_abs<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -480,11 +477,10 @@ output$Fac_mde3_rel<-renderUI({
 #' depends on:
 #'   values$url: selected url
 #'   values$Fac_mde4_abs: absolute values of facets mde4
-#'   values$q: parameter q
-#'   values$fq: parameter fq
+#'   values$q: selected character/word from dropdown menu
+#'   values$fq: time stamp of request
 #'   input$Fac_mde4_minOcc: facets mde4 for minimal Occurrence
 #'   values$facet_names: facet names
-#'   
 output$Fac_mde4_abs<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -541,7 +537,6 @@ output$Fac_mde4_abs<-renderUI({
 #'   input$Fac_mde4_minOcc: facets of mde4 for minimal occurrence
 #'   values$Fac_mde4_rel: facets of mde4 - relative values
 #'   values$facet_names: facet names
-#'   
 output$Fac_mde4_rel<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -605,11 +600,10 @@ output$Fac_mde4_rel<-renderUI({
 #' depends on:
 #'   values$url: selected url
 #'   values$Fac_mde5_abs: facets of mde5 - absolute values
-#'   values$q: parameter q
-#'   values$fq: parameter fq
+#'   values$q: selected character/words from dropdown menu
+#'   values$fq: time stamp of request
 #'   input$Fac_mde5_minOcc: facets of mde5 for minimal occurrence
 #'   values$facet_names: facet names
-#'   
 output$Fac_mde5_abs<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -666,7 +660,6 @@ output$Fac_mde5_abs<-renderUI({
 #'   input$Fac_mde5_minOcc: facets of mde5 for minimal occurrence
 #'   values$Fac_mde5_rel: factes of mde5- relative values
 #'   values$facet_names: facet names
-#'   
 output$Fac_mde5_rel<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -730,11 +723,10 @@ output$Fac_mde5_rel<-renderUI({
 #' depends on:
 #'   values$url: selected url
 #'   values$Fac_mde6_abs: facets of mde6 - absolute values
-#'   values$q: parameter q
-#'   values$fq: parameter fq
+#'   values$q: selected character/words from dropwdown menu 
+#'   values$fq: time stamp of request
 #'   input$Fac_mde6_minOcc: facets of mde6 for minimal occurrence
 #'   values$facet_names: facet names
-#'   
 output$Fac_mde6_abs<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -791,7 +783,6 @@ output$Fac_mde6_abs<-renderUI({
 #'   input$Fac_mde6_minOcc: facets of mde6 for minimal occurrence
 #'   values$Fac_mde6_rel: facets of mde6 - relative values
 #'   values$facet_names: facet names
-#'   
 output$Fac_mde6_rel<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -855,8 +846,8 @@ output$Fac_mde6_rel<-renderUI({
 #' depends on:
 #'   values$url: selected url
 #'   values$Fac_mde7_abs: facets of mde7 - absolute values
-#'   values$q: parameter q
-#'   values$fq: parameter fq
+#'   values$q: selected character/words from dropdown menu
+#'   values$fq:time stamp of request
 #'   input$Fac_mde7_minOcc: facets of mde7 for minimal occurrence
 #'   values$facet_names: facet names
 output$Fac_mde7_abs<-renderUI({
@@ -914,7 +905,6 @@ output$Fac_mde7_abs<-renderUI({
 #'   input$dataset: selected dataset
 #'   input$Fac_mde7_minOcc: facets of mde7 - relative values
 #'   values$facet_names: facet names
-#'   
 output$Fac_mde7_rel<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -982,7 +972,6 @@ output$Fac_mde7_rel<-renderUI({
 #'   values$fq: parameter fq
 #'   input$Fac_mde8_minOcc: facets of mde8 for minimal occurrence
 #'   values$facet_names: facet names
-#'   
 output$Fac_mde8_abs<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -1039,7 +1028,6 @@ output$Fac_mde8_abs<-renderUI({
 #'   input$Fac_mde8_minOcc: facet of mde8 for minimal occurrence
 #'   values$Fac_mde8_rel: facet mde8 - relative values
 #'   values$facet_names: facet names
-#'   
 output$Fac_mde8_rel<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -1103,11 +1091,10 @@ output$Fac_mde8_rel<-renderUI({
 #' depends on:
 #'    values$url: selected url
 #'    values$Fac_mde9_abs: facet mde9 - absolute values
-#'    values$q: parameter q
-#'    values$fq: parameter fq
+#'    values$q: selected character/word from dropdown menu
+#'    values$fq: time stamp of request
 #'    input$Fac_mde9_minOcc: facet mde9 for minimal occurrence
-#'    values$facet_names: facet names
-#'    
+#'    values$facet_names: facet name
 output$Fac_mde9_abs<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -1229,10 +1216,9 @@ output$Fac_mde9_rel<-renderUI({
 #' render Facet View for Entieties absolute
 #' depends on:
 #'   values$url: selected url
-#'   values$fq: parameter q
-#'   values$fq: parameter fq
+#'   values$fq: selected character/word from dropdown menu
+#'   values$fq: time stamp if request
 #'   values$Fac_Ent_abs: facets for absolute entities
-#'   
 output$Fac_Entities_abs<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -1287,9 +1273,8 @@ output$Fac_Entities_abs<-renderUI({
 #'   values$Fac_Ent_abs: facet for absolute entities
 #'   input$dataset: select dataset
 #'   values$Fac_Ent_rel: facet for relative entities
-#'   values$q: parameter q
-#'   values$fq: parameter fq
-#'   
+#'   values$q: selected character/words from dropdown menu
+#'   values$fq: time stamp of request
 output$Fac_Entities_rel<-renderUI({
   #check wheather search parameters were specified
   validate(
@@ -1336,10 +1321,9 @@ output$Fac_Entities_rel<-renderUI({
 #' depends on:
 #'   values$url: selected url
 #'   input$dataset: selected dataset
-#'   values$q: parameter q
-#'   values$fq: parameter fq
+#'   values$q: selected character/words from dropdown menu
+#'   values$fq: time stamp of request
 #'   input$Fac_Token_rel: facet tokens relativ
-#'   
 output$Fac_Token<-renderPlotly({
   #check wheather search parameters were specified
   validate(

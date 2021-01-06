@@ -9,7 +9,6 @@
 #'   values$collection_selected: selected collection for classification task
 #'   values$Classification_Results_Files: result files for classification
 #'   values$tasks_class: classification task
-#'   
 output$Classification_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_classification_result
@@ -159,7 +158,6 @@ output$Classification_Results <- renderDataTable({
 #'   values$tasks_class: classification tasks
 #'   values$Det_CL_results_complete: complete results of detailed classification
 #'   values$Class_timeseries_data: data from timesiries of classification
-#'   
 observeEvent(input$Classification_Results_rows_selected,ignoreInit = T,{
   s = input$Classification_Results_rows_selected
   if (length(s)) {
@@ -205,7 +203,7 @@ observeEvent(input$Classification_Results_rows_selected,ignoreInit = T,{
 
 
 
-#' if delete classification result is clicked delete files and db entry
+#' if delete classification result is clicked delete files and data base entry
 #' depends on:
 #'   input$delete_classification_results: delete classification results
 #'   values$class_selected_row: selected rows from classification result list
@@ -227,7 +225,6 @@ observeEvent(input$delete_classification_results, {
 #' depends on:
 #'   input$more_details_classification_results: details on classification results
 #'   values$class_selected_row: selected rows of classification list
-#'   
 observeEvent(input$more_details_classification_results,{
   selectedRow <-
     as.numeric(strsplit(input$more_details_classification_results, "_")[[1]][6])
@@ -247,7 +244,6 @@ observeEvent(input$more_details_classification_results,{
 #' depends on:
 #'   values$class_selected_row: selected row from classification result list
 #'   values$tasks_class: classification tasks
-#'   
 output$more_details_classification_table<-DT::renderDataTable({
   validate(
     need(values$class_selected_row>0,message=F)

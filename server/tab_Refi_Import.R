@@ -14,7 +14,6 @@ output$refi_import_table_datasets <- DT::renderDataTable({
 #' refine imported table annotation scheme
 #' depends on:
 #'   values$newscheme: new scheme to add
-#'   
 output$refi_import_table_annotation_scheme <- DT::renderDataTable({
   values$newscheme
   schemes <- IO_get_annotation_schemes()
@@ -36,7 +35,7 @@ output$refi_import_table_annotation_scheme <- DT::renderDataTable({
 #' import annotation scheme from list
 #' depends on:
 #'   input$refi_import_table_annotation_scheme_rows_selected: selected rows from new annotation scheme 
-#'   input$selectedAnnotationSchemeImport: import new annotation scheme 
+#'   input$selectedAnnotationSchemeImport: import selected annotation scheme 
 output$annotation_scheme_list_import <- renderUI({
   session$sendCustomMessage("getSelectedAnnotationSchemeImport", input$refi_import_table_annotation_scheme_rows_selected)
   if (!is.null(input$selectedAnnotationSchemeImport)) {
@@ -52,7 +51,6 @@ output$annotation_scheme_list_import <- renderUI({
 #' depends on:
 #'   input$refi_import_fileInput: new file import
 #'    input$refi_import_dataset_name: dataset name from import
-#'    
 observeEvent(input$refi_import_fileInput,{
   dataset <- input$refi_import_dataset_name
   uploaded_file <- input$refi_import_fileInput
@@ -115,7 +113,6 @@ observeEvent(input$refi_import_fileInput,{
 #' process import of new dataset
 #' depends on:
 #'   input$refi_import_dataset_name: refine import dataset name
-#'   
 process_import <- function(dataset, data, xml_document, import_directory){
   #create meta metadata vector
   meta_metadata<-data.frame(dataset = c(dataset))
