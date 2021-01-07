@@ -2,7 +2,6 @@
 #' render DE words to export checkbox
 #' depends on:
 #'   input$Det_DE_Word: detailed dictionary extraction input-words
-#'   
 output$DE_words_to_export<-renderUI({
   validate(
     need(length(input$Det_DE_Word)>0,message = FALSE)
@@ -26,7 +25,6 @@ output$DE_words_to_export<-renderUI({
 #'   values$DE_rel_doc_freqs_month: relativ frequency of documents from monthly intervall
 #'   values$DE_rel_doc_freqs_year: relativ frequency of documents from yearly intervall
 #'   values$DE_freq_matrix: frequency matrix 
-#'   
 output$DE_plot<-renderPlotly({
   validate(
     need(length(input$Det_DE_Word)>0,"choose at least one concept")
@@ -136,7 +134,6 @@ output$DE_plot<-renderPlotly({
 #' depends on:
 #'   values$DE_freq_matrix: frequency matrix
 #'   input$DE_CB_words_to_export: words for export
-#'   
 output$download_DE_frequencies<-downloadHandler(
   filename = function() {
     paste('Time_Series-', Sys.Date(), '.csv', sep='')
@@ -151,7 +148,6 @@ output$download_DE_frequencies<-downloadHandler(
 #' render regular expression for words
 #' depends on:
 #'   values$Det_DE_regexp_words: regular expression words
-#'   
 output$Det_DE_regexp_words<-renderUI({
   validate(
     need(!is.null(values$Det_DE_regexp_words),message=F)

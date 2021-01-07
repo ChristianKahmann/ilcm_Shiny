@@ -54,7 +54,6 @@ output$Det_KE_table<-DT::renderDataTable({
 #'   values$Det_KE_data: keyword extraction data
 #'   input$dimension: selected dimension
 #'   input$Det_KE_n: parameter n for keyword extraction
-#'   
 output$Det_KE_plot<-plotly::renderPlotly({
   validate(
     need(

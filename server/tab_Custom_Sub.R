@@ -16,9 +16,9 @@ textAreaInput(inputId = "custom_inputtext_Sub",label = "custom input",value =  v
 #'    values$Doc_sort: sort documents
 #'    values$Doc_start: start document
 #'    values$Doc_url: url for document
-#'    values$Doc_q: document parameter q
-#'    values$Doc_fq: document parameter fq
-#'    values$Doc_fq_init: initialize parameter fq
+#'    values$Doc_q: selected character/ word from document
+#'    values$Doc_fq: time stamp of document
+#'    values$Doc_fq_init: initial time the requests are made
 #'    values$numFound_Sub: number of found subcollections
 #'    values$Doc_search: search for documents
 #'    values$Doc_solr_query: solr query of documents

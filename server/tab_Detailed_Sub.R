@@ -19,16 +19,14 @@
 #'   values$Doc_start: start of document
 #'   values$Doc_custom: customed document
 #'   values$Doc_url: document url
-#'   values$Doc_q: docuemnt parameter q
-#'   values$Doc_fq: document parameter fq
-#'   values$Doc_fq_init: initialize parameter fq
+#'   values$Doc_q: selected character/ words from document
+#'   values$Doc_fq: time stamp of request
+#'   values$Doc_fq_init: initial time the requests are made
 #'   values$numFound_Sub: found numbers in sub
 #'   values$Doc_search: search for document
 #'   values$Doc_solr_query: document query for solr
 #'   values$Sub_search: search for sub
 #'   values$Doc_delete_documents: delete documents
-#'   
-#'   
 observeEvent(input$Det_action_Sub,{
   validate(
     need(length(input$collections_rows_selected)>0,"no Collection specified")
@@ -160,10 +158,6 @@ observeEvent(input$Det_action_Sub,{
 })
 
 
-
-#' render input fields for detailed search depending on queries to maria db
-
-
 #' render input fields for detailed search depending on queries to maria db
 #' set choices for mde1 if avaiable
 #' depends on:
@@ -198,7 +192,6 @@ observe({
 #'   values$host: selected host
 #'   values$db_port: used database port
 #'   values$dataset_Sub: dataset of sub
-#'   
 observe({
   shinyjs::hideElement(id = "Det_mde2_Sub")
   validate(
@@ -394,7 +387,6 @@ observe({
 #'   values$Doc_dataset: dateset of document
 #'   values$host: selected host
 #'   values$db_port: used database port
-#'   
 output$Det_token_Sub<-renderUI({
   validate(
     need(length(values$Doc_dataset)>0,message="Please choose at least one dataset")
@@ -412,7 +404,6 @@ output$Det_token_Sub<-renderUI({
 #'   values$Doc_dataset: dataset of document
 #'   values$host: selected host
 #'   values$db_port: used database port
-#'   
 output$Det_von_Sub<-renderUI({
   validate(
     need(length(values$Doc_dataset)>0,message=FALSE)
@@ -490,7 +481,6 @@ output$Det_zu_Sub<-renderUI({
 #' create solr suggest suggestions for detailed search
 #' depends on:
 #'   input$Det_inputtext_Sub: detailed input text for sub
-#'   
 observe({
   validate(
     need(!is.null(input$Det_inputtext_Sub),message=F)

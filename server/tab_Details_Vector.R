@@ -2,7 +2,6 @@
 #' depends on:
 #'   input$Det_VS_words: vector space - words
 #'   input$Det_VS_n: parameter n for vector space representation
-#'   
 output$vs_similar_table<-DT::renderDataTable({
   validate(
     need(!is.null(input$Det_VS_words),message = FALSE),
@@ -23,7 +22,6 @@ output$vs_similar_table<-DT::renderDataTable({
 #'   input$Det_VS_n: parameter n for vector space representation 
 #'   values$vs_model: vector space model
 #'   values$vs_tsne: two dimensional reduction of the vector space model using tsne
-#'   
 output$vs_similar_plotly_tsne<-renderPlotly({
   validate(
     need(!is.null(input$Det_VS_words),message = FALSE),
@@ -81,7 +79,6 @@ output$vs_similar_plotly_tsne<-renderPlotly({
 #'   input$Det_VS_words: vector space words
 #'   input$Det_VS_n: parameter n for vector space representation
 #'   values$vs_pca: two dimensional reduction of the vector space model using pca
-#'   
 output$vs_similar_plotly_pca<-renderPlotly({
   validate(
     need(!is.null(input$Det_VS_words),message = FALSE),
@@ -145,7 +142,6 @@ output$vs_similar_plotly_pca<-renderPlotly({
 #'   input$Det_VS_linS_words4: substructure for word 4
 #'   input$Det_VS_linS_words5: substructure for word 5
 #'   values$vs_pca: two dimensional reduction of the vector space model using pca
-#'   
 output$vs_linS_plotly_pca<-renderPlotly({
   validate(
     need(length(input$Det_VS_linS_words1)>1,"Please choose at least two words")
@@ -193,7 +189,6 @@ output$vs_linS_plotly_pca<-renderPlotly({
 #'   input$Det_VS_linS_words4: linear substructure of word 4
 #'   input$Det_VS_linS_words5: linear substructure of word 5
 #'   values$vs_tsne: two dimensional reduction of the vector space model using tsne
-#'   
 output$vs_linS_plotly_tsne<-renderPlotly({
   validate(
     need(length(input$Det_VS_linS_words1)>1,"Please choose at least two words")

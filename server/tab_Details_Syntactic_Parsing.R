@@ -133,7 +133,12 @@ output$Det_SP_sentences<-renderUI({
   return(tagList(sentences))
 })
 
-#' observe is user clicked the button ...
+#' observe if user clicked the "show syntax" button
+#' depends on:
+#'   input$show_syntax_button: is syntax-button selected
+#'   input$Det_SP_slider: position of syntactic parsing slider
+#'   values$Det_SP_data: detailed syntactic parsing data
+#'   values$Det_SP_data_without_addings: detailed syntactic parsing data raw (without addings)
 observeEvent(ignoreInit = T,input$show_syntax_button,{
   id<-as.numeric(stringr::str_split(string = input$show_syntax_button,pattern = "_",simplify = T)[1,3])
   if(id>0){
@@ -165,7 +170,9 @@ observeEvent(ignoreInit = T,input$show_syntax_button,{
   }
 })
 
-
+#' show detailed syntactic parsing tree
+#' depends on:
+#'   values$Det_SP_data_without_addings: detailed syntactic parsing data without addings
 output$Det_SP_tree<-renderVisNetwork({
   
   x<-values$Det_SP_data_without_addings
@@ -227,7 +234,9 @@ output$Det_SP_tree<-renderVisNetwork({
 #   datatable(data)
 # })
 
-
+#' show number of results for detailed syntactic parsing
+#' depends on:
+#'   values$Det_SP_data: detailed syntactic parsing data
 output$Det_SP_number_of_results<-renderUI({
   text<-paste0(length(unique(values$Det_SP_data$sentence_id))," sentences could have been found matching the sepcified input!")
   return(tags$b(text))

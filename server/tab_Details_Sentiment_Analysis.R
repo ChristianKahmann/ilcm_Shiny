@@ -4,7 +4,7 @@
 #'   values$Det_Senti_meta: meta data for sentiment analysis
 #'   input$Det_SA_Time: selected time interval for sentiment analysis 
 #'   values$Det_SA_DL_res: sentiment analysis detailed results
-#'   
+#'   input$Det_SA_Lines: show marker lines between data
 output$Det_Senti_date<-renderPlotly({
   validate(
     need(!is.null(values$Det_Senti_meta),message = F),
@@ -152,7 +152,6 @@ output$Det_SA_download_timeseries<-downloadHandler(
 #'   values$host: selected host
 #'   values$db_port: chosen database port
 #'   values$senti_meta_reduced: reduced meta data for sentiment analysis
-#'   
 output$Det_Senti_tab_Panels_mde_UI<-renderUI({
   #check which metadata are avaiable
   meta<-values$Det_Senti_meta
@@ -201,7 +200,7 @@ output$Det_Senti_tab_Panels_mde_UI<-renderUI({
 #'   values$senti_meta_reduced: reduced meta data from sentiment analysis
 #'   input$Det_SA_min: minimum for sentiment analysis
 #'   values$Det_Senti_meta: sentiment analysis meta data
-#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   input$Det_SA_Lines: show marker lines from sentiment analysis
 #'   values$Det_SA_DL_res: sentiment analysis detailes results
 output$senti_plot_1<-plotly::renderPlotly({
   validate(
@@ -267,7 +266,7 @@ output$senti_plot_1<-plotly::renderPlotly({
 #'    values$senti_meta_reduced:
 #'    input$Det_SA_min: minimum for sentiment analysis
 #'    values$Det_Senti_meta: meta data for sentiment analysis
-#'    input$Det_SA_Lines: selected lines for sentiment analyisis
+#'    input$Det_SA_Lines: show marker lines for sentiment analyisis
 #'    values$Det_SA_DL_res: selected results for sentiment analysis
 output$senti_plot_2<-plotly::renderPlotly({
   validate(
@@ -335,7 +334,7 @@ output$senti_plot_2<-plotly::renderPlotly({
 #'   values$senti_meta_reduced: reduced meta data from sentiment analysis
 #'   input$Det_SA_min: minimum for sentiment analysis
 #'   values$Det_Senti_meta: sentiment analysis meta data
-#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   input$Det_SA_Lines: show marker lines from sentiment analysis
 #'   values$Det_SA_DL_res: sentiment analysis detailes results  
 output$senti_plot_3<-plotly::renderPlotly({
   validate(
@@ -403,7 +402,7 @@ output$senti_plot_3<-plotly::renderPlotly({
 #'   values$senti_meta_reduced: reduced meta data from sentiment analysis
 #'   input$Det_SA_min: minimum for sentiment analysis
 #'   values$Det_Senti_meta: sentiment analysis meta data
-#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   input$Det_SA_Lines: show marker lines from sentiment analysis
 #'   values$Det_SA_DL_res: sentiment analysis detailes results
 output$senti_plot_4<-plotly::renderPlotly({
   validate(
@@ -471,7 +470,7 @@ output$senti_plot_4<-plotly::renderPlotly({
 #'   values$senti_meta_reduced: reduced meta data from sentiment analysis
 #'   input$Det_SA_min: minimum for sentiment analysis
 #'   values$Det_Senti_meta: sentiment analysis meta data
-#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   input$Det_SA_Lines: show marker lines from sentiment analysis
 #'   values$Det_SA_DL_res: sentiment analysis detailes results
 output$senti_plot_5<-plotly::renderPlotly({
   validate(
@@ -538,7 +537,7 @@ output$senti_plot_5<-plotly::renderPlotly({
 #'   values$senti_meta_reduced: reduced meta data from sentiment analysis
 #'   input$Det_SA_min: minimum for sentiment analysis
 #'   values$Det_Senti_meta: sentiment analysis meta data
-#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   input$Det_SA_Lines: show marker lines from sentiment analysis
 #'   values$Det_SA_DL_res: sentiment analysis detailes results
 output$senti_plot_6<-plotly::renderPlotly({
   validate(
@@ -605,7 +604,7 @@ output$senti_plot_6<-plotly::renderPlotly({
 #'   values$senti_meta_reduced: reduced meta data from sentiment analysis
 #'   input$Det_SA_min: minimum for sentiment analysis
 #'   values$Det_Senti_meta: sentiment analysis meta data
-#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   input$Det_SA_Lines: show marker lines from sentiment analysis
 #'   values$Det_SA_DL_res: sentiment analysis detailes results
 output$senti_plot_7<-plotly::renderPlotly({
   validate(
@@ -672,7 +671,7 @@ output$senti_plot_7<-plotly::renderPlotly({
 #'   values$senti_meta_reduced: reduced meta data from sentiment analysis
 #'   input$Det_SA_min: minimum for sentiment analysis
 #'   values$Det_Senti_meta: sentiment analysis meta data
-#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   input$Det_SA_Lines: show marker lines from sentiment analysis
 #'   values$Det_SA_DL_res: sentiment analysis detailes results
 output$senti_plot_8<-plotly::renderPlotly({
   validate(
@@ -739,7 +738,7 @@ output$senti_plot_8<-plotly::renderPlotly({
 #'   values$senti_meta_reduced: reduced meta data from sentiment analysis
 #'   input$Det_SA_min: minimum for sentiment analysis
 #'   values$Det_Senti_meta: sentiment analysis meta data
-#'   input$Det_SA_Lines: lines from sentiment analysis
+#'   input$Det_SA_Lines: show marker lines from sentiment analysis
 #'   values$Det_SA_DL_res: sentiment analysis detailes results 
 output$senti_plot_9<-plotly::renderPlotly({
   validate(
@@ -809,7 +808,6 @@ output$senti_plot_9<-plotly::renderPlotly({
 #'   values$host: selected host
 #'   values$port: selected port
 #'   values$Details_Data_SA: details of sentiment analysis data
-#'   
 output$Det_Senti_validation_UI<-renderUI({
   validate(
     need(
@@ -899,7 +897,6 @@ output$Det_Senti_validation_UI<-renderUI({
 #' table showing the most "positive" documents
 #' depends on:
 #'   values$Det_Senti_meta: sentiment analysis meta data 
-#'   
 output$Det_Senti_validation_table_positive<-DT::renderDataTable({
   data<-values$Det_Senti_meta
   data<-data[order(data$score,decreasing=T),c("title","scores")]
@@ -910,7 +907,6 @@ output$Det_Senti_validation_table_positive<-DT::renderDataTable({
 #' table showing the most "negative" documents
 #' depends on:
 #'   values$Det_Senti_meta: sentiment analysis meta data
-#'   
 output$Det_Senti_validation_table_negative<-DT::renderDataTable({
   data<-values$Det_Senti_meta
   data<-data[order(data$score,decreasing=F),c("title","scores")]

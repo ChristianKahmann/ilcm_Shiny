@@ -4,29 +4,27 @@
 #'   values$solr_url: create sorl url
 #'   input$Det_vonin: time marker for the beginning of a process
 #'   input$Det_bisin: time marker for the end of a process
-#'   input$Det_mde1:
-#'   input$Det_mde2:
-#'   input$Det_mde3:
-#'   input$Det_mde4:
-#'   input$Det_mde5:
-#'   input$Det_mde6:
-#'   input$Det_mde7:
-#'   input$Det_mde8:
-#'   input$Det_mde9:
+#'   input$Det_mde1: detailed information of dataframe row mde1
+#'   input$Det_mde2: detailed information of dataframe row mde2
+#'   input$Det_mde3: detailed information of dataframe row mde3
+#'   input$Det_mde4: detailed information of dataframe row mde4
+#'   input$Det_mde5: detailed information of dataframe row mde5
+#'   input$Det_mde6: detailed information of dataframe row mde6
+#'   input$Det_mde7: detailed information of dataframe row mde7
+#'   input$Det_mde8: detailed information of dataframe row mde8
+#'   input$Det_mde9: detailed information of dataframe row mde9
 #'   input$Det_Token: choosen token range
 #'   following values are solr query parameters for calls in search results and timseries
-#'   values$start:
-#'   values$custom:
-#'   values$url:
-#'   values$q:
-#'   values$fq:
-#'   values$fq_init:
-#'   values$numFound:
-#'   values$start:
-#'   values$search:
-#'   values$solr_query
-#'   values$delete_documents
-#'   
+#'   values$start: initiate start
+#'   values$custom: potential customed options
+#'   values$url: selected url
+#'   values$q: selected character/ words from dropdown menu
+#'   values$fq: time stamp of request
+#'   values$fq_init: intial time the requests are made
+#'   values$numFound: number of document in stack
+#'   values$search: search options
+#'   values$solr_query: current solr querie
+#'   values$delete_documents: delete documents
 observeEvent(input$Det_action,{
   validate(
     need(length(input$dataset)>0,message=FALSE)
@@ -175,8 +173,14 @@ observeEvent(input$Det_action,{
 
 
 
-#render input fields for detailed search depending on queries to maria db
-#set choices for mde1 if avaiable
+#' render input fields for detailed search depending on queries to maria db
+#' set choices for mde1 if avaiable
+#' depends on:
+#'   input$tabBoxsearch: input for detailed search
+#'   input$dataset: input of dataset
+#'   values$metadata_available: available metadata
+#'   values$host: current host
+#'   values$db_port: current database port
 observe({
   shinyjs::hideElement(id = "Det_mde1")
   validate(
@@ -194,7 +198,13 @@ observe({
   }
 })
 
-#set choices for mde2 if avaiable
+#' set choices for mde2 if avaiable
+#' depends on:
+#'   input$tabBoxsearch: input for detailed search
+#'   input$dataset: input of dataset
+#'   values$metadata_available: available metadata
+#'   values$host: current host
+#'   values$db_port: current database port
 observe({
   shinyjs::hideElement(id = "Det_mde2")
   validate(
@@ -212,7 +222,13 @@ observe({
   }
 })
 
-#set choices for mde3 if avaiable
+#' set choices for mde3 if avaiable
+#' depends on:
+#'   input$tabBoxsearch: input for detailed search
+#'   input$dataset: input of dataset
+#'   values$metadata_available: available metadata
+#'   values$host: current host
+#'   values$db_port: current database port
 observe({
   shinyjs::hideElement(id = "Det_mde3")
   validate(
@@ -230,7 +246,13 @@ observe({
   }
 })
 
-#set choices for mde4 if avaiable
+#' set choices for mde4 if avaiable
+#' depends on:
+#'   input$tabBoxsearch: input for detailed search
+#'   input$dataset: input of dataset
+#'   values$metadata_available: available metadata
+#'   values$host: current host
+#'   values$db_port: current database port
 observe({
   shinyjs::hideElement(id = "Det_mde4")
   validate(
@@ -248,7 +270,13 @@ observe({
   }
 })
 
-#set choices for mde5 if avaiable
+#' set choices for mde5 if avaiable
+#' depends on:
+#'   input$tabBoxsearch: input for detailed search
+#'   input$dataset: input of dataset
+#'   values$metadata_available: available metadata
+#'   values$host: current host
+#'   values$db_port: current database port
 observe({
   shinyjs::hideElement(id = "Det_mde5")
   validate(
@@ -266,7 +294,13 @@ observe({
   }
 })
 
-#set choices for mde6 if avaiable
+#' set choices for mde6 if avaiable
+#' depends on:
+#'   input$tabBoxsearch: input for detailed search
+#'   input$dataset: input of dataset
+#'   values$metadata_available: available metadata
+#'   values$host: current host
+#'   values$db_port: current database port
 observe({
   shinyjs::hideElement(id = "Det_mde6")
   validate(
@@ -284,7 +318,13 @@ observe({
   }
 })
 
-#set choices for mde7 if avaiable
+#' set choices for mde7 if avaiable
+#' depends on:
+#'   input$tabBoxsearch: input for detailed search
+#'   input$dataset: input of dataset
+#'   values$metadata_available: available metadata
+#'   values$host: current host
+#'   values$db_port: current database port
 observe({
   shinyjs::hideElement(id = "Det_mde7")
   validate(
@@ -302,7 +342,13 @@ observe({
   }
 })
 
-#set choices for mde8 if avaiable
+#' set choices for mde8 if avaiable
+#' depends on:
+#'   input$tabBoxsearch: input for detailed search
+#'   input$dataset: input of dataset
+#'   values$metadata_available: available metadata
+#'   values$host: current host
+#'   values$db_port: current database port
 observe({
   shinyjs::hideElement(id = "Det_mde8")
   validate(
@@ -320,7 +366,13 @@ observe({
   }
 })
 
-#set choices for mde9 if avaiable
+#' set choices for mde9 if avaiable
+#' depends on:
+#'   input$tabBoxsearch: input for detailed search
+#'   input$dataset: input of dataset
+#'   values$metadata_available: available metadata
+#'   values$host: current host
+#'   values$db_port: current database port
 observe({
   shinyjs::hideElement(id = "Det_mde9")
   validate(
@@ -341,7 +393,11 @@ observe({
 
 
 
-
+#' show detailed tokens
+#' depends on:
+#'   input$dataset: chosen datasets
+#'   values$host: current host
+#'   values$db_port: selected data base port
 output$Det_token<-renderUI({
   validate(
     need(length(input$dataset)>0,message="Please choose at least one dataset")
@@ -353,6 +409,11 @@ output$Det_token<-renderUI({
   sliderInput(inputId = "Det_Token",label = "Number of Token:",min=min,max=max,value = c(min,max),step = 10)
 })
 
+#' show details from dataset named "von"
+#' depends on:
+#'   input$dataset: chosen dataset
+#'   values$host: current host
+#'   values$db_port: selected database port
 output$Det_von<-renderUI({
   validate(
     need(length(input$dataset)>0,message=FALSE)
@@ -384,6 +445,11 @@ output$Det_von<-renderUI({
   dateInput(inputId = "Det_vonin",label = "Date von:",language = "de",value = min)
 })
 
+#' show details from dataset named "zu"
+#' depends on:
+#'   input$dataset: chosen dataset
+#'   values$host: current host
+#'   values$db_port: selected database port
 output$Det_zu<-renderUI({
   validate(
     need(length(input$dataset)>0,message=FALSE)
@@ -417,7 +483,9 @@ output$Det_zu<-renderUI({
 })
 
 
-#create solr suggest suggestions for detailed search
+#' create solr suggest suggestions for detailed search
+#' depends on:
+#'   input$Det_inputtext: detailed input text
 observe({
   validate(
     need(!is.null(input$Det_inputtext),message=F)

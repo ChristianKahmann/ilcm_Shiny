@@ -3,7 +3,6 @@
 #'   input$Det_DD_reset_user_input: confirmation to reset
 #'   values$DD_whitelist: customed whitelist
 #'   values$DD_blacklist customed blacklist
-#'   
 observeEvent(ignoreInit = T,input$Det_DD_reset_user_input,{
   values$DD_whitelist<-NULL
   values$DD_blacklist<-NULL
@@ -21,8 +20,7 @@ observeEvent(ignoreInit = T,input$Det_DD_reset_user_input,{
 #'   values$Det_DD_data_display: display data from deduplication 
 #'   values$Det_DD_current_table: show current table for deduplication
 #'   values$blacklist: customed blacklist
-#'   values$whitelist: customed whitelist
-#'   
+#'   values$whitelist: customed whitelist 
 observe({
   validate(
     need(!is.null(values$Det_DD_results),message=F),
@@ -149,7 +147,6 @@ observe({
 #'   values$DD_blacklist: customed blacklist
 #'   input$Det_DD_strategy: deduplications strategy
 #'   values$Det_DD_current_table: current table for defuplication
-#'   
 observe({
   validate(
     need(dim(values$Det_DD_data_display)[1]>0,message=F)
@@ -195,7 +192,6 @@ observe({
 #'   values$blacklist: values of selected blacklist
 #'   values$DD_blacklist: customed blacklist
 #'   values$Det_DD_meta: deduplication meta data
-#'   
 output$Det_DD_Table_Black<-DT::renderDataTable({
   validate(
     need(length(values$blacklist)>0,message="No duplicates found.")
@@ -252,7 +248,6 @@ output$Det_DD_Table_Black<-DT::renderDataTable({
 #'   values$whitelist: values of whitelist
 #'   values$DD_whitelist: customed whitelist
 #'   values$Det_DD_meta: meta data from deduplication
-#'   
 output$Det_DD_Table_White<-DT::renderDataTable({
   validate(
     need(length(values$whitelist)>0,message="No duplicates found")
@@ -334,7 +329,6 @@ observeEvent(input$show_diff,ignoreInit = T,{
 #'   values$Det_DD_meta: meta data of deduplication
 #'   values$documents_for_diff: selected documents for comparision
 #'   input$DD_table_modal_diff_select: selected tables for modal differences
-#'   
 output$Det_DD_diffr<-diffr::renderDiffr({
   file1 = tempfile()
   writeLines(values$Det_DD_meta[as.numeric(values$documents_for_diff),"body"], con = file1)
@@ -349,7 +343,6 @@ output$Det_DD_diffr<-diffr::renderDiffr({
 #'   input$DD_Keep_Black: initiate keeping blacklist
 #'   values$DD_whitelist: customed whitelist
 #'   values$DD_blacklist: customed blacklist
-#'   
 observeEvent(input$DD_Keep_Black,ignoreInit = T,{
   id<-as.numeric(values$blacklist[as.numeric(stringr::str_split(string = input$DD_Keep_Black,pattern = "_",simplify = T)[1,2])])
   validate(
@@ -368,7 +361,6 @@ observeEvent(input$DD_Keep_Black,ignoreInit = T,{
 #'   values$blacklist: values from blacklist
 #'   values$DD_blacklist: customed blacklist
 #'   values$DD_whitelist: custome whitelist
-#'   
 observeEvent(input$DD_Remove_Black,ignoreInit = T,{
   id<-as.numeric(values$blacklist[as.numeric(stringr::str_split(string = input$DD_Remove_Black,pattern = "_",simplify = T)[1,2])])
   validate(
@@ -390,7 +382,6 @@ observeEvent(input$DD_Remove_Black,ignoreInit = T,{
 #'   values$whitelist: values of whitelist
 #'   values$Det_DD_current_table: current table of deduplication results
 #'   values$documents_for_diff_white: selected documents for difference calculation
-#'   
 observeEvent(input$show_diff_White,ignoreInit = T,{
   id<-stringr::str_split(string =input$show_diff_White,pattern = "_",simplify = T )[1,4]
   validate(
@@ -429,7 +420,6 @@ output$Det_DD_diffr_white<-diffr::renderDiffr({
 #'   values$DD_whitelist: customed whitelist
 #'   values$DD_blacklist: customed blacklist
 #'   values$DD_recalc: initiate recalculation
-#'   
 observeEvent(input$DD_Keep_White,ignoreInit = T,{
   id<-as.numeric(values$whitelist[as.numeric(stringr::str_split(string = input$DD_Keep_White,pattern = "_",simplify = T)[1,3])])
   validate(
@@ -448,7 +438,6 @@ observeEvent(input$DD_Keep_White,ignoreInit = T,{
 #'   values$DD_blacklist: customed blacklist
 #'   values$DD_whitelist: customed whitelist
 #'   values$DD_recalc: start recalculation
-#'   
 observeEvent(input$DD_Remove_White,ignoreInit = T,{
   id<-as.numeric(values$whitelist[as.numeric(stringr::str_split(string = input$DD_Remove_White,pattern = "_",simplify = T)[1,3])])
   validate(
@@ -476,8 +465,6 @@ observeEvent(input$DD_Remove_White,ignoreInit = T,{
 #'   values$DD_blacklist: customed blacklist
 #'   input$Det_DD_use_igraph_layout: chosen igraph layout
 #'   values$Det_DD_meta: meta data from deduplication
-#'   
-#'   
 output$Det_DD_Network<-visNetwork::renderVisNetwork({
   validate(
     need(!is.null(values$Det_DD_current_table),message="Calculating...")
@@ -561,7 +548,6 @@ output$Det_DD_Network<-visNetwork::renderVisNetwork({
 #'   input$DD_graph_node_selected: selected node from graph
 #'   values$Det_DD_current_table: current table for deduplication
 #'   values$Det_DD_meta: meta data from deduplication
-#'   
 observeEvent(input$DD_graph_node_selected,ignoreNULL = T,{
   validate(
     need(input$DD_graph_node_selected!=0,message=F)
@@ -611,7 +597,6 @@ observeEvent(ignoreNULL = T,input$deduplication_dissmiss_modal,{
 #'   values$Det_DD_meta: meta data from deduplication
 #'   input$DD_graph_node_selected: selected node from deduplication graph
 #'   input$DD_graph_modal_diff_select: selected modals from graph differences
-#'   
 output$Det_DD_diffr_graph<-diffr::renderDiffr({
   file1 = tempfile()
   writeLines(values$Det_DD_meta[as.numeric(input$DD_graph_node_selected),"body"], con = file1)
@@ -648,7 +633,6 @@ observeEvent(input$Det_DD_graph_keep,ignoreInit = T,{
 #'   values$DD_blacklist: customed blacklist
 #'   values$DD_whitelist: customed whitelist 
 #'   values$DD_recalc: start recalculation
-#'   
 observeEvent(input$Det_DD_graph_remove,ignoreInit = T,{
   id<-input$DD_graph_node_selected
   validate(
@@ -683,7 +667,6 @@ observeEvent(input$DD_help,{
 #'   values$update_solr_port: update port from solr
 #'   values$coll_saved: collection saved successfully
 #'   values$num_collections: number from collection
-#'   
 observeEvent(ignoreInit = T,input$Det_DD_save_collection,{
   if(length(values$blacklist)>0){
     final_remove<-as.numeric(values$blacklist)

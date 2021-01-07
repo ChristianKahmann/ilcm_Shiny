@@ -2,7 +2,6 @@
 #' depends on:
 #'    values$Details_Data_CO: cooccurrence analysis detailed data
 #'    input$Det_CO_Measure: selected measurement for cooccurrence analysis
-#'    
 observe({
   values$Details_Data_CO
   validate(need(!is.null(input$Det_CO_Measure),message=F))
@@ -38,7 +37,6 @@ observe({
 #'   values$cooc_nodes: all nodes from cooccurrence tree
 #'   values$cooc_edges: all edges from cooccurrence tree
 #'   values$Det_CO_dl_coocs: cooccurrence analysis details
-#'   
 observeEvent(input$Det_CO_Update,{
   #render cooc-network using NetworkD3 library
   #load result matrix and input parameters
@@ -222,7 +220,6 @@ observeEvent(input$Det_CO_Update,{
 #'   input$Det_CO_use_igraph_layout: use an igraph layout
 #'   input$Det_CO_gravity: selected cooccurrence gravity
 #'   input$Det_CO_Layout: selected cooccurrence layout
-#'   
 output$visNetwork_cooc_net<-visNetwork::renderVisNetwork({
   validate(
     need(dim(values$cooc_nodes)[1]>0,message = "please press update Plot"),
@@ -329,7 +326,6 @@ output$Det_CO_download_coocs<-downloadHandler(
 #'   values$coocs_examples_texts: text examples
 #'   values$host: selected host
 #'   values$port: selected port
-#'   
 output$cooc_examples_table<-DT::renderDataTable({
   validate(
     need(length(input$coocs_examples_words)>0,"Please choose at least one word")
@@ -406,7 +402,6 @@ output$cooc_examples_table<-DT::renderDataTable({
 #'   values$host: selected host
 #'   values$port: selected port
 #'   input$coocs_examples_words: example words for calculation
-#'   
 observeEvent(input$coocs_kwic_document,{
   selected_row<-as.numeric(stringr::str_split(string = input$coocs_kwic_document,pattern = "_",simplify = T)[1,6])
   validate(
@@ -486,7 +481,6 @@ output$coocs_download_log<-downloadHandler(
 #' example stats for cooccurrence analysis
 #' depends on:
 #'   input$coocs_examples_words: example words
-#'   
 output$coocs_examples_stats<-renderUI({
   validate(
     need(length(input$coocs_examples_words)>0,message=F)

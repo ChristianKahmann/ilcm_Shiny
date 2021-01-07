@@ -25,6 +25,6 @@ output$sidebarpanel_UI<-renderUI({
     return(NULL)
   }
   else{
-    return(sidebarmenu)
+    return(sidebarmenu) 
   }
 })
