@@ -1,6 +1,8 @@
 values$last_selected<-character(0)
 
 #' render classification presentation
+#' depends on:
+#'   input$project_selected: selected project
 output$classification_UI<-renderUI({
   return(tagList(
     tags$h4(paste("Active Learning for project: ",input$project_selected)),
@@ -22,7 +24,6 @@ output$classification_UI<-renderUI({
 #' select multiple categories
 #' depends on:
 #'   input$project_selected: selected project
-#'   
 output$Class_all_categories_avail_UI<-renderUI({
   choices<-list.files(paste0("collections/results/classification/activeLearning_documents/",input$project_selected))
   validate(
@@ -187,7 +188,6 @@ output$Class_all_categories_document_UI<-renderUI({
 #'   values$Class_all_documents_annos: annatations from all documents
 #'   values$highlight_spans: highlight spans
 #'   values$Class_spans_to_highlight: show spans to highlight
-#'   
 output$Class_all_categories_annotations<-DT::renderDataTable({
   validate(
     need(length(input$Class_all_categories_avail)>0,message=F),
@@ -307,7 +307,6 @@ observe({
 #'   input$Class_all_categories_documents: all documents from categories
 #'   input$project_selected: selected project
 #'   values$Class_all_documents_labels: all labels from document
-#'   
 output$Class_all_categories_treshold_UI<-renderUI({
   validate(
     need(length(input$Class_all_categories_avail)>0,message=F),
@@ -330,7 +329,6 @@ output$Class_all_categories_treshold_UI<-renderUI({
 #' depends on:
 #'   values$highlight_spans: higlighted spans
 #'   values$Class_all_documents_texts: all document texts
-#'   
 observe({
   validate(
     need(!is.null((values$highlight_spans)),message=FALSE)
@@ -381,7 +379,7 @@ observe({
 #'   input$Class_all_categories_avail: all available categories
 #'   values$host: selected host
 #'   values$db_port: selected data base port
-#'   values$Class_all_categories_reload_reload all categories
+#'   values$Class_all_categories_reload: reload all categories after changes were made
 observeEvent(input$Class_all_categories_save,{
   withBusyIndicatorServer("Class_all_categories_save", {
     texts<-isolate(values$Class_all_documents_texts)
@@ -501,7 +499,6 @@ observeEvent(input$Class_all_categories_save,{
 #'   input$project_selected: select project
 #'    values$class_anno_names: annoation names
 #'    values$class_anno_selected: selected annotation
-#'   
 output$Class_classifications<-DT::renderDataTable({
   values$Class_update_classifications
   files<-list.files(path = paste0("collections/results/classification/activeLearning/",input$project_selected),full.names = T,include.dirs = F,recursive = T,pattern = "training_examples.RData")
@@ -617,7 +614,6 @@ observeEvent(input$classification_buttons_rerun,{
 #'   values$Class_eval_meta: meta data for evaluation
 #'   values$Class_eval_result: results for evaluation
 #'   values$Class_eval_feature_matrix: feature matrix for evaluation
-#'   
 observe({
   validate(
     need(!is.null(input$project_selected),message=FALSE),
@@ -718,7 +714,6 @@ observe({
 #'depends on:
 #'  values$Class_eval_feature_matrix: feature matrix for evaluation
 #'  input$Class_eval_feature_breakdown_n: feature breakdown parameter n for evaluation
-#'  
 output$Class_eval_feature_breakdown_plot<-plotly::renderPlotly({
   validate(
     need(
@@ -764,7 +759,6 @@ shiny::observeEvent(ignoreInit = T,input$Class_eval_close,{
 #'   values$class_eval_id_selected: id of selected project for evaluation
 #'   values$class_anno_names: annotation names
 #'   values$class_anno_selected:selected annotation
-#'   
 output$Class_eval_examples<-renderUI({
   if(values$Class_eval_meta$context_unit=="Document"){
     values_pairs<-paste(paste0("('",stringr::str_split(values$Class_eval_data$doc_id_global,pattern = "_",simplify = T)[,1],"' , ",stringr::str_split(values$Class_eval_data$doc_id_global,pattern = "_",simplify = T)[,2],")"),
@@ -854,7 +848,6 @@ observeEvent(input$Class_eval_random,{
 #'   values$class_eval_data_index: index of evaluation data 
 #'   values$Class_eval_data_complete: complete evaluation data
 #'   values$Class_eval_data: evaluation data
-#'   
 observeEvent(input$Class_eval_highest_scored,{
   if(values$class_eval_data_index==dim(values$Class_eval_data_complete)[1]){
     values$class_eval_data_index<-0
@@ -931,7 +924,6 @@ observeEvent(input$class_delete,{
 #'   values$host: selected host
 #'   values$db_port: selected database port
 #'   input$project_selected: selected project
-#'   
 observeEvent(input$Class_eval_save,{
   withBusyIndicatorServer("Class_eval_save", {
     data<-isolate(values$Class_eval_data_complete)
@@ -1102,6 +1094,10 @@ observeEvent(input$Class_eval_save,{
 
 
 #' document link
+#' depends on:
+#'   values$Class_eval_data: evaluate classifaction data
+#'   input$Class_eval_doclink: evalutation document link for classification
+#'   values$Class_eval_doc_id: document id for evaluating the classifications
 observe({
   validate(
     need(!is.null(values$Class_eval_data),message=FALSE)
@@ -1117,6 +1113,10 @@ observe({
   updateTabsetPanel(session = session,inputId = "Eval",selected = "Document")
 })
 
+#' evaluate documents
+#' depends on:
+#'   values$Class_eval_doc_id: evaluate document id for classification
+#'   values$host: selected host
 output$Class_eval_document<-renderUI({
   validate(
     need(!is.null(values$Class_eval_doc_id),"no document specified")
@@ -1140,7 +1140,9 @@ output$Class_eval_document<-renderUI({
 }
 )
 
-
+#' obeserve if return button is selected
+#' depends on:
+#'  input$Class_eval_go_back: go a step back in classification evaluation
 observeEvent(input$Class_eval_go_back,{
   updateTabsetPanel(session = session,inputId = "Eval",selected = "Evaluate")
 })

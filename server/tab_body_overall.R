@@ -120,6 +120,6 @@ output$body_UI<-renderUI({
     return(loginpage)
   }
   else{
-    return(body)
+    return(body) 
   }
 })

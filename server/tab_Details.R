@@ -5,7 +5,84 @@ values$TM_topic_intrusion_run<-NULL
 values$TM_Intrusion_word_show<-FALSE
 values$TM_word_intrusion_run<-NULL
 values$tm_stm_parameters_contentFormula <- ""
-#render parameter tagset depending on the process
+#' render parameter tagset depending on the process
+#' depends on:
+#'  values$Details_Analysis: details on selected analysis
+#'  values$Details_Data_SP: details on syntactic parsing
+#'  values$Det_SP_annotations: annotations for detailed syntactic parsing
+#'  values$Det_SP_meta: meta data for detailed syntactic parsing
+#'  values$Details_Data_DTM: details on data document-term-matrix
+#'  values$dtm_results: 
+#'  values$dtm_meta:
+#'  values$dtm_results_additional:
+#'  values$Details_Data_KE:
+#'  values$Det_KE_stats:
+#'  values$Det_KE_method:
+#'  values$Details_Data_DD:
+#'  values$Det_DD_info:
+#'  values$Det_DD_results:
+#'  values$invalidate_deduplication_visulisation:
+#'  values$Det_DD_meta:
+#'  values$DD_whitelist:
+#'  values$DD_blacklist:
+#'  values$Det_DD_current_table:
+#'  values$Det_DD_data_display:
+#'  values$Details_CL_mode:
+#'  values$Details_Data_CL:
+#'  values$Det_CL_feature_matrix:
+#'  values$Det_CL_word_counts:
+#'  values$Det_CL_results_complete:
+#'  values$Details_Data_SA:
+#'  values$Det_Senti_meta:
+#'  values$Details_Data_CO:
+#'  values$coocs_dtm:
+#'  values$coocs_terms:
+#'  values$coocs_token:
+#'  values$coocs_load_examples:
+#'  values$coocs_load_top:
+#'  values$Details_Data_VS:
+#'  values$vs_model:
+#'  values$VS_selectList:
+#'  values$Details_Data_FE:
+#'  values$fe_vocab:
+#'  values$Details_Data_DE:
+#'  values$de_vocab:
+#'  values$Details_Data_VA:
+#'  values$va_cy:
+#'  values$va_freq:
+#'  values$va_words:
+#'  values$va_ner_tags:
+#'  values$va_pos_tags:
+#'  values$va_voldata:
+#'  values$va_un_dates:
+#'  values$Details_Data_TM:
+#'  values$TM_Coherence_show
+#'  values$TM_Intrusion_show
+#'  values$TM_topic_intrusion_run
+#'  values$TM_Intrusion_word_show
+#'  values$Det_TM_model_reproducibility_calculated
+#'  values$TM_word_intrusion_run
+#'  values$tm_rel_counts
+#'  values$tm_freqs
+#'  values$tm_phi
+#'  values$tm_info
+#'  values$tm_theta
+#'  values$colors
+#'  values$tm_doc.length
+#'  values$tm_vocab
+#'  values$tm_json
+#'  values$tm_term.frequency:
+#'  values$tm_meta:
+#'  values$tm_parameters:
+#'  values$tm_method:
+#'  values$tm_stm_visu_topicCorr_show
+#'  values$tm_stm_visu_estimateEffect_plot_show:
+#'  values$tm_probability_distribution
+#'  values$tm_number_of_topics
+#'  values$tm_timeline_ids
+#'  values$tm_random:
+#'  values$tm_dates:
+#'   
 output$details_parameter<-renderUI({
   if(!is.null(values$Details_Analysis)){
     # Parameters for Syntactic Parsing Visualization

@@ -6,7 +6,6 @@
 #'   input$project_selected: selected project
 #'   input$annotation_filter: annotation filter by category
 #'   values$annotations_all: all annotations
-#'   
 output$annotations<-renderDataTable({
   input$update_annotations
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
@@ -51,7 +50,9 @@ output$annotations<-renderDataTable({
   
 })
 
-#download button for currently displayed annotations
+#' download button for currently displayed annotations
+#' depends on:
+#'   values$annotations_all: all annotations
 output$download_token<-downloadHandler(
   filename = function() {
     paste('data-', Sys.Date(), '.csv', sep='')
@@ -103,7 +104,6 @@ observeEvent(input$delete_annotation, {
 #'   values$Anno_annotations_show: show annotations
 #'   values$Anno_Doc_reload: reload documents of annotation
 #'   values$Anno_annos: annotations
-#'   
 observeEvent(input$annotations_rows_selected,{
   s = input$annotations_rows_selected
   if (length(s)) {

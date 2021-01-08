@@ -1,6 +1,4 @@
 
-
-
 #' reload avaiable collections
 #' depends on:
 #'  values$coll_saved: saved collection
@@ -17,7 +15,6 @@ observe({
 #' depends on:
 #'   values$num_collections: current number of collections
 #'   values$collection_names: collection names
-#'   
 output$collections <- DT::renderDataTable({
   validate(
     need(values$num_collections > 0, "No collections found")
@@ -111,13 +108,9 @@ observe({
   }
 })
 
-
-
-
 #' if button is clicked delete collection
 #' depends on:
 #'   input$delete_button: observe if delete button is pressed
-#'   
 observeEvent(input$delete_button, {
   selectedRow <-
     as.numeric(strsplit(input$delete_button, "_")[[1]][3])
@@ -212,7 +205,6 @@ observeEvent(input$see_button, {
 #'   values$collection_time_series: time series of collection
 #'   input$Collection_TS_timeintervall: selected time intervall (days, month, years,...)
 #'   values$Collection_TS_dates: dates of selected time series of collection
-#'   
 output$Collection_TS <- renderPlotly({
   validate(need(
     !is.null(values$collection_time_series),

@@ -5,7 +5,6 @@
 #'   input$add_category_top_level: confirm adding a category on top level
 #'   values$anno: annotation value
 #'   values$edit_id: edit id for new anotation
-#'   
 observeEvent(input$add_category_top_level,{
   values$anno <- operateOnAnnotationSystem(annotation_system = anno,operation = "add")
   values$edit_id<-NULL
@@ -24,7 +23,6 @@ observeEvent(input$add_category,{
 #' delete a category
 #' depends on:
 #'   input$delete_category: confirm to delete a category
-#'   
 observeEvent(input$delete_category,{
   
   shinyWidgets::confirmSweetAlert(session = session,inputId = "confirm_delete",type = "warning",title = "Are you sure you want to delete this Category",danger_mode = T)
@@ -94,7 +92,12 @@ observeEvent(input$edit_category,{
 
 
 
-
+#' category Manager for annotation set
+#' depends on:
+#'   input$add_annotation_tagset: add annotation tagset?
+#'   values$update_category_manager: update category manager after changes
+#'   values$anno: annotations
+#'   values$edit_id: edit id 
 output$categoryManager <- renderUI({
   input$add_annotation_tagset
   values$update_category_manager
@@ -111,7 +114,11 @@ output$categoryManager <- renderUI({
 })
 
 
-
+#' add an annotation tagset
+#' depends on:
+#'   input$add_annotation_tagset: select to add an annotation tagset
+#'   values$anno: annotations
+#'   values$anno_creation: new annotations
 observeEvent(input$add_annotation_tagset,{
   anno_example <- list()
   anno_example[[stringi::stri_rand_strings(1, 5, '[A-Z0-9]')]] <- list(
@@ -125,7 +132,13 @@ observeEvent(input$add_annotation_tagset,{
   values$anno_creation<-"new"
 })
 
-
+#' save annotation tagset
+#' depends on:
+#'   input$save_annotation_tagset: initiate to save annotation tagset
+#'   values$anno_creation: change annotation
+#'   values$newscheme: new selected scheme
+#'   values$anno: annotation
+#'   input$project_selected: selected project
 observeEvent(input$save_annotation_tagset,{
   if(values$anno_creation=="change"){
     isolate(values$anno<-NULL)
@@ -148,6 +161,12 @@ observeEvent(input$save_annotation_tagset,{
   }
 })
 
+#' confirm to save a tagset
+#' depends on:
+#'   input$Save_Tagset_confirm: check if confirmed to save a tagset
+#'   values$anno: annotation
+#'   input$Save_Tagset_name: save name of tagset
+#'   values$newscheme: new scheme
 observeEvent(input$Save_Tagset_confirm,{
   shiny::removeModal()
   isolate(values$anno<-NULL)
@@ -156,7 +175,11 @@ observeEvent(input$Save_Tagset_confirm,{
   values$newscheme<-runif(1,0,1)
 })
 
-
+#' change annotation tagset
+#' depends on:
+#'   input$change_annotation_tagset: user selected annotation tagset
+#'   values$tagset_selected_for_change: changes for selected tagsets
+#'   input$project_selected: selected project
 observeEvent(input$change_annotation_tagset,{
   if(length(list.files("collections/annotation_schemes/"))>0){
     values$tagset_selected_for_change<-input$project_selected
@@ -166,7 +189,11 @@ observeEvent(input$change_annotation_tagset,{
   }
 })
 
-
+#' validate selected changes on tagset
+#' depends on:
+#'   values$tagset_selected_for_change: selected tagset for changes
+#'   values$anno_creation: changes from annotations
+#'   values$anno: annotations
 observe({
   validate(
     need(!is.null(values$tagset_selected_for_change),message=FALSE)

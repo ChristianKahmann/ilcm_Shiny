@@ -1,12 +1,11 @@
 
-#' show select input with the found corpora in the database
+#' show selected input with the found corpora in the database
 #' depends on:
 #'   values$import_files_changed: reactive variable that invalidates if the number of files in "data_import_processed_data" changes
 #'   values$host: selected host
 #'   values$db_port: selected data base port
 #'   values$update_datasets_avaiable: update datasets- changes whenever a dataset is successfully imported to the database
 #'   values$datasets_available: stores the available dataset abbreviations
-#'   
 output$datasets_avaiable<-renderUI({
   # invalidate when values$import_filed_changed changes
   # @values$import_files_changed reactive variable that invalidates if the number of files in "data_import_processed_data" changes
@@ -34,6 +33,8 @@ output$datasets_avaiable<-renderUI({
 
 
 #'  show informations icon in header with current user and app version
+#'  depends on:
+#'    values$user: current user
 output$dropdown_info<-renderMenu({
   # only show icon when @ values$user is set
   validate(
@@ -200,7 +201,6 @@ observeEvent(input$openOptionsModal, {
 #' render installed spacy
 #' depends on:
 #'   values$reload_options_modal: reload modal options
-#'   
 output$options_spacy_installed<-renderUI({
   values$reload_options_modal
   return(tags$em(paste(stringr::str_remove_all(string = stringr::str_split(
@@ -212,7 +212,6 @@ output$options_spacy_installed<-renderUI({
 #' render spacy languaes which can be installed
 #' depends on:
 #'   values$reload_options_modal: reload modal options
-#'   
 output$options_add_model_select_UI<-renderUI({
   values$reload_options_modal
   return(selectizeInput(inputId = "options_add_model_select",label = "Available models to be added",options=list(create=T),choices=setdiff(c("en","de","es","fr","it","nl","pt","el","xx"),stringr::str_remove_all(string=stringr::str_split(
@@ -227,7 +226,6 @@ output$options_add_model_select_UI<-renderUI({
 #' depends on:
 #'   input$options_update_solr: update options for solr
 #'   values$solr_url: solr url
-#'   
 observeEvent(ignoreNULL = T,input$options_update_solr,{
   #import data to solr
   withBusyIndicatorServer("options_update_solr", {
@@ -249,7 +247,6 @@ observeEvent(ignoreNULL = T,input$options_update_solr,{
 #'   input$options_delete_dataset_action: options for the delete dataset action
 #'   input$options_delete_dataset_annotations: options to delete dataset annotations
 #'   input$Options_delete_dataset_select: options to delete selecte dataset
-#'   
 observeEvent(ignoreNULL = T,input$options_delete_dataset_action,{
   if(input$options_delete_dataset_annotations){
     text=paste0("Are you sure you want to delete corpus:",input$Options_delete_dataset_select," including all annotations?")
@@ -272,7 +269,6 @@ observeEvent(ignoreNULL = T,input$options_delete_dataset_action,{
 #'   input$options_delete_dataset_annotation:option to delete dataset annotations
 #'   values$update_datasets_avaiable: update available datasets
 #'   values$datasets_available: aivailable datasets
-#'   
 observeEvent(ignoreNULL = T,input$options_delete_dataset_action_confirm,{
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
   RMariaDB::dbBegin(conn = mydb)
@@ -347,7 +343,6 @@ observeEvent(ignoreNULL = T,input$options_delete_dataset_action_confirm,{
 #' change max file upload size
 #' depends on:
 #'   input$options_max_size_import: maximum size of import options
-#'   
 observeEvent(ignoreInit = T,input$options_max_size_import,{
   print(input$options_max_size_import)
   config<-readLines("config_file.R")
@@ -398,7 +393,6 @@ observeEvent(ignoreInit = T,input$options_database_change,{
 #' depends on:
 #'   values$host: selected host
 #'   values$db_port: selected database port
-#'   
 output$options_database_connected<-renderUI({
   db_valid=FALSE
   try({
@@ -432,7 +426,6 @@ output$options_database_connected<-renderUI({
 #'   values$update_solr_port: update the solr port
 #'   input$options_solr_port: select a port for solr
 #'   values$solr_url: current solr url 
-#'   
 observeEvent(ignoreInit = T,input$options_solr_change,{
   withBusyIndicatorServer("options_solr_change", {
     values$update_solr_url<-input$options_solr_host
@@ -457,7 +450,6 @@ observeEvent(ignoreInit = T,input$options_solr_change,{
 #' show icon if solr connection is working
 #' depend on:
 #'   values$solr_url: current solr url
-#'   
 output$options_solr_connected<-renderUI({
   solr_valid=FALSE
   try({
@@ -493,7 +485,6 @@ output$options_solr_connected<-renderUI({
 #'   input$options_add_model: add a new spacy model
 #'   input$options_add_model_select: add a selected model
 #'   values$reload_options_modal: reload options for spacy modal
-#'   
 observeEvent(ignoreInit = T,input$options_add_model,{
   withBusyIndicatorServer("options_add_model", {
     query<-paste0("python -m spacy download ",input$options_add_model_select)
@@ -518,7 +509,6 @@ observeEvent(ignoreInit = T,input$options_add_model,{
 #'   input$option_create_newuser: option to create a new user
 #'   input$options_newuser_username: new user name
 #'   input$options_newuser_password: new user password
-#'   
 observeEvent(input$option_create_newuser,{
   
   name<-input$options_newuser_username

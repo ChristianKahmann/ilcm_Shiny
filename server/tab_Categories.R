@@ -3,7 +3,6 @@ rv <- reactiveValues(cachedTbl = NULL)
 #' render table to show categories
 #' depends on:
 #'   input$categories_number: number if categories
-#'   
 output$tbl <- renderHtable({
 
  
