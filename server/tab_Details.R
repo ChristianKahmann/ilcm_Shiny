@@ -12,77 +12,76 @@ values$tm_stm_parameters_contentFormula <- ""
 #'  values$Det_SP_annotations: annotations for detailed syntactic parsing
 #'  values$Det_SP_meta: meta data for detailed syntactic parsing
 #'  values$Details_Data_DTM: details on data document-term-matrix
-#'  values$dtm_results: 
-#'  values$dtm_meta:
-#'  values$dtm_results_additional:
-#'  values$Details_Data_KE:
-#'  values$Det_KE_stats:
-#'  values$Det_KE_method:
-#'  values$Details_Data_DD:
-#'  values$Det_DD_info:
-#'  values$Det_DD_results:
-#'  values$invalidate_deduplication_visulisation:
-#'  values$Det_DD_meta:
-#'  values$DD_whitelist:
-#'  values$DD_blacklist:
-#'  values$Det_DD_current_table:
-#'  values$Det_DD_data_display:
-#'  values$Details_CL_mode:
-#'  values$Details_Data_CL:
-#'  values$Det_CL_feature_matrix:
-#'  values$Det_CL_word_counts:
-#'  values$Det_CL_results_complete:
-#'  values$Details_Data_SA:
-#'  values$Det_Senti_meta:
-#'  values$Details_Data_CO:
-#'  values$coocs_dtm:
-#'  values$coocs_terms:
-#'  values$coocs_token:
-#'  values$coocs_load_examples:
-#'  values$coocs_load_top:
-#'  values$Details_Data_VS:
-#'  values$vs_model:
-#'  values$VS_selectList:
-#'  values$Details_Data_FE:
-#'  values$fe_vocab:
-#'  values$Details_Data_DE:
-#'  values$de_vocab:
-#'  values$Details_Data_VA:
-#'  values$va_cy:
-#'  values$va_freq:
-#'  values$va_words:
-#'  values$va_ner_tags:
-#'  values$va_pos_tags:
-#'  values$va_voldata:
-#'  values$va_un_dates:
-#'  values$Details_Data_TM:
-#'  values$TM_Coherence_show
-#'  values$TM_Intrusion_show
-#'  values$TM_topic_intrusion_run
-#'  values$TM_Intrusion_word_show
-#'  values$Det_TM_model_reproducibility_calculated
-#'  values$TM_word_intrusion_run
-#'  values$tm_rel_counts
-#'  values$tm_freqs
-#'  values$tm_phi
-#'  values$tm_info
-#'  values$tm_theta
-#'  values$colors
-#'  values$tm_doc.length
-#'  values$tm_vocab
-#'  values$tm_json
-#'  values$tm_term.frequency:
-#'  values$tm_meta:
-#'  values$tm_parameters:
-#'  values$tm_method:
-#'  values$tm_stm_visu_topicCorr_show
-#'  values$tm_stm_visu_estimateEffect_plot_show:
-#'  values$tm_probability_distribution
-#'  values$tm_number_of_topics
-#'  values$tm_timeline_ids
-#'  values$tm_random:
-#'  values$tm_dates:
-#'   
+#'  values$dtm_results: results from topic model
+#'  values$dtm_meta: meta data for document term matrix
+#'  values$dtm_results_additional: additional results from document term matrix
+#'  values$Details_Data_KE: details data from keyword extraction
+#'  values$Det_KE_stats: detailed stats from keyword extraction
+#'  values$Det_KE_method: detailed method from keyword extraction
+#'  values$Details_Data_DD: details data from document deduplication 
+#'  values$Det_DD_info: detailed infos on document deduplication 
+#'  values$Det_DD_results: detailed results from document deduplication
+#'  values$invalidate_deduplication_visulisation: invalidate deduplication visualization
+#'  values$Det_DD_meta: detailed meta document deduplication
+#'  values$DD_whitelist: used document deduplication whitelist
+#'  values$DD_blacklist: used document deduplication blacklist
+#'  values$Det_DD_current_table: detailed information on current table for document deduplication
+#'  values$Det_DD_data_display:displayed data from detailed document deduplication
+#'  values$Details_CL_mode: detailes on classification mode
+#'  values$Details_Data_CL: detailed data from classification
+#'  values$Det_CL_feature_matrix: detailed classification feature matrix
+#'  values$Det_CL_word_counts: detailed classification for word counts
+#'  values$Det_CL_results_complete: complete results from detailed classification
+#'  values$Details_Data_SA: detailed data from sentiment analysis
+#'  values$Det_Senti_meta: meta data on detailed sentiment analysis
+#'  values$Details_Data_CO: detailed on data cooccurrence 
+#'  values$coocs_dtm: cooccurrence document term matrix
+#'  values$coocs_terms: cooccurrence terms
+#'  values$coocs_token: cooccurrence tokens
+#'  values$coocs_load_examples: load examples for cooccurrence analysis 
+#'  values$coocs_load_top: load top results from cooccurrence analysis
+#'  values$Details_Data_VS: detailed data from vector space analysis
+#'  values$vs_model: vector space model 
+#'  values$VS_selectList: selected list from vector space analysis
+#'  values$Details_Data_FE: detailed data from frequency extraction
+#'  values$fe_vocab: vocabulary from frequency extraction
+#'  values$Details_Data_DE: detailed data from dictionary extraction
+#'  values$de_vocab: vocabulary from dictionary extraction
+#'  values$Details_Data_VA: details on volatility analysis
+#'  values$va_cy: volatility analysis cy
+#'  values$va_freq: frequencies from volatility analysis
+#'  values$va_words: volatility analysis words 
+#'  values$va_ner_tags: volatility analysis used entity (NER) tags
+#'  values$va_pos_tags: volatility analysis used part of speech tags 
+#'  values$va_voldata: voldata from volatility analysis
+#'  values$va_un_dates: volatility analysis unsorted dates
+#'  values$Details_Data_TM: detailed data from topic model
+#'  values$TM_Coherence_show: shown coherence from topic model
+#'  values$TM_Intrusion_show: shown intrusion from topic model
+#'  values$TM_topic_intrusion_run: run topic intrusion from topic models
+#'  values$TM_Intrusion_word_show: show word intrusion from topic models
+#'  values$Det_TM_model_reproducibility_calculated: calculated reproducibility for model from topic modeling
+#'  values$TM_word_intrusion_run: run word intrusion from topic model 
+#'  values$tm_rel_counts: relativ counts from topic models
+#'  values$tm_freqs: frequencies from topic model
+#'  values$tm_phi: parameter phi from topic modeling
+#'  values$tm_info: infos from topic modeling
+#'  values$tm_theta: theta parameter from topic modeling 
+#'  values$colors: selected colors 
+#'  values$tm_doc.length: document length from topic modeling
+#'  values$tm_vocab: topic model vocabulary
+#'  values$tm_json: json from topic modeling
+#'  values$tm_term.frequency: term frequencies for topic modeling
+#'  values$tm_meta: meta data from topic modeling
+#'  values$tm_parameters: topic model parameter
+#'  values$tm_method: topic model methods
+#'  values$tm_stm_visu_topicCorr_show: show topic correlation from stm visualization 
+#'  values$tm_stm_visu_estimateEffect_plot_show: shown plot from stm visualiation
+#'  values$tm_probability_distribution: probability for distribution from topic modeling
+#'  values$tm_number_of_topics: number of topics found through topic modeling
+#'  values$tm_timeline_ids: ids from timeline from topic modeling
+#'  values$tm_random: randomizer for topic modeling
+#'  values$tm_dates: dates from topic modeling
 output$details_parameter<-renderUI({
   if(!is.null(values$Details_Analysis)){
     # Parameters for Syntactic Parsing Visualization
@@ -812,7 +811,61 @@ output$details_parameter<-renderUI({
 #                                details_visu                                            #
 ##########################################################################################
 
-#render the visulisation depending on the process
+#' render the visulisation depending on the process
+#' depends on:
+#'   values$Details_Analysis: detailes on selected analysis
+#'   values$tm_theta: theta parameter for topic modeling
+#'   values$tm_meta: meta data from topic modeling
+#'   values$tm_method: selected method for topic modeling
+#'   values$Details_Data_TM: detailed data topic modeling
+#'   values$tm_stm_metaData: meta data for stm method from topic modeling
+#'   values$tm_stm_parameters_contentFormula: stm parameter for content formula
+#'   values$tm_parameters: topic model parameters
+#'   values$coocs_terms: cooccurrence terms
+#'   values$coocs_dtm: cooccurrence document term matrix
+#'   values$VS_selectList: selected list from vector space analysis
+#'   values$fe_vocab: vocabulary from frequency extraction
+#'   values$FE_freqs_day: frequencies in daily interval from frequency extraction
+#'   values$FE_freqs_week: frequencies in weekly interval from frequency extraction
+#'   values$FE_freqs_month: frequencies in monthly interval from frequency extraction
+#'   values$FE_freqs_year: frequencies in yearly interval from frequency extraction
+#'   values$FE_rel_doc_freqs_day: relative document frequencies daily from frequency extraction
+#'   values$FE_rel_doc_freqs_week: relative document frequencies weekly from frequency extraction
+#'   values$FE_rel_doc_freqs_month: relative document frequencies monthly from frequency extraction
+#'   values$FE_rel_doc_freqs_year: relative document frequencies yearly from frequency extraction
+#'   values$FE_rel_freqs_day:  relative frequencies daily from frequence extraction
+#'   values$FE_rel_freqs_week: relative frequencies weekly from frequence extraction
+#'   values$FE_rel_freqs_month: relative frequencies monthly from frequence extraction
+#'   values$FE_rel_freqs_year: relative frequencies yearly from frequence extraction
+#'   values$FE_doc_freqs_day: document frequencies daily from frequence extraction
+#'   values$FE_doc_freqs_week: document frequencies weekly from frequence extraction
+#'   values$FE_doc_freqs_month: document frequencies monthly from frequence extraction
+#'   values$FE_doc_freqs_year: document frequencies yearly from frequence extraction
+#'   values$Details_Data_DE: detailed data from dictionary extraction
+#'   values$DE_freqs_day: daily frequencies from dictionary extraction
+#'   values$DE_freqs_week: weekly frequencies from dictionary extraction 
+#'   values$DE_freqs_month: monthly frequencies from dictionary extraction
+#'   values$DE_freqs_year: yearly frequencies from dictionary extration
+#'   values$DE_rel_doc_freqs_day: relative document frequencies daily from dictionary extration
+#'   values$DE_rel_doc_freqs_week: relative document frequencies weekly from dictionary extration
+#'   values$DE_rel_doc_freqs_month: relative document frequencies monthly from dictionary extration
+#'   values$DE_rel_doc_freqs_year:
+#'   values$DE_rel_freqs_day
+#'   values$DE_rel_freqs_week
+#'   values$DE_rel_freqs_month
+#'   values$DE_rel_freqs_year
+#'   values$DE_doc_freqs_day
+#'   values$DE_doc_freqs_week
+#'   values$DE_doc_freqs_month
+#'   values$DE_doc_freqs_year
+#'   values$Det_DE_regexp_words:
+#'   values$Details_CL_mode:
+#'   values$dtm_results
+#'   values$Det_SP_annotations:
+#'   input$Det_SP_baseform:
+#'   values$Det_Senti_meta:
+#'   values$va_words:
+#'   values$va_freq:   
 output$details_visu<-renderUI({
   if(!is.null(values$Details_Analysis)){
     if(values$Details_Analysis=="TM"){
