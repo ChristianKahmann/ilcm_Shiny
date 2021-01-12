@@ -257,7 +257,6 @@ split_test_view <- function(type) {
 #' depends on:
 #'   input$Import_live_split_test: import information for live split test
 #'   values$live_method_regex_label: regex label for live method
-#'   
 observeEvent(input$Import_live_split_test,{
   updateTextInput(session, values$live_method_regex_label, value = input[[paste0(values$live_method_regex_label, "2")]])
 })
@@ -347,7 +346,6 @@ values$Import_csv_split_scripts<-""
 #' show import of csv files
 #' depends on:
 #'   values$invalidate_csv_files: check if csv-file is invalide
-#'   
 output$UI_Import_csv_file<-renderUI({
   values$invalidate_csv_files
   validate(
@@ -366,7 +364,6 @@ output$UI_Import_csv_file<-renderUI({
 #' oberve event of importing a new csv-file
 #' depends on:
 #'   input$Import_csv_new: new csv-file import
-#'   
 observeEvent(input$Import_csv_new,ignoreInit = T,{
   validate(
     need(
@@ -425,7 +422,6 @@ observeEvent(input$Import_csv_split_test_view, {
 #' start mapping
 #' depends on:
 #'   input$Import_start_mapping: import start mapping process
-#'   
 observeEvent(input$Import_start_mapping,{
   if(input$Import_csv_split_method != 'None') {
     showModal(modalDialog(
@@ -512,7 +508,6 @@ output$UI_Import_csv_column_name <- renderUI({
 #' get csv title for import 
 #' depends on:
 #'   values$header_csv: header of csv
-#'   
 output$UI_Import_csv_title<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_csv_title",label = "Map title",
                                    choices = c("automatic",values$header_csv),
@@ -739,47 +734,47 @@ observe({
 })
 
 
-#mde1
+#' mde1
 script_events("mde1", "csv", 5)
 type_events("mde1", "csv")
 observe_mde("mde1", "csv")
 
-#mde2
+#' mde2
 script_events("mde2", "csv", 6)
 type_events("mde2", "csv")
 observe_mde("mde2", "csv")
 
-#mde3
+#' mde3
 script_events("mde3", "csv", 7)
 type_events("mde3", "csv")
 observe_mde("mde3", "csv")
 
-#mde4
+#' mde4
 script_events("mde4", "csv", 8)
 type_events("mde4", "csv")
 observe_mde("mde4", "csv")
 
-#mde5
+#' mde5
 script_events("mde5", "csv", 9)
 type_events("mde5", "csv")
 observe_mde("mde5", "csv")
 
-#mde6
+#' mde6
 script_events("mde6", "csv", 10)
 type_events("mde6", "csv")
 observe_mde("mde6", "csv")
 
-#mde7
+#' mde7
 script_events("mde7", "csv", 11)
 type_events("mde7", "csv")
 observe_mde("mde7", "csv")
 
-#mde8
+#' mde8
 script_events("mde8", "csv", 12)
 type_events("mde8", "csv")
 observe_mde("mde8", "csv")
 
-#mde9
+#' mde9
 script_events("mde9", "csv", 13)
 type_events("mde9", "csv")
 observe_mde("mde9", "csv")
@@ -814,7 +809,6 @@ observe_mde("mde9", "csv")
 #'   input$UI_Import_name_mde7: name for mde7
 #'   input$UI_Import_name_mde8: name for mde8
 #'   input$UI_Import_name_mde9: name for mde9
-#'   
 output$Import_csv_metadata<-DT::renderDataTable({
   if(values$start_mapping==T){
     dataset<-input$Import_csv_dataset
@@ -936,7 +930,6 @@ observeEvent(ignoreNULL = T,input$Import_csv_dataset,{
 #' depends on:
 #'   values$Import_csv_meta_complete: import complete metadata names 
 #'   values$Import_csv_metadatafields: import metadatafields from csv
-#'   
 output$Import_csv_metadata_names_warning<-renderUI({
   validate(
     need(values$Import_csv_meta_complete[1,"dataset"]!="",message=F),
@@ -991,7 +984,6 @@ output$Import_csv_metadata_names_warning<-renderUI({
 #' import metadata names for presenting informations
 #' deoends on:
 #'   values$Import_csv_metadatanames_data: import metadata names from csv-file
-#'   
 output$Import_csv_metadatanames_table<-DT::renderDataTable({
   data =values$Import_csv_metadatanames_data
   validate(
@@ -1124,7 +1116,21 @@ observeEvent(input$Import_csv_start_preprocess,{
   }
 })
 
-# if confirm to continue with empty body is clicked run import script anyway
+#' if confirm to continue with empty body is clicked run import script anyway
+#' depends on:
+#'   input$confirm_empty_body_csv_no_db: confirm is csv body is empty
+#'   values$Import_csv_meta_complete: import complete csv meta data 
+#'   input$Import_csv_dataset: imported csv dataset
+#'   input$UI_Import_name_mde1: chosen name of mde1
+#'   input$UI_Import_name_mde2: chosen name of mde2
+#'   input$UI_Import_name_mde3: chosen name of mde3
+#'   input$UI_Import_name_mde4: chosen name of mde4
+#'   input$UI_Import_name_mde5: chosen name of mde5
+#'   input$UI_Import_name_mde6: chosen name of mde6
+#'   input$UI_Import_name_mde7: chosen name of mde7
+#'   input$UI_Import_name_mde8: chosen name of mde8
+#'   input$UI_Import_name_mde9: chosen name of mde9
+#'   input$Import_csv_date_format: date format from chosen csv-file
 observeEvent(ignoreNULL = T,input$confirm_empty_body_csv_no_db,{
   if(input$confirm_empty_body_csv_no_db){
     data<-values$Import_csv_meta_complete
@@ -1179,7 +1185,21 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_csv_no_db,{
   }
 })
 
-
+#' observe preprocessing of csv-file
+#' depends on:
+#'   input$Import_csv_start_preprocess_and_write: initiate start for preprocessing 
+#'   values$Import_csv_meta_complete: import complete meta data from csv
+#'   input$Import_csv_dataset: import csv dataset
+#'   input$UI_Import_name_mde1: import chosen name of mde1
+#'   input$UI_Import_name_mde2: import chosen name of mde2
+#'   input$UI_Import_name_mde3: import chosen name of mde3
+#'   input$UI_Import_name_mde4: import chosen name of mde4
+#'   input$UI_Import_name_mde5: import chosen name of mde5
+#'   input$UI_Import_name_mde6: import chosen name of mde6
+#'   input$UI_Import_name_mde7: import chosen name of mde7
+#'   input$UI_Import_name_mde8: import chosen name of mde8
+#'   input$UI_Import_name_mde9: import chosen name of mde9
+#'   input$Import_csv_date_format: import date format from csv
 observeEvent(input$Import_csv_start_preprocess_and_write,{
   #test if metadata is valid 
   data<-values$Import_csv_meta_complete
@@ -1274,7 +1294,21 @@ observeEvent(input$Import_csv_start_preprocess_and_write,{
   }
 })
 
-# if confirm to continue with empty body is clicked run import script anyway
+#' if confirm to continue with empty body is clicked run import script anyway
+#' depends on:
+#'   input$confirm_empty_body_csv_db: confirm if csv body is empty
+#'   values$Import_csv_meta_complete: import complete meta data from csv
+#'   input$Import_csv_dataset: import csv dataset
+#'   input$UI_Import_name_mde1: import chosen name from mde1
+#'   input$UI_Import_name_mde2: import chosen name from mde2
+#'   input$UI_Import_name_mde3: import chosen name from mde3
+#'   input$UI_Import_name_mde4: import chosen name from mde4
+#'   input$UI_Import_name_mde5: import chosen name from mde5
+#'   input$UI_Import_name_mde6: import chosen name from mde6
+#'   input$UI_Import_name_mde7: import chosen name from mde7
+#'   input$UI_Import_name_mde8: import chosen name from mde8
+#'   input$UI_Import_name_mde9: import chosen name from mde9
+#'   input$Import_csv_date_format: import date format from csv-file
 observeEvent(ignoreNULL = T,input$confirm_empty_body_csv_db,{
   if(input$confirm_empty_body_csv_db){
     data<-values$Import_csv_meta_complete
@@ -1328,7 +1362,18 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_csv_db,{
     shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
   }
 })
-
+#' sanity check for importet csv-file
+#' depends on:
+#'   input$Import_csv_sanity_check:  start sanity check for importet csv
+#'   input$Import_csv_mde1 : selected mde1 row
+#'   input$Import_csv_mde2 : selected mde2 row
+#'   input$Import_csv_mde3 : selected mde3 row
+#'   input$Import_csv_mde4 : selected mde4 row
+#'   input$Import_csv_mde5 : selected mde5 row
+#'   input$Import_csv_mde6 : selected mde6 row
+#'   input$Import_csv_mde7 : selected mde7 row
+#'   input$Import_csv_mde8 : selected mde8 row
+#'   input$Import_csv_mde9 : selected mde9 row
 observeEvent(input$Import_csv_sanity_check,{
   data_check_choices <- c("body", "id_doc", "title", "date")
   if(input$Import_csv_mde1 != "not required"){
@@ -1384,7 +1429,9 @@ values$Import_mtf_dataset<-""
 values$Import_mtf_scripts<-""
 values$Import_mtf_split_scripts<-""
 
-
+#' render import of multiple files:
+#' depends on:
+#'   values$invalidate_mtf_files: invalidate mutiple files
 output$UI_Import_mtf_file<-renderUI({
   values$invalidate_mtf_files
   validate(
@@ -1399,7 +1446,7 @@ output$UI_Import_mtf_file<-renderUI({
     ))
   
 })
-
+#' 
 observeEvent(input$Import_mtf_new,ignoreInit = T,{
   validate(
     need(

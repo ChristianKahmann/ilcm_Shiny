@@ -14,7 +14,7 @@ library(plotly)
 library(rhandsontable)
 library(stringr)
 
-# this is the server code, for UI see ui/tab_GeoExplorer.R
+#' this is the server code, for UI see ui/tab_GeoExplorer.R
 
 # TODO: ideas for further features / improvements:
 # GENERAL (data):
@@ -31,12 +31,12 @@ library(stringr)
 #######################
 # general config
 #######################
-# get available collections
+#' get available collections
 folderpathCollections <- "collections/collections/"
 availableCollectionFiles = list.files(path = folderpathCollections)
 availableCollections <- lapply(X = availableCollectionFiles, FUN = function(x) {result <- str_split(x, pattern = ".RData")[[1]][1]})
 
-# load available geoResults
+#' load available geoResults
 folderpathGeoCodingResults <- "collections/results/geocoding/"
 availableGeocodingResults = list.files(path = folderpathGeoCodingResults)
 #availableGeocodingResults <- lapply(X = availableGeoCodingFiles, FUN = function(x) {result <- str_split(x, pattern = ".RData")[[1]][1]})
@@ -51,7 +51,7 @@ metaData_columnNameForMatchWithOtherData <- "areaId" # see code below how areaId
 geocodingResult_columnNameForMatchWithOtherData <- "areaId"
 regexData_columnNameForMatchWithOtherData <- "areaId"
 
-# geoDataToUse
+#' geoDataToUse
 geoDataToUseForMap_dataSource <- "geocodingResult"
 geoDataToUseForMap_columnNameForMatchWithOtherData <- "areaId"
 geoDataToUseForMap_columnNameForLat <- "lat"
@@ -118,6 +118,9 @@ myReactiveValues <- reactiveValues(dataLoaded = FALSE,
 #########################
 # select collection & geocoding result
 #########################
+#' select a collection
+#' depends on:
+#'   input$geoExplorer_selectedCollection: selected collection for geocoding from user 
 selectedCollection <- reactive({
   selectedCollection <- input$geoExplorer_selectedCollection
   if(is.null(selectedCollection)){ # needed because observe is executed at the very beginning where input$geoExplorer_selectedCollection value is not available yet (NULL)
@@ -151,14 +154,18 @@ observe({
 #########################
 # load initial data
 #########################
-
+#' load initial data
 output$dataLoaded <- reactive({
   result <- myReactiveValues$dataLoaded
   #print(paste0("+++Data loaded: ", result))
   return(result)
 })
 outputOptions(output, "dataLoaded", suspendWhenHidden = FALSE)
-
+#' load data for collection
+#' depends on:
+#'   input$loadDataForCollection: initiation to load data for collection
+#'   input$geoExplorer_selectedCollection: selected collection
+#'   input$geocodingResult: results from geocoding
 observeEvent(input$loadDataForCollection,{
   #---------------------
   # load geocoding data
@@ -333,7 +340,9 @@ setValuesBasedOnConfig <- function(){
 #######################
 # optinal Regex process
 #######################
-
+#' observe regex process
+#' depends on:
+#'   input$performRegexMatching,: initiate start to perform regex matching
 observeEvent(input$performRegexMatching,{
   
   myReactiveValues$regexData_performRegexMatching <- T
@@ -480,7 +489,7 @@ output$performRegexMatching <- reactive({ myReactiveValues$regexData_performRege
 outputOptions(output, "performRegexMatching", suspendWhenHidden = FALSE)
 
 
-# some infos about the regex matches
+#' some infos about the regex matches
 output$regExInfo <- reactive({
   
   regexData <- myReactiveValues$regexData_dataLoaded
@@ -506,7 +515,7 @@ getTextualInfoOnRegexMatches <- function(inputData, columnToUse){
   return(textToDisplay)
 }
 
-# some example output for the regex matches
+#' some example output for the regex matches
 output$regexResults <- renderRHandsontable({
   
   regexData <- myReactiveValues$regexData_dataLoaded
@@ -544,7 +553,9 @@ output$regexResults <- renderRHandsontable({
 })
 
 
-
+#' reset regex matching
+#' depends on:
+#'   input$resetRegexMatching: initiate start for regex matching
 observeEvent(input$resetRegexMatching,{
   myReactiveValues$regexData_performRegexMatching <- F
   myReactiveValues$regexData_dataLoaded <- myReactiveValues$regexData_dataLoaded[0,]
@@ -554,7 +565,7 @@ observeEvent(input$resetRegexMatching,{
 # prepare filtering possibilities
 #####################################
 
-# # create selectInputs
+#' create selectInputs
 selectInputListForMetaData <- reactive({createSelectInputsForColumnsAndValues(myReactiveValues$metaData_columnNamesToUseForFiltering,  myReactiveValues$metaData_availableValues, prefixForUniqueIdentification = metaData_prefixFoUniqueIdentificationInInputFilters)})
 output$selectInputListForMetaData <- renderUI(selectInputListForMetaData())
 selectInputListForGeocodingResult <- reactive({createSelectInputsForColumnsAndValues(myReactiveValues$geocodingResult_columnNamesToUseForFiltering, myReactiveValues$geocodingResult_availableValues, prefixForUniqueIdentification = geocodingResult_prefixFoUniqueIdentificationInInputFilters)})
@@ -734,7 +745,7 @@ regexData_stats <- reactive({
 # output number of results & stats
 ##############################
 
-# number of results
+#' number of results
 output$metaData_numberOfResults1 <- reactive({
   text <- paste("There are", dim(metaData_filtered())[1], "results for document meta data.")
 })
@@ -750,7 +761,7 @@ output$regexData_numberOfResults1 <- reactive({
   text <- getTextualInfoOnRegexMatches(regexData_filtered(),columnToUse)
 })
 
-# number of results 2 (needed twice, becasue should be displayed for stats and for map, but shiny doesn't allow displaying same output object twice in UI )
+#' number of results 2 (needed twice, becasue should be displayed for stats and for map, but shiny doesn't allow displaying same output object twice in UI )
 output$metaData_numberOfResults2 <- reactive({
   text <- paste("There are", dim(metaData_filtered())[1], "results for document meta data.")
 })
@@ -805,7 +816,7 @@ output$regexData_stats_distributions_plots <- renderUI({# this a bit complicated
   })
 })  
 
-# stats numeric tables
+#' stats numeric tables
 metaData_stats_numeric <- reactive({# needed for user error message when no columns selected for calculation 
   validate(need(length(myReactiveValues$metaData_columnsToCalcNumericInfos)>0, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'Configuration'"))
   metaData_stats()$numericInfos
@@ -832,7 +843,7 @@ output$regexData_stats_numeric_table <- renderTable(regexData_stats_numeric(), r
 # map
 ###################
 
-# show map and update based on (filtered) geoData
+#' show map and update based on (filtered) geoData
 output$lmap <- renderLeaflet({
   validate(need(dim(geoDataToUseForMap_filtered()[1]>0), message = "No Geolocation Data available for given filters. You might try to adjust (relax) the filters."))
   leaflet(data=geoDataToUseForMap_filtered()) %>%
@@ -859,7 +870,9 @@ clickedMarkerAllOutput <- reactive({})
 output$clickedMarkerAllOutput <-  reactive({renderText("click on a marker to display further information about it")})
 
 
-
+#' observe if a marker is clicked
+#' depends on:
+#'   input$lmap_marker_click: chosen marker
 observe({
   click<-input$lmap_marker_click
   displayClickedMarkerInfos <- F
@@ -908,7 +921,7 @@ observe({
       textToDisplay <- paste0(heading,part1)
     })
     
-    # output in which docs the marker was found (id, frequency, title)
+    #' output in which docs the marker was found (id, frequency, title)
     clickedMarkerDistribution <- renderTable(clickedMarker_stats$geocodingResult_distributionInDocs,rownames = T)
     
     #----------------------------------
@@ -958,7 +971,7 @@ observe({
       })
     })
     
-    #clickedMarker_geocodingResult_numeric_tables <- renderTable(clickedMarker_stats$geocodingResult_numericStats, rownames = T)
+    #' clickedMarker_geocodingResult_numeric_tables <- renderTable(clickedMarker_stats$geocodingResult_numericStats, rownames = T)
     clickedMarker_geocodingResult_numeric_tables <- renderUI({
       validate(need(length(myReactiveValues$geocodingResult_columnsToCalcNumericInfos)>0, message = "Calculation of stats (numeric): There are no fields configured. You can do this under 'Configuration'"))
       tablesToCreate <- c("geocodingResultNumeric")
@@ -1008,7 +1021,7 @@ observe({
         
       })
       
-      # extend info about the docs of the clicked marker by including regeex match infos
+      #' extend info about the docs of the clicked marker by including regeex match infos
       docInfos <- clickedMarker_stats$geocodingResult_distributionInDocs # doc infos now
       separatorForRegexMatches <- input$regex_separatorForMatchesDisplay
       if(myReactiveValues$regexData_performNumericTransformation){
@@ -1024,7 +1037,7 @@ observe({
     }
     
     
-    # put all clicked marker infos in one object
+    #' put all clicked marker infos in one object
     clickedMarkerAllOutput <- renderUI({
       result <- tagList(
         # clicked marker infos is not included here but used separatetely because verbatimTextOutput should be used for nicer output

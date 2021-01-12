@@ -849,23 +849,23 @@ output$details_parameter<-renderUI({
 #'   values$DE_rel_doc_freqs_day: relative document frequencies daily from dictionary extration
 #'   values$DE_rel_doc_freqs_week: relative document frequencies weekly from dictionary extration
 #'   values$DE_rel_doc_freqs_month: relative document frequencies monthly from dictionary extration
-#'   values$DE_rel_doc_freqs_year:
-#'   values$DE_rel_freqs_day
-#'   values$DE_rel_freqs_week
-#'   values$DE_rel_freqs_month
-#'   values$DE_rel_freqs_year
-#'   values$DE_doc_freqs_day
-#'   values$DE_doc_freqs_week
-#'   values$DE_doc_freqs_month
-#'   values$DE_doc_freqs_year
-#'   values$Det_DE_regexp_words:
-#'   values$Details_CL_mode:
-#'   values$dtm_results
-#'   values$Det_SP_annotations:
-#'   input$Det_SP_baseform:
-#'   values$Det_Senti_meta:
-#'   values$va_words:
-#'   values$va_freq:   
+#'   values$DE_rel_doc_freqs_year: relative document frequencies yearly from dictionary extraction
+#'   values$DE_rel_freqs_day: daily, relative frequencies from dictionary extraction
+#'   values$DE_rel_freqs_week: weekly, relative frequencies from dictionary extraction
+#'   values$DE_rel_freqs_month: monthly, relative frequencies from dictionary extraction
+#'   values$DE_rel_freqs_year: yearly, relative frequencies from dictionary extraction
+#'   values$DE_doc_freqs_day: daily document frequencies from dictionary extraction
+#'   values$DE_doc_freqs_week: weekly document frequencies from dictionary extraction
+#'   values$DE_doc_freqs_month: monthly document frequencies from dictionary extraction
+#'   values$DE_doc_freqs_year: yearly document frequencies from dictionary extraction
+#'   values$Det_DE_regexp_words: regular expression word from detailed dictionary extraction
+#'   values$Details_CL_mode: mode from detailed classification
+#'   values$dtm_results: results from document term matrix
+#'   values$Det_SP_annotations: annotations from detailed syntactic parsing
+#'   input$Det_SP_baseform: baseform from detailed syntactic parsing
+#'   values$Det_Senti_meta: detailed mata data from sentiment analysis
+#'   values$va_words: words from volatility analysis
+#'   values$va_freq: frequencies from volatility analysis
 output$details_visu<-renderUI({
   if(!is.null(values$Details_Analysis)){
     if(values$Details_Analysis=="TM"){

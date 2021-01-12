@@ -1,3 +1,8 @@
+#' render detailed document term matrix for LDAvis
+#' depends on:
+#'    input$coll: selected collection
+#'    input$Det_DTM_LDAvis_n: selected n for LDAvis claculation for detailed document term matrix 
+#'    values$dtm_results: document term matrix results
 output$Det_DTM_LDAvis<-LDAvis::renderVis({
   validate(
     need(!is.null(input$coll),message=F),
@@ -21,7 +26,13 @@ output$Det_DTM_LDAvis<-LDAvis::renderVis({
 })
 
 
-
+#' render detailed document term matrix with dynamic table
+#' depends on:
+#'   input$Det_DTM_topic_dynamic_topic: dynamic topic for detailed document term matrix (topic calculation)
+#'   values$dtm_results:document term matrix results
+#'   input$Det_DTM_topic_dynamic_lambda: dynamic lambda for detailed document term matrix
+#'   input$Det_DTM_topic_dynamic_number_of_words: dynamic number of words for detailed document term matrix (topic calculation)
+#'   values$dtm_results_additional: additional document term matrix results
 output$Det_DTM_dynamic_table<-DT::renderDataTable({
   validate(
     need(!is.null(input$Det_DTM_topic_dynamic_topic),message=F)
@@ -38,7 +49,11 @@ output$Det_DTM_dynamic_table<-DT::renderDataTable({
 })
 
 
-
+#' render detailed document term matrix with importance plot
+#' depends on:
+#'   values$dtm_results: document term matrix results
+#'   values$dtm_results_additional: additional document term matrix results
+#'   values$Det_DTM_topic_importances: topic importatnce from detailed document term matrix
 output$Det_DTM_importance_plot<-renderPlotly({
   topic_importances<-lapply(1:length(values$dtm_results),FUN = function(x){
     theta<-values$dtm_results[[x]][[1]][which(values$dtm_results_additional$doc_belongings_to_time_slices==x),,drop=F]
@@ -58,7 +73,10 @@ output$Det_DTM_importance_plot<-renderPlotly({
   p
 })
 
-
+#' render important scatter plot with document term matrix
+#' depends on:
+#'   values$Det_DTM_topic_importances: important topics from detailed document term matrix
+#'   values$dtm_results_additional: additional results from document term matrix
 output$Det_DTM_importance_scatter_plot<-renderPlotly({
   validate(
     need(!is.null(values$Det_DTM_topic_importances),message=F)
@@ -77,7 +95,10 @@ output$Det_DTM_importance_scatter_plot<-renderPlotly({
 
 
 
-
+#' render dynamic wordcloud from detailed documnt term matrix
+#' depends on:
+#'   values$dtm_results_additional: additional results from document term matrix
+#'   values$dtm_results: document term matrix results
 output$Det_DTM_dynamic_wordcloud_UI<-renderUI({
   tagList(fluidRow(
     column(4,offset = 2,
@@ -107,7 +128,13 @@ output$Det_DTM_dynamic_wordcloud_UI<-renderUI({
 })
 
 
-
+#' observe dynamic topic modeling visualization
+#' depends on:
+#'   input$Det_DTM_dynamic_wordcloud_time_1: first time sequence - dynamic wordcloud representation from detailed topic modelling
+#'   input$Det_DTM_dynamic_wordcloud_time_2: second time sequence - dynamic wordcloud representation from detailed topic modelling
+#'   values$dtm_results: document term matrix results
+#'   input$Det_DTM_topic_dynamic_topic: dynamic topics from detailed document term matrix
+#'   values$Det_DTM_dynamic_wordcloud_data: dynamic wordcloud data from detailed document term matrix
 observe({
   validate(
     need(!is.null(input$Det_DTM_dynamic_wordcloud_time_1),message=F),
@@ -126,7 +153,9 @@ observe({
 })
 
 
-
+#' render dynamic wordcloud table from detailed document term matrix
+#' depends on:
+#'   values$Det_DTM_dynamic_wordcloud_data: dynamic wordcloud data from detailed document term matrix
 output$Det_DTM_dynamic_wordcloud_table<-DT::renderDataTable({
   validate(
     need(!is.null(values$Det_DTM_dynamic_wordcloud_data),message="Time Stamp 1 and 2 need to be different")
@@ -138,7 +167,9 @@ output$Det_DTM_dynamic_wordcloud_table<-DT::renderDataTable({
   datatable(data=data,rownames = F)  
 })
 
-
+#' plot dynamic wordcloud from detailed document term matrix
+#' depends on:
+#'   values$Det_DTM_dynamic_wordcloud_data: dynamic wordcloud data
 output$Det_DTM_dynamic_wordcloud_plot_gone<-renderWordcloud2({
   validate(
     need(!is.null(values$Det_DTM_dynamic_wordcloud_data),message=F)
@@ -167,7 +198,9 @@ output$Det_DTM_dynamic_wordcloud_plot_gone<-renderWordcloud2({
   wordcloud2(d[,1:2],size=0.5,color = d$colors,backgroundColor = "black",fontFamily = "Helvetica",minRotation = -pi/2,maxRotation = -pi/2)
 })
 
-
+#' plot new dynamic wordclud from detailed document term matrix
+#' depends on:
+#'   values$Det_DTM_dynamic_wordcloud_data: dynamic wordcloud data
 output$Det_DTM_dynamic_wordcloud_plot_new<-renderWordcloud2({
   validate(
     need(!is.null(values$Det_DTM_dynamic_wordcloud_data),message=F)
@@ -196,8 +229,11 @@ output$Det_DTM_dynamic_wordcloud_plot_new<-renderWordcloud2({
   wordcloud2(d[,1:2],size=0.5,color = d$colors,backgroundColor = "black",fontFamily = "Helvetica",minRotation = -pi/2,maxRotation = -pi/2)
 })
 
-
-
+#' render importance word plot from detailed document term matrix 
+#' depends on:
+#'   input$Det_DTM_word_importance_Words: importance words 
+#'   values$dtm_results: document term matrix results
+#'   values$dtm_results_additional: additional results from document term matrix
 output$Det_DTM_word_importance_plot<-renderPlotly({
   validate(
     need(length(input$Det_DTM_word_importance_Words)>0,message = "Specify at least on word and topic!")
