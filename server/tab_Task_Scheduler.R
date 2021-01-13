@@ -668,3 +668,208 @@ observeEvent(input$analysis_help,ignoreInit = T,{
   }
   
 })
+
+
+
+#' check if option "all" is selected along with an other option in include POS input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$CA_POS_TYPES: which POS-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$CA_POS_TYPES),message=F),
+    need(length(input$CA_POS_TYPES)>1,message=F),
+    need("all"%in%input$CA_POS_TYPES,message=F)
+  )
+  choices_update<-input$CA_POS_TYPES[-which(input$CA_POS_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "CA_POS_TYPES",selected = choices_update)
+})
+
+#' check if option "all" is selected along with an other option in include NE input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$CA_ENTITY_TYPES: which NE-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$CA_ENTITY_TYPES),message=F),
+    need(length(input$CA_ENTITY_TYPES)>1,message=F),
+    need("all"%in%input$CA_ENTITY_TYPES,message=F)
+  )
+  choices_update<-input$CA_ENTITY_TYPES[-which(input$CA_ENTITY_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "CA_ENTITY_TYPES",selected = choices_update)
+})
+
+
+#' check if option "all" is selected along with an other option in include POS input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$VA_POS_TYPES: which POS-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$VA_POS_TYPES),message=F),
+    need(length(input$VA_POS_TYPES)>1,message=F),
+    need("all"%in%input$VA_POS_TYPES,message=F)
+  )
+  choices_update<-input$VA_POS_TYPES[-which(input$VA_POS_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "VA_POS_TYPES",selected = choices_update)
+})
+
+#' check if option "all" is selected along with an other option in include NE input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$VA_ENTITY_TYPES: which NE-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$VA_ENTITY_TYPES),message=F),
+    need(length(input$VA_ENTITY_TYPES)>1,message=F),
+    need("all"%in%input$VA_ENTITY_TYPES,message=F)
+  )
+  choices_update<-input$VA_ENTITY_TYPES[-which(input$VA_ENTITY_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "VA_ENTITY_TYPES",selected = choices_update)
+})
+
+
+#' check if option "all" is selected along with an other option in include POS input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$FE_POS_TYPES: which POS-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$FE_POS_TYPES),message=F),
+    need(length(input$FE_POS_TYPES)>1,message=F),
+    need("all"%in%input$FE_POS_TYPES,message=F)
+  )
+  choices_update<-input$FE_POS_TYPES[-which(input$FE_POS_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "FE_POS_TYPES",selected = choices_update)
+})
+
+#' check if option "all" is selected along with an other option in include NE input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$FE_ENTITY_TYPES: which NE-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$FE_ENTITY_TYPES),message=F),
+    need(length(input$FE_ENTITY_TYPES)>1,message=F),
+    need("all"%in%input$FE_ENTITY_TYPES,message=F)
+  )
+  choices_update<-input$FE_ENTITY_TYPES[-which(input$FE_ENTITY_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "FE_ENTITY_TYPES",selected = choices_update)
+})
+
+
+
+#' check if option "all" is selected along with an other option in include POS input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$DE_POS_TYPES: which POS-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$DE_POS_TYPES),message=F),
+    need(length(input$DE_POS_TYPES)>1,message=F),
+    need("all"%in%input$DE_POS_TYPES,message=F)
+  )
+  choices_update<-input$DE_POS_TYPES[-which(input$DE_POS_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "DE_POS_TYPES",selected = choices_update)
+})
+
+#' check if option "all" is selected along with an other option in include NE input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$DE_ENTITY_TYPES: which NE-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$DE_ENTITY_TYPES),message=F),
+    need(length(input$DE_ENTITY_TYPES)>1,message=F),
+    need("all"%in%input$DE_ENTITY_TYPES,message=F)
+  )
+  choices_update<-input$DE_ENTITY_TYPES[-which(input$DE_ENTITY_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "DE_ENTITY_TYPES",selected = choices_update)
+})
+
+
+#' check if option "all" is selected along with an other option in include POS input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$TM_POS_TYPES: which POS-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$TM_POS_TYPES),message=F),
+    need(length(input$TM_POS_TYPES)>1,message=F),
+    need("all"%in%input$TM_POS_TYPES,message=F)
+  )
+  choices_update<-input$TM_POS_TYPES[-which(input$TM_POS_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "TM_POS_TYPES",selected = choices_update)
+})
+
+#' check if option "all" is selected along with an other option in include NE input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$TM_ENTITY_TYPES: which NE-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$TM_ENTITY_TYPES),message=F),
+    need(length(input$TM_ENTITY_TYPES)>1,message=F),
+    need("all"%in%input$TM_ENTITY_TYPES,message=F)
+  )
+  choices_update<-input$TM_ENTITY_TYPES[-which(input$TM_ENTITY_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "TM_ENTITY_TYPES",selected = choices_update)
+})
+
+
+#' check if option "all" is selected along with an other option in include POS input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$CL_POS_TYPES: which POS-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$CL_POS_TYPES),message=F),
+    need(length(input$CL_POS_TYPES)>1,message=F),
+    need("all"%in%input$CL_POS_TYPES,message=F)
+  )
+  choices_update<-input$CL_POS_TYPES[-which(input$CL_POS_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "CL_POS_TYPES",selected = choices_update)
+})
+
+#' check if option "all" is selected along with an other option in include NE input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$CL_ENTITY_TYPES: which NE-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$CL_ENTITY_TYPES),message=F),
+    need(length(input$CL_ENTITY_TYPES)>1,message=F),
+    need("all"%in%input$CL_ENTITY_TYPES,message=F)
+  )
+  choices_update<-input$CL_ENTITY_TYPES[-which(input$CL_ENTITY_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "CL_ENTITY_TYPES",selected = choices_update)
+})
+
+
+#' check if option "all" is selected along with an other option in include POS input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$DTM_POS_TYPES: which POS-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$DTM_POS_TYPES),message=F),
+    need(length(input$DTM_POS_TYPES)>1,message=F),
+    need("all"%in%input$DTM_POS_TYPES,message=F)
+  )
+  choices_update<-input$DTM_POS_TYPES[-which(input$DTM_POS_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "DTM_POS_TYPES",selected = choices_update)
+})
+
+#' check if option "all" is selected along with an other option in include NE input
+#' if this is the case, remove "all"
+#' depends on:
+#'   input$DTM_ENTITY_TYPES: which NE-Tags to use in analysis
+observe({
+  validate(
+    need(!is.null(input$DTM_ENTITY_TYPES),message=F),
+    need(length(input$DTM_ENTITY_TYPES)>1,message=F),
+    need("all"%in%input$DTM_ENTITY_TYPES,message=F)
+  )
+  choices_update<-input$DTM_ENTITY_TYPES[-which(input$DTM_ENTITY_TYPES=="all")]
+  updateSelectInput(session = session,inputId = "DTM_ENTITY_TYPES",selected = choices_update)
+})
