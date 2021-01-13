@@ -23,8 +23,6 @@ values$open<-F
 #'    values$va_pos_tags: selected part of speech tags
 #'    input$Det_VA_NER: select Entity (NER)-Tagging
 #'    values$va_ner_tags: selected entity-tags  
-#'    
-#'    
 observeEvent(input$Det_VA_Update,{
   #load data once and make it avaiable for all visulisations
   output$VA_plot<-renderPlotly({
@@ -254,7 +252,6 @@ observeEvent(input$Det_VA_Update,{
 #'   values$VA_number_of_plots: number of plots
 #'   values$VA_dates_timeintervall_un: unique dates from time-intervall
 #'   values$VA_dates_timeintervall: dates from time-intervall
-#'   
 output$Det_VA_WC<-renderUI({
   voldata<-values$va_voldata
   freqs<-values$va_freq
@@ -307,7 +304,6 @@ output$Det_VA_WC<-renderUI({
 #'   input$DET_VA_WC_N: selected parameter n
 #'   input$Det_VA_WC_maxFreq_low: selected maximal frequence
 #'   input$Det_VA_WC_minFreq_low: selected minimal frequence
-#'   
 observeEvent(input$Det_VA_Update,{
   validate(
     need(length(values$VA_number_of_plots)>0,message=FALSE)

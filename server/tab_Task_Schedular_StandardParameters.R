@@ -275,7 +275,9 @@ getTagListStanddardParameters <- function(){
 ######
 # POS & NER
 #############
-
+#' POS 6 NER filtering
+#' @param 
+#' @return 
 getTagListParametersPOSandNER <- function(){
   tagListPOSandNER <- tagList(
     tags$hr(),
@@ -308,7 +310,9 @@ getTagListParametersPOSandNER <- function(){
     ) # end POS & NER filtering
   )
 }
-
+#' render standard whitelist
+#' depends on: 
+#'   values$invalidate_whitelists: invalidated whitelists
 standard_whitelist_UI<-renderUI({
   values$invalidate_whitelists
   if(length(list.files("collections/whitelists/"))==0){
@@ -323,6 +327,9 @@ standard_whitelist_UI<-renderUI({
   }
 })
 
+#' render standard blacklist
+#' depends on:
+#'   values$invalidate_blacklists: invalidated blacklists
 standard_blacklist_UI<-renderUI({
   values$invalidate_blacklists
   if(length(list.files("collections/blacklists/"))==0){

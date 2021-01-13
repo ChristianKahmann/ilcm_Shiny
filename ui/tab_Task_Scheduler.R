@@ -1,4 +1,4 @@
-#' task scheduler panel to select options
+#' task scheduler panel to select options 
 tabPanel("Task Scheduler",
          tags$div(style='height: 82vh; overflow-y: auto; padding-left:10px;',
                   box(solidHeader = T,width = 12,style="padding-left:30px", 

@@ -1,3 +1,4 @@
+#' rendering of result tab - an overvier over all successfull tasks and their results
 tabPanel(icon=icon("list"),
          "Results",
          column(10,

@@ -1,5 +1,6 @@
 #' render page for editing vocabulary lists in section 'scripts'
-#' depends on: values$invalidate_vocabularies: check if the used vocabulary list is valid (e.g. list is not empty)
+#' depends on:
+#'  values$invalidate_vocabularies: check if the used vocabulary list is valid (e.g. list is not empty)
 output$UI_files_vocabulary<-renderUI({
   values$invalidate_vocabularies
   validate(
@@ -35,7 +36,8 @@ observeEvent(input$change_vocabulary_list,{
 
 
 #' show modal if vocab should be imported from tasks
-#' depends on: input$vocabulary_import_vocab_from_task: import vacabulary from task
+#' depends on:
+#'  input$vocabulary_import_vocab_from_task: import vacabulary from task
 observeEvent(input$vocabulary_import_vocab_from_task,{
   
   showModal(
@@ -97,7 +99,8 @@ observeEvent(input$vocabulary_import_vocab_from_task,{
 
 
 #' start importing vocabulary lists from former tasks
-#' depends on: input$vocabulary_import_found_tasks: vocabulary lists found in tasks
+#' depends on:
+#'  input$vocabulary_import_found_tasks: vocabulary lists found in tasks
 output$vocabulary_import_start_import_UI<-renderUI({
   validate(
     need(!is.null(input$vocabulary_import_found_tasks),message=F)
@@ -119,7 +122,8 @@ output$vocabulary_import_start_import_UI<-renderUI({
 
 
 #' show active learning schema if active learning is chosen
-#' depends on: input$vocabulary_import_classification_type: classification type from vocabulary import
+#' depends on:
+#'  input$vocabulary_import_classification_type: classification type from vocabulary import
 output$vocabulary_import_classification_active_learning_scheme_UI<-renderUI({
   selectInput(inputId="vocabulary_import_classification_active_learning_scheme",label="annotation Scheme",choices=list.files(path = paste0("collections/results/classification/",input$vocabulary_import_classification_type,"/")))
   
@@ -167,7 +171,8 @@ output$vocabulary_import_found_tasks_UI<-renderUI({
 
 
 #' add input to write down the words of a new vocabulary list
-#' depends on: values$vocabulary_text: collection of words building the vocabular
+#' depends on:
+#'  values$vocabulary_text: collection of words building the vocabular
 output$UI_vocabulary_textarea<-renderUI({
   if(is.null(values$vocabulary_text)){
     values$vocabulary_text<-""
@@ -176,7 +181,8 @@ output$UI_vocabulary_textarea<-renderUI({
 })
 
 #' saving new vocabulary list
-#' depends on: input$save_vocabulary_list: check if button for saving the list is selected
+#' depends on:
+#'  input$save_vocabulary_list: check if button for saving the list is selected
 observeEvent(input$save_vocabulary_list,{ 
   showModal(
     modalDialog(

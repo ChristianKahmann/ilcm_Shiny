@@ -1,4 +1,4 @@
-# ui code
+#' ui code for geo explorer tab
 tabPanel("GeoExplorer", fluid = TRUE,
          
          # div(style = 'height: 80vh; overflow-y: auto;',

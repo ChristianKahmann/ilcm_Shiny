@@ -1,4 +1,4 @@
-#' panel for interact with category options
+#' panel to interact with category options 
 tabPanel("Categories",
          textInput(inputId = "categories_number",label = "number of classes:",value = 5,width = 100),
          htable("tbl"),

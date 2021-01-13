@@ -8,7 +8,6 @@ source("global/functions_used_in_scripts.R")
 #'    values$Dynamic_Topic_Results_Files: topic model result files
 #'    values$Details_Analysis: details for topic model analysis
 #'    values$tasks_dtm: topic model tasks
-#'    
 output$Dynamic_Topic_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_dynamic_topic_result
@@ -140,7 +139,6 @@ output$Dynamic_Topic_Results <- renderDataTable({
 #'   values$Dynamic_Topic_Results_Files: result files from topic model analysis
 #'   values$current_task_id: id of current task
 #'   values$results_dynamic_topic: topic model results
-#'   
 observe({
   s = input$Dynamic_Topic_Results_rows_selected
   if (length(s)) {

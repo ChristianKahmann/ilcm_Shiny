@@ -45,7 +45,6 @@ observeEvent(input$Results_Reset,{
 )
 
 
-
 #' reset details to null when results tab is at the top
 #' depends on:
 #'   input$coll: document collection

@@ -1,5 +1,6 @@
 source("server/tab_Task_Schedular_StandardParameters.R")
 
+#' render analysis parameter for geocoding
 output$Analysis_Parameter_Geocoding<-renderUI({
   
     c(
@@ -27,6 +28,9 @@ output$Analysis_Parameter_Geocoding<-renderUI({
 output$blacklist_UI <- standard_blacklist_UI
 output$whitelist_UI <- standard_whitelist_UI
 
+#' validate submitted script
+#' depends on:
+#'   input$Geocoding_Submit_Script: submitted script from user
 observeEvent(input$Geocoding_Submit_Script,{
 
   functionToSetParametersIndependentOnUIinput <- function(parameters){

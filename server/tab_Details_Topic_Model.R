@@ -2,7 +2,8 @@ source("global/functions_used_in_scripts.R")
 
 
 #' link downloadbutton for theta in Topic Models Tab
-#'  depends on: values$tm_theta: theta in Topic Models Tab
+#'  depends on:
+#'   values$tm_theta: theta button in parameter bar in Topic Models Tab
 output$download_theta<-downloadHandler(
   filename = function() {
     paste('Theta-', Sys.Date(), '.csv', sep='')
@@ -14,7 +15,8 @@ output$download_theta<-downloadHandler(
 )
 
 #' link downloadbutton for phi in Topic Models Tab
-#' depends on: values$tm_phi: phi in Topic Models Tab
+#' depends on:
+#'  values$tm_phi: phi button in parameter bar in Topic Models Tab
 output$download_phi<-downloadHandler(
   filename = function() {
     paste('Phi-', Sys.Date(), '.csv', sep='')
@@ -27,7 +29,8 @@ output$download_phi<-downloadHandler(
 
 
 #' link downloadbutton for lda vis in Topic Models Tab
-#' depends on: values$tm_json: json data of Topic Model 
+#' depends on:
+#'  values$tm_json: json data of Topic Model 
 output$download_ldavis<-downloadHandler(
   filename = function() {
     paste('LDAvis-', Sys.Date(), '.zip', sep='')
@@ -323,7 +326,8 @@ output$TM_subColl_UI<-renderUI({
 # STM
 ##############
 #' check the selectes Topic Model method
-#' depends on: values$tm_method: selected Topic Model method
+#' depends on:
+#'  values$tm_method: selected Topic Model method
 output$tm_method<-reactive({
   values$tm_method
 })
@@ -441,7 +445,8 @@ observeEvent(input$tm_stm_visu_topicCorr_start,{
 })
 
 #' start process of displaying topic correlation
-#' depends on: values$tm_stm_visu_topicCorr_show: topic correlation initiate visualisation
+#' depends on:
+#'  values$tm_stm_visu_topicCorr_show: topic correlation initiate visualisation
 output$TM_stm_visu_topicCorr_show<-reactive({
   return(values$tm_stm_visu_topicCorr_show)
 })
@@ -508,7 +513,8 @@ outputOptions(output, "TM_stm_visu_estimateEffect_show", suspendWhenHidden = FAL
 
 
 #' estimate effect summary
-#' depends on: values$tm_stm_visu_estimateEffectResult
+#' depends on:
+#'  values$tm_stm_visu_estimateEffectResult
 output$TM_stm_visu_estimateEffect_summary <- renderPrint({
   summary(values$tm_stm_visu_estimateEffectResult)
 })
@@ -520,7 +526,8 @@ observeEvent(input$tm_stm_visu_estimateEffect_plotupdate,{
 })
 
 #' plot the vizualisation of estimate effect
-#' depends on: values$tm_stm_visu_estimateEffect_plot_show: should the calculatet estimated effect plot be shown 
+#' depends on:
+#'  values$tm_stm_visu_estimateEffect_plot_show: should the calculatet estimated effect plot be shown 
 output$TM_stm_visu_estimateEffect_plot_show<-reactive({
   values$tm_stm_visu_estimateEffect_plot_show
 })
@@ -1008,7 +1015,8 @@ output$TM_Coherence_topic_intrusion_docs_box<-renderValueBox({
 })
 
 #' display found intruders
-#' depends on: values$topic_intrusion_results: results from topic intrusion
+#' depends on:
+#'  values$topic_intrusion_results: results from topic intrusion
 output$TM_Coherence_topic_intrusion_correct_box<-renderValueBox({
   valueBox(value = length(which((apply(values$topic_intrusion_results,1,FUN = function(x){x[2]==x[3]}))==TRUE)),subtitle = "intruders found",icon = icon("thumbs-up",lib="glyphicon"),color="yellow")
 })
@@ -1063,7 +1071,8 @@ output$TM_Coherence_word_intrusion<-renderUI({
 })
 
 #' show word intrusion
-#' depends on: values$TM_Intrusion_word_show: show word intrusion
+#' depends on:
+#'  values$TM_Intrusion_word_show: show word intrusion
 output$TM_Intrusion_word_show<-reactive({
   values$TM_Intrusion_word_show
 })
@@ -1095,7 +1104,7 @@ observeEvent(input$TM_Coherence_word_intrusion_reset,{
 
 #' render table for coherence word intrusion 
 #' depends on:
-#'   values$TM_Coherence_word_intrusion_words
+#'   values$TM_Coherence_word_intrusion_words: words for cohrerence intrusion
 #'   input$TM_Coherence_setsize: set size for coherence
 output$TM_Coherence_word_intrusion_words<-renderDataTable({
   data<-data.frame(values$TM_Coherence_word_intrusion_words,
@@ -1116,7 +1125,8 @@ output$TM_Coherence_word_intrusion_words<-renderDataTable({
 })
 
 #' display word cloud for word intrusion
-#' depends on: values$TM_Coherence_word_intrusion_words: words from word intrusion
+#' depends on:
+#'  values$TM_Coherence_word_intrusion_words: words for word intrusion
 output$TM_Coherence_word_intrusion_wordcloud<-renderWordcloud2({
   data = data.frame(words= values$TM_Coherence_word_intrusion_words,counts=rep(1,length(values$TM_Coherence_word_intrusion_words)),stringsAsFactors = F)
   wordcloud2(data = data,fontFamily = "Helvetica",backgroundColor = "azure",color = "random-dark",size=1.5/input$TM_Coherence_setsize,minRotation = -pi/2, maxRotation = -pi/2)
@@ -1125,7 +1135,7 @@ output$TM_Coherence_word_intrusion_wordcloud<-renderWordcloud2({
 #' run word intrusion
 #' depends on:
 #'   values$TM_word_intrusion_run: run word intrusion
-#'   values$word_intrusion_random_topic_number
+#'   values$word_intrusion_random_topic_number: random topic number for word intrusion
 #'   values$tm_phi: Topic model phi
 #'   values$word_intrusion_results: results from word intruision
 #'   values$TM_Coherence_word_intrusion_words: words from word intrusion
@@ -1259,7 +1269,8 @@ output$TM_Coherence_word_intrusion_docs_box<-renderValueBox({
 })
 
 #' check box for correct predicted word intrusions
-#' depends on: values$word_intrusion_results: results from word intrusion
+#' depends on:
+#'  values$word_intrusion_results: results from word intrusion
 output$TM_Coherence_word_intrusion_correct_box<-renderValueBox({
   valueBox(value = length(which((apply(values$word_intrusion_results,1,FUN = function(x){x[2]==x[3]}))==TRUE)),subtitle = "intruders found",icon = icon("thumbs-up",lib="glyphicon"),color="yellow")
 })
@@ -1281,7 +1292,8 @@ observeEvent(values$TM_word_intrusion_run,{
 
 
 #' topic model dictionary of possible topics
-#' depends on: values$tm_number_of_topics: number of topics from topic model
+#' depends on:
+#'  values$tm_number_of_topics: number of topics from topic model
 output$TM_dict_topics_ui<-renderUI({
   checkboxGroupInput(inputId = "TM_dict_topics",label = "Topcis",
                      choiceNames =  paste("Topic",1:values$tm_number_of_topics,sep=" ") ,inline = T,choiceValues = 1:values$tm_number_of_topics
@@ -1338,7 +1350,8 @@ observe({
 })
 
 #' show saved topic model dictionaries
-#' depends on: input$TM_dict_topics: topic dictionaries
+#' depends on:
+#'  input$TM_dict_topics: topic dictionaries
 output$TM_dict_save_ui<-renderUI({
   validate(
     need(!is.null(input$TM_dict_topics),message=FALSE),
@@ -4035,7 +4048,6 @@ output$Det_TM_validation_metadata_UI<-renderUI({
 #'   input$Det_TM_validation_color_least_important: detailed topic model validation colour for least important values
 #'   input$Det_TM_validation_color_most_important: detailed topic model validation colour for most important values
 #'   input$Det_TM_validation_color_use_pie_colors: validation color to use in pie chart for detailed topic models 
-#'   
 output$TM_validation_UI<-renderUI({
   validate(
     need(
@@ -4178,7 +4190,8 @@ output$TM_validation_UI<-renderUI({
 
 
 #' wordcloud showing the relevant words for the chosen topic
-#' depends on: input$Det_TM_validation_topic: choosen topic from detailed topic models for validation
+#' depends on:
+#'  input$Det_TM_validation_topic: choosen topic from detailed topic models for validation
 output$Det_TM_validation_wordcloud <- wordcloud2::renderWordcloud2({
   # @values$tm_relevance calculated with lamda= 0.3
   data <- values$tm_relevance[,input$Det_TM_validation_topic]
@@ -4256,7 +4269,8 @@ output$TM_dispersion_ui<-renderUI({
 
 
 #' summary table for topic dispersion
-#' depends on: values$tm_theta
+#' depends on:
+#'  values$tm_theta
 output$Det_TM_dispersion_summary_table<-DT::renderDataTable({
   validate(
     need(!is.null(values$tm_theta),message=F)
@@ -4408,8 +4422,6 @@ output$TM_document_comparison_UI<-renderUI({
 #'    input$Det_TM_document_comparison_document: documents for comparison from detailed topic model
 #'    values$tm_theta: topic model theta
 #'    values$tm_meta: meta data from topic model
-#'    
-#'    
 output$Det_TM_document_comparison_table<-DT::renderDataTable({
   validate(
     need(length(input$Det_TM_document_comparison_document)>0,message = "Choose at least one document!")
@@ -4557,7 +4569,6 @@ output$Det_TM_document_comparison_correlation_heatmap_euclidean_distance<-plotly
 #############################
 
 #' render document outlier
-
 output$TM_document_outlier_UI<-renderUI({
   return(tagList(
     tags$h4("Average document similarity"),
@@ -4759,7 +4770,8 @@ output$Det_TM_document_clustering_download_clustering_result<-downloadHandler(
 
 
 #' show meta data from document clustering
-#' depends on: values$tm_meta: topic model meta data
+#' depends on:
+#'  values$tm_meta: topic model meta data
 output$Det_TM_document_clustering_metadata_UI<-renderUI({
   eventdata<-event_data("plotly_click",source = "Det_TM_document_clustering_kmeans")
   validate(
@@ -5039,7 +5051,8 @@ output$Det_TM_grouping_group2<-renderDataTable({
 })
 
 #' datatable for quantiles for group 2
-#' depends on: values$Det_TM_grouping_quantiles_group2: quantiles for group 2
+#' depends on:
+#'  values$Det_TM_grouping_quantiles_group2: quantiles for group 2
 output$Det_TM_grouping_quantile_group2_quantiles<-DT::renderDataTable({
   validate(
     need(
@@ -5052,7 +5065,8 @@ output$Det_TM_grouping_quantile_group2_quantiles<-DT::renderDataTable({
 
 
 #' render word cloud depending of elements of group1
-#' depends on: input$Det_TM_grouping_group1_rows_all: all rows of docuements from group 1
+#' depends on:
+#'  input$Det_TM_grouping_group1_rows_all: all rows of docuements from group 1
 output$Det_TM_grouping_wc_group1<-renderWordcloud2({
   validate(
     need(!is.null(input$Det_TM_grouping_group1_rows_all),message=F)
@@ -5063,7 +5077,8 @@ output$Det_TM_grouping_wc_group1<-renderWordcloud2({
 })
 
 #' render word cloud depending of elements of group2
-#' depends on: input$Det_TM_grouping_group2_rows_all: all rows of docuements from group 2
+#' depends on:
+#'  input$Det_TM_grouping_group2_rows_all: all rows of docuements from group 2
 output$Det_TM_grouping_wc_group2<-renderWordcloud2({
   validate(
     need(!is.null(input$Det_TM_grouping_group2_rows_all),message=F)
@@ -5153,7 +5168,8 @@ output$Det_TM_model_reproducibility_specific_table<-DT::renderDataTable({
 })
 
 #' show reproducibility of a referenced specific topic
-#' depends on: values$Det_TM_model_reproducibility_specific_number_of_reference_topics: reproducibility of a specific number of referenced topics
+#' depends on:
+#'  values$Det_TM_model_reproducibility_specific_number_of_reference_topics: reproducibility of a specific number of referenced topics
 output$Det_TM_model_reproducibility_specific_topic_reference_UI<-renderUI({
   validate(
     need(!is.null(values$Det_TM_model_reproducibility_specific_number_of_reference_topics),message=F)
@@ -5171,14 +5187,15 @@ output$Det_TM_model_reproducibility_specific_topic_reference_UI<-renderUI({
 }) 
 
 #' wordcloud for specific model reproducibility
-#' input$Det_TM_model_reproducibility_specific_topic_reference: model reproducibility of a specific topic for reference reasons
-#' values$Det_TM_model_reproducibility_calculated: calculated model reproducibility for the detailed topic model
-#' values$Det_TM_model_reproducibility_top_words_per_result_per_topic: reproducibility of the top words per topic of the different results
-#' input$Det_TM_model_reproducibility_specific_topic: reproducibility of a specific topic
-#' input$Det_TM_reproducibility_models: models for reproducability calculation
-#' input$Det_TM_model_reproducibility_specific_resultset: reproducibilitx for a specific set of results
-#' input$Det_TM_reproducibility_number_of_words: reproducibility of number of words
-#' input$Det_TM_model_reproducibility_specific_wordcloud_size: reproducibility of specific wordcloud size
+#' depends on:
+#'   input$Det_TM_model_reproducibility_specific_topic_reference: model reproducibility of a specific topic for reference reasons
+#'   values$Det_TM_model_reproducibility_calculated: calculated model reproducibility for the detailed topic model
+#'   values$Det_TM_model_reproducibility_top_words_per_result_per_topic: reproducibility of the top words per topic of the different results
+#'   input$Det_TM_model_reproducibility_specific_topic: reproducibility of a specific topic
+#'   input$Det_TM_reproducibility_models: models for reproducability calculation
+#'   input$Det_TM_model_reproducibility_specific_resultset: reproducibilitx for a specific set of results
+#'   input$Det_TM_reproducibility_number_of_words: reproducibility of number of words
+#'   input$Det_TM_model_reproducibility_specific_wordcloud_size: reproducibility of specific wordcloud size
 output$Det_TM_model_reproducibility_specific_wordcloud<-wordcloud2::renderWordcloud2({
   validate(
     need(!is.null(input$Det_TM_model_reproducibility_specific_topic_reference),message=F),
@@ -5281,7 +5298,8 @@ observeEvent(input$Det_TM_reproducibility_calculate,ignoreNULL = F,{
 })
 
 #' change selected topic, if user selects a row in the overview table
-#' depends on: input$Det_TM_model_reproducibility_result_table_rows_selected: selected rows in data table of the results of model reproducibility
+#' depends on:
+#'  input$Det_TM_model_reproducibility_result_table_rows_selected: selected rows in data table of the results of model reproducibility
 observe({
   s = input$Det_TM_model_reproducibility_result_table_rows_selected
   if (length(s)) {
@@ -5291,7 +5309,8 @@ observe({
 
 
 #' change selected comparison topic, if user selects a row in the overview table
-#' depends on: input$Det_TM_model_reproducibility_specific_table_cells_selected: selected cells from data table of specific model reproducibility
+#' depends on:
+#'  input$Det_TM_model_reproducibility_specific_table_cells_selected: selected cells from data table of specific model reproducibility
 observe({
   s = input$Det_TM_model_reproducibility_specific_table_cells_selected
   if (length(s)) {

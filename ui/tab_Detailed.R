@@ -3,7 +3,7 @@
 #' checkbox for the usage of raw data
 #' input for time limitation (add specific start and end time)
 #' input for other potential information that can be filtered from the used data (up to nine additional inputs)
-#' input for number of tokens
+#' input for number of tokens 
 tabPanel("Detailed",title = "Detailed",
          textOutput(outputId = "Det_text"),
          shinyTypeahead::typeaheadInput(inputId = "Det_inputtext",label = "Keyword",value = '',choices = c(),items = 10,minLength = 1),

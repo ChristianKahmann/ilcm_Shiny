@@ -1,4 +1,3 @@
-
 #' render the parameter set for dynamic topic modeling
 output$Analysis_Parameter_DTM<-renderUI({
   tagList(
@@ -432,7 +431,8 @@ output$DTM_whitelist_UI<-renderUI({
 })
 
 #' show whitelist options when whitelist checkbox is TRUE
-#' depends on: input$DTM_use_custom_whitelist: should a customed withelist for the DTMquency extraction be used
+#' depends on:
+#'  input$DTM_use_custom_whitelist: should a customed withelist for the DTMquency extraction be used
 observeEvent(ignoreNULL = T,input$DTM_use_custom_whitelist,{
   if(isTRUE(input$DTM_use_custom_whitelist)){
     shinyjs::show(id = "DTM_whitelist")
@@ -457,7 +457,8 @@ output$DTM_blacklist_UI<-renderUI({
 })
 
 #' show blacklist options when blacklist checkbox is TRUE
-#' depends on: input$DTM_use_custom_blacklist: should a customed blacklist be used for dynamic topic modeling
+#' depends on: 
+#'  input$DTM_use_custom_blacklist: should a customed blacklist be used for dynamic topic modeling
 observeEvent(ignoreNULL = T,input$DTM_use_custom_blacklist,{
   if(isTRUE(input$DTM_use_custom_blacklist)){
     shinyjs::show(id = "DTM_blacklist")
