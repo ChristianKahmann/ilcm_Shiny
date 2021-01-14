@@ -1,4 +1,4 @@
-preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format){
+preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,slow_mode=F){
   empty_text<-which(text=="")
   if(length(empty_text)>0){
     log_to_file(message = paste0(length(empty_text)," empty doucments found and removed"),logfile)
@@ -7,24 +7,32 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format){
   }
   mean_doc_length=ceiling(mean(as.numeric(metadata$token)))
   split_documents=F
-  split_size=100
-  if(mean_doc_length>1000){
-    split_size=50
-  }
-  if(mean_doc_length>10000){
-    split_size=15
-  }
-  if(mean_doc_length>50000){
-    split_size=8
-  }
-  if(mean_doc_length>75000){
+  if(slow_mode==T){
     split_size=1
-  }
-  if(mean_doc_length>100000){
-    split_size=1
-    # to long documents can cause spacy to take to much RAM, which will then cause the import process to fail
+    # too long documents can cause spacy to take to much RAM, which will then cause the import process to fail
     # in order to limit this, very long documents will be processed in several chunks
     split_documents=T
+  }
+  else{
+    split_size=100
+    if(mean_doc_length>1000){
+      split_size=50
+    }
+    if(mean_doc_length>10000){
+      split_size=15
+    }
+    if(mean_doc_length>50000){
+      split_size=8
+    }
+    if(mean_doc_length>75000){
+      split_size=1
+    }
+    if(mean_doc_length>100000){
+      split_size=1
+      # too long documents can cause spacy to take to much RAM, which will then cause the import process to fail
+      # in order to limit this, very long documents will be processed in several chunks
+      split_documents=T
+    }
   }
   split<-split(1:length(text), ceiling(seq_along(1:length(text))/min(length(text),split_size)))
   token<-NULL
@@ -32,12 +40,13 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format){
   log_to_file(paste0("Input splitted into ",length(split)," parts"),logfile)
   for(i in split){
     count=count+1
-    print(count)
     if(split_documents==F){
       toks<-spacyr::spacy_parse(iconv(text[i], "UTF-8", "UTF-8",sub=''),pos = T,tag = F,lemma = T,entity = T,dependency = F,additional_attributes = "idx")
       toks[,1]<-stringr::str_replace_all(string = toks[,1],pattern = "text",replacement = "")
       toks[,1]<-metadata[((as.numeric(toks[,1])+(count-1)*min(length(text),split_size))),"id_doc"]
       token<-rbind(token,toks)
+      log_to_file(paste(count,"of:",length(split)),logfile)
+      if(count%%10==0)gc()
     }
     else{
       #get single document
@@ -45,42 +54,58 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format){
       #split in chunks of 10000 chars
       offset=0
       chunk_char_size=10000
-      document_chunk<-substr(document,offset,min(nchar(document),(offset+chunk_char_size)))
-      token_doc<-spacyr::spacy_parse(document_chunk,pos = T,tag = F,lemma = T,entity = T,dependency = F,additional_attributes = "idx")
-      
-      boundary<-max(which(token_doc$sentence_id==(max(token_doc$sentence_id)-3)))
-      sentence_offset<-token_doc$sentence_id[boundary]
-      new_offset<-token_doc[(1+boundary),"idx"]+1
-      token_doc<-token_doc[1:boundary,]
-      k=1
-      while(nchar(document)>new_offset){
-        k=k+1
-        document_chunk<-substr(document,new_offset,min(nchar(document),(new_offset+chunk_char_size)))
-        toks<-spacyr::spacy_parse(document_chunk,pos = T,tag = F,lemma = T,entity = T,dependency = F,additional_attributes = "idx")
-        toks$sentence_id<-toks$sentence_id+sentence_offset
-        toks$idx<-toks$idx+new_offset-1
+      if(nchar(document)>chunk_char_size){
+        document_chunk<-substr(document,offset,min(nchar(document),(offset+chunk_char_size)))
+        token_doc<-spacyr::spacy_parse(document_chunk,pos = T,tag = F,lemma = T,entity = T,dependency = F,additional_attributes = "idx")
         
-        if(nchar(document)>(new_offset+chunk_char_size)){
-          boundary<-max(which(toks$sentence_id==(max(toks$sentence_id)-3)))
-          new_offset<-toks[(1+boundary),"idx"]+1
-          sentence_offset<-toks$sentence_id[boundary]
-          toks<-toks[1:boundary,]
+        boundary<-max(which(token_doc$sentence_id==(max(token_doc$sentence_id)-3)))
+        sentence_offset<-token_doc$sentence_id[boundary]
+        new_offset<-token_doc[(1+boundary),"idx"]+1
+        token_doc<-token_doc[1:boundary,]
+        k=1
+        while(nchar(document)>new_offset){
+          k=k+1
+          document_chunk<-substr(document,new_offset,min(nchar(document),(new_offset+chunk_char_size)))
+          toks<-spacyr::spacy_parse(document_chunk,pos = T,tag = F,lemma = T,entity = T,dependency = F,additional_attributes = "idx")
+          toks$sentence_id<-toks$sentence_id+sentence_offset
+          toks$idx<-toks$idx+new_offset-1
+          
+          if(nchar(document)>(new_offset+chunk_char_size)){
+            boundary<-max(which(toks$sentence_id==(max(toks$sentence_id)-3)))
+            new_offset<-toks[(1+boundary),"idx"]+1
+            sentence_offset<-toks$sentence_id[boundary]
+            toks<-toks[1:boundary,]
+          }
+          else{
+            boundary<-nrow(toks)
+            new_offset<-toks[(boundary),"idx"]+1
+          }
+          token_doc<-rbind(token_doc,toks)
         }
-        else{
-          boundary<-nrow(toks)
-          new_offset<-toks[(boundary),"idx"]+1
-        }
-        token_doc<-rbind(token_doc,toks)
+        token_doc[,1]<-stringr::str_replace_all(string = token_doc[,1],pattern = "text",replacement = "")
+        token_doc[,1]<-metadata[((as.numeric(token_doc[,1])+(count-1)*min(length(text),split_size))),"id_doc"]
+        token<-rbind(token,token_doc)
       }
-      
-      token_doc[,1]<-stringr::str_replace_all(string = token_doc[,1],pattern = "text",replacement = "")
-      token_doc[,1]<-metadata[((as.numeric(token_doc[,1])+(count-1)*min(length(text),split_size))),"id_doc"]
-      token<-rbind(token,token_doc)
+      else{
+        token_doc<-spacyr::spacy_parse(document,pos = T,tag = F,lemma = T,entity = T,dependency = F,additional_attributes = "idx")
+        token_doc[,1]<-stringr::str_replace_all(string = token_doc[,1],pattern = "text",replacement = "")
+        token_doc[,1]<-metadata[((as.numeric(token_doc[,1])+(count-1)*min(length(text),split_size))),"id_doc"]
+        token<-rbind(token,token_doc)
+      }
+      if(length(split)>=100){
+        log_sequence<-round(seq(from=1,to=length(split),length.out=101))[2:101]
+        if(count%in%log_sequence){
+          log_to_file(paste(which(log_sequence==count),"% finished (",count,")"),logfile)
+        }
+      }
+      else{
+        log_to_file(paste(count,"of:",length(split)),logfile)
+        if(count%%10==0)gc()
+      }
     }
-    log_to_file(paste(count,"of:",length(split)),logfile)
-    if(count%%10==0)gc()
+    
   }  
-    token<-token[,c("doc_id","sentence_id","token_id","token","lemma","pos","entity","idx")]
+  token<-token[,c("doc_id","sentence_id","token_id","token","lemma","pos","entity","idx")]
   #toDelete<-which(token[,6]=="SPACE")
   #if(length(toDelete)>0){
   #  token<-token[-which(token[,6]=="SPACE"),]
