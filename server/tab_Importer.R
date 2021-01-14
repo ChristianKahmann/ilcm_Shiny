@@ -1092,7 +1092,8 @@ observeEvent(input$Import_csv_start_preprocess,{
                 meta_metadata[,"mde9"]<-NULL
               }
               #save needed parameters
-              parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
+              slow_mode<-input$Import_csv_slow_mode
+              parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata,slow_mode=slow_mode)
               #create process ID
               ID<-get_task_id_counter()+1
               set_task_id_counter(ID)
@@ -1166,7 +1167,8 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_csv_no_db,{
       meta_metadata[,"mde9"]<-NULL
     }
     #save needed parameters
-    parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
+    slow_mode<-input$Import_csv_slow_mode
+    parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata,slow_mode=slow_mode)
     #create process ID
     ID<-get_task_id_counter()+1
     set_task_id_counter(ID)
@@ -1270,7 +1272,8 @@ observeEvent(input$Import_csv_start_preprocess_and_write,{
                 meta_metadata[,"mde9"]<-NULL
               }
               #save needed parameters
-              parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
+              slow_mode<-input$Import_csv_slow_mode
+              parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata,slow_mode=slow_mode)
               #create process ID
               ID<-get_task_id_counter()+1
               set_task_id_counter(ID)
@@ -1344,7 +1347,8 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_csv_db,{
       meta_metadata[,"mde9"]<-NULL
     }
     #save needed parameters
-    parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata)
+    slow_mode<-input$Import_csv_slow_mode
+    parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_csv_date_format,meta_metadata,slow_mode=slow_mode)
     #create process ID
     ID<-get_task_id_counter()+1
     set_task_id_counter(ID)
@@ -2023,7 +2027,8 @@ observeEvent(input$Import_mtf_start_preprocess,{
                   meta_metadata[,"mde9"]<-NULL
                 }
                 #save needed parameters
-                parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
+                slow_mode<-input$Import_mtf_slow_mode
+                parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata,slow_mode=slow_mode)
                 #create process ID
                 ID<-get_task_id_counter()+1
                 set_task_id_counter(ID)
@@ -2084,7 +2089,8 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_no_db,{
       meta_metadata[,"mde9"]<-NULL
     }
     #save needed parameters
-    parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
+    slow_mode<-input$Import_mtf_slow_mode
+    parameters<-list(data,db=FALSE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata,slow_mode=slow_mode)
     #create process ID
     ID<-get_task_id_counter()+1
     set_task_id_counter(ID)
@@ -2178,7 +2184,8 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
                   meta_metadata[,"mde9"]<-NULL
                 }
                 #save needed parameters
-                parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
+                slow_mode<-input$Import_mtf_slow_mode
+                parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata,slow_mode=slow_mode)
                 #create process ID
                 ID<-get_task_id_counter()+1
                 set_task_id_counter(ID)
@@ -2239,7 +2246,8 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_db,{
       meta_metadata[,"mde9"]<-NULL
     }
     #save needed parameters
-    parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata)
+    slow_mode<-input$Import_mtf_slow_mode
+    parameters<-list(data,db=TRUE,lang=data[1,"language"],input$Import_mtf_date_format,meta_metadata,slow_mode=slow_mode)
     #create process ID
     ID<-get_task_id_counter()+1
     set_task_id_counter(ID)

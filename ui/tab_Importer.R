@@ -226,7 +226,17 @@ tabPanel("Importer",
                                                                                               ),
                                                                                               tags$hr()
                                                                                           ),
-                                                                                          
+                                                                                          fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
+                                                                                            column(2,
+                                                                                                   checkboxInput(inputId = "Import_csv_slow_mode",label = "use mode for slow/old PC's",value = FALSE)%>%
+                                                                                                     shinyInput_label_embed(
+                                                                                                       shiny_iconlink() %>%
+                                                                                                         bs_embed_popover(
+                                                                                                           title = "If you have a huge data set or a pc with less than 8GB of RAM you can activate this option. This way the import will take longer but it needs less memory.", placement = "right"
+                                                                                                         )
+                                                                                                     )
+                                                                                            )
+                                                                                          ),
                                                                                           shinyBS::bsButton("Import_csv_start_preprocess",label = "Start Preprocessing and save csv-files",style="info",icon=icon("tags")),
                                                                                           shinyBS::bsButton("Import_csv_start_preprocess_and_write",label = "Start Preprocessing and directly wirte to DB",style="info",icon=icon("upload")),
                                                                                           shinyBS::bsButton("Import_csv_sanity_check",label = "Sanity Check",style="info",icon=icon("search"))
@@ -465,7 +475,17 @@ tabPanel("Importer",
                                                                                               ),
                                                                                               tags$hr()
                                                                                           ),
-                                                                                          
+                                                                                          fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
+                                                                                                   column(2,
+                                                                                                          checkboxInput(inputId = "Import_mtf_slow_mode",label = "use mode for slow/old PC's",value = FALSE)%>%
+                                                                                                            shinyInput_label_embed(
+                                                                                                              shiny_iconlink() %>%
+                                                                                                                bs_embed_popover(
+                                                                                                                  title = "If you have a huge data set or a pc with less than 8GB of RAM you can activate this option. This way the import will take longer but it needs less memory.", placement = "right"
+                                                                                                                )
+                                                                                                            )
+                                                                                                   )
+                                                                                          ),
                                                                                           shinyBS::bsButton("Import_mtf_start_preprocess",label = "Start Preprocessing and save csv-files",style="info",icon=icon("tags")),
                                                                                           shinyBS::bsButton("Import_mtf_start_preprocess_and_write",label = "Start Preprocessing and directly wirte to DB",style="info",icon=icon("upload")),
                                                                                           shinyBS::bsButton("Import_mtf_sanity_check",label = "Sanity Check",style="info",icon=icon("search"))
@@ -481,11 +501,11 @@ tabPanel("Importer",
              tags$br(),
              withBusyIndicatorUI(
                shinyBS::bsButton(
-                     inputId = "Upload_Data_DB_and_Solr",
-                     label = "Upload selected data to DB and import to Solr",
-                     icon = icon("upload"),
-                     style = "default"
-                   )
+                 inputId = "Upload_Data_DB_and_Solr",
+                 label = "Upload selected data to DB and import to Solr",
+                 icon = icon("upload"),
+                 style = "default"
+               )
              ),
              # withBusyIndicatorUI(
              #   shinyBS::bsButton(

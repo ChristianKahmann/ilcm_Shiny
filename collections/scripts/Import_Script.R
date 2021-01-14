@@ -22,7 +22,10 @@ error<-try(expr = {
   language<-parameters[[3]]
   date_format<-parameters[[4]]
   meta_metadata<-parameters[[5]]
-  
+  slow_mode<-F
+  try({
+    slow_mode<-parameters[[6]]
+  })
   #reduce metadata object to the metadata columns the user specified
   if(dim(meta_metadata)[2]==1){
     metadata<-metadata[,c("dataset","id_doc","title","body","date","token","language")]
@@ -35,7 +38,7 @@ error<-try(expr = {
   spacy_initialize(model = language)
   log_to_file(message = "spacy initialized",logfile)
   # write import csv for meta and token information
-  preprocess_data(text = metadata[,"body"],metadata = metadata,process_id = process_info[[1]],offset = (min(as.numeric(metadata[,"id_doc"]))-1),logfile = logfile,date_format = date_format)
+  preprocess_data(text = metadata[,"body"],metadata = metadata,process_id = process_info[[1]],offset = (min(as.numeric(metadata[,"id_doc"]))-1),logfile = logfile,date_format = date_format,slow_mode=slow_mode)
   # write meta metadata csv
   write.csv(x = parameters[[5]],file=paste0("data_import/processed_data/metameta_",metadata[1,"dataset"],"_",process_info[[1]],".csv"),row.names = F)
   log_to_file(message = "finished writing results metadata to database",logfile)
