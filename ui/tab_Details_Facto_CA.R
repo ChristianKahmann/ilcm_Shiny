@@ -1,4 +1,4 @@
-#' box for cooccurrence analysis on the dataset
+#' box for cooccurrence analysis on the dataset 
 tabBox(
   id = "tabBox_ORC",
   width = 12,

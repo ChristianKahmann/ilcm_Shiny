@@ -18,4 +18,4 @@ tabPanel("Detailed",
          withBusyIndicatorUI(
            shinyBS::bsButton(inputId = "Det_action_Sub",label = "Search",icon = icon("search"),style = "default")
          )
-)
+)  

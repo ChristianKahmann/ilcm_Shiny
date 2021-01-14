@@ -1,5 +1,5 @@
 #' panel for document view
-#' show document wide annotations, ...
+#' show document wide annotations, etc.
 #' (viewed on right side)
 tabPanel(value = "Document View3",title = "Document View",
          box(width = 2,div(style = 'height: 80vh; overflow-y: auto;',

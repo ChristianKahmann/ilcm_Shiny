@@ -1,4 +1,4 @@
-#' tab to keep or change lists (whitelist)
+#' tab to keep or change lists (whitelists)
 tabPanel(icon=icon("check"),
          "Whitelists",
          uiOutput(outputId = "UI_files_keep"),

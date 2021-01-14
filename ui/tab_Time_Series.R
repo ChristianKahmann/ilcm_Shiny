@@ -1,5 +1,5 @@
 #' panel to edit time series
-#' create new or view and edit old ones
+#' create new or view and edit old ones 
 tabPanel("Time Series",
          tags$div(style = 'height: 82vh; overflow:auto; position:relative; width:100%;',
                   tags$div(id="TS_config",sytle='width=100%',

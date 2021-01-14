@@ -1,4 +1,4 @@
-#' panel for details in Factorial Analysis
+#' panel for details in Factorial Analysis 
 tabPanel(
   "Details",
   shinyalert::useShinyalert(),

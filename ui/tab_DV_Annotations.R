@@ -1,5 +1,5 @@
 #' annotation panel for document view tab
-#' dynamicaly changing depending on selection
+#' dynamicaly changing depending on selection 
 conditionalPanel("input.expl=='Document View'",
                  box(width=NULL,title = tags$h4("Annotations",style="color:white"),solidHeader = TRUE,status = "danger",collapsible = T,
                      

@@ -1,5 +1,5 @@
-#' tabbox for ORC
-#' to select active columns or suplementary categorial variable and so on
+#' tab-box for ORC
+#' to select active columns or suplementary categorial variable etc.
 tabBox(
   id = "tabBox_ORC",
   width = 12,

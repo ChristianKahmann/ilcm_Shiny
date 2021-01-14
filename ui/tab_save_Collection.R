@@ -1,4 +1,4 @@
-#' conditional panel to save a collection
+#' conditional panel to save a collection 
 conditionalPanel("input.expl=='Search Results'",
                  box(width=NULL,title =tags$h4("Save Collection",style="color:white"),solidHeader = TRUE,status = "primary",
                      textInput(inputId = "Collection_Name",label = "Collection Name:",value = "test"),
