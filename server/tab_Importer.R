@@ -317,7 +317,7 @@ sanity_check_Modal <- function(type, data_check_choices) {
       p("NOTE: Language detection might fail - especially with short text"),
       hr(),
       h5("Content"),
-      textOutput("selected_row")
+      textOutput("selected_row")%>%withSpinner()
     )
   )
 }
