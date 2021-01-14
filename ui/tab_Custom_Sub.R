@@ -1,4 +1,4 @@
-#' show custome input in sub 
+#' show custome input in sub
 tabPanel("Custom",
          uiOutput(outputId = "custom_inputtext_Sub_UI"),
          shinyBS::bsButton(inputId = "custom_action_Sub",label = "Search",icon = icon("search"),style = "default")

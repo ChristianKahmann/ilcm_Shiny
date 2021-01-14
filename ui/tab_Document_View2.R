@@ -1,5 +1,5 @@
 #' panel for document view
-#' to show documents and schow annotationes,...
+#' to show documents and schow annotationes, etc.
 #' (viewed on right side ot document view tab)
 tabPanel(value = "Document View2",title = "Document View",
          box(width = 2,div(style = 'height: 80vh; overflow-y: auto;',

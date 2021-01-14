@@ -1,4 +1,4 @@
-#' panel ti edut lists (blacklists)
+#' panel to edit lists (blacklists)
 tabPanel(icon=icon("ban"),
          "Blacklists",
          uiOutput(outputId = "UI_files_remove"),

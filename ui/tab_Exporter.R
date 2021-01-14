@@ -1,4 +1,4 @@
-#' panel to export collections
+#' panel to export collections 
 tabPanel("Exporter",
          tabBox(
            id = "tabBox_Export",

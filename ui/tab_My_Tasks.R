@@ -1,4 +1,4 @@
-#' my task panel to show with tasks were currently running or are finished with succes or failed to finnish
+#' "my task" panel to show with tasks were currently running or are finished with success or failed to finnish 
 tabPanel("My Tasks",
          div(style='height: 83vh; overflow-y: auto;',
                infoBoxOutput(outputId = "running_box"),
