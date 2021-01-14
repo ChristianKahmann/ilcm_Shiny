@@ -227,15 +227,35 @@ tabPanel("Importer",
                                                                                               tags$hr()
                                                                                           ),
                                                                                           fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
-                                                                                            column(2,
-                                                                                                   checkboxInput(inputId = "Import_csv_slow_mode",label = "use mode for slow/old PC's",value = FALSE)%>%
-                                                                                                     shinyInput_label_embed(
-                                                                                                       shiny_iconlink() %>%
-                                                                                                         bs_embed_popover(
-                                                                                                           title = "If you have a huge data set or a pc with less than 8GB of RAM you can activate this option. This way the import will take longer but it needs less memory.", placement = "right"
-                                                                                                         )
-                                                                                                     )
-                                                                                            )
+                                                                                                   column(2,
+                                                                                                          checkboxInput(inputId = "Import_csv_slow_mode",label = "use mode for slow/old PC's",value = FALSE)%>%
+                                                                                                            shinyInput_label_embed(
+                                                                                                              shiny_iconlink() %>%
+                                                                                                                bs_embed_popover(
+                                                                                                                  title = "If you have a huge data set or a pc with less than 8GB of RAM you can activate this option. This way the import will take longer but it needs less memory.", placement = "right"
+                                                                                                                )
+                                                                                                            )
+                                                                                                   ),
+                                                                                                   column(2,
+                                                                                                          selectInput(inputId="Import_csv_anonymize",selected=character(0),label="anonymize your data?",
+                                                                                                                      choices=c("title","mde1","mde2","mde3","mde4","mde5","mde6","med7","mde8","mde9"),multiple=T) %>%
+                                                                                                            shinyInput_label_embed(
+                                                                                                              shiny_iconlink() %>%
+                                                                                                                bs_embed_popover(
+                                                                                                                  title = "If you have certain column which you would like to anonymize, please select them here.", placement = "right"
+                                                                                                                )
+                                                                                                            )
+                                                                                                   ),
+                                                                                                   column(2,
+                                                                                                          selectInput(inputId="Import_csv_pseudonymization",selected=character(0),label="pseudonymize your data?",
+                                                                                                                      choices=c("title","mde1","mde2","mde3","mde4","mde5","mde6","med7","mde8","mde9"),multiple=T) %>%
+                                                                                                            shinyInput_label_embed(
+                                                                                                              shiny_iconlink() %>%
+                                                                                                                bs_embed_popover(
+                                                                                                                  title = "If you have certain column which you would like to apply pseudonymization to, please select them here.", placement = "right"
+                                                                                                                )
+                                                                                                            )
+                                                                                                   )
                                                                                           ),
                                                                                           shinyBS::bsButton("Import_csv_start_preprocess",label = "Start Preprocessing and save csv-files",style="info",icon=icon("tags")),
                                                                                           shinyBS::bsButton("Import_csv_start_preprocess_and_write",label = "Start Preprocessing and directly wirte to DB",style="info",icon=icon("upload")),
@@ -482,6 +502,26 @@ tabPanel("Importer",
                                                                                                               shiny_iconlink() %>%
                                                                                                                 bs_embed_popover(
                                                                                                                   title = "If you have a huge data set or a pc with less than 8GB of RAM you can activate this option. This way the import will take longer but it needs less memory.", placement = "right"
+                                                                                                                )
+                                                                                                            )
+                                                                                                   ),
+                                                                                                   column(2,
+                                                                                                          selectInput(inputId="Import_mtf_anonymize",selected=character(0),label="anonymize your data?",
+                                                                                                                      choices=c("title","mde1","mde2","mde3","mde4","mde5","mde6","med7","mde8","mde9"),multiple=T) %>%
+                                                                                                            shinyInput_label_embed(
+                                                                                                              shiny_iconlink() %>%
+                                                                                                                bs_embed_popover(
+                                                                                                                  title = "If you have certain column which you would like to anonymize, please select them here.", placement = "right"
+                                                                                                                )
+                                                                                                            )
+                                                                                                   ),
+                                                                                                   column(2,
+                                                                                                          selectInput(inputId="Import_mtf_pseudonymization",selected=character(0),label="pseudonymize your data?",
+                                                                                                                      choices=c("title","mde1","mde2","mde3","mde4","mde5","mde6","med7","mde8","mde9"),multiple=T) %>%
+                                                                                                            shinyInput_label_embed(
+                                                                                                              shiny_iconlink() %>%
+                                                                                                                bs_embed_popover(
+                                                                                                                  title = "If you have certain column which you would like to apply pseudonymization to, please select them here.", placement = "right"
                                                                                                                 )
                                                                                                             )
                                                                                                    )

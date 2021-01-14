@@ -31,7 +31,7 @@ eval_script <- function(script_text, input_data, script_label, script_nr, import
   }
   result
 }
- 
+
 #' function to handel possible ways to personalize the script
 #' @name: name of the script
 #' @import_type: import data types
@@ -867,8 +867,39 @@ output$Import_csv_metadata<-DT::renderDataTable({
     data$mde8<-c(mde8, rep("", nrow(data)-length(mde8)))
     data$mde9<-c(mde9, rep("", nrow(data)-length(mde9)))
     
-    values$Import_csv_meta_complete<-data
     
+    if(length(input$Import_csv_anonymize)>0){
+      for(i in 1:length(input$Import_csv_anonymize)){
+        data[,input$Import_csv_anonymize[i]]<-anonymizer::anonymize(.x = data[,input$Import_csv_anonymize[i]],.algo = "crc32")
+      }
+    }
+    if(length(input$Import_csv_pseudonymization)>0){
+      lookup_tables<-list()
+      for(i in 1:length(input$Import_csv_pseudonymization)){
+        aliases <- c(1,1) # Allow the while loop to begin
+        while (any(duplicated(aliases))) { # Loop until all keys are unique
+          aliases <- replicate(length(unique(data[,input$Import_csv_pseudonymization[i]])), 
+                               paste(sample(c(LETTERS, 0:9), key.length, replace = T), collapse = ''))
+        }
+        lookup.table <- data.frame(id = unique(data[,input$Import_csv_pseudonymization[i]]), key = aliases)
+        lookup_tables[[i]]<-lookup.table
+        data[,input$Import_csv_pseudonymization[i]]<-  lookup.table[, 'key'][match(data[,input$Import_csv_pseudonymization[i]], lookup.table[, 'id'])]
+      }
+      values$Import_csv_lookup_tables<-lookup_tables
+      showModal(
+        shiny::modalDialog(
+          tags$h4("Download Lookup Table for chosen columns"),
+          tags$h5("Attention! Download the Lookup tables only when all columns to be pseudonymized are selected, since a new encryption is selected in each run."),
+          tags$hr(),
+          tagList(lapply(1:length(input$Import_csv_pseudonymization),FUN = function(x){
+            downloadButton(outputId = paste0("Import_csv_Download_Lookup_",x))
+          }))
+        )
+      ) 
+    }
+    
+    
+    values$Import_csv_meta_complete<-data
     colnames(data)[8:16]<-c(input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,input$UI_Import_name_mde6,
                             input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)
     
@@ -881,6 +912,26 @@ output$Import_csv_metadata<-DT::renderDataTable({
     return(NULL)
   }
 })
+
+
+#' download lookup tables
+#' depends on:
+#'   values$Import_csv_lookup_tables: created lookup tables
+#'   input$Import_csv_pseudonymization: selected columns for pseudonymization
+observe({
+  lapply(1:length(values$Import_csv_lookup_tables),FUN = function(x){
+    output[[paste0("Import_csv_Download_Lookup_",x)]]<-downloadHandler(
+      filename=function(){
+        paste0("Lookup_Table_",input$Import_csv_pseudonymization[x],".csv")
+      },
+      content = function(file){
+       data<-values$Import_csv_lookup_tables[[x]]
+       write.csv(data,file)
+      }
+    )
+  })
+})
+
 
 #' import data from csv body
 #' depends on:
@@ -1851,6 +1902,36 @@ output$Import_mtf_metadata<-DT::renderDataTable({
     data$mde8<-c(mde8, rep("", nrow(data)-length(mde8)))
     data$mde9<-c(mde9, rep("", nrow(data)-length(mde9)))
     
+    if(length(input$Import_mtf_anonymize)>0){
+      for(i in 1:length(input$Import_mtf_anonymize)){
+        data[,input$Import_mtf_anonymize[i]]<-anonymizer::anonymize(.x = data[,input$Import_mtf_anonymize[i]],.algo = "crc32")
+      }
+    }
+    if(length(input$Import_mtf_pseudonymization)>0){
+      lookup_tables<-list()
+      for(i in 1:length(input$Import_mtf_pseudonymization)){
+        aliases <- c(1,1) # Allow the while loop to begin
+        while (any(duplicated(aliases))) { # Loop until all keys are unique
+          aliases <- replicate(length(unique(data[,input$Import_mtf_pseudonymization[i]])), 
+                               paste(sample(c(LETTERS, 0:9), key.length, replace = T), collapse = ''))
+        }
+        lookup.table <- data.frame(id = unique(data[,input$Import_mtf_pseudonymization[i]]), key = aliases)
+        lookup_tables[[i]]<-lookup.table
+        data[,input$Import_mtf_pseudonymization[i]]<-  lookup.table[, 'key'][match(data[,input$Import_mtf_pseudonymization[i]], lookup.table[, 'id'])]
+      }
+      values$Import_mtf_lookup_tables<-lookup_tables
+      showModal(
+        shiny::modalDialog(
+          tags$h4("Download Lookup Table for chosen columns"),
+          tags$h5("Attention! Download the Lookup tables only when all columns to be pseudonymized are selected, since a new encryption is selected in each run."),
+          tags$hr(),
+          tagList(lapply(1:length(input$Import_mtf_pseudonymization),FUN = function(x){
+            downloadButton(outputId = paste0("Import_mtf_Download_Lookup_",x))
+          }))
+        )
+      ) 
+    }
+    
     values$Import_mtf_meta_complete<-data
     
     colnames(data)[8:16]<-c(input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,
@@ -1866,6 +1947,27 @@ output$Import_mtf_metadata<-DT::renderDataTable({
     return(NULL)
   }
 })
+
+
+
+#' download lookup tables
+#' depends on:
+#'   values$Import_mtf_lookup_tables: created lookup tables
+#'   input$Import_mtf_pseudonymization: selected columns for pseudonymization
+observe({
+  lapply(1:length(values$Import_mtf_lookup_tables),FUN = function(x){
+    output[[paste0("Import_mtf_Download_Lookup_",x)]]<-downloadHandler(
+      filename=function(){
+        paste0("Lookup_Table_",input$Import_mtf_pseudonymization[x],".csv")
+      },
+      content = function(file){
+        data<-values$Import_mtf_lookup_tables[[x]]
+        write.csv(data,file)
+      }
+    )
+  })
+})
+
 
 observe({
   body<-values$Import_mtf_body
