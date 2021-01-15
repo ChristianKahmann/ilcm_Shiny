@@ -1,4 +1,4 @@
-#' delete special characters
+#' delete special characters 
 for(files in list.files(path = "../Crawler/guardian_data/",full.names = T)){
   load(files)
 

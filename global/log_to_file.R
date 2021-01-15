@@ -2,6 +2,9 @@
 #' @param message
 #' @param file
 #' 
+#' @return 
+#' @example 
+#' @export
 log_to_file<-function(message,file){
   message<-paste(Sys.time(),message,sep = ": ")
   write(message,file = file,append = T)
@@ -13,6 +16,8 @@ log_to_file<-function(message,file){
 #' @param port
 #' 
 #' @return 
+#' @export
+#' @example 
 write_metadata_to_database<-function(parameters,host,port){
   entry_for_db<-data.frame(matrix(c(NA),1,70))
   if(!is.null(parameters$id)){
@@ -342,6 +347,8 @@ get_parameters_from_database<-function(metadata){
 #'  @param dt
 #'  
 #'  @return dt with TRUE-FALSE pattern
+#'  @export
+#'  @example 
 replace_TRUE_FALSE<-function(dt){
   for(i in 1:dim(dt)[2]){
     dt[,i]<- stringr::str_replace_all(string =dt[,i] ,pattern = "TRUE",replacement =  as.character(shiny::icon("check",class = "check")))

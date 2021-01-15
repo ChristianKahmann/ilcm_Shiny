@@ -5,7 +5,6 @@
 #' @param port
 #' 
 #' @return meta data
-#' 
 #' @export
 #' @example 
 get_metadata_from_db<-function(dataset=NULL,doc_ids=NULL,host=NULL,port=NULL){

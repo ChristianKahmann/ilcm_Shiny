@@ -6,7 +6,6 @@
 #' @param cores
 #' 
 #' switching between different measurements
-#'
 #' @return cooccurrence matrix (final signigicance matrix)
 #' 
 ccoocs <- function(binDTM, measure = "DICE", significanceThreshold = 1.0, minCoocFreq = 1,cores=3) {

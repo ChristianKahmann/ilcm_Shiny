@@ -5,7 +5,7 @@
 #' @return sample
 #' 
 #' @export
-#' @example 
+#' @example  
 get_quantile_belonging<-function(all_data,sample){
   quantiles<-quantile(as.numeric(all_data),na.rm = T)
   sample<-as.numeric(sample)

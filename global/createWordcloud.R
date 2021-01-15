@@ -8,6 +8,8 @@ library(memoise)
 #' getTermMatrix
 #' @param text
 #' 
+#' @export
+#' @example 
 getTermMatrix <- memoise(function(text) {
 
   

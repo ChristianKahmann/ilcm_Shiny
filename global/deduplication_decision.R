@@ -1,7 +1,7 @@
 #' decide_which_document_to_delete
 #' @param pair
 #' @param strategy
-#' 
+#'  
 #' @return id_del (id of element you wish to delete)
 #' 
 #' @export

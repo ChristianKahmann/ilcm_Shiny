@@ -41,7 +41,7 @@ create_body_solr_update_add<-function(ids,field_name,values){
 #' 
 #' @return 
 #' @export
-#' @example 
+#' @example
 create_body_solr_update_remove<-function(ids,field_name,values){
   body<-"["
   body<-paste0(body,'{"id":"',ids[1],'","',field_name,'":{"remove":"',values[1],'"}}')

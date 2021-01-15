@@ -1,4 +1,4 @@
-#' DF_to_Dict
+#' parse dataframe to dictionary
 #' @param DF
 #' 
 #' @return 
@@ -12,7 +12,7 @@ DF_to_Dict<-function(DF){
   Dict<-quanteda::dictionary(x = Dict,tolower=T)
 }
 
-#' Dict_to_DF
+#' parse dictionary to data frame
 #' @param Dict
 #' 
 #' @return DF (dataframe)

@@ -61,5 +61,5 @@ get_token_from_db<-function(dataset=NULL,doc_ids=NULL,sentence_ids=NULL,host=NUL
     }
   })
   RMariaDB::dbDisconnect(mydb)
-  return(token)
+  return(token) 
 }

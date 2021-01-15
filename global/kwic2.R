@@ -6,7 +6,7 @@
 #' @param n
 #' @param indices
 #' 
-#'  @return ergeb (result matrix of kwic)
+#' @return ergeb (result matrix of kwic)
 #'   
 kwic2<-function(Tokens,target,k,n,indices=NULL){
   ergeb<-matrix(c(0),0,3)
@@ -32,6 +32,8 @@ kwic2<-function(Tokens,target,k,n,indices=NULL){
 #' @param dates
 #' 
 #' @return 
+#' @export
+#' @example 
 myLabelFormat = function(...,dates=FALSE){ 
   if(dates){ 
     function(type = "numeric", cuts){ 
