@@ -241,6 +241,7 @@ error<-try(expr = {
   log_to_file(message = "<b>Step 12/13: Calcualte Dynamic Topic Model</b>",file = logfile)
   library(gensimr)
   library(reticulate)
+  reticulate::use_python(python = "/home/rstudio/miniconda3/bin/python",required = T)
   
   vocab<-colnames(dtm)
   texts_from_dtm<-list()
