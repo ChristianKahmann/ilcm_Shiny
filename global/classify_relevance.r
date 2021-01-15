@@ -14,6 +14,10 @@ source("global/TextProcessingBackend.R")
 source("global/TextObjectWrapper.R")
 
 #' read data and convert it to tibble based format
+#' @param 
+#' @return 
+#' @export
+#' @example 
 readData <- function() {
   if (!file.exists("sources.Rdata")) {
     
@@ -145,8 +149,8 @@ readData <- function() {
 }
 
 #' We init the classifier with this function
-#'
-#' @return
+#' @param 
+#' @return classifier
 #' @export
 #'
 #' @examples
@@ -200,14 +204,14 @@ initClassifier <- function() {
   return(classifier)
 }
 
-#Only first time #NO RUN WENN NICHTS GEÄNDERT
+#' Only first time #NO RUN WENN NICHTS GEÄNDERT
 readData()
 
-#second run with prepared objects #NO RUN WENN NICHTS GEÄNDERT
+#' second run with prepared objects #NO RUN WENN NICHTS GEÄNDERT
 load(file = "feature_list.Rdata")
 load(file = "original_text.Rdata")
 
-#Initialize clean model #NO RUN WENN NICHTS GEÄNDERT
+#' Initialize clean model #NO RUN WENN NICHTS GEÄNDERT
 classifier <- initClassifier()
 save(classifier, file = "classifier.Rdata")
 

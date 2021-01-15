@@ -23,7 +23,6 @@ add_marktag<-function(text){
 }
 
 
-
 #' add_Entitytag
 #' @param text
 #' @param tag

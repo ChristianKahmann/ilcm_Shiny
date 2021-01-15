@@ -1955,9 +1955,6 @@ createPlotsForDistributionData <- function(statsDistributionData, sortByValueDes
   
 }
 
-
-
-
 #' remove_locations
 #' @param token
 #' 

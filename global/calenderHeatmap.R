@@ -1,4 +1,4 @@
-#' calenderChart
+#' calender chart
 #' @param dates
 #' 
 #' @return 

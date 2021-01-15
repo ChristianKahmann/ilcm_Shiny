@@ -373,6 +373,6 @@ background: rgb(106, 156, 237) !important; /* make this whatever you want */
   myTags <- tagList(tags$div(icon("plus",class="add_category_top_level")),elements)
   annotation <- div(id = "annotationContainer_for_creation",style="overflow-y:auto;height:60vh;",
                     tagList(tags$script(HTML(myJavaScript)), myStyle, myTags, div(tagList(icon("certificate"),"=Document-wide annotation"),class="annotationLegend")))
-  
+   
   return(annotation)
 }

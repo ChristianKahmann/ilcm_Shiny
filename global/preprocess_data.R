@@ -1,3 +1,15 @@
+#' preprocess data
+#' @param text
+#' @param metadata
+#' @param process_id
+#' @param offset
+#' @param logfile
+#' @param date_format
+#' @param slow_mode
+#' 
+#' @return 
+#' @export
+#' @example 
 preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,slow_mode=F){
   empty_text<-which(text=="")
   if(length(empty_text)>0){

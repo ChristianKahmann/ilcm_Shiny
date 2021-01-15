@@ -1195,14 +1195,16 @@ cmodel <- R6Class(
 )
 
 
-
 #' A 'static' environment function to print out the registered function names
 # [ToDo]: Perhaps a Description for each name?
 #
 cmodel$list_methods <- function() {
   print (names(register))
 }
-
+#' parameter lists
+#' @param method
+#' 
+#' @return registert names from parameters
 cmodel$list_parameters = function(method = ""){
   return (names(register[[ method ]]$private_fields$parameters))
 }

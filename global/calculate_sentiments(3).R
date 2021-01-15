@@ -42,6 +42,12 @@ rm(add_matrix)
 rm(Worte)
 rm(Flektionen)
 
+#' calculate sentiment score
+#' @param text
+#' @param pos_dict
+#' @param neg_dict
+#' 
+#' @return result (sentiment score)
 calcuate_sentiment_score<-function(text, pos_dict, neg_dict){
   #split text
   text<- stringr::str_remove_all(string = text,pattern = "[,.:;!?]")

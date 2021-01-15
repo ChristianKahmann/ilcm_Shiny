@@ -2,7 +2,6 @@ library(microbenchmark)
 library(tmca.unsupervised)
 load(file="/home/christian/R/reuters3000speedtestset.rdata")
 
-
 #' Number Of Rund to avarage on
 runs = 5
 

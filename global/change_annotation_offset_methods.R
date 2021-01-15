@@ -2,7 +2,7 @@
 #' @param token
 #' @param annotations
 #' 
-#' @return annotations
+#' @return annotations 
 #' 
 #' @export
 #' @example 

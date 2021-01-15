@@ -1,4 +1,4 @@
-#' IsDate
+#' check if a given data is a date 
 #' @param mydate
 #' 
 #' @return

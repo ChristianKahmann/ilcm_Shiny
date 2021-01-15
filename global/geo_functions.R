@@ -23,7 +23,6 @@ source("global/log_to_file.R")
 #' @param defaultRadius The radius to use to query a country for given lat lon
 #' @param maxRadiusIfDefaultRadiusLeadsToNoResults if the radius in defaultRadius doesn't result in a country, further attempts are made (by increasing steps of 10) until maxRadiusIfDefaultRadiusLeadsToNoResults
 #' @return a data frame containing lat, lon, countryCode, countryName, countryLanguages
-#' 
 getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defaultRadius, maxRadiusIfDefaultRadiusLeadsToNoResults){
   #print(paste("LAT LON: ", lat,lon))
   
@@ -141,7 +140,20 @@ getCountryInfosForLatLon <- function(lat, lon, hashtableLatLonCountryInfos, defa
   
 }
 
-# convenience function
+#' convenience function
+#' @param hashtableLatLonCountryInfos
+#' @param inputDataFrame
+#' @param columnForLat
+#' @param columnForLon
+#' @param targetColumnnameForCountryName
+#' @param targetColumnNameForCountryCode
+#' @param defaultRadius
+#' @param maxRadiusIfDefaultRadiusLeadsToNoResults
+#' 
+#' @return inputDataframe
+#' 
+#' @export
+#' @example 
 applyCountryInfosForLatLonForDataframe <- function(hashtableLatLonCountryInfos, inputDataframe, columnForLat, columnForLon, targetColumnnameForCountryName, targetColumnNameForCountryCode, defaultRadius, maxRadiusIfDefaultRadiusLeadsToNoResults){
   
   for(i in 1:nrow(inputDataframe)) 
@@ -173,7 +185,6 @@ applyCountryInfosForLatLonForDataframe <- function(hashtableLatLonCountryInfos, 
 #' @param geocodingFunction The function to retrieve the coordinates when the information is not found in the cache/hashtable. Must be a list with 2 elements: sucessType and result. See description above. SucessType may have additional value "problemOccured" where the error is stored in result. In this case the process is stpooed and the error returned. 
 #' @return An list with 2 elements: successType and result: The successType can have the values "success" or "noResultsFound". For "success", the result contains the result (depending on the geocodingfunction), "noResultsFound" will occur when no location could be retrieved for the goiven string (strings being no location). These are cached as well. In some cases, an error might occur, in theses cases the processing is stopped and the error returned
 #' @examples getGeolocationForString("New York", hashtableCachedGeoInformation, geoCodingFunction)
-#' 
 getGeolocationForString <- function(inputString, hashtableCachedGeoInformation, geocodingFunction){
   
   searchKey <- str_trim(inputString, side = "both")
@@ -218,7 +229,6 @@ getGeolocationForString <- function(inputString, hashtableCachedGeoInformation, 
 #' @param hashtableCachedGeoInformation A hashtable with cached information for faster querying of strings queried before
 #' @return An list with 2 elements: successType and result: The successType can have the values "success" or "noResultsFound". For "success", the result contains the result (depending on the geocodingfunction), "noResultsFound" will occur when no location could be retrieved for the goiven string (strings being no location). These are cached as well. In some cases, an error might occur, in theses cases the processing is stopped and the error returned
 #' @examples getGeolocationForStringUsingOSMDefault("New York", hashtableCachedGeoInformation)
-#' 
 getGeolocationForStringUsingOSMDefault <- function(inputString, hashtableCachedGeoInformation){
   
   #log_to_file(message = paste("Geocoding: get OSM geolocation for <b>\"", inputString,"\"</b>"),file = logfile)
@@ -474,7 +484,13 @@ performGeoCodingWithCacheAndFiltering <- function(inputDataForLocationStringsAnd
 ########################################
 
 
-
+#' filter for entities in cluster with minimum distance to center of gravity
+#' @param inpuData
+#' 
+#' @return result (filtered input data)
+#' 
+#' @export
+#' @example 
 filterForEntitiesInClusterWithMinDistanceToCenterOfGravity <- function(inputData){
   result <- NULL
   indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity <- performClustering_returnIndicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity(inputData)
@@ -489,7 +505,13 @@ filterForEntitiesInClusterWithMinDistanceToCenterOfGravity <- function(inputData
 #' - performs clustering on these distances
 #' - find cluster with minimum distance to center of gravity (distance of cluster to center of gravity is calculated by average distance of entities in cluster to center of gravity)
 #' - set belongsToClusterWithMinDistanceToCenterOfGravity=TRUE for all entities/ location strings which belong to the cluster identified above 
-# inputData = data frame containing at least columns lat, lon and frequencyInArea
+#' inputData = data frame containing at least columns lat, lon and frequencyInArea
+#' @param inputData
+#' 
+#' @return indices of Entities of Cluster with minimal Distance to Center of Gravity
+#' 
+#' @export
+#' @example 
 performClustering_returnIndicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity <- function(inputData){
   
   numberOfEntries <- dim(inputData)[1]
@@ -560,17 +582,38 @@ performClustering_returnIndicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravi
   return (indicesOfEntitiesOfClusterWithMinDistanceToCenterOfGravity)
 }
 
-
+#' select elements based on maximal value
+#' @param inputData
+#' @param fieldName
+#' 
+#' @return
+#' @example 
+#' @export
 selectBasedOnMaxValue <- function(inputData, fieldName){
   indexOfGeoResultToReturn <- which(inputData[[fieldName]] == max(inputData[[fieldName]]), arr.ind = T)[1] 
   result <- inputData[indexOfGeoResultToReturn,]
 }
 
+#' select elements based on minimal value
+#' @param inputData
+#' @param fieldName
+#' 
+#' @return 
+#' @export
+#' @example 
 selectBasedOnMinValue <- function(inputData, fieldName){
   indexOfGeoResultToReturn <- which(inputData[[fieldName]] == min(inputData[[fieldName]]), arr.ind = T)[1] 
   result <- inputData[indexOfGeoResultToReturn,]
 }
-
+#' select elements based on given minimal and maximal value
+#' @param inputData
+#' @param fieldName
+#' @param minValue
+#' @param maxValue
+#' 
+#' @return result (filtered elements - indices and field names)
+#' @export
+#' @example 
 selectBasedOnGivenMinMaxValue <- function(inputData, fieldName, minValue = NULL, maxValue = NULL){
   result <- inputData
   if(!is.null(minValue)){
@@ -595,18 +638,32 @@ selectBasedOnGivenMinMaxValue <- function(inputData, fieldName, minValue = NULL,
 ####################
 # util functions for inputData_dataframe <- list(tokenData = db_data$token, columnNameOfToken <- "token", columnNameOfAreaId <- "doc_id")
 ########################
-
+#' util function to get unique area ids 
+#' @param inpitDataDBDataToken
+#' 
+#' @return unique elements from Database (column name)
 dataframe_getUniqueAreaIDs <- function(inputDataDBDataToken){
   columnNameOfAreaId <- inputDataDBDataToken$columnNameOfAreaId
   return (unique(inputDataDBData$tokenData[[columnNameOfAreaId]]))
 }
 
-# get unique tokens (types) for whole data
+#' get unique tokens (types) for whole data
+#' @param inputDataDBDataToken
+#' 
+#' @return 
+#' @export
+#' @example 
 dataframe_getUniqueTokens <- function(inputDataDBDataToken){
   columnNameOfToken <- inputDataDBDataToken$columnNameOfToken
   unique(inputDataDBDataToken$tokenData[[columnNameOfToken]])
 }
-
+#' get tokens and frequencies for given area id from dataframe
+#' @param inputDataDBDataToken
+#' @param areaId
+#' 
+#' @return entitydistributionsInArea
+#' @export
+#' @example 
 dataframe_getTokensAndFrequenciesForGivenAreaId <- function(inputDataDBDataToken, areaId){
   dataframeWithLocationTokens <- inputDataDBDataToken$tokenData
   if(docId == "all"){
@@ -646,12 +703,23 @@ dtm_getUniqueDocIDs <- function(inputDataDTM){
   return(dtm@Dimnames$docs)
 } 
 
-# get unique tokens (types) for whole data
+#' get unique tokens (types) for whole data
+#' @param inputDataDTM
+#' 
+#' @return uniquw features from document term matrix
+#' @export
+#' @example 
 dtm_getUniqueFeaturesFromDTM <- function(inputDataDTM){
   dtm <- inputDataDTM$dtm
   return(dtm@Dimnames$features)
 }
-
+#' get tokens and frequencies for given document id
+#' @param inputDataDTM
+#' @param docId
+#' 
+#' @return NULL 
+#' @export
+#' @example 
 dtm_getTokensAndFrequencyForGivenDocId <- function(inputDataDTM, docId){
   
   dtm <- inputDataDTM$dtm
@@ -679,15 +747,29 @@ dtm_getTokensAndFrequencyForGivenDocId <- function(inputDataDTM, docId){
 ############
 # convenience function for assigning lat/lon for given countries
 ##############
-
+#' get unique location strings for countries
+#' @param x
+#' @return 
+#' @export
+#' @example 
 functionToGetUniqueLocationStrings_country <- function(x){unique(x$countryName)}
 
-# ignores areaID
+#' ignores areaID
+#' @param inputData
+#' @param areaId
+#' 
+#' @return result (entity names and frequencies in area)
 functionToGetLocationStringssAndFrequencyForGivenAreaId_country <- function(inputData, areaID){
   result <- aggregate(lat~countryName, data  = inputData, FUN = function(x){NROW(x)})
   names(result) <- c("entityName","frequencyInArea")
   return(result)
 }
+#' filter or select geo results for a location string for countries
+#' @param geocodingResultresult
+#' 
+#' @return 
+#' @export
+#' @example 
 functionToFilterOrSelectGeoResultForALocationString_country <- function(geocodingResultresult){
   result <- geocodingResultresult %>% filter(type == "administrative") %>% filter(class == "boundary")
   result <- selectBasedOnMaxValue(result, "importance")

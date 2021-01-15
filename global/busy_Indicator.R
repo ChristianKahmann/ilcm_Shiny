@@ -7,6 +7,11 @@
 #' Set up a button to have an animated loading indicator and a checkmark
 #' for better user experience
 #' Need to use with the corresponding `withBusyIndicator` server function
+#' @param button
+#' 
+#' @return 
+#' @export
+#' @example 
 withBusyIndicatorUI <- function(button) {
   id <- button[['attribs']][['id']]
   shiny::div(
@@ -32,6 +37,12 @@ withBusyIndicatorUI <- function(button) {
 
 #' Call this function from the server with the button id that is clicked and the
 #' expression to run when the button is clicked
+#' @param buttonId
+#' @param expr
+#' 
+#' @return 
+#' @export
+#' @example 
 withBusyIndicatorServer <- function(buttonId, expr) {
   # UX stuff: show the "busy" message, hide the other messages, disable the button
   loadingEl <- sprintf("[data-for-btn=%s] .btn-loading-indicator", buttonId)
@@ -58,6 +69,12 @@ withBusyIndicatorServer <- function(buttonId, expr) {
 }
 
 #' When an error happens after a button click, show the error
+#' @param err
+#' @param buttonId
+#' 
+#' @return 
+#' @export
+#' @example 
 errorFunc <- function(err, buttonId) {
   errEl <- sprintf("[data-for-btn=%s] .btn-err", buttonId)
   errElMsg <- sprintf("[data-for-btn=%s] .btn-err-msg", buttonId)

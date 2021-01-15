@@ -2,7 +2,9 @@
 #' @param nodes
 #' @param palette
 #' 
-#' 
+#' @return 
+#' @export
+#' @example 
 scalecolors <- function(nodes, palette) {
   n <- max(unique(nodes$group))
   cols <- rev(RColorBrewer::brewer.pal(n, palette))
