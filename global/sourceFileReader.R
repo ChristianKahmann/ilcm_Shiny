@@ -4,6 +4,9 @@
 #' @param datatype
 #' 
 #' @return data table of found data and corresponding dates
+#' 
+#' @export
+#' @example 
 read_data<-function(path,directory=FALSE,datatype="*"){
 
   if (directory==FALSE){

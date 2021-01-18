@@ -5,7 +5,7 @@
 #' @return result
 #' 
 #' @export
-#' @example 
+#' @example
 make_ready_for_hist<-function(counts,breaks){
   result<-list()
   erg<-list()

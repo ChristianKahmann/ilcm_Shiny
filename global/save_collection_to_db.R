@@ -1,4 +1,4 @@
-#' save_collection_to_db
+#' save collection to database
 #' @param info
 #' 
 #' @return 
@@ -21,7 +21,7 @@ save_collection_to_db<-function(info){
   RMariaDB::dbDisconnect(mydb)
 }
 
-#' delete_collection_from_db
+#' delete collection from database
 #' @param name
 #' 
 #' @return 

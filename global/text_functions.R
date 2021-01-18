@@ -1,3 +1,9 @@
+#' chunking
+#' @param x
+#' @param n
+#' 
+#' @export
+#' @example 
 chunk2 <- function(x,n) split(x, cut(seq_along(x), n, labels = FALSE)) 
 
 #' create_Matrix_Worte
@@ -1108,6 +1114,9 @@ ccoocs <- function(binDTM, measure = "DICE", significanceThreshold = 1.0, minCoo
 #' mode
 #' @param x
 #' @return 
+#' 
+#' @export
+#' @example 
 Mode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]

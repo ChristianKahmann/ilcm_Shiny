@@ -846,8 +846,6 @@ annotateTextComponent2 <- function() {
   
 }
 
-
-
 #' annotateTextComponent3
 #' 
 #' @return tagList

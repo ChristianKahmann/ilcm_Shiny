@@ -20,21 +20,21 @@ error<-try(expr = {
   #spacy_initialize()
   
   
-  #load collection 
+  #' load collection 
   log_to_file(message = "<b>Step 1/16: Loading collection</b>",file = logfile)
   load(paste("collections/collections/",unlist(parameters[1]),".RData",sep=""))
   log_to_file(message = "  <b style='color:green'> ✔ </b> Finished loading collection",file = logfile)
   
   
   
-  #load data from database
+  #' load data from database
   log_to_file(message = "<b>Step 2/16: Loading data from database</b>",file = logfile)
   db_data<-get_token_meta_and_language_from_db(get_language=T,get_global_doc_ids=T)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished loading data from database",file = logfile)
   
   
   
-  #getting annotations for chosen collection,project and category
+  #' getting annotations for chosen collection,project and category
   log_to_file(message = "<b>Step 3/16: Loading annotations from database</b>",file = logfile)
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
   annotations<-RMariaDB::dbGetQuery(mydb, paste("select * from Annotations where Anno_set='",parameters$Project,"';",sep=""))
@@ -53,13 +53,13 @@ error<-try(expr = {
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished loading annotations from database",file = logfile)
   
   
-  #preparing parameters
+  #' preparing parameters
   log_to_file(message = "<b>Step 4/16: Preparing input parameters</b>",file = logfile)
   prepare_input_parameters()
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
-  #sanity check
+  #' sanity check
   log_to_file(message = "<b>Step 5/16: Sanity check</b>",file = logfile)
   #token object not empty
   log_to_file(message = "&emsp; token object not empty?",logfile)

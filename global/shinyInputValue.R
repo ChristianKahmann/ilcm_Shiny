@@ -20,6 +20,9 @@ shinyInput_checkbox = function(FUN, len, id, values,...) {
 #' @param len
 #' @param id
 #' @param values
+#' 
+#' @export
+#' @example 
 shinyInput_checkbox_Doc = function(FUN, len, id, values,...) { 
   inputs = character(len) 
   for (i in seq_len(len)) { 

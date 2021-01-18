@@ -40,4 +40,4 @@ mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
   }
   # apply function to each variable combination
   map2_df(df_comb$X1, df_comb$X2, f)
-}
+} 

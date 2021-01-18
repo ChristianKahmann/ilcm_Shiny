@@ -140,6 +140,8 @@ highlight<-function (q, hl.fl = NULL, hl.snippets = NULL, hl.fragsize = NULL,
 #' @param verbose 
 #' 
 #' @return facet date in text format
+#' @export
+#' @example 
 facet_date<-function (q = "*:*", fq=NULL,facet.query = NA, facet.field = NA, facet.prefix = NA, 
           facet.sort = NA, facet.limit = NA, facet.offset = NA, facet.mincount = NA, 
           facet.missing = NA, facet.method = NA, facet.enum.cache.minDf = NA, 
@@ -292,7 +294,16 @@ facet_meta<-function (q = "*:*",fq=NA, facet.query = NA, facet.field = NA, facet
 
 
 
-
+#' solr suggestion
+#' @param q
+#' @param base
+#' @param raw
+#' @param wt
+#' 
+#' @return result list
+#' 
+#' @export
+#' @example  
 solr_suggest<-function (q = "*:*", base=NULL,raw=FALSE,wt="json") 
 {
   if (is.na(base)) {
@@ -321,7 +332,35 @@ solr_suggest<-function (q = "*:*", base=NULL,raw=FALSE,wt="json")
   }
 }
 
-
+#' solr search advanced
+#' @param q
+#' @param sort
+#' @param start
+#' @param rows
+#' @param pageDoc
+#' @param pageScore
+#' @param fq
+#' @param fl
+#' @param defType
+#' @param timeAllowed
+#' @param qt
+#' @param wt
+#' @param NOW 
+#' @param TZ 
+#' @param echoHandler 
+#' @param echoParams 
+#' @param key
+#' @param base 
+#' @param callopts 
+#' @param raw 
+#' @param parsetype 
+#' @param concat 
+#' @param verbose
+#' 
+#' @return list with search results
+#' 
+#' @export
+#' @example 
 solr_search_advanced<-function (q = "*:*", sort = NULL, start = 0, rows = NULL, pageDoc = NULL, 
                                 pageScore = NULL, fq = NULL, fl = NULL, defType = NULL, timeAllowed = NULL, 
                                 qt = NULL, wt = "json", NOW = NULL, TZ = NULL, echoHandler = NULL, 
@@ -355,7 +394,14 @@ solr_search_advanced<-function (q = "*:*", sort = NULL, start = 0, rows = NULL, 
   }
 }
 
-
+#' solr custom
+#' @param url
+#' @param start
+#' 
+#' @return data (solr found data)
+#' 
+#' @export
+#' @example 
 solr_custom<-function(url,start=0){
   if(stringr::str_detect(string = url,pattern = "&start")==FALSE){
     url<-paste0(url,"&start=",start)

@@ -173,6 +173,8 @@ process_split <- function(type, name = "split") {
 #' @selected_data: selected data for splitting
 #' @file_data: file data
 #' @editor_name: editor name (split)
+#' 
+#' @return split_data
 perform_split <- function(type, selected_data, file_data, editor_name = "split") {
   if (length(selected_data) == 0) {
     return(NULL)
@@ -262,7 +264,7 @@ observeEvent(input$Import_live_split_test,{
 })
 
 
-### sanity check
+#' sanity check
 #' sanity check for modal
 #' @type: type of selected data
 #' @data_check_choices: check choices of data
@@ -410,7 +412,7 @@ observeEvent(input$Import_load_csv,{
   })
 })
 
-### split
+#' split
 script_events("split", "csv", 1, TRUE)
 #' test view of csv-splitting
 #' depends on:
@@ -695,7 +697,7 @@ observe({
 
 
 
-#body
+#' body
 script_events("body", "csv", 3)
 type_events("body", "csv")
 
@@ -712,7 +714,7 @@ observe({
 })
 
 
-#date
+#' date
 script_events("date", "csv", 4)
 type_events("date", "csv")
 
@@ -1033,7 +1035,7 @@ output$Import_csv_metadata_names_warning<-renderUI({
 })
 
 #' import metadata names for presenting informations
-#' deoends on:
+#' depends on:
 #'   values$Import_csv_metadatanames_data: import metadata names from csv-file
 output$Import_csv_metadatanames_table<-DT::renderDataTable({
   data =values$Import_csv_metadatanames_data
@@ -1501,7 +1503,9 @@ output$UI_Import_mtf_file<-renderUI({
     ))
   
 })
-#' 
+#' observe import of new mtf
+#' depends on:
+#'   input$Import_mtf_new: new mtf to import
 observeEvent(input$Import_mtf_new,ignoreInit = T,{
   validate(
     need(
@@ -1522,6 +1526,11 @@ observeEvent(input$Import_mtf_new,ignoreInit = T,{
   ))
 })
 
+#' observ import of new name of mtf when pressing a button
+#' depends on:
+#'   input$Import_mtf_new_name_button: new name of mtf
+#'   values$Import_mtf_new_directory_name_uuid: name uuid
+#'    values$invalidate_mtf_files: invalidate files
 observeEvent(ignoreInit = T,input$Import_mtf_new_name_button,{
   file.rename(from =values$Import_mtf_new_directory_name_uuid ,to =paste0("data_import/unprocessed_data/",input$Import_mtf_new_name))
   removeModal()
@@ -1530,7 +1539,15 @@ observeEvent(ignoreInit = T,input$Import_mtf_new_name_button,{
 })
 
 
-
+#' observe event: load mtf
+#' depends on:
+#'   input$Import_load_mtf: start loading
+#'   input$Import_mtf_files: mtf file for import
+#'   values$Import_mtf_scripts: mtf scripts
+#'   values$header_mtf: header of mtf
+#'   values$data_mtf: mtf data
+#'   values$data_load_mtf_success: succes if loading mtf data was a success
+#'   values$Import_mtf_split_scripts: split scripts from mtf
 observeEvent(input$Import_load_mtf,{
   withBusyIndicatorServer("Import_load_mtf", {
     validate(
@@ -1548,8 +1565,13 @@ observeEvent(input$Import_load_mtf,{
     values$Import_mtf_split_scripts <- default_script_decription_split
   })
 })
-###meta data csv
-
+#'meta data csv
+#'depends on:
+#'  input$Import_mtf_metadata_csv: csv metadata from mtf
+#'  input$Import_mtf_metadata_csv_header: header from csv meta data
+#'  values$mtf_metadata: metadata from mtf
+#'  values$data_mtf: mtf data
+#'  values$header_mtf: header from mtf
 observeEvent(input$Import_mtf_metadata_csv,{
   values$mtf_metadata<-read.csv(input$Import_mtf_metadata_csv$datapath,header=input$Import_mtf_metadata_csv_header)
   if(dim(values$mtf_metadata)[1]!=dim(isolate(values$data_mtf))[1]){
@@ -1563,13 +1585,18 @@ observeEvent(input$Import_mtf_metadata_csv,{
 })
 
 
-### split
+#' split
 script_events("split", "mtf", 1, TRUE)
-
+#' observe: split test view
+#' depends on:
+#'   input$Import_mtf_split_test_view: mtf test view
 observeEvent(input$Import_mtf_split_test_view, {
   split_test_view("mtf")
 })
-
+#' observe mapping of mtf
+#' depends on:
+#'   input$Import_start_mapping_mtf: start mapping process
+#'   input$Import_mtf_split_method: split method for mtf
 observeEvent(input$Import_start_mapping_mtf,{
   if(input$Import_mtf_split_method != 'None') {
     showModal(modalDialog(
@@ -1584,12 +1611,17 @@ observeEvent(input$Import_start_mapping_mtf,{
     start_mapping_mtf()
   }
 })
-
+#' observe: start of mapping
+#' depends on:
+#' input$confirm_start_mapping_mtf: initiate start of mtf mapping
 observeEvent(input$confirm_start_mapping_mtf,{
   start_mapping_mtf()
   removeModal()
 })
 
+#' start mapping mtf
+#' @param 
+#' @return
 start_mapping_mtf <- function() {
   process_split("mtf")
   values$start_mapping_mtf<-TRUE
@@ -1612,7 +1644,9 @@ output$Import_head_mtf<-DT::renderDataTable({
   datatable(data = data,options = list(lengthChange = FALSE,dom="t"),width = "90%")
 })
 
-
+#' observe import of mtf
+#' depends on:
+#'  input$Import_check_mtf: check mtf for import
 observeEvent(input$Import_check_mtf,{
   showModal(
     modalDialog(
@@ -1625,7 +1659,10 @@ observeEvent(input$Import_check_mtf,{
   )
 })
 
-
+#' render output of 
+#' depends on:
+#'   input$Import_mtf_column_name: column name from mtf import 
+#'   values$header_mtf: header from mtf
 output$UI_Import_mtf_column_name <- renderUI({
   select_value <- input$Import_mtf_column_name
   selectInput(inputId = "Import_mtf_column_name", "Column:", choices=values$header_mtf, selected = select_value)%>%
@@ -1636,19 +1673,21 @@ output$UI_Import_mtf_column_name <- renderUI({
 })
 
 
-
+#' render mtf title 
+#'   depends on:
+#'     values$header_mtf: mtf from header
 output$UI_Import_mtf_title<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_title",label = "Map title",
                                    choices = c("automatic",values$header_mtf),
                                    fill=T,animation = "pulse",selected = "automatic")
 })
-
+#' render output of mtf date
 output$UI_Import_mtf_date<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_date",label = "Map date",
                                    choices = c("automatic",values$header_mtf),
                                    fill=T,animation = "pulse",selected = "automatic")
 })
-
+#' render mtf body
 output$UI_Import_mtf_body<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_body",label = "Map body",
                                    choices = values$header_mtf,
@@ -1656,7 +1695,7 @@ output$UI_Import_mtf_body<-renderUI({
 })
 
 
-
+#' import mdf 1
 output$UI_Import_mtf_mde1<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde1",label = "Map mde1",
                                    choices = c("not required",values$header_mtf),
@@ -1666,7 +1705,7 @@ output$UI_Import_mtf_mde1<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde1",label = paste0("Map ",input$UI_Import_name_mde1_mtf))
 })
-
+#' import mdf 2
 output$UI_Import_mtf_mde2<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde2",label = "Map mde2",
                                    choices = c("not required",values$header_mtf),
@@ -1676,7 +1715,7 @@ output$UI_Import_mtf_mde2<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde2",label = paste0("Map ",input$UI_Import_name_mde2_mtf))
 })
-
+#' import mdf 3
 output$UI_Import_mtf_mde3<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde3",label = "Map mde3",
                                    choices = c("not required",values$header_mtf),
@@ -1686,7 +1725,7 @@ output$UI_Import_mtf_mde3<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde3",label = paste0("Map ",input$UI_Import_name_mde3_mtf))
 })
-
+#' import mdf 4
 output$UI_Import_mtf_mde4<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde4",label = "Map mde4",
                                    choices = c("not required",values$header_mtf),
@@ -1696,7 +1735,7 @@ output$UI_Import_mtf_mde4<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde4",label = paste0("Map ",input$UI_Import_name_mde4_mtf))
 })
-
+#' import mdf 5
 output$UI_Import_mtf_mde5<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde5",label ="Map mde5",
                                    choices = c("not required",values$header_mtf),
@@ -1706,7 +1745,7 @@ output$UI_Import_mtf_mde5<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde5",label = paste0("Map ",input$UI_Import_name_mde5_mtf))
 })
-
+#' import mdf 6
 output$UI_Import_mtf_mde6<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde6",label = "Map mde6",
                                    choices = c("not required",values$header_mtf),
@@ -1716,7 +1755,7 @@ output$UI_Import_mtf_mde6<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde6",label = paste0("Map ",input$UI_Import_name_mde6_mtf))
 })
-
+#' import mdf 7
 output$UI_Import_mtf_mde7<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde7",label ="Map mde7",
                                    choices = c("not required",values$header_mtf),
@@ -1726,7 +1765,7 @@ output$UI_Import_mtf_mde7<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde7",label = paste0("Map ",input$UI_Import_name_mde7_mtf))
 })
-
+#' import mdf 8
 output$UI_Import_mtf_mde8<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde8",label = "Map mde8",
                                    choices = c("not required",values$header_mtf),
@@ -1736,7 +1775,7 @@ output$UI_Import_mtf_mde8<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde8",label = paste0("Map ",input$UI_Import_name_mde8_mtf))
 })
-
+#' import mdf 9
 output$UI_Import_mtf_mde9<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde9",label = "Map mde9",
                                    choices = c("not required",values$header_mtf),
@@ -1747,10 +1786,13 @@ observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde9",label = paste0("Map ",input$UI_Import_name_mde9_mtf))
 })
 
-#title
+#' title
 script_events("title", "mtf", 1)
 type_events("title", "mtf")
-
+#' observe title of mtf
+#' depends on:
+#'   input$Import_mtf_title: mtf title 
+#'   values$data_mtf: mtf data
 observe({
   validate(
     need(!is.null(input$Import_mtf_title),message=FALSE),
@@ -1766,10 +1808,13 @@ observe({
 
 
 
-#body
+#' body
 script_events("body", "mtf", 3)
 type_events("body", "mtf")
-
+#' validate body
+#' depends on:
+#'   input$Import_mtf_body: import mtf body
+#'   values$data_mtf: mtf data
 observe({
   validate(
     need(!is.null(input$Import_mtf_body),message=FALSE),
@@ -1779,10 +1824,13 @@ observe({
 })
 
 
-#date
+#' date
 script_events("date", "mtf", 4)
 type_events("date", "mtf")
-
+#' validate mtf date
+#' depends on:
+#'   input$Import_mtf_date: import mtf date
+#'   values$data_mtf: mtf data
 observe({
   validate(
     need(!is.null(input$Import_mtf_date),message=FALSE),
@@ -1797,54 +1845,78 @@ observe({
 })
 
 
-#mde1
+#' mde1
 script_events("mde1", "mtf", 5)
 type_events("mde1", "mtf")
 observe_mde("mde1", "mtf")
 
-#mde2
+#' mde2
 script_events("mde2", "mtf", 6)
 type_events("mde2", "mtf")
 observe_mde("mde2", "mtf")
 
-#mde3
+#' mde3
 script_events("mde3", "mtf", 7)
 type_events("mde3", "mtf")
 observe_mde("mde3", "mtf")
 
-#mde4
+#' mde4
 script_events("mde4", "mtf", 8)
 type_events("mde4", "mtf")
 observe_mde("mde4", "mtf")
 
-#mde5
+#' mde5
 script_events("mde5", "mtf", 9)
 type_events("mde5", "mtf")
 observe_mde("mde5", "mtf")
 
-#mde6
+#' mde6
 script_events("mde6", "mtf", 10)
 type_events("mde6", "mtf")
 observe_mde("mde6", "mtf")
 
-#mde7
+#' mde7
 script_events("mde7", "mtf", 11)
 type_events("mde7", "mtf")
 observe_mde("mde7", "mtf")
 
-#mde8
+#' mde8
 script_events("mde8", "mtf", 12)
 type_events("mde8", "mtf")
 observe_mde("mde8", "mtf")
 
-#mde9
+#' mde9
 script_events("mde9", "mtf", 13)
 type_events("mde9", "mtf")
 observe_mde("mde9", "mtf")
 
 
 
-
+#' import mtf metadata
+#' depends on:
+#'   values$start_mapping_mtf: start mapping from mtf
+#'   input$Import_mtf_dataset: import mtf dataset
+#'   values$host: selected host
+#'   values$db_port: database port
+#'   values$Import_mtf_id_doc:mtf document id
+#'   values$Import_mtf_title: mtf title
+#'   values$Import_mtf_date: mtf date
+#'   values$Import_mtf_body: mtf body
+#'   values$Import_mtf_token: mtf token
+#'   input$Import_mtf_language: mtf language
+#'   values$Import_mtf_mde1: chosen mde1 from mtf
+#'   values$Import_mtf_mde2: chosen mde2 from mtf
+#'   values$Import_mtf_mde3: chosen mde3 from mtf
+#'   values$Import_mtf_mde4: chosen mde4 from mtf
+#'   values$Import_mtf_mde5: chosen mde5 from mtf
+#'   values$Import_mtf_mde6: chosen mde6 from mtf
+#'   values$Import_mtf_mde7: chosen mde7 from mtf
+#'   values$Import_mtf_mde8: chosen mde8 from mtf
+#'   values$Import_mtf_mde9: chosen mde9 from mtf
+#'   input$Import_mtf_anonymize: anonymize mtf
+#'   input$Import_mtf_pseudonymization: pseudonymization for mtf
+#'   values$Import_mtf_lookup_tables: lookup tables from mtf
+#'   values$Import_mtf_meta_complete: complete meta data
 output$Import_mtf_metadata<-DT::renderDataTable({
   if(values$start_mapping_mtf==T){
     dataset<-input$Import_mtf_dataset
@@ -1968,7 +2040,10 @@ observe({
   })
 })
 
-
+#' import mtf body
+#' depends on:
+#'   values$Import_mtf_body: import mtf body
+#'   values$Import_mtf_token: import mtf token
 observe({
   body<-values$Import_mtf_body
   body<-stringr::str_remove_all(string = body,pattern = "\n")
@@ -1977,7 +2052,12 @@ observe({
     length(stringr::str_split(string = x,pattern = " ",simplify = T))}
   ))
 })
-
+#' observe: import of the mtf dataset
+#' depends on:
+#'   input$Import_mtf_dataset: import mtf dataset
+#'   values$host: selected host
+#'   values$db_port: database port
+#'   values$Import_mtf_metadatafields: meta data fields
 observeEvent(ignoreNULL = T,input$Import_mtf_dataset,{
   mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
   RMariaDB::dbBegin(conn = mydb)
@@ -1985,7 +2065,11 @@ observeEvent(ignoreNULL = T,input$Import_mtf_dataset,{
   RMariaDB::dbCommit(mydb)
   RMariaDB::dbDisconnect(mydb)
 })
-
+#' render warning from metadata names
+#' depends on:
+#'   values$Import_mtf_meta_complete: complete meta data
+#'   values$Import_mtf_metadatafields: meta data fields 
+#'   values$Import_mtf_metadatanames_data: meta data names
 output$Import_mtf_metadata_names_warning<-renderUI({
   validate(
     need(values$Import_mtf_meta_complete[1,"dataset"]!="",message=F),
@@ -2036,7 +2120,10 @@ output$Import_mtf_metadata_names_warning<-renderUI({
     Icon
   ))
 })
-
+#' render meta data table of mtf
+#' depends on:
+#'   values$Import_mtf_metadatanames_data: mft metadata names
+#'   
 output$Import_mtf_metadatanames_table<-DT::renderDataTable({
   data =values$Import_mtf_metadatanames_data
   validate(
@@ -2054,7 +2141,23 @@ output$Import_mtf_metadatanames_table<-DT::renderDataTable({
 
 
 
-
+#' import start preprocess of mtf
+#' depends on:
+#'   input$Import_mtf_start_preprocess: start preprocess of mtf
+#'   values$Import_mtf_meta_complete: complete meta data
+#'   input$Import_mtf_date_format: formate of date imported from mtf
+#'   input$Import_mtf_dataset: dataset from mtf
+#'   input$UI_Import_name_mde1_mtf: selected name from mde 1
+#'   input$UI_Import_name_mde2_mtf: selected name from mde 2
+#'   input$UI_Import_name_mde3_mtf: selected name from mde 3
+#'   input$UI_Import_name_mde4_mtf: selected name from mde 4
+#'   input$UI_Import_name_mde5_mtf: selected name from mde 5
+#'   input$UI_Import_name_mde6_mtf: selected name from mde 6
+#'   input$UI_Import_name_mde7_mtf: selected name from mde 7
+#'   input$UI_Import_name_mde8_mtf: selected name from mde 8
+#'   input$UI_Import_name_mde9_mtf: selected name from mde 9 
+#'   input$Import_mtf_slow_mode: slow mode from mtf
+#'   input$Import_mtf_date_format: mtf date format
 observeEvent(input$Import_mtf_start_preprocess,{
   #test if metadata is valid 
   data<-values$Import_mtf_meta_complete
@@ -2156,7 +2259,21 @@ observeEvent(input$Import_mtf_start_preprocess,{
 })
 
 
-# if confirm to continue with empty body is clicked run import script anyway
+#' if confirm to continue with empty body is clicked run import script anyway
+#' depends on:
+#'   input$confirm_empty_body_mtf_no_db: confirm empty body from mtf 
+#'   input$Import_mtf_dataset: mtf datset
+#'   input$UI_Import_name_mde1_mtf: selected name of mdf 1
+#'   input$UI_Import_name_mde2_mtf: selected name of mdf 2
+#'   input$UI_Import_name_mde3_mtf: selected name of mdf 3
+#'   input$UI_Import_name_mde4_mtf: selected name of mdf 4
+#'   input$UI_Import_name_mde5_mtf: selected name of mdf 5
+#'   input$UI_Import_name_mde6_mtf: selected name of mdf 6
+#'   input$UI_Import_name_mde7_mtf: selected name of mdf 7
+#'   input$UI_Import_name_mde8_mtf: selected name of mdf 8
+#'   input$UI_Import_name_mde9_mtf: selected name of mdf 9 
+#'   input$Import_mtf_slow_mode: slow mode from mtf
+#'   input$Import_mtf_date_format: date format from mtf
 observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_no_db,{
   if(input$confirm_empty_body_mtf_no_db){
     data<-values$Import_mtf_meta_complete #create meta metadata vector
@@ -2211,7 +2328,23 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_no_db,{
   }
 })
 
-
+#' start preprocess and writing
+#' depends on:
+#'   input$Import_mtf_start_preprocess_and_write: initiate start of preprocess and writting
+#'   values$Import_mtf_meta_complete: import complete meta data
+#'   input$Import_mtf_dataset: import mtf dataset
+#'   input$UI_Import_name_mde1_mtf: selected name of mde 1
+#'   input$UI_Import_name_mde2_mtf: selected name of mde 2
+#'   input$UI_Import_name_mde3_mtf: selected name of mde 3
+#'   input$UI_Import_name_mde4_mtf: selected name of mde 4
+#'   input$UI_Import_name_mde5_mtf: selected name of mde 5
+#'   input$UI_Import_name_mde6_mtf: selected name of mde 6
+#'   input$UI_Import_name_mde7_mtf: selected name of mde 7
+#'   input$UI_Import_name_mde8_mtf: selected name of mde 8
+#'   input$UI_Import_name_mde9_mtf: selected name of mde 9 
+#'   input$Import_mtf_slow_mode: slow mode from mtf
+#'   input$Import_mtf_date_format: mtf date format
+#'   
 observeEvent(input$Import_mtf_start_preprocess_and_write,{
   #test if metadata is valid 
   data<-values$Import_mtf_meta_complete

@@ -7,7 +7,7 @@
 #' @return result (matching rows from matrix x and y)
 #' 
 #' @export
-#' @example 
+#' @example  
 rBind_huge<-function(x,y,fill=NULL,out.class=class(x))
 {
   out.class<-force(out.class)

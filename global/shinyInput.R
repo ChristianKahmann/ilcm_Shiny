@@ -3,7 +3,7 @@
 #' @param len
 #' @param id
 #' 
-#' @return 
+#' @return  
 #' @export
 #' @example 
 shinyInput <- function(FUN, len, id, ...) {

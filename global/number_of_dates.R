@@ -2,6 +2,9 @@
 #' @param date
 #' 
 #' @return number of dates (integer)
+#' 
+#' @example 
+#' @export
 numberOfDays <- function(date) {
   m <- format(date, format="%m")
   
