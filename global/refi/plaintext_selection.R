@@ -7,7 +7,7 @@
 #' @param creation_datetime
 #' @param description
 #' @param code_ref
-#' 
+#'  
 #' @return datframe with parameters (like above)
 T_new_plaintext_selection <- function(
   guid = guid

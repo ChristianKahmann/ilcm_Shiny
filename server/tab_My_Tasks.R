@@ -56,7 +56,9 @@ output$Running_Tasks<-renderUI({
   dataTableOutput("log_table")
 })
 
-
+#' render log table
+#' depends on:
+#'   values$my_tasks_data_tasks: data tasks from my task tab
 output$log_table<-DT::renderDataTable({
   data_tasks<-values$my_tasks_data_tasks
   datatable(data = data_tasks, selection = "single",options = list(dom="tp",pageLength = 5),escape = F)
@@ -65,6 +67,8 @@ output$log_table<-DT::renderDataTable({
 
 
 #' render info box for finished processes
+#' depends on:
+#'   values$my_tasks_finished_file_length: finished file length from a task
 output$finished_box<-renderInfoBox({
   #create info box
   box1<-infoBox(title = "finished processes:",
@@ -81,6 +85,8 @@ output$finished_box<-renderInfoBox({
 })
 
 #' render info box for running processes
+#' depends on:
+#'   values$my_tasks_running_file_length: file lenght of running task
 output$running_box<-renderInfoBox({
   #create info box
   box2<-infoBox(title = "running processes:",
@@ -97,6 +103,8 @@ output$running_box<-renderInfoBox({
 })
 
 #' render info box for failed processes
+#' depends on:
+#'   values$my_tasks_failed_file_length: file length of failed tasks
 output$failed_box<-renderInfoBox({
   #create info box
   box3<-infoBox(title = "failed processes:",
@@ -176,7 +184,11 @@ observeEvent(input$delete_button_logs, {
 })
 
 
-
+#' observe elements of 'my task' tab
+#' depends on:
+#'   values$my_tasks_failed_file_length: length of failed files
+#'   values$my_tasks_finished_file_length: length of finished files
+#'   values$my_tasks_running_file_length: length of running files
 observe({
   autoInvalidate_slow()
   values$my_tasks_failed_file_length<-length(list.files("collections/logs/failed",full.names = T))

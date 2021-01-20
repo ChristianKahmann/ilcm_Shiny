@@ -27,8 +27,6 @@
 #'   values$Doc_solr_query: document query for solr
 #'   values$Sub_search: search for sub
 #'   values$Doc_delete_documents: delete documents
-#'   
-#'   
 observeEvent(input$Det_action_Sub,{
   validate(
     need(length(input$collections_rows_selected)>0,"no Collection specified")
@@ -160,10 +158,6 @@ observeEvent(input$Det_action_Sub,{
 })
 
 
-
-#' render input fields for detailed search depending on queries to maria db
-
-
 #' render input fields for detailed search depending on queries to maria db
 #' set choices for mde1 if avaiable
 #' depends on:
@@ -188,9 +182,6 @@ observe({
   }
 })
 
-
-
-
 #' set choices for mde2 if avaiable
 #' depends on:
 #'   input$navbar_search_Sub: search-input (sub) located in navigation bar
@@ -198,7 +189,6 @@ observe({
 #'   values$host: selected host
 #'   values$db_port: used database port
 #'   values$dataset_Sub: dataset of sub
-#'   
 observe({
   shinyjs::hideElement(id = "Det_mde2_Sub")
   validate(
@@ -381,20 +371,11 @@ observe({
 })
 
 
-
-
-
-
-
-
-
-
 #' get token information from database and render slider input with received min and max value
 #' depends on:
 #'   values$Doc_dataset: dateset of document
 #'   values$host: selected host
 #'   values$db_port: used database port
-#'   
 output$Det_token_Sub<-renderUI({
   validate(
     need(length(values$Doc_dataset)>0,message="Please choose at least one dataset")
@@ -412,7 +393,6 @@ output$Det_token_Sub<-renderUI({
 #'   values$Doc_dataset: dataset of document
 #'   values$host: selected host
 #'   values$db_port: used database port
-#'   
 output$Det_von_Sub<-renderUI({
   validate(
     need(length(values$Doc_dataset)>0,message=FALSE)
@@ -490,7 +470,6 @@ output$Det_zu_Sub<-renderUI({
 #' create solr suggest suggestions for detailed search
 #' depends on:
 #'   input$Det_inputtext_Sub: detailed input text for sub
-#'   
 observe({
   validate(
     need(!is.null(input$Det_inputtext_Sub),message=F)

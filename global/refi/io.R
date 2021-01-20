@@ -167,7 +167,7 @@ IO_anno_scheme_to_dataframe <- function(anno){
 #' @return codes
 #' 
 #' @export
-#' @example 
+#' @example
 IO_get_anno_df <- function(anno, parent = "", parent_guid = "", codes){
   ids <- names(anno)
   if (length(ids) > 0) {

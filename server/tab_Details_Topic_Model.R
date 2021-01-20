@@ -29,7 +29,6 @@ output$download_phi<-downloadHandler(
 
 
 #' link downloadbutton for lda vis in Topic Models Tab
-
 observeEvent(input$download_ldavis,{
   screenshot(id = "TM_LDAvis",filename =  paste('LDAvis-', Sys.Date(), '.png', sep=''))
 })
@@ -337,7 +336,8 @@ output$tm_method<-reactive({
 })
 
 #' update the content formula for parameter 
-#' depends on: values$tm_stm_parameters_contentFormula: stm content formula with parameters
+#' depends on:
+#'  values$tm_stm_parameters_contentFormula: stm content formula with parameters
 output$tm_stm_parameters_contentFormula <- reactive({
   values$tm_stm_parameters_contentFormula
 })
@@ -345,7 +345,8 @@ output$tm_stm_parameters_contentFormula <- reactive({
 outputOptions(output, "tm_stm_parameters_contentFormula", suspendWhenHidden = FALSE)
 
 #' check if stm content formula is set
-#' depends on: values$tm_stm_parameters_contentFormula: stm content formula with parameters
+#' depends on:
+#'  values$tm_stm_parameters_contentFormula: stm content formula with parameters
 output$tm_stm_parameters_contentFormulaIsSet <- reactive({
   if(nchar(values$tm_stm_parameters_contentFormula)>0){
     return(TRUE)
@@ -524,7 +525,8 @@ output$TM_stm_visu_estimateEffect_summary <- renderPrint({
 })
 
 #' estimate effect plot
-#' depends on: values$tm_stm_visu_estimateEffect_plot_show: should the calculatet estimated effect plot be shown 
+#' depends on:
+#'  values$tm_stm_visu_estimateEffect_plot_show: should the calculatet estimated effect plot be shown 
 observeEvent(input$tm_stm_visu_estimateEffect_plotupdate,{
   values$tm_stm_visu_estimateEffect_plot_show <- TRUE
 })
@@ -751,7 +753,8 @@ observeEvent(input$TM_Coherence_start,{
 })
 
 #' show topic model coherence
-#' depends on: values$TM_Coherence_show: initiate showing the coherence
+#' depends on:
+#'  values$TM_Coherence_show: initiate showing the coherence
 output$TM_Coherence_show<-reactive({
   values$TM_Coherence_show
 })
@@ -773,7 +776,8 @@ output$TM_Coherence_topic_coherence<-renderPlotly({
 })
 
 #' render plot 
-#' depends on: values$topic_coherence_results: result for topic coherence
+#' depends on:
+#'  values$topic_coherence_results: result for topic coherence
 output$TM_Coherence_topic_coherence_mean_box<-renderValueBox({
   valueBox(subtitle = "avg. coherence",icon = icon("list"),value = round(mean(values$topic_coherence_results),3))
 })
@@ -781,7 +785,8 @@ output$TM_Coherence_topic_coherence_mean_box<-renderValueBox({
 
 #############topic intrusion#################
 #' render coherence topic intrusion
-#' depends on: values$topic_intrusion_random_doc_number: choose random doc number for topic intrsusion
+#' depends on:
+#'  values$topic_intrusion_random_doc_number: choose random doc number for topic intrsusion
 output$TM_Coherence_topic_intrusion<-renderUI({
   return(tagList(
     valueBoxOutput(outputId = "TM_Coherence_topic_intrusion_result_box"),
@@ -816,7 +821,8 @@ output$TM_Coherence_topic_intrusion<-renderUI({
 })
 
 #' show topic model intrusion
-#' depends on: values$TM_Intrusion_show: controll if topic model intrusion is shown
+#' depends on:
+#'   values$TM_Intrusion_show: controll if topic model intrusion is shown
 output$TM_Intrusion_show<-reactive({
   values$TM_Intrusion_show
 })
@@ -870,7 +876,8 @@ output$TM_Coherence_topic_intrusion_topics<-renderDataTable({
 })
 
 #' display document presentatopn for topic intrusion
-#' depends on: values$TM_Coherence_topic_intrusion_documents: documents from topic intrusion
+#' depends on:
+#'   values$TM_Coherence_topic_intrusion_documents: documents from topic intrusion
 output$TM_Coherence_topic_intrusion_documents<-renderUI({
   document<-values$TM_Coherence_topic_intrusion_documents
   return(document)
@@ -1561,7 +1568,7 @@ output$Det_TM_meta_membership_heatmap_table<-DT::renderDataTable({
 
 #' show meta data membership as heatmap
 #' depends on:
-#'   selected meta data
+#'   input$Det_meta_select: chosen meta data
 #'   values$tm_theta: topic model theta
 #'   values$TM_meta: topic model meta data
 #'   input$TM_meta_Prob: topic model meta data for topic probability
@@ -2142,7 +2149,7 @@ output$Det_TM_meta_wordcloud19<-renderWordcloud2({
 #'   input$Det_meta_select: selected detailed meta data
 #'   input$Det_meta_select2: second selected detailed meta data
 #'   input$TM_meta_Prob: probability for specific topic model meta data
-#'   alues$Det_TM_meta_scatter_data: scattered data from topic model meta data
+#'   values$Det_TM_meta_scatter_data: scattered data from topic model meta data
 output$Det_TM_scatter_plot_ui<-renderUI({
   validate(
     need(!is.null(input$Det_meta_topic),message=F)
@@ -2991,8 +2998,6 @@ output$Det_TM_Meta9<-renderUI({
     return(NULL)
   }
 })
-
-
 
 #' show 10th detailed topic model meta data
 #' depends on:
@@ -3944,7 +3949,7 @@ output$Det_TM_meta_quantiles<-renderTable({
 
 
 #' plot estimated word frequencies in bar chart
-#' deoends on:
+#' depends on:
 #'   input$Det_TM_ewf_word: word for estimated word frequencies 
 #'   values$tm_rel_counts: topic model word count
 output$TM_ewf_bar<-renderPlotly({
@@ -3994,7 +3999,8 @@ output$TM_ewf_table<-DT::renderDataTable({
 
 
 #'  start downloading real counts for estimated word frequency
-#'  depends on: values$tm_counts: count of words from topic model
+#'  depends on:
+#'    values$tm_counts: count of words from topic model
 output$download_rel_counts<-downloadHandler(
   filename = function() {
     paste('estimated_counts', Sys.Date(), '.csv', sep='')
@@ -4243,7 +4249,7 @@ click_pie_tm_validation<-reactive({
   currentEcentData<-event_data(event = "plotly_click", source = "tm_validation_pie",session = session)
 })
 
-#' change selected topic if user click on a tpic in the pie chart
+#' change selected topic if user click on a topic in the pie chart
 observe({
   validate(
     need(!is.null(click_pie_tm_validation()),message = F)
@@ -4274,7 +4280,7 @@ output$TM_dispersion_ui<-renderUI({
 
 #' summary table for topic dispersion
 #' depends on:
-#'  values$tm_theta
+#'  values$tm_theta: topic model - theta selection 
 output$Det_TM_dispersion_summary_table<-DT::renderDataTable({
   validate(
     need(!is.null(values$tm_theta),message=F)
@@ -4689,12 +4695,6 @@ output$Det_TM_outlier_download_list_of_outliers<-downloadHandler(
 
 
 
-
-
-
-
-
-
 #############################
 #        Clustering         #
 #############################
@@ -4761,7 +4761,8 @@ output$Det_TM_document_clustering_kmeans<-plotly::renderPlotly({
 
 
 #' download document clustering results
-#' depends on: values$Det_TM_document_clustering_cluster_summary: summary of cluster from document clustering
+#' depends on:
+#'   values$Det_TM_document_clustering_cluster_summary: summary of cluster from document clustering
 output$Det_TM_document_clustering_download_clustering_result<-downloadHandler(
   filename = function() {
     paste('cluster_result', Sys.Date(), '.csv', sep='')
@@ -5002,7 +5003,8 @@ output$Det_TM_grouping_group1<-DT::renderDataTable({
 })
 
 #' datatable for quantiles for group 1
-#' depends on: values$Det_TM_grouping_quantiles_group1: quantiles for group one
+#' depends on:
+#'  values$Det_TM_grouping_quantiles_group1: quantiles for group one
 output$Det_TM_grouping_quantile_group1_quantiles<-DT::renderDataTable({
   validate(
     need(

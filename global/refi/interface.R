@@ -7,3 +7,4 @@ COLLECTIONS_HOME <<- file.path(getwd(),  "collections", "collections")
 ANNO_SCHEME_HOME <<- file.path(getwd(),  "collections", "annotation_schemes")
 ANALYSIS_RESULTS_HOME <<- file.path(getwd(), "collections", "results")
 
+ 
