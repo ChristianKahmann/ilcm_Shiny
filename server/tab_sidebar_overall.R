@@ -15,6 +15,10 @@ output$sidebarpanel_UI<-renderUI({
                            menuItem(text = "Scripts",tabName = "Scripts",icon = icon("terminal")),
                            # menu for import/export
                            menuItem(text=  "Import/Export",tabName= "Importer",icon=icon("upload")),
+                           tags$br(),
+                           tags$br(),
+                           # button to take screenshots of the iLCM
+                           shinyscreenshot::screenshotButton(),
                            # link to manual
                            tags$a("Instructions iLCM",id="manual_link",target="_blank", href="http://ilcm.informatik.uni-leipzig.de/download/starting_guide.pdf"),
                            # link to nlp group Leipzig website

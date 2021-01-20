@@ -140,7 +140,8 @@ output$TS_plot<-renderPlotly({
         }
         
       }
-      values$share_results<-results[[1]] 
+      values$share_results<-results
+
       #create time series scatter plot
       #//scattergl evtl besser für ältere Rechner
       p<-plot_ly(source="TI",x=(results[[1]][,1]),y=as.numeric(results[[1]][,2]),type = "scatter",mode="lines+markers",name=stringr::str_replace(string=isolate(values$TS_memory[[1]][[3]]),pattern = "\\* AND",""))
@@ -307,10 +308,12 @@ observeEvent(input$TS_reset,{
 #'   input$TS_Select_Memory: selected time series from memory
 output$TS_download_memory<-downloadHandler(
   filename=function(){
-    paste0(values$mem,".csv")
+    paste0(input$TS_Select_Memory,".csv")
   },
   content=function(con){
-    write.csv(table(values$TS_memory[[which(values$mem==input$TS_Select_Memory)]][[1]]),con)
+    data<-values$share_results[[which(values$mem==input$TS_Select_Memory)]]
+    colnames(data)<-c("date",paste0("count '",input$TS_Select_Memory,"'"))
+    write.csv(data,file = con)
   }
 )
 

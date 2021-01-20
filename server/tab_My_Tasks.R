@@ -1,6 +1,7 @@
 #' update logiles every 5 seconds
 autoInvalidate_slow <- reactiveTimer(5000)
 autoInvalidate_normal <- reactiveTimer(500)
+autoInvalidate_medium <- reactiveTimer(1000)
 autoInvalidate_fast<-reactiveTimer(50)
 
 #' render logfiles for the chosen category (running, finished, failed)
@@ -13,13 +14,12 @@ output$Running_Tasks<-renderUI({
   #invalidate when reload is pressed or a log file got deleted
   input$reload_logs
   values$reload_logs_auto
-  
   data_tasks<-matrix(c(0),0,4)
   validate(
     need(!is.null(values$infobox),message="click on a box"),
     need(length(list.files(paste("collections/logs/",isolate(values$infobox),sep=""),full.names = T))>0,"no logs")
   )
-  
+  print("reload")  
   #get logfiles
   files<-list.files(paste("collections/logs/",isolate(values$infobox),sep=""),full.names = T)
   if(length(files)>=1){
@@ -50,19 +50,26 @@ output$Running_Tasks<-renderUI({
   data_tasks[,2]<-stringr::str_replace_all(string = data_tasks[,2],pattern = "Collection: ",replacement = "")
   data_tasks[,3]<-stringr::str_replace_all(string = data_tasks[,3],pattern = "Task: ",replacement = "")
   data_tasks[,4]<-stringr::str_replace_all(string = data_tasks[,4],pattern = "Started at: ",replacement = "")
-  output$log_table<-renderDataTable(datatable(data = data.frame(data_tasks,Delete=Delete),selection = "single",options = list(dom="tp",pageLength = 5),escape = F),server = F)
-  values$reload_logs_auto<-FALSE
+  
+  data_tasks<-data.frame(data_tasks,Delete=Delete)
+  data_tasks->values$my_tasks_data_tasks
   dataTableOutput("log_table")
 })
 
+
+output$log_table<-DT::renderDataTable({
+  data_tasks<-values$my_tasks_data_tasks
+  datatable(data = data_tasks, selection = "single",options = list(dom="tp",pageLength = 5),escape = F)
+} ,server = F)
+
+
+
 #' render info box for finished processes
 output$finished_box<-renderInfoBox({
-  #invalidate expression every .5 seconds
-  autoInvalidate_normal()
   #create info box
   box1<-infoBox(title = "finished processes:",
                 #number of logfiles
-                value = length(list.files("collections/logs/finished",full.names = T)),
+                value = values$my_tasks_finished_file_length,
                 icon = icon("tasks"),
                 color="green",
                 href="#"
@@ -75,12 +82,10 @@ output$finished_box<-renderInfoBox({
 
 #' render info box for running processes
 output$running_box<-renderInfoBox({
-  #invalidate expression every .5 seconds
-  autoInvalidate_normal()
   #create info box
   box2<-infoBox(title = "running processes:",
                 #number of logfiles
-                value = length(list.files("collections/logs/running",full.names = T)),
+                value = values$my_tasks_running_file_length,
                 icon = icon("spinner"),
                 color="orange",
                 href="#"
@@ -93,12 +98,10 @@ output$running_box<-renderInfoBox({
 
 #' render info box for failed processes
 output$failed_box<-renderInfoBox({
-  #invalidate expression every .5 seconds
-  autoInvalidate_normal()
   #create info box
   box3<-infoBox(title = "failed processes:",
                 #number of logfiles
-                value = length(list.files("collections/logs/failed",full.names = T)),
+                value = values$my_tasks_failed_file_length,
                 icon = icon("exclamation-triangle"),
                 color="red",
                 href="#"
@@ -113,6 +116,7 @@ output$failed_box<-renderInfoBox({
 #'depends on:
 #'  values$infobox: infobox-text
 observeEvent(input$button_box_running,{
+  print("running")
   values$infobox<-"running"
 })
 
@@ -120,6 +124,7 @@ observeEvent(input$button_box_running,{
 #'depends on:
 #'  values$infobox: infobox-text
 observeEvent(input$button_box_finished,{
+  print("finished")
   values$infobox<-"finished"
 })
 
@@ -127,6 +132,7 @@ observeEvent(input$button_box_finished,{
 #'depends on:
 #'  values$infobox: infobox-text
 observeEvent(input$button_box_failed,{
+  print("failed")
   values$infobox<-"failed"
 })
 
@@ -137,7 +143,7 @@ observeEvent(input$button_box_failed,{
 #'   values$log_files: log files
 output$log_text = renderUI({
   #get selected row of log_table
-  autoInvalidate_fast()
+  autoInvalidate_medium()
   s = input$log_table_rows_selected
   if (length(s)){
     #get the corresponding file
@@ -165,8 +171,16 @@ observeEvent(input$delete_button_logs, {
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_button_logs\",  "logs_button_0")'))
     file.remove(values$log_files[selectedRow])
-    values$reload_logs_auto<-TRUE
+    values$reload_logs_auto<-runif(1,0,1)
   }
 })
 
+
+
+observe({
+  autoInvalidate_slow()
+  values$my_tasks_failed_file_length<-length(list.files("collections/logs/failed",full.names = T))
+  values$my_tasks_finished_file_length<-length(list.files("collections/logs/finished",full.names = T))
+  values$my_tasks_running_file_length<-length(list.files("collections/logs/running",full.names = T))
+})
 

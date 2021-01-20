@@ -468,7 +468,7 @@ error<-try(expr = {
       uncertain_decisions <- rep(0, length(predicted$predicted))
       uncertain_decisions[lidx] <- prob_positive[lidx] / pmax
       uncertain_decisions[!lidx] <- (1 - prob_positive[!lidx]) / (1 - pmax)
-      uncertain_decisions <- order(boundary_distances,decreasing=T)
+      uncertain_decisions <- order(uncertain_decisions,decreasing=T)
       unset_labels <- which(!rownames(dtm)%in%gold_table[which(!gold_table[,2]%in%c("dictionary lookup","sampled negative examples")),1])
       uncertain_decisions <- intersect(uncertain_decisions,unset_labels)[1:50]
       examples <- rownames(dtm)[uncertain_decisions]
@@ -480,7 +480,7 @@ error<-try(expr = {
     colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
     #delete bias term from feature matrix
     feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-
+    
     word_counts<-colSums(dtm) 
     log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
     
@@ -671,7 +671,7 @@ error<-try(expr = {
     # if only 2 categories were used, transform feature matrix
     if(nrow(feature_matrix)==1){
       feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))
-      rownames(feature_matrix)<-unique(gold_table[,2])
+      rownames(feature_matrix)<-setdiff(unique(gold_table[,2]),"NEG")
     }
     word_counts<-colSums(dtm)  
     

@@ -44,7 +44,7 @@ observeEvent(input$vocabulary_import_vocab_from_task,{
     modalDialog(title = "Import vocabulary from task",size = "l",
                 radioGroupButtons(inputId = "vocabulary_import_type_of_analysis",label = "Type of analysis",choices = c("Topic Model"="topic-model","Cooccurrence Analysis"="cooccurrence-analysis",
                                                                                                                         "Frequency Analysis"="frequency-extraction","Volatility Analysis"="volatility-analysis",
-                                                                                                                        "Classification"="classification"),
+                                                                                                                        "Classification"="classification","Dynamic Topic Model"="dynamic-topic-model"),
                                   status="primary",individual = T ),
                 conditionalPanel(condition = 'input.vocabulary_import_type_of_analysis=="classification"',
                                  fluidRow(style="margin-left:0px;margin-right:0px",
@@ -90,6 +90,7 @@ observeEvent(input$vocabulary_import_vocab_from_task,{
    updateSelectInput(session = session,inputId = "FE_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$FE_fixed_vocab)
    updateSelectInput(session = session,inputId = "CA_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$CA_fixed_vocab)
    updateSelectInput(session = session,inputId = "VA_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$VA_fixed_vocab)
+   updateSelectInput(session = session,inputId = "DTM_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$DTM_fixed_vocab)
    values$invalidate_vocabularies<-runif(1,0,1)
 
    shinyWidgets::sendSweetAlert(session = session,title = "Success",type = "success",text = "The vocabulary has been imported to the vocabulary preset directory. It can now be chosen in the Task Scheduler.")
@@ -214,6 +215,7 @@ observeEvent(input$Save_vocabulary_confirm,{
   updateSelectInput(session = session,inputId = "FE_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$FE_fixed_vocab)
   updateSelectInput(session = session,inputId = "CA_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$CA_fixed_vocab)
   updateSelectInput(session = session,inputId = "VA_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$VA_fixed_vocab)
+  updateSelectInput(session = session,inputId = "DTM_fixed_vocab",choices = list.files("collections/vocabularies/"), selected=input$DTM_fixed_vocab)
   values$invalidate_vocabularies<-runif(1,0,1)
   shinyWidgets::sendSweetAlert(session = session,title = "Success",text = "successfully saved vocabulary",type = "sucess")
 

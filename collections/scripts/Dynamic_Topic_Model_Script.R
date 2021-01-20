@@ -118,7 +118,7 @@ error<-try(expr = {
   
   
   
-
+  
   #remove empty documents
   log_to_file(message = "<b>Step 10/13: Removing empty documents</b>",file = logfile)
   empty<-which(Matrix::rowSums(dtm)==0)
@@ -137,7 +137,12 @@ error<-try(expr = {
   
   
   #create time slices
-  
+  #make sure every dtm uses at leat two words
+  single_word_documents<-which(rowSums(dtm)==1)
+  if(length(single_word_documents)>0){
+    dtm<-dtm[-single_word_documents,]
+    meta<-meta[-single_word_documents,]
+  }
   #reoder dtm and meta object by dates
   order<-order(meta$date,decreasing = F)
   meta<-meta[order,]
@@ -245,26 +250,33 @@ error<-try(expr = {
   
   vocab<-colnames(dtm)
   texts_from_dtm<-list()
+  log_to_file(message = "&emsp;Creating vocabulary vector",file = logfile)
+  log_helper<- round(seq(from=0,to=nrow(dtm),length.out=11)[2:11])
   for(i in 1:nrow(dtm)){
     text<-list()
     count=0
-    for(j in which(dtm[i,]>0)){
-      for(k in 1:dtm[i,j]){
-        count=count+1
-        text[[count]]<-vocab[j]
-      }
-      
+    repeat_idx<-which(dtm[i,]>0)
+    repeat_numbers<-dtm[i,repeat_idx]
+    repeat_vocab<-vocab[repeat_idx]
+    repeat_df<-cbind(words=repeat_vocab,idx=repeat_idx,times=repeat_numbers)
+    text<-(rep(repeat_df[,1],repeat_df[,3]))
+    names(text)<-NULL
+    text<-as.list(text)
+    if(i%in%log_helper){
+      print(i)
+      log_to_file(message = paste0("&emsp;",(which(log_helper==i)*10) ,"% of documents processed"),file = logfile)
     }
     texts_from_dtm[[i]]<-text
   }
   
-
+  log_to_file(message = "&emsp;Start Python Script",file = logfile)
   dictionary <- corpora_dictionary(docs = texts_from_dtm)
   corpus <- doc2bow(dictionary, texts_from_dtm)
   num_topics<-as.integer(parameters$tm_number_of_topics)
- # mode<-parameters$dtm_mode
+  # mode<-parameters$dtm_mode
   #initialize_lda<-parameters$dtm_initialize_lda
   top_chain_variance<-parameters$dtm_top_chain_variance
+  alpha<-parameters$tm_alpha
   write(x = time_slices,file = "collections/tmp/time_sclices.txt")
   reticulate::py_save_object(object = corpus,filename = "collections/tmp/test_corpus")
   reticulate::py_save_object(object = r_to_py(num_topics),filename = "collections/tmp/num_topics")
@@ -273,6 +285,7 @@ error<-try(expr = {
   #reticulate::py_save_object(object = r_to_py(as.character(mode)),filename = "collections/tmp/mode")
   #reticulate::py_save_object(object = r_to_py(initialize_lda),filename = "collections/tmp/initialize_lda")
   reticulate::py_save_object(object = r_to_py(as.numeric(top_chain_variance)),filename = "collections/tmp/top_chain_variance")
+  reticulate::py_save_object(object = r_to_py(as.numeric(alpha)),filename = "collections/tmp/alpha")
   # start python script
   reticulate::source_python(file = "global/run_dtm.py")
   

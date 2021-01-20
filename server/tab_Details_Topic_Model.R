@@ -29,19 +29,23 @@ output$download_phi<-downloadHandler(
 
 
 #' link downloadbutton for lda vis in Topic Models Tab
-#' depends on:
-#'  values$tm_json: json data of Topic Model 
-output$download_ldavis<-downloadHandler(
-  filename = function() {
-    paste('LDAvis-', Sys.Date(), '.zip', sep='')
-  },
-  content = function(con) {
-    #browser()
-    LDAvis::serVis(json = values$tm_json,open.browser = T,out.dir = "collections/tmp/ldavis/",encoding = "UTF-8")
-    zip::zipr(zipfile = "collections/tmp/ldavis.zip",files = "collections/tmp/ldavis/",recurse = T,include_directories=F)
-    file.copy(from = "collections/tmp/ldavis.zip",to = con)
-  }
-)  
+
+observeEvent(input$download_ldavis,{
+  screenshot(id = "TM_LDAvis",filename =  paste('LDAvis-', Sys.Date(), '.png', sep=''))
+})
+
+
+# output$download_ldavis<-downloadHandler(
+#   filename = function() {
+#     paste('LDAvis-', Sys.Date(), '.png', sep='')
+#   },
+#   content = function(con) {
+#     screenshot(selector = "#TM_LDAvis",filename = con)
+#     #LDAvis::serVis(json = values$tm_json,open.browser = F,out.dir = "collections/tmp/ldavis/",encoding = "UTF-8")
+#     #zip::zipr(zipfile = "collections/tmp/ldavis.zip",files = "collections/tmp/ldavis/",recurse = T,include_directories=F)
+#     #file.copy(from = "collections/tmp/ldavis.zip",to = con)
+#   }
+# )  
 
 
 
