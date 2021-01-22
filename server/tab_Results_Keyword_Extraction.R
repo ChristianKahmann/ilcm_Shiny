@@ -132,6 +132,7 @@ observeEvent(ignoreInit = T,input$Keyword_Extraction_Results_rows_selected,{
   s = input$Keyword_Extraction_Results_rows_selected
   if (length(s)) {
     values$Details_Analysis <- "KE"
+    isolate(values$parameters_finished <- FALSE)
     isolate(values$Details_Data_KE <-
               values$Keyword_Results_Files[s])
     updateTabsetPanel(session = session,

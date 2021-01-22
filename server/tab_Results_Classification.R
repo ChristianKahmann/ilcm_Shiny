@@ -162,6 +162,7 @@ observeEvent(input$Classification_Results_rows_selected,ignoreInit = T,{
   s = input$Classification_Results_rows_selected
   if (length(s)) {
     values$Details_Analysis <- "CL"
+    isolate(values$parameters_finished <- FALSE)
     isolate(values$Details_Data_CL <-
               values$Classification_Results_Files[s])
     if(grepl(x = values$Classification_Results_Files[s],pattern = "activeLearning")||grepl(x = values$Classification_Results_Files[s],pattern = "activeLearning_documents")){

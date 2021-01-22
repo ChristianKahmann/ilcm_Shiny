@@ -131,6 +131,7 @@ observe({
   s = input$DE_Results_rows_selected
   if (length(s)) {
     values$Details_Analysis <- "DE"
+    isolate(values$parameters_finished <- FALSE)
     isolate(values$Details_Data_DE <-
               values$DE_Results_Files[s])
     updateTabsetPanel(session = session,

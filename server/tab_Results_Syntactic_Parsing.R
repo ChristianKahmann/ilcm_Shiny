@@ -137,6 +137,7 @@ observeEvent(ignoreInit = T,input$Syntactic_Parsing_Results_rows_selected,{
   s = input$Syntactic_Parsing_Results_rows_selected
   if (length(s)) {
     values$Details_Analysis <- "SP"
+    isolate(values$parameters_finished <- FALSE)
     isolate(values$Details_Data_SP <-
               values$Parsing_Results_Files[s])
     updateTabsetPanel(session = session,

@@ -84,6 +84,7 @@ values$tm_stm_parameters_contentFormula <- ""
 #'  values$tm_dates: dates from topic modeling
 output$details_parameter<-renderUI({
   if(!is.null(values$Details_Analysis)){
+    values$parameters_finished<-TRUE
     # Parameters for Syntactic Parsing Visualization
     if(values$Details_Analysis=="SP"){
       load(paste0(values$Details_Data_SP,"/annotations.RData"))
@@ -117,8 +118,8 @@ output$details_parameter<-renderUI({
                            sliderInput(inputId = "Det_DTM_topic_dynamic_lambda",label = "Lambda:",min=0,max=1,value=0.5,step=0.1),
                            sliderInput(inputId = "Det_DTM_topic_dynamic_topic",label = "Topic:",min=1,max=nrow(results[[1]][[2]]),step=1,value=1),
                            numericInput(inputId = "Det_DTM_topic_dynamic_number_of_words",label = "Number of words:",min=1,max=length(results[[1]][[5]]),value=10,step=1),
-                        
-                       
+                           
+                           
           ),
           conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Word Importance'",
                            selectizeInput(inputId = "Det_DTM_word_importance_Words",label="Words:",choices=NULL,multiple=T),
@@ -804,6 +805,9 @@ output$details_parameter<-renderUI({
       return (returnValue)
     }
   }
+  else{
+    return(tags$img(src="busy4.gif"))
+  }
 }
 )
 
@@ -869,6 +873,10 @@ output$details_parameter<-renderUI({
 #'   values$va_words: words from volatility analysis
 #'   values$va_freq: frequencies from volatility analysis
 output$details_visu<-renderUI({
+  #ensure parameters output is calculated before
+  validate(
+    need(isTRUE(values$parameters_finished),message=FALSE)
+  )
   if(!is.null(values$Details_Analysis)){
     if(values$Details_Analysis=="TM"){
       validate(
@@ -949,7 +957,7 @@ output$details_visu<-renderUI({
       )
       tabPanelTopic_Proportions <- tabPanel("Topic Proportions over time",
                                             uiOutput(("TM_topic_proportions_UI"))%>%withSpinner()
-        
+                                            
       )
       if(length(list.files("collections/results/topic-model/"))>1){
         tabPanelReproducibility <- tabPanel("Model Reproducibility",

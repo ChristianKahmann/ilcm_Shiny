@@ -126,6 +126,7 @@ observeEvent(ignoreInit = T,input$Deduplication_Results_rows_selected,{
   s = input$Deduplication_Results_rows_selected
   if (length(s)) {
     values$Details_Analysis <- "DD"
+    isolate(values$parameters_finished <- FALSE)
     isolate(values$Details_Data_DD <-
               values$Deduplication_Results_Files[s])
     updateTabsetPanel(session = session,

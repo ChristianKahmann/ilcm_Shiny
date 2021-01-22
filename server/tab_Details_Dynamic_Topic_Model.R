@@ -236,7 +236,7 @@ output$Det_DTM_dynamic_wordcloud_plot_new<-renderWordcloud2({
 #'   values$dtm_results_additional: additional results from document term matrix
 output$Det_DTM_word_importance_plot<-renderPlotly({
   validate(
-    need(length(input$Det_DTM_word_importance_Words)>0,message = "Specify at least on word and topic!")
+    need(length(input$Det_DTM_word_importance_Words)>0,message = "Specify at least one word and topic!")
   )
   results<-values$dtm_results
   vocab_idx<-which(results[[1]][[5]]%in%input$Det_DTM_word_importance_Words)

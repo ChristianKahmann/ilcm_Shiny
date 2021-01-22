@@ -143,6 +143,7 @@ observe({
   s = input$Dynamic_Topic_Results_rows_selected
   if (length(s)) {
     values$Details_Analysis <- "DTM"
+    values$parameters_finished<-FALSE
     isolate(values$Details_Data_DTM <-
               values$Dynamic_Topic_Results_Files[s])
     

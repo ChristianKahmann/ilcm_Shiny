@@ -136,6 +136,7 @@ observe({
   s = input$Vector_Results_rows_selected
   if (length(s)) {
     values$Details_Analysis <- "VS"
+    isolate(values$parameters_finished <- FALSE)
     isolate(values$Details_Data_VS <-
               values$Vector_Results_Files[s])
     isolate(values$vs_pca<-NULL)

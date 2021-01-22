@@ -150,7 +150,7 @@ output$log_text = renderUI({
     files<-values$log_files
     validate(
       need(!is.na(files),"no log file left"),
-      need(file.exists(files[1]),message=FALSE)
+      need(file.exists(files[s]),message=FALSE)
     )
     #output the data
     log_text<-(readChar(files[s],file.info(files[s])$size))

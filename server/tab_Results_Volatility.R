@@ -133,6 +133,7 @@ observe({
   s = input$Volat_Results_rows_selected
   if (length(s)) {
     values$Details_Analysis <- "VA"
+    isolate(values$parameters_finished <- FALSE)
     isolate(values$Details_Data <-
               values$Volat_Results_Files[s])
     isolate(values$Details_Data_VA <-

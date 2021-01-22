@@ -132,6 +132,7 @@ observe({
   s = input$Senti_Results_rows_selected
   if (length(s)) {
     values$Details_Analysis <- "SA"
+    isolate(values$parameters_finished <- FALSE)
     isolate(values$Details_Data_SA <-
               values$Senti_Results_Files[s])
     isolate(values$current_task_id<- values$results_senti[s,1])
