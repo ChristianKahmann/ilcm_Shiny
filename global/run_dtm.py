@@ -12,7 +12,7 @@ time_slices = pickle.load( open("collections/tmp/time_slices","rb"))
 alpha = pickle.load( open("collections/tmp/alpha","rb"))
 path_to_dtm_binary = "global/dtm-linux64"
 model = DtmModel(
-  path_to_dtm_binary, corpus=corpus, id2word=dictionary,alpha=1,
+  path_to_dtm_binary, corpus=corpus, id2word=dictionary,
   time_slices=time_slices,num_topics=num_topics,mode="fit",top_chain_var=top_chain_var,initialize_lda=True,alpha=alpha
 )
 

@@ -117,7 +117,7 @@ output$details_parameter<-renderUI({
           conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Topic Dynamics over Time'",
                            sliderInput(inputId = "Det_DTM_topic_dynamic_lambda",label = "Lambda:",min=0,max=1,value=0.5,step=0.1),
                            sliderInput(inputId = "Det_DTM_topic_dynamic_topic",label = "Topic:",min=1,max=nrow(results[[1]][[2]]),step=1,value=1),
-                           numericInput(inputId = "Det_DTM_topic_dynamic_number_of_words",label = "Number of words:",min=1,max=length(results[[1]][[5]]),value=10,step=1),
+                           numericInput(inputId = "Det_DTM_topic_dynamic_number_of_words",label = "Number of words:",min=1,max=length(results[[1]][[5]]),value=10,step=1)
                            
                            
           ),
@@ -1449,7 +1449,7 @@ output$details_visu<-renderUI({
                             withSpinner(),
                           tags$br(),
                           plotlyOutput(outputId = "Det_DTM_importance_scatter_plot")%>%
-                            withSpinner(),
+                            withSpinner()
                  ),
                  tabPanel("Word Importance", 
                           tags$br(),
