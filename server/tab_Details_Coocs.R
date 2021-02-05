@@ -315,7 +315,8 @@ output$Det_CO_download_coocs<-downloadHandler(
   }
 ) 
 
-#' create samples of words to render a data table
+#' create data table showing real texts containing specified words
+#' allows for qualitative analysis of quantitative results
 #' depends on:
 #'   input$coocs_examples_words: selected example words
 #'   input$coocs_examples_all: all selected examples
@@ -347,13 +348,19 @@ output$cooc_examples_table<-DT::renderDataTable({
     number_of_examples<-min(input$coocs_examples_n,length(avail))
   }
   text<-matrix(c(0),number_of_examples,1)
+  text_orig<-matrix(c(0),number_of_examples,1)
+  # make sure words are splitted in case n grams were used
+  words <- input$coocs_examples_words
+  words <- unlist(flatten(stringr::str_split(string = words,pattern = "_",simplify = F)))
+
   for(i in 1:number_of_examples){
     tokens<-values$coocs_token[which(values$coocs_token[,1]==avail[i]),]
+    tokens_orig<-tokens
     id_targets<-NULL
     id_targets_all<-list()
-    for(j in 1:length(input$coocs_examples_words)){
-      id_targets<-c(id_targets,union(which(tolower(tokens[,"token"])%in%input$coocs_examples_words[j]),which(tolower(tokens[,"lemma"])%in%input$coocs_examples_words[j])))
-      id_targets_all[[j]]<-union(which(tolower(tokens[,"token"])%in%input$coocs_examples_words[j]),which(tolower(tokens[,"lemma"])%in%input$coocs_examples_words[j]))
+    for(j in 1:length(words)){
+      id_targets<-c(id_targets,union(which(tolower(tokens[,"token"])%in%words[j]),which(tolower(tokens[,"lemma"])%in%words[j])))
+      id_targets_all[[j]]<-union(which(tolower(tokens[,"token"])%in%words[j]),which(tolower(tokens[,"lemma"])%in%words[j]))
       if(length(id_targets)>2){
         id_targets<-c(min(id_targets),max(id_targets))
       }
@@ -364,11 +371,14 @@ output$cooc_examples_table<-DT::renderDataTable({
       }
     }
     example<-paste(tokens[max(1,(min(id_targets)-k)):min(dim(tokens)[1],(max(id_targets)+k)),"token"],collapse=" ")
+    example_orig<-paste(tokens_orig[max(1,(min(id_targets)-k)):min(dim(tokens_orig)[1],(max(id_targets)+k)),"token"],collapse=" ")
     text[i,1]<-example
+    text_orig[i,1]<-example_orig
   }
   document_ids<-avail[1:number_of_examples]
   values$coocs_examples_document_ids<-document_ids
   values$coocs_examples_texts<-text
+  values$coocs_examples_texts_orig<-text_orig
   #for(i in 1:length(input$coocs_examples_words)){
   #  word<-input$coocs_examples_words[i]
   #  text[,1]<-stringr::str_replace_all(string = (text[,1]),pattern = stringr::regex(paste(" ",word," ",sep=""),ignore_case = T),replacement = paste0(' <b style="color:',colors[i],'">',word,'</b> '))
@@ -427,7 +437,7 @@ observeEvent(input$coocs_kwic_document,{
 
 
 
-#' link downloadbutton for the exampel texts in  co-occurrences  restuls tab
+#' link downloadbutton for the example texts in  co-occurrences restuls tab
 #' depends on:
 #'   values$coocs_examples_texts: example texts for cooccurrence analysis
 output$Det_CO_download_examples<-downloadHandler(
