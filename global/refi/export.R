@@ -215,6 +215,9 @@ export_classification <- function(output_directory, projectname, collection_name
 #' @param session
 #' 
 #' @return refi_export_codebook_success and out (dataframe for codebook information)
+#' 
+#' @export
+#' @example 
 export_codebook <- function(projectname, annotation_scheme, output_directory,session){
   refi_export_codebook_success<-F
   out<-tryCatch(

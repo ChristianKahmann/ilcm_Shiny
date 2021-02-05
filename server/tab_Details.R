@@ -5,6 +5,7 @@ values$TM_topic_intrusion_run<-NULL
 values$TM_Intrusion_word_show<-FALSE
 values$TM_word_intrusion_run<-NULL
 values$tm_stm_parameters_contentFormula <- ""
+
 #' render parameter tagset depending on the process
 #' depends on:
 #'  values$Details_Analysis: details on selected analysis
@@ -1656,7 +1657,6 @@ source(file.path("server","tab_Details_Deduplication.R"),local = T)$value
 source(file.path("server","tab_Details_Keyword_Extraction.R"),local = T)$value
 source(file.path("server","tab_Details_Syntactic_Parsing.R"),local = T)$value
 source(file.path("server","tab_Details_Dynamic_Topic_Model.R"),local = T)$value
-
 
 
 outputOptions(output,"details_visu",suspendWhenHidden=FALSE)

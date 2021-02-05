@@ -101,7 +101,7 @@ observeEvent(input$vocabulary_import_vocab_from_task,{
 
 #' start importing vocabulary lists from former tasks
 #' depends on:
-#'  input$vocabulary_import_found_tasks: vocabulary lists found in tasks
+#'   input$vocabulary_import_found_tasks: vocabulary lists found in tasks
 output$vocabulary_import_start_import_UI<-renderUI({
   validate(
     need(!is.null(input$vocabulary_import_found_tasks),message=F)
@@ -124,7 +124,7 @@ output$vocabulary_import_start_import_UI<-renderUI({
 
 #' show active learning schema if active learning is chosen
 #' depends on:
-#'  input$vocabulary_import_classification_type: classification type from vocabulary import
+#'   input$vocabulary_import_classification_type: classification type from vocabulary import
 output$vocabulary_import_classification_active_learning_scheme_UI<-renderUI({
   selectInput(inputId="vocabulary_import_classification_active_learning_scheme",label="annotation Scheme",choices=list.files(path = paste0("collections/results/classification/",input$vocabulary_import_classification_type,"/")))
   
@@ -173,7 +173,7 @@ output$vocabulary_import_found_tasks_UI<-renderUI({
 
 #' add input to write down the words of a new vocabulary list
 #' depends on:
-#'  values$vocabulary_text: collection of words building the vocabular
+#'   values$vocabulary_text: collection of words building the vocabular
 output$UI_vocabulary_textarea<-renderUI({
   if(is.null(values$vocabulary_text)){
     values$vocabulary_text<-""

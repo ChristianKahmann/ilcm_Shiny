@@ -1,6 +1,9 @@
 #' get database connection
 #' 
 #' @return database
+#' 
+#' @export
+#' @example 
 DB_get_database_connection <- function(){
   database <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user=DB_USER, password=DB_PASS, dbname=DATABASE, host=host,port=db_port)
   RMariaDB::dbSendStatement(database, 'set character set "utf8"')
@@ -103,6 +106,9 @@ DB_get_used_annotation_schemes <- function(collection){
 #' database - get collection names
 #' 
 #' @return result names of collection
+#' 
+#' @export
+#' @example 
 DB_get_collection_names <- function(){
   connection <- DB_get_database_connection()
   result <- RMariaDB::dbGetQuery(connection, "SELECT DISTINCT name FROM Collections;")
@@ -114,6 +120,8 @@ DB_get_collection_names <- function(){
 #' @param collection
 #' 
 #' @return result (collection)
+#' @export
+#' @example 
 DB_get_collections <- function(collection){
   connection <- DB_get_database_connection()
   query <- paste0("SELECT DISTINCT id, name, created, `number of documents` FROM Collections WHERE name = '", collection, "';")
@@ -156,6 +164,10 @@ DB_import_annotations <- function(annotations){
 
 #' database - delete dataset 
 #' @param dataset
+#' 
+#' @return 
+#' @export
+#' @example 
 DB_delete_dataset <- function(dataset){
   connection <- DB_get_database_connection()
   RMariaDB::dbBegin(conn = connection)

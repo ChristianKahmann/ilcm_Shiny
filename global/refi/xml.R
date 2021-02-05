@@ -25,7 +25,7 @@ XML_validate_codebook_scheme <- function(xml_doc) {
 
 #' XML has plain text content
 #' @param text_source_node
-#' 
+#'  
 #' @return TRUE (if ptc empty) or FALSE otherwise
 XML_has_plain_text_content <- function(text_source_node) {
   ptc <- xml_find_all(text_source_node, "./d1:PlainTextContent")

@@ -17,7 +17,7 @@ HTML_get_annotation_scheme <- function(anno_file){
 #' @return parent
 #' 
 #' @export
-#' @example 
+#' @example
 HTML_get_nested_ul <- function(anno, parent, doc){
   ids <- names(anno)
   if (length(ids) > 0) {

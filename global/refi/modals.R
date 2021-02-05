@@ -1,4 +1,9 @@
 #' dialog annotation scheme export
+#' @param failed
+#' 
+#' @return 
+#' @export
+#' @example 
 dialog_annotation_scheme_export <- function(failed= FALSE){
   modalDialog(
     textInput(
@@ -20,6 +25,11 @@ dialog_annotation_scheme_export <- function(failed= FALSE){
 }
 
 #' dialog collection export
+#' @param failed
+#' 
+#' @return 
+#' @export
+#' @example 
 dialog_collection_export <- function(failed= FALSE){
   modalDialog(
     textInput(
@@ -41,6 +51,11 @@ dialog_collection_export <- function(failed= FALSE){
 }
 
 #' dialog_collection with annotation scheme export
+#' @param failed
+#' 
+#' @return 
+#' @example 
+#' @export
 dialog_collection_with_annotation_scheme_export <- function(failed= FALSE){
   modalDialog(
     textInput(
@@ -62,6 +77,11 @@ dialog_collection_with_annotation_scheme_export <- function(failed= FALSE){
 }
 
 #' dialog topic model export
+#' @param failed
+#' 
+#' @return 
+#' @export
+#' @example 
 dialog_topic_model_export <- function(failed= FALSE){
   modalDialog(
     textInput(
@@ -83,6 +103,11 @@ dialog_topic_model_export <- function(failed= FALSE){
 }
 
 #' dialof classification export
+#' @param failed 
+#' 
+#' @return 
+#' @export
+#' @example 
 dialog_classification_export <- function(failed= FALSE){
   modalDialog(
     textInput(

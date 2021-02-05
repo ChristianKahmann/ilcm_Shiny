@@ -233,6 +233,11 @@ import_codebook <- function(codebook, name){
 }
 
 #' import function
+#' @param 
+#' 
+#' @return 
+#' @export
+#' @example 
 import_function <- function(){
   source("global/text_functions.R")
   source("global/log_to_file.R")

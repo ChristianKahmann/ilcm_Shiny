@@ -1,7 +1,10 @@
 #' dataframe - prepare dataframe for plain text selection
 #' @param dataframe
 #' 
-#' @return dataframe
+#' @return dataframe (body for plain text selection)
+#' 
+#' @export
+#' @example 
 DF_prepare_dataframe_for_plain_text_selection <- function(dataframe) {
   if (!"end_position" %in% colnames(dataframe)){
     dataframe$end_eosition <- str_count(dataframe$body)
@@ -13,6 +16,8 @@ DF_prepare_dataframe_for_plain_text_selection <- function(dataframe) {
 #' @param filename
 #' 
 #' @return 
+#' @export
+#' @example 
 DF_loadRData <- function(filename){
   load(filename)
   get(ls()[ls() != "filename"])
@@ -22,6 +27,8 @@ DF_loadRData <- function(filename){
 #' @param df
 #' 
 #' @return d (datframe consisting of: id_doc, dataset, global_doc_id, date, score)
+#' @export
+#' @example 
 DF_info_to_dataframe <- function(df){
   d <- data.frame(
     'id_doc'=df[[1]]$x....id_doc_i..
