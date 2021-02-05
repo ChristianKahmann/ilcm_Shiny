@@ -307,11 +307,13 @@ error<-try(expr = {
 }) 
 
 if(class(error)=="try-error"){
-  system(paste("mv ",logfile," collections/logs/failed/",sep=""))
-  try(
-    expr = {RMariaDB::dbDisconnect(mydb)},
-    silent=T
-  )
+  try({
+    system(paste("mv ",logfile," collections/logs/failed/",sep=""))
+  })
+  try({
+    RMariaDB::dbDisconnect(mydb)
+  })
+  log_to_file(message = "&emsp;<b style='color:red'>An error has occurred: </b>",file = stringr::str_replace(string = logfile,pattern = "running",replacement = "failed"))
   log_to_file(message=error[[1]],file = stringr::str_replace(string = logfile,pattern = "running",replacement = "failed"))
 }
 

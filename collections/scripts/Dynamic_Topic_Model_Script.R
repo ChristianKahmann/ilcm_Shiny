@@ -246,8 +246,9 @@ error<-try(expr = {
   log_to_file(message = "<b>Step 12/13: Calcualte Dynamic Topic Model</b>",file = logfile)
   library(gensimr)
   library(reticulate)
-  reticulate::use_python(python = "/home/rstudio/miniconda3/bin/python",required = T)
-  
+  #reticulate python path as specified in config_file.R
+  reticulate::use_python(python = reticulate_python_path,required = T)
+
   vocab<-colnames(dtm)
   texts_from_dtm<-list()
   log_to_file(message = "&emsp;Creating vocabulary vector",file = logfile)
@@ -326,8 +327,13 @@ error<-try(expr = {
 }) 
 
 if(class(error)=="try-error"){
-  system(paste("mv ",logfile," collections/logs/failed/",sep=""))
-  RMariaDB::dbDisconnect(mydb)
+  try({
+    system(paste("mv ",logfile," collections/logs/failed/",sep=""))
+  })
+  try({
+    RMariaDB::dbDisconnect(mydb)
+  })
+  log_to_file(message = "&emsp;<b style='color:red'>An error has occurred: </b>",file = stringr::str_replace(string = logfile,pattern = "running",replacement = "failed"))
   log_to_file(message=error[[1]],file = stringr::str_replace(string = logfile,pattern = "running",replacement = "failed"))
 }
 
