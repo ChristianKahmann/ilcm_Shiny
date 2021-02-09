@@ -1,4 +1,10 @@
 #' render table with finished results for vectorility analysis
+#' depends:
+#'   values$reload_deduplication_result: reload deduplication results after changes
+#'   values$collection_selected: selected collection to work with
+#'   values$Deduplication_Results_Files: all deduplication result files
+#'   values$tasks_deduplication: current deduplication task
+#'   values$results_deduplication: results from deduplication tasks
 output$Deduplication_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_deduplication_result

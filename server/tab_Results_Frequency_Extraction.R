@@ -1,4 +1,3 @@
-
 #' render table with finished results for Frequency extraction
 #' depends on: 
 #'   values$reload_fe_result: reload table if a result was deleted
