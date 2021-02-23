@@ -617,7 +617,13 @@ output$details_parameter<-renderUI({
                                                         uiOutput(outputId = "Det_meta_select_ui2")
       )
       panelValidation <- conditionalPanel(condition = 'input.tabBox_tm=="Validation"',
+                                          shinyWidgets::prettyRadioButtons(inputId = "Det_TM_validation_document_selection",label = "Document selection:",choices = c("independently","by topic likelihood"),selected = "by topic likelihood"),
+                                          conditionalPanel(condition = "input.Det_TM_validation_document_selection=='by topic likelihood'",
+                                                           numericInput(inputId="Det_TM_validation_document_selection_topic_likelihood_n",label="number of documents in selection",min=1,value=min(50,nrow(meta))),
+                                                           sliderInput(inputId = "Det_TM_validation_document_selection_topic_likelihood_t",label = "most relevants for which topic?",min = 1,value = 1,max = dim(phi)[1],step = 1)
+                                          ),
                                           selectizeInput(inputId = "Det_TM_validation_document",label="Document:",choices=NULL,multiple=F),
+                                          tags$hr(),
                                           sliderInput(inputId = "Det_TM_validation_topic",label = "Topic:",min = 1,value = 1,max = dim(phi)[1],step = 1),
                                           dropdownButton(status = "info",tooltip = "Options",icon=icon("gear"),
                                                          tags$h4("Options for validation colour scale"),
@@ -812,8 +818,37 @@ output$details_parameter<-renderUI({
 }
 )
 
-
-
+# update document selection in topic validation and document comparison
+observe({
+  validate(
+    need(!is.null(values$tm_theta),message=F)
+  )
+  choices_document_selection_by_topic_likelihood<-NULL
+  title_data<-values$tm_meta[,c("title","id_doc")]
+  title_data<-title_data[which(title_data[,"id_doc"]%in%rownames(values$tm_theta)),]
+  choices<-title_data$id_doc
+  names(choices)<-paste0(title_data$title," (",title_data$id_doc,")")
+  if(!is.null(input$Det_TM_validation_document_selection)){
+    if(input$Det_TM_validation_document_selection=='by topic likelihood'){
+      topic<-input$Det_TM_validation_document_selection_topic_likelihood_t
+      n<-input$Det_TM_validation_document_selection_topic_likelihood_n
+      theta<-values$tm_theta
+      most_likely_documents<-order(theta[,topic],decreasing = T)[1:n]
+      likelihoods<-theta[most_likely_documents,topic]
+      choices<-choices[most_likely_documents]
+      names(choices)<-paste0("(",round(likelihoods,digits = 2),") ",names(choices))
+      choices_document_selection_by_topic_likelihood<-choices
+    }
+  }
+  
+  if(is.null(choices_document_selection_by_topic_likelihood)){
+    updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = choices)
+  }
+  else{
+    updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = choices_document_selection_by_topic_likelihood)
+  }
+  updateSelectizeInput(session = session,inputId = "Det_TM_document_comparison_document",server = T,choices = choices)
+})
 ##########################################################################################
 #                                details_visu                                            #
 ##########################################################################################
@@ -880,17 +915,7 @@ output$details_visu<-renderUI({
   )
   if(!is.null(values$Details_Analysis)){
     if(values$Details_Analysis=="TM"){
-      validate(
-        need(!is.null(values$tm_theta),message=F)
-      )
-      title_data<-values$tm_meta[,c("title","id_doc")]
-      title_data<-title_data[which(title_data[,"id_doc"]%in%rownames(values$tm_theta)),]
-      choices<-title_data$id_doc
-      names(choices)<-paste0(title_data$title," (",title_data$id_doc,")")
-      updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = choices)
-      updateSelectizeInput(session = session,inputId = "Det_TM_document_comparison_document",server = T,choices = choices)
-      
-      
+
       #return visu for topic modeling
       tabPanelLDAVis <- tabPanel("LDA-Vis",
                                  #use the d3.js from ldavis library

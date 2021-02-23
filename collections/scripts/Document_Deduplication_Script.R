@@ -310,7 +310,8 @@ error<-try(expr = {
   }
   else{
     log_to_file(message = "<b>No candidate for a possible dublicate could be detected!</b>",file = logfile)
-    write_metadata_to_database(parameters)
+    stop("No candidate found. Therefore the task will be stopped now!")
+
   }
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))
   
