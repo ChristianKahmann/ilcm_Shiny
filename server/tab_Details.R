@@ -850,7 +850,12 @@ output$details_parameter<-renderUI({
 }
 )
 
-# update document selection in topic validation and document comparison
+#' update document selection in topic validation and document comparison
+#' depends on:
+#'    values$tm_theta: theta parameter from topic modelling
+#'    values$tm_meta: topic model meta data
+#'    input$Det_TM_validation_document_selection: detailed topic model information on validation of a selection of documents
+#'    input$Det_TM_validation_document_selection_topic_likelihood_t: topic likelihood parameter t for detailed topic modeling on a validated and selected number of documents
 observe({
   validate(
     need(!is.null(values$tm_theta),message=F)
@@ -884,7 +889,15 @@ observe({
 
 
 
-# update document selection in dynamic topic model  validation 
+#' update document selection in dynamic topic model  validation 
+#' depends on:
+#'   values$dtm_results: results from dynamic topic modeling
+#'   input$Det_DTM_validation_time: validation time for detailed dynamic topic modeling
+#'   values$dtm_meta: meta data from dynamic topic modeling
+#'   values$dtm_results_additional: additional results from dynamic topic modeling
+#'   input$Det_DTM_validation_document_selection: selected documents for validation for detailed dynamic topic modeling
+#'   input$Det_DTM_validation_document_selection_topic_likelihood_t: topic likelihood parameter t
+#'   input$Det_DTM_validation_document_selection_topic_likelihood_n: topic likelihood parameter n
 observe({
   validate(
     need(!is.null(values$dtm_results),message=F),
