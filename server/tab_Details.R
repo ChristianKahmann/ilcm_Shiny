@@ -108,6 +108,7 @@ output$details_parameter<-renderUI({
       values$dtm_results<-results
       values$dtm_meta<-meta
       values$dtm_results_additional<-results_additional
+      n_topics <- nrow(results[[1]][[2]])
       #values$Det_DTM_topic_importances<-NULL
       return(
         tagList(
@@ -125,7 +126,38 @@ output$details_parameter<-renderUI({
           conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Word Importance'",
                            selectizeInput(inputId = "Det_DTM_word_importance_Words",label="Words:",choices=NULL,multiple=T),
                            sliderInput(inputId = "Det_DTM_word_importance_topic",label = "Topic:",min=1,max=nrow(results[[1]][[2]]),step=1,value=1)
+          ),
+          conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Validation'",
+                           selectInput(inputId = "Det_DTM_validation_time",label = "Select Time Stamp to inspect documents from",choices=setNames(nm = results_additional$time_slice_names,
+                                                                                                                            object = 1:length(results))),
+                           shinyWidgets::prettyRadioButtons(inputId = "Det_DTM_validation_document_selection",label = "Document selection:",choices = c("independently","by topic likelihood"),selected = "by topic likelihood"),
+                           conditionalPanel(condition = "input.Det_DTM_validation_document_selection=='by topic likelihood'",
+                                            numericInput(inputId="Det_DTM_validation_document_selection_topic_likelihood_n",label="number of documents in selection",min=1,value=50),
+                                            sliderInput(inputId = "Det_DTM_validation_document_selection_topic_likelihood_t",label = "most relevants for which topic?",min = 1,value = 1,max =n_topics,step = 1)
+                           ),
+                           selectizeInput(inputId = "Det_DTM_validation_document",label="Document:",choices=NULL,multiple=F),
+                           tags$hr(),
+                           sliderInput(inputId = "Det_DTM_validation_topic",label = "Topic:",min = 1,value = 1,max = n_topics,step = 1),
+                           dropdownButton(status = "info",tooltip = "Options",icon=icon("gear"),
+                                          tags$h4("Options for validation colour scale"),
+                                          selectInput(inputId = "Det_DTM_validation_relevance_measure",label="Relevance measure",
+                                                      choices=c("word probability","estimated relative word frequency per topic","relevance score"),selected="estimated relative word frequency per topic",multiple=F),
+                                          conditionalPanel(condition="input.Det_DTM_validation_relevance_measure=='relevance score'",
+                                                           sliderInput(inputId="Det_DTM_validation_lambda",label="Lambda",min=0,max=1,step=0.01,value=0.25)
+                                          ),
+                                          conditionalPanel(condition="input.Det_DTM_validation_relevance_measure!='estimated relative word frequency per topic'",
+                                                           selectInput(inputId="Det_DTM_validation_minmax_gobal",label="scale colours with min and max value",choices=c("inside chosen document","inside chosen topic","over all topics"))
+                                          ),
+                                          checkboxInput(inputId="Det_DTM_validation_color_use_pie_colors",value=FALSE,label="Use pie chart colors for words"),
+                                          conditionalPanel(condition="input.Det_DTM_validation_color_use_pie_colors==false",
+                                                           colourpicker::colourInput(inputId="Det_DTM_validation_color_least_important","color for least important words",value="floralwhite"),
+                                                           colourpicker::colourInput(inputId="Det_DTM_validation_color_most_important","color for most important words",value="aquamarine")
+                                          )
+                           ),
+                           tags$hr(),
+                           uiOutput("Det_DTM_validation_metadata_UI")%>%withSpinner()            
           )
+          
         )
       )
     }
@@ -849,6 +881,49 @@ observe({
   }
   updateSelectizeInput(session = session,inputId = "Det_TM_document_comparison_document",server = T,choices = choices)
 })
+
+
+
+# update document selection in dynamic topic model  validation 
+observe({
+  validate(
+    need(!is.null(values$dtm_results),message=F),
+    need(!is.null(input$Det_DTM_validation_time),message=F)
+  )
+  vocab<-values$dtm_results[[1]][[5]]
+  updateSelectizeInput(session = session,inputId = "Det_DTM_word_importance_Words",server = T,choices = vocab)
+  
+  choices_document_selection_by_topic_likelihood<-NULL
+  title_data<-values$dtm_meta[,c("title","id_doc")]
+  #use chosen time period
+  relevant_documents<-which(values$dtm_results_additional$doc_belongings_to_time_slices==as.numeric(input$Det_DTM_validation_time))
+  title_data<-title_data[relevant_documents,]
+  theta<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[1]]
+  theta<-theta[relevant_documents,]
+  #title_data<-title_data[which(title_data[,"id_doc"]%in%rownames(theta)),]
+  choices<-title_data$id_doc
+  names(choices)<-paste0(title_data$title," (",title_data$id_doc,")")
+  if(!is.null(input$Det_DTM_validation_document_selection)){
+    if(input$Det_DTM_validation_document_selection=='by topic likelihood'){
+      topic<-input$Det_DTM_validation_document_selection_topic_likelihood_t
+      n<-input$Det_DTM_validation_document_selection_topic_likelihood_n
+      most_likely_documents<-order(theta[,topic],decreasing = T)[1:n]
+      likelihoods<-theta[most_likely_documents,topic]
+      choices<-choices[most_likely_documents]
+      names(choices)<-paste0("(",round(likelihoods,digits = 2),") ",names(choices))
+      choices_document_selection_by_topic_likelihood<-choices
+    }
+  }
+  
+  if(is.null(choices_document_selection_by_topic_likelihood)){
+    updateSelectizeInput(session = session,inputId = "Det_DTM_validation_document",server = T,choices = choices)
+  }
+  else{
+    updateSelectizeInput(session = session,inputId = "Det_DTM_validation_document",server = T,choices = choices_document_selection_by_topic_likelihood)
+  }
+})
+
+
 ##########################################################################################
 #                                details_visu                                            #
 ##########################################################################################
@@ -1450,8 +1525,6 @@ output$details_visu<-renderUI({
       )
     }
     if(values$Details_Analysis=="DTM"){
-      vocab<-values$dtm_results[[1]][[5]]
-      updateSelectizeInput(session = session,inputId = "Det_DTM_word_importance_Words",server = T,choices = vocab)
       return(
         tagList(
           tabBox(id="tabBox_dynamic_topic_model",width=12,
@@ -1481,6 +1554,9 @@ output$details_visu<-renderUI({
                           tags$br(),
                           plotlyOutput(outputId = "Det_DTM_word_importance_plot")%>%
                             withSpinner()
+                 ),
+                 tabPanel("Validation",
+                          uiOutput("DTM_validation_UI")
                  )
           )
         )

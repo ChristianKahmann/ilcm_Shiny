@@ -4246,7 +4246,7 @@ output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
 })
 
 click_pie_tm_validation<-reactive({
-  currentEcentData<-event_data(event = "plotly_click", source = "tm_validation_pie",session = session)
+  currentEventData<-event_data(event = "plotly_click", source = "tm_validation_pie",session = session)
 })
 
 #' change selected topic if user click on a topic in the pie chart
