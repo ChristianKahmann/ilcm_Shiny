@@ -29,6 +29,8 @@ output$download_phi<-downloadHandler(
 
 
 #' link downloadbutton for lda vis in Topic Models Tab
+#' depends on:
+#'   input$download_ldavis: information if download-button for lda vis was clicked
 observeEvent(input$download_ldavis,{
   screenshot(id = "TM_LDAvis",filename =  paste('LDAvis-', Sys.Date(), '.png', sep=''))
 })
