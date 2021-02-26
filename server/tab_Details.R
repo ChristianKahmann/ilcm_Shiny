@@ -536,6 +536,8 @@ output$details_parameter<-renderUI({
       values$tm_vocab<-vocab
       values$tm_json<-json
       values$tm_term.frequency<-term.frequency
+      load(paste0(values$Details_Data_TM,"/dtm_TM.RData"))	
+      values$Det_TM_dtm<-dtm	
       
       values$tm_meta<-meta
       mde_use<-colnames(meta_names[1,2:dim(meta_names)[2]])[which(!is.na(meta_names[1,2:dim(meta_names)[2]]))]
@@ -613,16 +615,24 @@ output$details_parameter<-renderUI({
                                       downloadButton(outputId = "download_theta",label = "theta",icon=icon("download")),
                                       tags$br(),
                                       tags$br(),
+                                      tags$hr(),	
+                                      shinyWidgets::materialSwitch(inputId = "Det_TM_top_countries_per_topic_high_low",label = "sort countries decreasing?",value = TRUE,status = "primary"),	
                                       #disbaled download of whole ldavis, because it cannot be opened in browser afterwards due to browser security reasons
                                       bsButton(inputId = "download_ldavis",label = "Screenshot lda vis",icon=icon("download"),style = "primary")
                                       
       )
-      panelEstWordFrequencies <- conditionalPanel(condition = 'input.tabBox_tm=="Estimated word frequencies"',
-                                                  selectizeInput(inputId = "Det_TM_ewf_word",label = "word:",choices =  NULL,multiple = T),
-                                                  materialSwitch(inputId = "Det_TM_emf_rel",label = "relative distribution over topics?",value = F),
-                                                  tags$br(),
-                                                  downloadButton(outputId = "download_rel_counts",label = "estimated frequencies",icon=icon("download"))
-      )
+      panelEstWordFrequencies <- conditionalPanel(condition = 'input.tabBox_tm=="Estimated word frequencies"',	
+                                                  selectizeInput(inputId = "Det_TM_ewf_word",label = "word:",choices =  NULL,multiple = T),	
+                                                  conditionalPanel(condition = 'input.Det_TM_words=="Frequencies"',	
+                                                                   materialSwitch(inputId = "Det_TM_emf_rel",label = "relative distribution over topics?",value = F),	
+                                                                   tags$br(),	
+                                                                   downloadButton(outputId = "download_rel_counts",label = "estimated frequencies",icon=icon("download"))	
+                                                  ),	
+                                                  conditionalPanel(condition = 'input.Det_TM_words=="Documents"',	
+                                                                   tags$hr(),	
+                                                                   selectizeInput(inputId = "Det_TM_word_frequencies_document",label="Document:",choices=NULL,multiple=F)	
+                                                  )	
+      )	
       panelCoherence <- conditionalPanel(condition = 'input.tabBox_tm=="Coherence"',
                                          sliderInput("TM_Coherence_runs", "Number of runs for interactive coherence measure", min = 5, max = 50, value = 10,step=1),
                                          sliderInput("TM_Coherence_setsize", "set size for interactive coherence measure", min = 3, max = values$tm_number_of_topics, value = 4,step = 1),
@@ -652,7 +662,7 @@ output$details_parameter<-renderUI({
                                           shinyWidgets::prettyRadioButtons(inputId = "Det_TM_validation_document_selection",label = "Document selection:",choices = c("independently","by topic likelihood"),selected = "by topic likelihood"),
                                           conditionalPanel(condition = "input.Det_TM_validation_document_selection=='by topic likelihood'",
                                                            numericInput(inputId="Det_TM_validation_document_selection_topic_likelihood_n",label="number of documents in selection",min=1,value=min(50,nrow(meta))),
-                                                           sliderInput(inputId = "Det_TM_validation_document_selection_topic_likelihood_t",label = "most relevants for which topic?",min = 1,value = 1,max = dim(phi)[1],step = 1)
+                                                           sliderInput(inputId = "Det_TM_validation_document_selection_topic_likelihood_t",label = "most relevant for which topic?",min = 1,value = 1,max = dim(phi)[1],step = 1)
                                           ),
                                           selectizeInput(inputId = "Det_TM_validation_document",label="Document:",choices=NULL,multiple=F),
                                           tags$hr(),
@@ -742,7 +752,12 @@ output$details_parameter<-renderUI({
                                                                         )
                                                                     )
                                                  )
-      )      
+      )     
+      panelDocumentTopicTopicConnection <- conditionalPanel(condition = 'input.tabBox_tm=="Topic Topic Connection"',	
+                                                            sliderInput(inputId = "Det_TM_topic_topic_connection_lambda",label = "lambda for topic labels",min=0,max=1,value=0.3),	
+                                                            numericInput(inputId = "Det_TM_topic_topic_connection_number_of_words",label = "number of words per topic label",min=1,max=20,value=8),	
+                                                            numericInput(inputId = "Det_TM_topic_topic_connection_threshold",label = "threshold",min=0,max=1,value=1/ncol(theta),step=0.001)	
+      )	
       
       if(length(list.files("collections/results/topic-model/"))>1){
         panelModelReproducibility <- conditionalPanel(condition = 'input.tabBox_tm=="Model Reproducibility"',
@@ -819,6 +834,7 @@ output$details_parameter<-renderUI({
           panelDocumentGrouping,
           panelModelReproducibility,
           panelTopicProportions,
+          panelDocumentTopicTopicConnection,
           panelSTM
         )
       }else{
@@ -838,7 +854,8 @@ output$details_parameter<-renderUI({
           panelDocumentClustering,
           panelDocumentGrouping,
           panelModelReproducibility,
-          panelTopicProportions
+          panelTopicProportions,
+          panelDocumentTopicTopicConnection
         )
       }
       return (returnValue)
@@ -860,6 +877,7 @@ observe({
   title_data<-title_data[which(title_data[,"id_doc"]%in%rownames(values$tm_theta)),]
   choices<-title_data$id_doc
   names(choices)<-paste0(title_data$title," (",title_data$id_doc,")")
+  classic_choices<-choices
   if(!is.null(input$Det_TM_validation_document_selection)){
     if(input$Det_TM_validation_document_selection=='by topic likelihood'){
       topic<-input$Det_TM_validation_document_selection_topic_likelihood_t
@@ -879,7 +897,8 @@ observe({
   else{
     updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = choices_document_selection_by_topic_likelihood)
   }
-  updateSelectizeInput(session = session,inputId = "Det_TM_document_comparison_document",server = T,choices = choices)
+  updateSelectizeInput(session = session,inputId = "Det_TM_document_comparison_document",server = T,choices = classic_choices)
+  updateSelectizeInput(session = session,inputId = "Det_TM_word_frequencies_document",server = T,choices = classic_choices)	
 })
 
 
@@ -995,17 +1014,29 @@ output$details_visu<-renderUI({
       tabPanelLDAVis <- tabPanel("LDA-Vis",
                                  #use the d3.js from ldavis library
                                  tags$script(src="d3.v3.js"),
-                                 LDAvis::visOutput('TM_LDAvis')
+                                 LDAvis::visOutput('TM_LDAvis'),	
+                                 tags$h4("Top Documents per Topic"),	
+                                 uiOutput("TM_Top_Documents_per_Topic_UI")	
       )
-      tabPanelEstWordFrequencies <-  tabPanel("Estimated word frequencies",
-                                              fluidRow(style="margin-left:0px;margin-right:0px",
-                                                       plotlyOutput(outputId = "TM_ewf_bar")
-                                              ),
-                                              tags$br(),
-                                              fluidRow(style="margin-left:0px;margin-right:0px",
-                                                       DT::dataTableOutput(outputId = "TM_ewf_table")
-                                              )
-      )
+      tabPanelEstWordFrequencies <-  tabPanel("Estimated word frequencies",	
+                                              tabsetPanel(id = "Det_TM_words",	
+                                                          tabPanel(title = "Frequencies",	
+                                                                   fluidRow(style="margin-left:0px;margin-right:0px",	
+                                                                            plotlyOutput(outputId = "TM_ewf_bar")	
+                                                                   ),	
+                                                                   tags$br(),	
+                                                                   fluidRow(style="margin-left:0px;margin-right:0px",	
+                                                                            DT::dataTableOutput(outputId = "TM_ewf_table")	
+                                                                   )	
+                                                          ),	
+                                                          tabPanel(title = "Document Occurrences",	
+                                                                   DT::dataTableOutput(outputId = "Det_TM_word_occurrences_table")	
+                                                          ),	
+                                                          tabPanel(title = "Documents",	
+                                                                   uiOutput(outputId = "Det_TM_word_occurrences_document_UI")	
+                                                          )	
+                                              )	
+      )	
       tabPanelDateDistribution <- tabPanel("Date distribution",
                                            plotlyOutput(outputId = "TM_Timeline"),
                                            DT::dataTableOutput(outputId = "TM_Subcollection_Table"),
@@ -1069,6 +1100,9 @@ output$details_visu<-renderUI({
         tabPanelReproducibility <- tabPanel("Model Reproducibility"
         )
       }
+      tabPanelTopicTopicConnection <- tabPanel("Topic Topic Connection",	
+                                               uiOutput("TM_topic_topic_connection_UI")	
+      )	
       # additional panels specific for stm
       # needs values$tm_parameters and values$tm_method to be set (via load parameters from file). This is currently performed in output$details_parameter above, so doesn't need to be performed again here
       if(values$tm_method == "stm"){
@@ -1244,7 +1278,8 @@ output$details_visu<-renderUI({
                  tabPanelDocumentOutlier,
                  tabPanelClustering,
                  tabPanelGrouping,
-                 tabPanelReproducibility
+                 tabPanelReproducibility,
+                 tabPanelTopicTopicConnection	
           )
         )
       }

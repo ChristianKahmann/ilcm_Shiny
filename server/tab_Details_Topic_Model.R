@@ -30,7 +30,7 @@ output$download_phi<-downloadHandler(
 
 #' link downloadbutton for lda vis in Topic Models Tab
 observeEvent(input$download_ldavis,{
-  screenshot(id = "TM_LDAvis",filename =  paste('LDAvis-', Sys.Date(), '.png', sep=''))
+  shinyscreenshot::screenshot(id = "TM_LDAvis",filename =  paste('LDAvis-', Sys.Date(), '.png', sep=''))
 })
 
 
@@ -5484,4 +5484,314 @@ output$Det_TM_proportion_plot<-renderPlotly({
   p <- layout(p,barmode="stack",legend=list(orientation="h",yanchor="bottom",xanchor="center",x=0.5,y=1))
   p
 })
+
+
+
+
+########################################################################
+##                  topic topic connection                            ##
+########################################################################
+
+
+output$TM_topic_topic_connection_UI<-renderUI({
+  relevance_matrix<-calculate_topic_relevance(lambda = input$Det_TM_topic_topic_connection_lambda,phi = values$tm_phi,theta = values$tm_theta,doc.length = values$tm_doc.length)
+  theta<-values$tm_theta
+  threshold_matrix<-theta
+  threshold_matrix[which(threshold_matrix>=input$Det_TM_topic_topic_connection_threshold)]<-1
+  threshold_matrix[which(threshold_matrix<input$Det_TM_topic_topic_connection_threshold)]<-0
+  
+  matrix_corrs_theta<-matrix(c(0),ncol(theta),ncol(theta))
+  matrix_corrs_thresh<-matrix(c(0),ncol(theta),ncol(theta))
+  
+  for(i in 1:nrow(matrix_corrs_theta)){
+    for(j in 1:ncol(matrix_corrs_theta)){
+      matrix_corrs_theta[i,j]<-cor(x = theta[,i],y = theta[,j])
+      matrix_corrs_thresh[i,j]<-cor(x = threshold_matrix[,i],y = threshold_matrix[,j])
+    }
+  }
+  diag(matrix_corrs_thresh)<-NA
+  diag(matrix_corrs_theta)<-NA
+  
+  values$Det_TM_topic_topic_connection_matrix_corrs_theta<-matrix_corrs_theta
+  values$Det_TM_topic_topic_connection_matrix_corrs_thresh<-matrix_corrs_thresh
+  
+  values$Det_TM_topic_topic_connection_matrix_theta<-theta
+  values$Det_TM_topic_topic_connection_matrix_thresh<-threshold_matrix
+  
+  
+  topic_labels<-NULL
+  for(i in 1:ncol(theta)){
+    topic_labels<-c(topic_labels,paste(names(sort(relevance_matrix[,i],decreasing=T)[1:input$Det_TM_topic_topic_connection_number_of_words]),collapse=", "))
+  }
+  
+  l1<-NULL
+  for(i in 1:ncol(theta)){
+    l1<-c(l1,rep(paste0("Topic:",i),ncol(theta)))
+  }
+  
+  dat <- expand.grid(x = topic_labels, y = topic_labels,stringsAsFactors = T)
+  dat$z <- c(matrix_corrs_theta)
+  dat$l1<-l1
+  dat$l2<-rep(paste("Topic:",1:ncol(theta)),ncol(theta))
+  values$Det_TM_topic_topic_connection_dat_theta<-dat
+  
+  dat_thresh <- expand.grid(x = topic_labels, y = topic_labels,stringsAsFactors = T)
+  dat_thresh$z <- c(matrix_corrs_thresh)
+  dat_thresh$l1<-l1
+  dat_thresh$l2<-rep(paste("Topic:",1:ncol(theta)),ncol(theta))
+  values$Det_TM_topic_topic_connection_dat_thresh<-dat_thresh
+  
+  return(tagList(
+    tags$h4("Topic Topic Correlation based on Theta Values"),
+    plotlyOutput(outputId = "Det_TM_topic_topic_connection_heatmap_theta"),
+    tags$h4("Topic Topic Correlation based on whether a documents exceeds set threshold"),
+    plotlyOutput(outputId = "Det_TM_topic_topic_connection_heatmap_thresh")
+  ))
+  
+  
+})
+
+
+output$Det_TM_topic_topic_connection_heatmap_theta<-plotly::renderPlotly({
+  validate(
+    need(!is.null(values$Det_TM_topic_topic_connection_dat_theta),message=F)
+  )
+  dat<-values$Det_TM_topic_topic_connection_dat_theta
+  colorscale <- as.list(1:100)
+  correlation<-values$Det_TM_topic_topic_connection_matrix_corrs_theta
+  colorlength <- 100
+  null_value <- (0 - min(correlation,na.rm = T)) / (max(correlation,na.rm = T) - min(correlation,na.rm = T))        
+  border <- as.integer(null_value * colorlength)
+  colorscale <- as.list(1:colorlength)
+  #colorscale below zero
+  s <- scales::seq_gradient_pal("blue", "white", "Lab")(seq(0,1,length.out=border))
+  for (i in 1:border) {
+    colorscale[[i]] <- c((i - 1) / colorlength, s[i])
+  }
+  #colorscale above zero
+  s <- scales::seq_gradient_pal("white", "red", "Lab")(seq(0,1,length.out=colorlength - border))
+  for (i in 1:(colorlength - border)) {
+    colorscale[[i + border]] <- c((i + border) / colorlength, s[i])
+  }
+  plotly::plot_ly(data = dat, x = ~l1, y = ~l2, z = ~z,type="heatmap", hoverinfo = 'text',source = "Det_TM_topic_topic_heatmap_theta",
+                  key=~z,
+                  colorscale = colorscale, colorbar=list(len=1,limits=c(-1,1)),
+                  text = ~paste("<br> Topic Y:</br>", dat$x,
+                                "<br> Topic X:</br>", dat$y,
+                                "<br> correlation:</br>", round(dat$z,digits = 3)))%>%
+    layout(xaxis = list(categoryorder = "trace",title=""),yaxis = list(categoryorder = "trace",title=""))
+})
+
+
+observe({
+  a<-event_data("plotly_click", source = "Det_TM_topic_topic_heatmap_theta")
+  validate(
+    need(!is.null(a),message = F)
+  )
+  x<-as.numeric(stringr::str_remove_all(string = a$x,pattern = "Topic:"))
+  y<-as.numeric(stringr::str_remove_all(string = a$y,pattern = "Topic:"))
+  data<-isolate(values$Det_TM_topic_topic_connection_matrix_theta[,c(x,y)])
+  rownames(data)<-values$tm_meta[,"title"]
+  colnames(data)[1]<-a$x
+  colnames(data)[2]<-a$y
+  showModal(
+    modalDialog(size = "l",
+                tags$h4("Distributions for chosen Topic Pair"),
+                plot_ly(z=t(data),x=rownames(data),y=colnames(data),type="heatmap")%>%
+                  layout(margin=list(b=200))
+                
+    )
+  )
+})
+
+
+output$Det_TM_topic_topic_connection_heatmap_thresh<-plotly::renderPlotly({
+  validate(
+    need(!is.null(values$Det_TM_topic_topic_connection_dat_thresh),message=F)
+  )
+  dat<-values$Det_TM_topic_topic_connection_dat_thresh
+  colorscale <- as.list(1:100)
+  correlation<-values$Det_TM_topic_topic_connection_matrix_corrs_thresh
+  colorlength <- 100
+  null_value <- (0 - min(correlation,na.rm = T)) / (max(correlation,na.rm = T) - min(correlation,na.rm = T))        
+  border <- as.integer(null_value * colorlength)
+  colorscale <- as.list(1:colorlength)
+  #colorscale below zero
+  s <- scales::seq_gradient_pal("blue", "white", "Lab")(seq(0,1,length.out=border))
+  for (i in 1:border) {
+    colorscale[[i]] <- c((i - 1) / colorlength, s[i])
+  }
+  #colorscale above zero
+  s <- scales::seq_gradient_pal("white", "red", "Lab")(seq(0,1,length.out=colorlength - border))
+  for (i in 1:(colorlength - border)) {
+    colorscale[[i + border]] <- c((i + border) / colorlength, s[i])
+  }
+  plotly::plot_ly(data = dat, x = ~l1, y = ~l2, z = ~z,type="heatmap", hoverinfo = 'text',source = "Det_TM_topic_topic_heatmap_thresh",
+                  key=~z,
+                  colorscale = colorscale, colorbar=list(len=1,limits=c(-1,1)),
+                  text = ~paste("<br> Topic Y:</br>", dat$x,
+                                "<br> Topic X:</br>", dat$y,
+                                "<br> correlation:</br>", round(dat$z,digits = 3)))%>%
+    layout(xaxis = list(categoryorder = "trace",title=""),yaxis = list(categoryorder = "trace",title=""))
+})
+
+
+observe({
+  a<-event_data("plotly_click", source = "Det_TM_topic_topic_heatmap_thresh")
+  validate(
+    need(!is.null(a),message = F)
+  )
+  x<-as.numeric(stringr::str_remove_all(string = a$x,pattern = "Topic:"))
+  y<-as.numeric(stringr::str_remove_all(string = a$y,pattern = "Topic:"))
+  data<-isolate(values$Det_TM_topic_topic_connection_matrix_thresh[,c(x,y)])
+  rownames(data)<-values$tm_meta[,"title"]
+  colnames(data)[1]<-a$x
+  colnames(data)[2]<-a$y
+  showModal(
+    modalDialog(size = "l",
+                tags$h4("Distributions for chosen Topic Pair"),
+                plot_ly(z=t(data),x=rownames(data),y=colnames(data),type="heatmap")%>%
+                  layout(margin=list(b=200))
+                
+    )
+  )
+})
+
+
+# Top Documents per Topic under LDAVis
+
+output$TM_Top_Documents_per_Topic_UI<-renderUI({
+  theta<-values$tm_theta
+  meta<-values$TM_meta
+  data<-data.frame(matrix(c(0),ncol(theta),10))
+  colnames(data)[1:5]<-paste0("Rank ", 1:5)
+  rownames(data)<-paste0("Topic  ",1:ncol(theta))
+  for(i in 1:ncol(theta)){
+    if(input$Det_TM_top_countries_per_topic_high_low==TRUE){
+      top_documents<-order(theta[,i],decreasing=T)[1:5]
+    }
+    else{
+      top_documents<-order(theta[,i],decreasing=F)[1:5]
+    }
+    titles<-meta[top_documents,"title"]
+    top_values<-theta[top_documents,i]
+    data[i,1:5]<-paste0("<b>",titles,"</b> (",round(top_values,digits = 2),")")
+    data[i,6:10]<-top_values
+  }
+  values$TM_Top_Documents_per_Topic_Data<-data
+  return(DT::dataTableOutput(outputId ="TM_Top_Documents_per_Topic_Table" ))  
+})
+
+
+output$TM_Top_Documents_per_Topic_Table<-DT::renderDataTable({
+  validate(
+    need(!is.null(values$TM_Top_Documents_per_Topic_Data),message=F)
+  )
+  data<-values$TM_Top_Documents_per_Topic_Data
+  datatable(data=data,escape = F,selection = "none",class = 'cell-border stripe',options=list(autowidth=FALSE,pageLength = ncol(values$tm_theta),dom="t",columnDefs = list(list(visible=FALSE, targets=6:10))))%>%
+    formatStyle(columns = 1:5,valueColumns = 6:10,target = "cell",
+                background = styleColorBar(range(data[,6:10]), 'aquamarine',angle = -90),
+                backgroundSize = '98% 88%',
+                backgroundRepeat = 'no-repeat',
+                backgroundPosition = 'center')
+  
+})
+
+
+
+
+
+#############################################################
+#                   word occurrences                        #
+#############################################################
+
+output$Det_TM_word_occurrences_table<-DT::renderDataTable({
+  validate(
+    need(length(input$Det_TM_ewf_word)>0,message="Please specify atleast one word")
+  )
+  dtm<-values$Det_TM_dtm
+  input$Det_TM_ewf_word
+  if(length(input$Det_TM_ewf_word)==1){
+    present<-which(dtm[,input$Det_TM_ewf_word]>0)
+  }
+  else{
+    present<-which(rowSums(dtm[,input$Det_TM_ewf_word,drop=F])>0)
+  }
+  dtm_reduced<-as.matrix(dtm[present,input$Det_TM_ewf_word,drop=F])
+  dtm_reduced<-dtm_reduced[order(rowSums(dtm_reduced),decreasing=T),,drop=F]
+  dtm_reduced<-cbind(rownames(dtm_reduced),dtm_reduced)
+  dtm_reduced[,1]<-unlist(lapply(dtm_reduced[,1],FUN = function(x){
+    values$TM_meta$title[which(values$TM_meta$id_doc==x)]
+  }))
+  
+  colnames(dtm_reduced)[1]<-"Document"
+  values$Det_TM_word_occurrences_table_data<-dtm_reduced
+  datatable(data = dtm_reduced,rownames = F,selection = "single")
+})
+
+
+observe({
+  s = input$Det_TM_word_occurrences_table_rows_selected
+  if (length(s)) {
+    doc_id<-rownames(values$Det_TM_word_occurrences_table_data)[s]
+    updateSelectizeInput(session = session,inputId = "Det_TM_word_frequencies_document",selected = doc_id)
+    updateTabsetPanel(session = session,
+                      inputId = "Det_TM_words",
+                      selected = "Documents")
+  }
+})
+
+
+output$Det_TM_word_occurrences_document_UI<-renderUI({
+  validate(
+    need(
+      !is.null(input$Det_TM_word_frequencies_document),message=FALSE
+    ),
+    need(
+      input$Det_TM_word_frequencies_document!="",message="please choose a document"
+    )
+  )
+  identifier<-stringr::str_split(string = input$Det_TM_word_frequencies_document,pattern = "_",simplify = T)
+  dataset<-identifier[1]
+  doc_id<-identifier[2]
+  token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
+  
+  load(paste0(values$Details_Data_TM,"/parameters.RData"))
+  space_ids<-which(token[,"pos"]=="SPACE")
+  if(length(space_ids)>0){
+    token<-token[-space_ids,]
+  }
+  if(parameters$baseform_reduction=="none"){
+    features<-tolower(token[,"word"])  
+  }
+  if(parameters$baseform_reduction=="lemma"){
+    features<-tolower(token[,"lemma"])  
+  }
+  if(parameters$baseform_reduction=="stemming"){
+    features<-tolower(quanteda::tokens_wordstem(quanteda::tokens(paste(token[,"word"],collapse=" ")),lang)$text1)
+  }
+  token<-cbind(token,features)
+  token<-cbind(1:dim(token)[1],token)
+  token<-cbind(token,match=rep(FALSE,nrow(token)))
+  token[which(features%in%input$Det_TM_ewf_word),"match"]<-TRUE
+  
+  strings<-apply(token,MARGIN = 1,FUN = function(x){
+    if("FALSE"==(x["match"])){
+      return(x["word"])
+    }
+    else{
+      return( paste0('<font style="background-color:','#74c1fc"','>',x["word"],'</font>'))
+    }
+  })
+  
+  document<-list()
+  for(i in 1:dim(token)[1]){
+    document[[i]]<-paste0("<span span_nr='",i,"'>",strings[i],"</span>")
+  }
+  document<-do.call(rbind,document)
+  document<-HTML(document)
+  tags$p(document)
+  
+})
+
 
