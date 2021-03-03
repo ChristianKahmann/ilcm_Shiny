@@ -129,7 +129,7 @@ output$details_parameter<-renderUI({
           ),
           conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Validation'",
                            selectInput(inputId = "Det_DTM_validation_time",label = "Select Time Stamp to inspect documents from",choices=setNames(nm = results_additional$time_slice_names,
-                                                                                                                            object = 1:length(results))),
+                                                                                                                                                  object = 1:length(results))),
                            shinyWidgets::prettyRadioButtons(inputId = "Det_DTM_validation_document_selection",label = "Document selection:",choices = c("independently","by topic likelihood"),selected = "by topic likelihood"),
                            conditionalPanel(condition = "input.Det_DTM_validation_document_selection=='by topic likelihood'",
                                             numericInput(inputId="Det_DTM_validation_document_selection_topic_likelihood_n",label="number of documents in selection",min=1,value=50),
@@ -867,12 +867,7 @@ output$details_parameter<-renderUI({
 }
 )
 
-#' update document selection in topic validation and document comparison
-#' depends on:
-#'    values$tm_theta: theta parameter from topic modelling
-#'    values$tm_meta: topic model meta data
-#'    input$Det_TM_validation_document_selection: detailed topic model information on validation of a selection of documents
-#'    input$Det_TM_validation_document_selection_topic_likelihood_t: topic likelihood parameter t for detailed topic modeling on a validated and selected number of documents
+# update document selection in topic validation and document comparison
 observe({
   validate(
     need(!is.null(values$tm_theta),message=F)
@@ -908,15 +903,7 @@ observe({
 
 
 
-#' update document selection in dynamic topic model  validation 
-#' depends on:
-#'   values$dtm_results: results from dynamic topic modeling
-#'   input$Det_DTM_validation_time: validation time for detailed dynamic topic modeling
-#'   values$dtm_meta: meta data from dynamic topic modeling
-#'   values$dtm_results_additional: additional results from dynamic topic modeling
-#'   input$Det_DTM_validation_document_selection: selected documents for validation for detailed dynamic topic modeling
-#'   input$Det_DTM_validation_document_selection_topic_likelihood_t: topic likelihood parameter t
-#'   input$Det_DTM_validation_document_selection_topic_likelihood_n: topic likelihood parameter n
+# update document selection in dynamic topic model  validation 
 observe({
   validate(
     need(!is.null(values$dtm_results),message=F),
@@ -1022,7 +1009,7 @@ output$details_visu<-renderUI({
   )
   if(!is.null(values$Details_Analysis)){
     if(values$Details_Analysis=="TM"){
-
+      
       #return visu for topic modeling
       tabPanelLDAVis <- tabPanel("LDA-Vis",
                                  #use the d3.js from ldavis library
@@ -1811,8 +1798,3 @@ source(file.path("server","tab_Details_Dynamic_Topic_Model.R"),local = T)$value
 outputOptions(output,"details_visu",suspendWhenHidden=FALSE)
 outputOptions(output,"TM_LDAvis",suspendWhenHidden=FALSE)
 outputOptions(output,"Det_DTM_LDAvis",suspendWhenHidden=FALSE)
-
-
-
-
-

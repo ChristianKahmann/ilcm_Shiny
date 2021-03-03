@@ -1421,6 +1421,8 @@ observeEvent(input$TM_dict_save,{
 ######################################################################
 
 #' output for metadata information
+#' depends on:
+#'   values$Details_Data_TM: details for data of topic models
 output$TM_meta_ui<-renderUI({
   validate(
     need(file.exists(paste0(values$Details_Data_TM,"/meta_TM.RData")),message="no detailed metadata analyis selected in task scheduler")
@@ -5494,7 +5496,20 @@ output$Det_TM_proportion_plot<-renderPlotly({
 ##                  topic topic connection                            ##
 ########################################################################
 
-
+#' visualuzation for topic topic connection
+#' depends on:
+#'   input$Det_TM_topic_topic_connection_lambda: detailed topic modeling parameter lambda for topic topic connection
+#'   values$tm_phi: topic model phi
+#'   values$tm_theta: topic model theta
+#'   values$tm_doc.length: topic model document length
+#'   input$Det_TM_topic_topic_connection_threshold: threshold for topic-topic connection
+#'   values$Det_TM_topic_topic_connection_matrix_corrs_theta: topic-topic connection matrix for correlation theta parameter
+#'   values$Det_TM_topic_topic_connection_matrix_corrs_thresh: topic-topic connection matrix for correlation threshold
+#'   values$Det_TM_topic_topic_connection_matrix_theta: topic-topic connection matrix for parameter theta
+#'   values$Det_TM_topic_topic_connection_matrix_thresh: topic-topic connection matrix for threshold
+#'   input$Det_TM_topic_topic_connection_number_of_words: number of words for topic-topic connection
+#'   values$Det_TM_topic_topic_connection_dat_theta: dat parameter for topic topic connection
+#'   values$Det_TM_topic_topic_connection_dat_thresh: dat threshold for topic topic connection
 output$TM_topic_topic_connection_UI<-renderUI({
   relevance_matrix<-calculate_topic_relevance(lambda = input$Det_TM_topic_topic_connection_lambda,phi = values$tm_phi,theta = values$tm_theta,doc.length = values$tm_doc.length)
   theta<-values$tm_theta
@@ -5553,7 +5568,10 @@ output$TM_topic_topic_connection_UI<-renderUI({
   
 })
 
-
+#' topic-topic connnection heatmap theta
+#' depends on:
+#'   values$Det_TM_topic_topic_connection_dat_theta: dat theta for topic topic connection
+#'   values$Det_TM_topic_topic_connection_matrix_corrs_theta: topic topic connection matrix for corresponding theta
 output$Det_TM_topic_topic_connection_heatmap_theta<-plotly::renderPlotly({
   validate(
     need(!is.null(values$Det_TM_topic_topic_connection_dat_theta),message=F)
@@ -5606,7 +5624,10 @@ observe({
   )
 })
 
-
+#' topic-topic connection threshold for heatmap
+#' depends on:
+#'   values$Det_TM_topic_topic_connection_dat_thresh: dat threshold for topic-topic connection
+#'   values$Det_TM_topic_topic_connection_matrix_corrs_thresh: detailed topic modelling for topic-topic connection matrix and corresponding threshold 
 output$Det_TM_topic_topic_connection_heatmap_thresh<-plotly::renderPlotly({
   validate(
     need(!is.null(values$Det_TM_topic_topic_connection_dat_thresh),message=F)
@@ -5660,8 +5681,12 @@ observe({
 })
 
 
-# Top Documents per Topic under LDAVis
-
+#' Top Documents per Topic under LDAVis
+#' depends on:
+#'   values$tm_theta:topic model theta
+#'   values$TM_meta: topic model meta data
+#'   input$Det_TM_top_countries_per_topic_high_low: data from detailed topic modelling for top countries per topic seperated in high and low
+#'   values$TM_Top_Documents_per_Topic_Data: topic modeling information about top documents per topic
 output$TM_Top_Documents_per_Topic_UI<-renderUI({
   theta<-values$tm_theta
   meta<-values$TM_meta
@@ -5684,7 +5709,10 @@ output$TM_Top_Documents_per_Topic_UI<-renderUI({
   return(DT::dataTableOutput(outputId ="TM_Top_Documents_per_Topic_Table" ))  
 })
 
-
+#' visualize top documents per topic table
+#' depends on: 
+#'   values$TM_Top_Documents_per_Topic_Data: topic model data for top documents per topic
+#'   values$tm_theta: topic model theta
 output$TM_Top_Documents_per_Topic_Table<-DT::renderDataTable({
   validate(
     need(!is.null(values$TM_Top_Documents_per_Topic_Data),message=F)
@@ -5707,6 +5735,12 @@ output$TM_Top_Documents_per_Topic_Table<-DT::renderDataTable({
 #                   word occurrences                        #
 #############################################################
 
+#' visualize detailed topic model word cooccurrence
+#' depends on: 
+#'   values$Det_TM_dtm: detailed topic model document term matrix
+#'   input$Det_TM_ewf_word: detailed topic model for ewf words
+#'   values$TM_meta: topic model meta data
+#'   values$Det_TM_word_occurrences_table_data: detailed topic model data for word occurrence table
 output$Det_TM_word_occurrences_table<-DT::renderDataTable({
   validate(
     need(length(input$Det_TM_ewf_word)>0,message="Please specify atleast one word")
@@ -5731,7 +5765,10 @@ output$Det_TM_word_occurrences_table<-DT::renderDataTable({
   datatable(data = dtm_reduced,rownames = F,selection = "single")
 })
 
-
+#' observe which rows of the word occurrence table from detailed topic modeling are selected
+#' depends on:
+#'   input$Det_TM_word_occurrences_table_rows_selected: selected rows from user in the word occurrence table
+#'   values$Det_TM_word_occurrences_table_data: all of the word occurrence table data
 observe({
   s = input$Det_TM_word_occurrences_table_rows_selected
   if (length(s)) {
@@ -5743,7 +5780,12 @@ observe({
   }
 })
 
-
+#' visualize the word occurrence in documents
+#' depends on:
+#'   input$Det_TM_word_frequencies_document: detailed topic model word frequency in documents
+#'   values$host: selected host
+#'   values$port: selected port
+#'   values$Details_Data_TM: detailed data for topic models 
 output$Det_TM_word_occurrences_document_UI<-renderUI({
   validate(
     need(
