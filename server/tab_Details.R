@@ -129,7 +129,7 @@ output$details_parameter<-renderUI({
           ),
           conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Validation'",
                            selectInput(inputId = "Det_DTM_validation_time",label = "Select Time Stamp to inspect documents from",choices=setNames(nm = results_additional$time_slice_names,
-                                                                                                                            object = 1:length(results))),
+                                                                                                                                                  object = 1:length(results))),
                            shinyWidgets::prettyRadioButtons(inputId = "Det_DTM_validation_document_selection",label = "Document selection:",choices = c("independently","by topic likelihood"),selected = "by topic likelihood"),
                            conditionalPanel(condition = "input.Det_DTM_validation_document_selection=='by topic likelihood'",
                                             numericInput(inputId="Det_DTM_validation_document_selection_topic_likelihood_n",label="number of documents in selection",min=1,value=50),
@@ -1009,7 +1009,7 @@ output$details_visu<-renderUI({
   )
   if(!is.null(values$Details_Analysis)){
     if(values$Details_Analysis=="TM"){
-
+      
       #return visu for topic modeling
       tabPanelLDAVis <- tabPanel("LDA-Vis",
                                  #use the d3.js from ldavis library
@@ -1798,8 +1798,3 @@ source(file.path("server","tab_Details_Dynamic_Topic_Model.R"),local = T)$value
 outputOptions(output,"details_visu",suspendWhenHidden=FALSE)
 outputOptions(output,"TM_LDAvis",suspendWhenHidden=FALSE)
 outputOptions(output,"Det_DTM_LDAvis",suspendWhenHidden=FALSE)
-
-
-
-
-
