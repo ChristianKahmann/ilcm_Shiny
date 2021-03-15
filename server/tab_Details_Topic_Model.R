@@ -5365,6 +5365,7 @@ output$TM_topic_proportions_UI<-renderUI({
     dates<-substr(dates,0,11)
   }
   unique_dates <- unique(dates)
+  unique_dates<-unique_dates[order(unique_dates,decreasing = F)]
   doc_belongings_to_time_slices<-rep(0,nrow(theta))
   time_slices <- NULL 
   time_slice_names<-NULL
@@ -5385,7 +5386,7 @@ output$TM_topic_proportions_UI<-renderUI({
         }
         
       }
-      time_slices<-c(time_slices,length(which(dates%in%unique_dates[(i*n):min(length(unique_dates),(((i+1)*n)-1))])))
+      time_slices<-c(time_slices,length(which(dates%in%unique_dates[(((i-1)*n)+1):min(length(unique_dates),(((i)*n)))])))
       doc_belongings_to_time_slices[which(dates%in%unique_dates[(((i-1)*n)+1):min(length(unique_dates),(((i)*n)))])]<-i
     }
   }

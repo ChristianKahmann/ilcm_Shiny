@@ -2801,6 +2801,8 @@ observeEvent(input$Upload_Data_DB_and_Solr,{
         rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_date (dataset, date) values ",paste(sprintf("('%s', '%s')", dates[,1], dates[,2]), collapse=', ') ,";"))
         #token
         token<-unique(data[,7])
+        token<-as.numeric(token)
+        token<-token[which(!is.na(token))]
         token<-cbind(rep(data[1,2],length(token)),token)
         rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, token) values ",paste(sprintf("('%s', %s)", token[,1], token[,2]), collapse=', ') ,";"))
         #mde1 
