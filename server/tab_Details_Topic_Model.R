@@ -5603,7 +5603,10 @@ output$Det_TM_topic_topic_connection_heatmap_theta<-plotly::renderPlotly({
     layout(xaxis = list(categoryorder = "trace",title=""),yaxis = list(categoryorder = "trace",title=""))
 })
 
-
+#' plotting topic-topic correlation heatmap for theta parameter
+#' depends on:
+#'   values$Det_TM_topic_topic_connection_matrix_theta: topic-topic connection matrix for parameter theta
+#'   values$tm_meta: topic model meta data
 observe({
   a<-event_data("plotly_click", source = "Det_TM_topic_topic_heatmap_theta")
   validate(
@@ -5659,7 +5662,10 @@ output$Det_TM_topic_topic_connection_heatmap_thresh<-plotly::renderPlotly({
     layout(xaxis = list(categoryorder = "trace",title=""),yaxis = list(categoryorder = "trace",title=""))
 })
 
-
+#' observe topic-topic heatmap threshold
+#' depends on: 
+#'   values$Det_TM_topic_topic_connection_matrix_thresh: topic topic connection matrix threshold
+#'   values$tm_meta: topic model meta data
 observe({
   a<-event_data("plotly_click", source = "Det_TM_topic_topic_heatmap_thresh")
   validate(

@@ -2123,7 +2123,6 @@ output$Import_mtf_metadata_names_warning<-renderUI({
 #' render meta data table of mtf
 #' depends on:
 #'   values$Import_mtf_metadatanames_data: mft metadata names
-#'   
 output$Import_mtf_metadatanames_table<-DT::renderDataTable({
   data =values$Import_mtf_metadatanames_data
   validate(
@@ -2445,7 +2444,22 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
   }
 })
 
-# if confirm to continue with empty body is clicked run import script anyway
+#' if confirm to continue with empty body is clicked run import script anyway
+#' depends on:
+#'   input$confirm_empty_body_mtf_db: confirmation that the script has an empty body and is loading to the database anyway
+#'   values$Import_mtf_meta_complete: complete meta data from script
+#'   input$Import_mtf_dataset: import instruction for mtf dataset
+#'   input$UI_Import_name_mde1_mtf: set name of mde1
+#'   input$UI_Import_name_mde2_mtf: set name of mde2
+#'   input$UI_Import_name_mde3_mtf: set name of mde3
+#'   input$UI_Import_name_mde4_mtf: set name of mde4
+#'   input$UI_Import_name_mde5_mtf: set name of mde5
+#'   input$UI_Import_name_mde6_mtf: set name of mde6
+#'   input$UI_Import_name_mde7_mtf: set name of mde7
+#'   input$UI_Import_name_mde8_mtf: set name of mde8
+#'   input$UI_Import_name_mde9_mtf: set name of mde9
+#'   input$Import_mtf_slow_mode: checks if slow mode for mtf is activated
+#'   input$Import_mtf_date_format: date format from mtf
 observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_db,{
   if(input$confirm_empty_body_mtf_db){
     data<-values$Import_mtf_meta_complete
@@ -2500,7 +2514,18 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_db,{
     shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success",closeOnEsc = T)
   }
 })
-
+#' sanity check for the imported script
+#' depends on: 
+#'   input$Import_mtf_sanity_check: sanity check order to initiate checking
+#'   input$Import_mtf_mde1: import mtf column mde1
+#'   input$Import_mtf_mde2: import mtf column mde2
+#'   input$Import_mtf_mde3: import mtf column mde3
+#'   input$Import_mtf_mde4: import mtf column mde4
+#'   input$Import_mtf_mde5: import mtf column mde5
+#'   input$Import_mtf_mde6: import mtf column mde6
+#'   input$Import_mtf_mde7: import mtf column mde7
+#'   input$Import_mtf_mde8: import mtf column mde8
+#'   input$Import_mtf_mde9: import mtf column mde9
 observeEvent(input$Import_mtf_sanity_check,{
   data_check_choices <- c("body", "id_doc", "title", "date")
   if(input$Import_mtf_mde1 != "not required"){
@@ -2545,7 +2570,9 @@ observe({
 ########################################
 #            DB & SOLR                 #
 ########################################
-
+#' render visulization to import files 
+#' depends on:
+#'   values$import_files_changed: import files that changes
 output$Import_Files_UI<-renderUI({
   values$import_files_changed
   return(
@@ -2574,7 +2601,13 @@ output$Import_Files_UI<-renderUI({
 
 
 
-
+#' observing the process of loading the data into the database
+#' depends on:
+#'   input$Upload_Data: data to upload
+#'   input$Import_Files: files to import
+#'   values$host: selected host for database connection
+#'   values$db_port: selected database port
+#'   values$update_datasets_avaiable: update list of avaiable datasets
 observeEvent(input$Upload_Data,{
   #check if already imported
   withBusyIndicatorServer("Upload_Data", {
@@ -2732,6 +2765,10 @@ observeEvent(input$Upload_Data,{
   })
 })
 
+#' load data to solr query
+#' depends on:
+#'   input$Import_to_solr: start command to load query to solr query
+#'   values$solr_url: used solr url
 observeEvent(input$Import_to_solr,{
   #import data to solr
   withBusyIndicatorServer("Import_to_solr", {
@@ -2747,7 +2784,13 @@ observeEvent(input$Import_to_solr,{
   })
 })
 
-
+#' upload the data to the database and solr query
+#' depends on:
+#'   input$Upload_Data_DB_and_Solr: initiate the upload
+#'   input$Import_Files: files to import
+#'   values$host: selected host
+#'   values$db_port: selected database port
+#'   values$update_datasets_avaiable: update list of available datasets 
 observeEvent(input$Upload_Data_DB_and_Solr,{
   withBusyIndicatorServer("Upload_Data_DB_and_Solr",{
     if(is.null(input$Import_Files)){
@@ -2920,11 +2963,15 @@ observeEvent(input$Upload_Data_DB_and_Solr,{
 
 
 
-
+#' observe if user wants to delete the selected import files
+#' depends on:
+#'   input$Import_delete: delete command for imported files 
 observeEvent(input$Import_delete,{
   shinyWidgets::confirmSweetAlert(session = session,inputId = "confirm_delete_import",type = "warning",title = "Are you sure you want to delete the selected input files",danger_mode = T)
 })
-
+#' cofirm to delete the import files
+#' depends on: 
+#'   input$confirm_delete_import: user confirms to delete the import files
 observeEvent(input$confirm_delete_import,{
   if(isTRUE(input$confirm_delete_import)){
     file.remove(list.files(path = "data_import/processed_data/",pattern = input$Import_Files, full.names = T))
