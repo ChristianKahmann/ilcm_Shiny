@@ -276,6 +276,27 @@ output$Det_DTM_word_importance_plot<-renderPlotly({
 #'   input$Det_DTM_validation_color_most_important: detailed topic model validation colour for most important values
 #'   input$Det_DTM_validation_color_use_pie_colors: validation color to use in pie chart for detailed topic models 
 output$DTM_validation_UI<-renderUI({
+  return(
+    tagList(
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(4,
+                      tags$br(),
+                      plotly::plotlyOutput("Det_DTM_validation_document_topic_pie"),
+                      tags$h4("Most relevant words for chosen topic"),
+                      wordcloud2Output(outputId = "Det_DTM_validation_wordcloud")
+               ),
+               column(8,
+                      tags$br(),
+                      uiOutput("Det_DTM_Validation_Document")
+               )
+      )
+      
+    ) 
+  )
+})
+
+
+output$Det_DTM_Validation_Document<-renderUI({
   validate(
     need(
       !is.null(input$Det_DTM_validation_document),message=FALSE
@@ -315,7 +336,7 @@ output$DTM_validation_UI<-renderUI({
   doc.length<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[3]]
   doc.length<-doc.length[relevant_documents]
   vocab<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[5]]
-
+  
   values$DTM_rel_counts <- round((colSums(theta * doc.length))*phi,digits = 2)
   
   if(input$Det_DTM_validation_relevance_measure=="estimated relative word frequency per topic"){
@@ -405,30 +426,23 @@ output$DTM_validation_UI<-renderUI({
   }
   document<-do.call(rbind,document)
   document<-HTML(document)
-  return(
-    tagList(
-      fluidRow(style="margin-left:0px;margin-right:0px",
-               column(4,
-                      tags$br(),
-                      plotly::plotlyOutput("Det_DTM_validation_document_topic_pie"),
-                      tags$h4("Most relevant words for chosen topic"),
-                      wordcloud2Output(outputId = "Det_DTM_validation_wordcloud")
-               ),
-               column(8,
-                      tags$br(),
-                      tags$p(document)
-               )
-      )
-      
-    ) 
-  )
+  tags$p(document)
+  
+  
 })
+
+
 
 
 #' wordcloud showing the relevant words for the chosen topic
 #' depends on:
 #'  input$Det_DTM_validation_topic: choosen topic from detailed topic models for validation
 output$Det_DTM_validation_wordcloud <- wordcloud2::renderWordcloud2({
+  validate(
+    need(
+      !is.null(input$Det_DTM_validation_topic),message=FALSE
+    )
+  )
   # @values$DTM_relevance calculated with lamda= 0.3
   relevant_documents<-which(values$dtm_results_additional$doc_belongings_to_time_slices==as.numeric(input$Det_DTM_validation_time))
   theta<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[1]]
@@ -467,7 +481,7 @@ output$Det_DTM_validation_document_topic_pie<-plotly::renderPlotly({
   )
   relevant_documents<-which(values$dtm_results_additional$doc_belongings_to_time_slices==as.numeric(input$Det_DTM_validation_time))
   theta<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[1]]
-  theta<-theta[relevant_documents,]
+  #theta<-theta[relevant_documents,]
   phi<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[2]]
   doc.length<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[3]]
   doc.length<-doc.length[relevant_documents]
@@ -475,11 +489,11 @@ output$Det_DTM_validation_document_topic_pie<-plotly::renderPlotly({
   
   getPalette = colorRampPalette(brewer.pal(12, "Paired"))
   colors<-getPalette(dim(phi)[1])
-  
+  #browser()
   data<-theta[which(values$dtm_meta$id_doc==input$Det_DTM_validation_document),]
   names(data)<-1:length(data)
   data<-data.frame(class=paste("Topic: ",names(data)),likelihood=data)
-  
+
   p <- plot_ly(data, labels = ~factor(class), values = ~likelihood, textposition = 'inside',source="DTM_validation_pie",marker = list(colors = colors),
                textinfo = 'label+percent') %>%
     plotly::add_pie(hole = 0.6) %>%

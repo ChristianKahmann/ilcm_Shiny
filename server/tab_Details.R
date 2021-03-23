@@ -544,7 +544,6 @@ output$details_parameter<-renderUI({
       meta<-meta[,c("id","dataset","title","id_doc","token","language",mde_use)]
       colnames(meta)<-c("id","dataset","title","id_doc","token","language",meta_names[,mde_use])
       values$TM_meta<-meta
-      
       # #stm
       load(paste0(values$Details_Data_TM,"/parameters.RData"))
       values$tm_parameters <- parameters
@@ -870,7 +869,9 @@ output$details_parameter<-renderUI({
 # update document selection in topic validation and document comparison
 observe({
   validate(
-    need(!is.null(values$tm_theta),message=F)
+    need(!is.null(values$tm_theta),message=F),
+    need(values$Details_Analysis=="TM",message=F),
+    need(isTRUE(values$parameters_finished),message=FALSE)
   )
   choices_document_selection_by_topic_likelihood<-NULL
   title_data<-values$tm_meta[,c("title","id_doc")]
@@ -907,7 +908,9 @@ observe({
 observe({
   validate(
     need(!is.null(values$dtm_results),message=F),
-    need(!is.null(input$Det_DTM_validation_time),message=F)
+    need(!is.null(input$Det_DTM_validation_time),message=F),
+    need(values$Details_Analysis=="DTM",message=F),
+    need(isTRUE(values$parameters_finished),message=FALSE)
   )
   vocab<-values$dtm_results[[1]][[5]]
   updateSelectizeInput(session = session,inputId = "Det_DTM_word_importance_Words",server = T,choices = vocab)
@@ -1088,7 +1091,7 @@ output$details_visu<-renderUI({
                                    uiOutput("TM_document_grouping_UI")
       )
       tabPanelTopic_Proportions <- tabPanel("Topic Proportions over time",
-                                            uiOutput(("TM_topic_proportions_UI"))%>%withSpinner()
+                                            uiOutput(("TM_topic_proportions_UI"))
                                             
       )
       if(length(list.files("collections/results/topic-model/"))>1){

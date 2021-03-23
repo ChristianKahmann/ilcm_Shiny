@@ -4063,6 +4063,26 @@ output$Det_TM_validation_metadata_UI<-renderUI({
 #'   input$Det_TM_validation_color_most_important: detailed topic model validation colour for most important values
 #'   input$Det_TM_validation_color_use_pie_colors: validation color to use in pie chart for detailed topic models 
 output$TM_validation_UI<-renderUI({
+  return(
+    tagList(
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(4,
+                      tags$br(),
+                      plotly::plotlyOutput("Det_TM_validation_document_topic_pie"),
+                      tags$h4("Most relevant words for chosen topic"),
+                      wordcloud2Output(outputId = "Det_TM_validation_wordcloud")
+               ),
+               column(8,
+                      tags$br(),
+                      uiOutput("Det_TM_validation_Document")
+               )
+      )
+      
+    ) 
+  )
+})
+
+output$Det_TM_validation_Document<-renderUI({
   validate(
     need(
       !is.null(input$Det_TM_validation_document),message=FALSE
@@ -4183,23 +4203,7 @@ output$TM_validation_UI<-renderUI({
   }
   document<-do.call(rbind,document)
   document<-HTML(document)
-  return(
-    tagList(
-      fluidRow(style="margin-left:0px;margin-right:0px",
-               column(4,
-                      tags$br(),
-                      plotly::plotlyOutput("Det_TM_validation_document_topic_pie"),
-                      tags$h4("Most relevant words for chosen topic"),
-                      wordcloud2Output(outputId = "Det_TM_validation_wordcloud")
-               ),
-               column(8,
-                      tags$br(),
-                      tags$p(document)
-               )
-      )
-      
-    ) 
-  )
+  tags$p(document)
 })
 
 
@@ -4208,6 +4212,11 @@ output$TM_validation_UI<-renderUI({
 #'  input$Det_TM_validation_topic: choosen topic from detailed topic models for validation
 output$Det_TM_validation_wordcloud <- wordcloud2::renderWordcloud2({
   # @values$tm_relevance calculated with lamda= 0.3
+  validate(
+    need(
+      !is.null(input$Det_TM_validation_topic),message=FALSE
+    )
+  )
   data <- values$tm_relevance[,input$Det_TM_validation_topic]
   data <- data[order(data,decreasing=T)][1:50]
   data <- data.frame(cbind(names(data),data),stringsAsFactors = FALSE)
@@ -5486,6 +5495,7 @@ output$Det_TM_proportion_plot<-renderPlotly({
   for(i in 3:ncol(data_t)){
     p<-add_trace(p=p, y=data_t[,i],name=colnames(data_t)[i],marker=list(color=colors[(i-1)]))  
   }
+  
   p <- layout(p,barmode="stack",legend=list(orientation="h",yanchor="bottom",xanchor="center",x=0.5,y=1))
   p
 })
