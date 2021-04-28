@@ -9,9 +9,13 @@ get_collection <- reactive({
 #' refine collection table for export
 output$refi_export_collection_table <- DT::renderDataTable({
   collection <- get_collection()
+  validate(
+    need(
+      nrow(collection)>0,message="Please create at least one collection to export!"
+    )
+  )
   num_collections <- seq(nrow(collection))
   btns <- paste0('<button id="refi_export_collection_button_', num_collections, '" data-collection="', collection$name, '" type="button" class="btn btn-default action-button" onclick="getCollection(this);"><i class="fa fa-download"></i></button>')
-  
   reactive_data <- reactiveValues(
     data = data.frame(
       ID = collection$id
@@ -240,6 +244,11 @@ output$refi_export_detected_annotation_schemes_table <- DT::renderDataTable({
 
 output$refi_export_table_annotation_scheme <- DT::renderDataTable({
   schemes <- get_annotation_schemes()
+  validate(
+    need(
+      nrow(schemes)>0,message="Create at least one annotation scheme to export!"
+    )
+  )
   num_schemes <- seq(length(schemes))
   btns <- paste0('<button id="refi_export_anno_scheme_button_', num_schemes, '" data-anno-scheme="', schemes, '" type="button" class="btn btn-default action-button" onclick="getAnnotationScheme(this)"><i class="fa fa-download"></i></button>')
   reactive_data <- reactiveValues(

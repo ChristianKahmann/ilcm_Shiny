@@ -615,7 +615,7 @@ output$details_parameter<-renderUI({
                                       tags$br(),
                                       tags$br(),
                                       tags$hr(),	
-                                      shinyWidgets::materialSwitch(inputId = "Det_TM_top_countries_per_topic_high_low",label = "sort countries decreasing?",value = TRUE,status = "primary"),	
+                                      shinyWidgets::materialSwitch(inputId = "Det_TM_top_countries_per_topic_high_low",label = "sort documents decreasing?",value = TRUE,status = "primary"),	
                                       #disbaled download of whole ldavis, because it cannot be opened in browser afterwards due to browser security reasons
                                       bsButton(inputId = "download_ldavis",label = "Screenshot lda vis",icon=icon("download"),style = "primary")
                                       

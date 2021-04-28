@@ -254,6 +254,9 @@ observeEvent(input$Anno_anno_scheme_selected,{
 #'   values$Anno_scheme_changed: changed annotation scheme
 output$Anno_DV_Annotation_Schemes<-renderUI({
   values$newscheme
+  validate(validate(need(
+    length(list.files("collections/annotation_schemes/"))>0,message="No annotation schemes found. You can create schemes in the 'Categories' tab."
+  )))
   if(!is.null(values$set_Anno_anno_scheme)){
     if(isFALSE(values$Anno_scheme_changed)){
       values$Anno_scheme_changed<-TRUE

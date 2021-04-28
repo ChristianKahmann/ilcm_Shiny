@@ -875,6 +875,7 @@ output$Import_csv_metadata<-DT::renderDataTable({
         data[,input$Import_csv_anonymize[i]]<-anonymizer::anonymize(.x = data[,input$Import_csv_anonymize[i]],.algo = "crc32")
       }
     }
+    key.length=8
     if(length(input$Import_csv_pseudonymization)>0){
       lookup_tables<-list()
       for(i in 1:length(input$Import_csv_pseudonymization)){
@@ -927,8 +928,8 @@ observe({
         paste0("Lookup_Table_",input$Import_csv_pseudonymization[x],".csv")
       },
       content = function(file){
-       data<-values$Import_csv_lookup_tables[[x]]
-       write.csv(data,file)
+        data<-values$Import_csv_lookup_tables[[x]]
+        write.csv(data,file)
       }
     )
   })
