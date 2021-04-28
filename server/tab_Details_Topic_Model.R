@@ -716,7 +716,7 @@ observeEvent(input$TM_Timeline_Reset,{
 #                             topic coherence                                                    #
 ##################################################################################################
 
-#' intiate topic coherence
+#' initiate topic coherence
 #' depends on:
 #'   input$TM_Coherence_start: start order for topic model coherence
 #'   values$Details_Data_TM: topic model detailed data
@@ -1140,6 +1140,7 @@ output$TM_Coherence_word_intrusion_words<-renderDataTable({
 #' display word cloud for word intrusion
 #' depends on:
 #'  values$TM_Coherence_word_intrusion_words: words for word intrusion
+#'  input$TM_Coherence_setsize: selected size for wordcloud with topic model coherences
 output$TM_Coherence_word_intrusion_wordcloud<-renderWordcloud2({
   data = data.frame(words= values$TM_Coherence_word_intrusion_words,counts=rep(1,length(values$TM_Coherence_word_intrusion_words)),stringsAsFactors = F)
   wordcloud2(data = data,fontFamily = "Helvetica",backgroundColor = "azure",color = "random-dark",size=1.5/input$TM_Coherence_setsize,minRotation = -pi/2, maxRotation = -pi/2)
@@ -3934,7 +3935,8 @@ output$Det_TM_Meta_Table<-DT::renderDataTable({
 })
 
 #' render datatable for detailed topic model meta data quantiles
-#' depends on: input$Det_meta_select: selected detailed meta data
+#' depends on:
+#'  input$Det_meta_select: selected detailed meta data
 output$Det_TM_meta_quantiles<-renderTable({
   meta<-values$TM_meta[,input$Det_meta_select]
   validate(
@@ -4081,7 +4083,23 @@ output$TM_validation_UI<-renderUI({
     ) 
   )
 })
-
+#' output to validate the found topics on specific documents
+#' depends on:
+#'   input$Det_TM_validation_document: selected document for validation
+#'   values$host: selected host to connect with database
+#'   values$port: selected port to connect with database
+#'   values$Details_Data_TM: details on topic modeling data
+#'   values$tm_phi: topic model parameter phi
+#'   input$Det_TM_validation_relevance_measure: relevance measurment for validation of document topics
+#'   values$tm_rel_counts: relative counts for topic modeling 
+#'   input$Det_TM_validation_topic: selected topic for valdiation over the current document
+#'   input$Det_TM_validation_lambda: selected value for lambda parameter for validation
+#'   values$tm_theta: topic model theta mode
+#'   values$tm_doc.length: current document length
+#'   input$Det_TM_validation_minmax_gobal: global minimum and maximum for validation
+#'   input$Det_TM_validation_color_use_pie_colors: colors for the pie chart of topics in the document
+#'   input$Det_TM_validation_color_least_important: color of the least important words for a topic in the document
+#'   input$Det_TM_validation_color_most_important: coor of the most important words for a topic in the document
 output$Det_TM_validation_Document<-renderUI({
   validate(
     need(

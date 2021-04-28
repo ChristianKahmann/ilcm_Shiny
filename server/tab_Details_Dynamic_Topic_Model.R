@@ -295,7 +295,23 @@ output$DTM_validation_UI<-renderUI({
   )
 })
 
-
+#' output to validate the topic modeling by checking for topics in selected document
+#' depends on:
+#'   input$Det_DTM_validation_document: selected document for validation
+#'   values$host: selected host for database connection
+#'   values$port: selected port for database connection
+#'   values$Details_Data_DTM: details on data of dynamic topic modeling
+#'   values$dtm_results_additional: additional results from dynamic topic modelling
+#'   values$dtm_results: all results from dynamic topic modeling
+#'   input$Det_DTM_validation_time: selected time stamp for validation
+#'   input$Det_DTM_validation_relevance_measure: selected relevance measurement for validation
+#'   values$DTM_rel_counts: relative counts for current document 
+#'   input$Det_DTM_validation_topic: selected topic for validation 
+#'   input$Det_DTM_validation_lambda: lambda parameter for validatio
+#'   input$Det_DTM_validation_minmax_gobal: selected global minimum and maximum for validation
+#'   input$Det_DTM_validation_color_use_pie_colors: selected colors for the piechart of topics
+#'   input$Det_DTM_validation_color_least_important: color for least important words in document
+#'   input$Det_DTM_validation_color_most_important: color for the most importan word in document
 output$Det_DTM_Validation_Document<-renderUI({
   validate(
     need(
