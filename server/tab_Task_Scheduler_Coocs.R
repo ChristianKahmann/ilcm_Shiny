@@ -349,17 +349,15 @@ output$Analysis_Parameter_CA<-renderUI({
                )
              )
       )
-    ),
-     column(1,
-             selectInput(inputId = "CA_cooc_Word_Embedding",label = HTML("Word Embedding <br/>"),choices = c("Skipgram","CBOW"),selected = "Skipgram")%>%
+      column(1,
+             checkboxInput(inputId = "CA_skipgram",label = "Use skipgram as word embedding?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
-                     title = "Specify the wordembedding",
-                     placement = "right"
+                     title = "Should skipgramm as wordembedding be used?", placement = "left"
                    )
-               )
-      ),
+               )),
+    ),
     bsButton(inputId = "CA_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
 })
