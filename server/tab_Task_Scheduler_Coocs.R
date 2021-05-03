@@ -348,16 +348,25 @@ output$Analysis_Parameter_CA<-renderUI({
                    )
                )
              )
-      ),
+      )
+    ),
+    tags$hr(),
+    tags$h4("Skipgram"),
+    fluidRow(
       column(1,
-             checkboxInput(inputId = "CA_skipgram",label = "Use skipgram as word embedding?",value = T)%>%
+             checkboxInput(inputId = "input.CA_skipgram",label = "Use skipgram as word embedding?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Should skipgramm as wordembedding be used?", placement = "left"
                    )
-               ))
-    ),
+               )),
+      column(2,
+             conditionalPanel(condition = 'input.CA_skipgram== true',
+                              numericInput(inputId = "CA_skipgram_window",label = "windowsize for skipgram",min = 0,step = 1,value=NULL)
+             )
+      )
+  ),
     bsButton(inputId = "CA_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
 })
