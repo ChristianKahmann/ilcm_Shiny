@@ -354,15 +354,15 @@ output$Analysis_Parameter_CA<-renderUI({
     tags$h4("Skipgram"),
     fluidRow(
       column(1,
-             checkboxInput(inputId = "input.CA_skipgram",label = "Use skipgram as word embedding?",value = T)%>%
+             checkboxInput(inputId = "input.CA_skipgram",label = "Use skipgram as word embedding?",value = F)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
                      title = "Should skipgramm as wordembedding be used?", placement = "left"
                    )
                )),
-      column(2,
-             conditionalPanel(condition = 'input.CA_skipgram== true',
+      column(1,
+             conditionalPanel(condition = 'input.CA_skipgram==false',
                               numericInput(inputId = "CA_skipgram_window",label = "windowsize for skipgram",min = 0,step = 1,value=NULL)
              )
       )
@@ -370,6 +370,7 @@ output$Analysis_Parameter_CA<-renderUI({
     bsButton(inputId = "CA_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
 })
+
 
 
 #' show whitelists stored in collections/whitelists
@@ -424,6 +425,17 @@ observeEvent(ignoreNULL = T,input$CA_use_custom_blacklist,{
   }
 })
 
+#' show skipgram options when skipgram checkbox is TRUE
+#' depends on:
+#'   input$CA_skipgram: should skipgram analysis be used? 
+observeEvent(ignoreNULL = T,input$CA_skipgram,{
+  if(isTRUE(input$CA_skipgram)){
+    shinyjs::show(id = "CA_skipgram_window")
+  }
+  else{
+    shinyjs::hide(id = "CA_whitelist")
+  }
+})
 
 #' start cooccurrence analysis script, if submit button is clicked
 #' depends on:
