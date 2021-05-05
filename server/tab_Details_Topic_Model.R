@@ -5807,8 +5807,8 @@ output$Det_TM_word_occurrences_table<-DT::renderDataTable({
 observe({
   s = input$Det_TM_word_occurrences_table_rows_selected
   if (length(s)) {
-    doc_id<-rownames(values$Det_TM_word_occurrences_table_data)[s]
-    updateSelectizeInput(session = session,inputId = "Det_TM_word_frequencies_document",selected = doc_id)
+    doc_id<-rownames(isolate(values$Det_TM_word_occurrences_table_data))[s]
+    updateSelectizeInput(session = session,inputId = "Det_TM_word_frequencies_document",selected = doc_id,server=T,choices = isolate(values$Det_TM_fferquency_document_choices))
     updateTabsetPanel(session = session,
                       inputId = "Det_TM_words",
                       selected = "Documents")
