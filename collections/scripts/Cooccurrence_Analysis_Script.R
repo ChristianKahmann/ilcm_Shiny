@@ -9,6 +9,7 @@ error<-try(expr = {
   library(Matrix)
   library(dplyr)
   library(spacyr)
+  library(udpipe)
   #' load parameters
   load("collections/tmp/tmp.RData")
   parameters_original<-parameters
@@ -60,6 +61,11 @@ error<-try(expr = {
   dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
+  #' calculating skipgram
+  log_to_file(message = "<b>Step 6.5/8: Calculating Skipgram</b>",file = logfile)
+  x <- cooccurrence(db_data$token[,5],group=db_data$token[,2],order = TRUE,skipgram=5)
+  print(head(x,5))
+  log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating Skipgram",file = logfile)
   
   
   #' calculating co-occurrences

@@ -274,19 +274,14 @@ output$Analysis_Parameter_CA<-renderUI({
     tags$h4("Co-occurrence Analysis parameters"),
     fluidRow(
       column(1,
-             selectInput(inputId = "CA_cooc_type",label = HTML("Co-occurrence type <br/>"),choices = c("Document","Sentence","Skipgram"),selected = "Sentence")%>%
+             selectInput(inputId = "CA_cooc_type",label = HTML("Co-occurrence type <br/>"),choices = c("Document","Sentence"),selected = "Sentence")%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
-                     title = "Specify the co-occurrence method. So far Document and Sentence and Skipgram co-occurrence calculation is implemented",
+                     title = "Specify the co-occurrence method. So far Document and Sentence co-occurrence calculation is implemented",
                      placement = "right"
                    )
                )
-      ),
-      column(1,
-             conditionalPanel(condition = 'CA_cooc_type==Skipgram',
-                              numericInput(inputId = "CA_skipgram_window",label = "windowsize for skipgram",min = 0,step = 1,value=NULL)
-             )
       ),
       column(1,
              numericInput(inputId = "CA_min_Cooc_Freq",label = "Minimum co-occurrence frequency:",value = 2,min = 1,step = 1)%>%
@@ -355,6 +350,21 @@ output$Analysis_Parameter_CA<-renderUI({
              )
       )
     ),
+    tags$hr(),
+    tags$h4("Skypgram"),
+    fluidRow(
+      checkboxInput(inputId = "CA_use_skipgram",label = "Use Skipgram?",value = F)%>%
+        shinyInput_label_embed(
+          shiny_iconlink() %>%
+            bs_embed_popover(
+              title = "Use of the skipgram model for co-occurrence calculation.", placement = "right"
+            )
+        ),
+      column(1,
+             conditionalPanel(condition = 'CA_cooc_type==Skipgram',
+                              numericInput(inputId = "CA_skipgram_window",label = "windowsize for skipgram",min = 0,step = 1,value=NULL)
+             )
+      )),
     
     bsButton(inputId = "CA_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
@@ -417,8 +427,8 @@ observeEvent(ignoreNULL = T,input$CA_use_custom_blacklist,{
 #' show skipgram options when skipgram checkbox is TRUE
 #' depends on:
 #'   input$CA_skipgram: should skipgram analysis be used? 
-observeEvent(ignoreNULL = T,input$CA_cooc_type,{
-  if(input$CA_cooc_type=='Skipgram'){
+observeEvent(ignoreNULL = T,input$CA_use_skipgram,{
+  if(isTRUE(input$CA_use_skipgram)){
     shinyjs::show(id = "CA_skipgram_window")
   }
   else{

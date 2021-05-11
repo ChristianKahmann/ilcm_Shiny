@@ -1,5 +1,6 @@
 library(tidyverse)
 library(shinyWidgets)
+library(udpipe)
 
 #' getMetaData for given ids and datasets (which means via GUI a selected a collection)
 #'
@@ -258,6 +259,14 @@ prepare_input_parameters<-function(param){
       param$sentences_as_documents<-TRUE
     }
   })
+################ Skypgram ADD-on
+  param$skypgram<- FALSE
+  try({
+    if(param$cooc_window=="Skipgram"){
+      param$skipgram<-TRUE
+    }
+  })
+############################################
   #assign("sentences_as_documents",sentences_as_documents,envir=.GlobalEnv)
   #append blacklist words to custom removal words
   if(!is.null(param$blacklist)){
