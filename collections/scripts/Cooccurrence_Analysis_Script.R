@@ -63,8 +63,8 @@ error<-try(expr = {
   
   #' calculating skipgram
   log_to_file(message = "<b>Step 6.5/8: Calculating Skipgram</b>",file = logfile)
-  x <- cooccurrence(db_data$token[,5],group=db_data$token[,2],order = TRUE,skipgram=5)
-  print(head(x,5))
+  print(parameters$skip_window)
+  x <- cooccurrence(db_data$token[,5],group=db_data$token[,2],order = TRUE,skipgram=parameters$skip_window)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating Skipgram",file = logfile)
   
   

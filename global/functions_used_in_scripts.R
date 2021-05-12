@@ -262,7 +262,7 @@ prepare_input_parameters<-function(param){
 ################ Skypgram ADD-on
   param$skypgram<- FALSE
   try({
-    if(param$cooc_window=="Skipgram"){
+    if(param$CA_use_skipgram==TRUE){
       param$skipgram<-TRUE
     }
   })

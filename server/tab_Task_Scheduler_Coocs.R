@@ -730,7 +730,8 @@ observeEvent(input$CA_pruning_continue,ignoreInit = T,{
                    whitelist_expand=input$CA_whitelist_expand,
                    whitelist_only=input$CA_whitelist_only,
                    use_fixed_vocab=input$CA_use_fixed_vocab,
-                   fixed_vocab=input$CA_fixed_vocab
+                   fixed_vocab=input$CA_fixed_vocab,
+                   skip_window=input$CA_skipgram_window
   )
   #create process ID
   ID<-get_task_id_counter()+1
