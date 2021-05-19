@@ -260,12 +260,12 @@ prepare_input_parameters<-function(param){
     }
   })
 ################ Skypgram ADD-on
-  param$skypgram<- FALSE
-  try({
-    if(param$CA_use_skipgram==TRUE){
-      param$skipgram<-TRUE
-    }
-  })
+#  param$skypgram<- FALSE
+#  try({
+#    if(!is.na(param$skip_window)){
+#      param$skipgram<-TRUE
+#    }
+#  })
 ############################################
   #assign("sentences_as_documents",sentences_as_documents,envir=.GlobalEnv)
   #append blacklist words to custom removal words
@@ -479,7 +479,7 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
       remove_stopwords=parameters$remove_stopwords,
       remove_numbers=parameters$remove_numbers,
       remove_all_numbers=parameters$remove_numbers_all,
-      remove_punctuation=parameters$remove_punctuation,
+      remove_punctuation=parameters$remove_stopwords,
       remove_hyphenation=parameters$remove_hyphenation,
       remove_custom=if_empty_return_NULL(parameters$remove_custom),
       save_custom=if_empty_return_NULL(parameters$keep_custom),
@@ -1987,6 +1987,41 @@ remove_locations<-function(token){
   
   
 }
+
+#' SKIPGRAM
+#' TO-DO:
+#' Parameter:
+#'     Remove Punctuation?
+#'     Group by Documents or sentences?
+#' Cooc-Berechnung
+#' Return Cooc wert
+skipgram_cooc <-function(db_data,parameters){
+  # param$sentences_as_documents
+  # parameters$remove_stopwords
+  if(isTRUE(parameters$sentences_as_documents)){
+    print("Sentence selected")
+    if(isTRUE(parameters$remove_stopwords)){
+      x<-cooccurrence(subset(db_data$token[,4], !( db_data$token[,6] %in% c("SPACE","PUNCT"))),group=c(db_data$token[,1],db_data$token[,2]),order = TRUE,skipgram=parameters$skip_window)
+      print("without punct")
+    }else{
+      x<-cooccurrence(db_data$token[,4],group=c(db_data$token[,1],db_data$token[,2]),order = TRUE,skipgram=parameters$skip_window)
+      print("with punct")
+    }
+  }else{
+    print("no sentence selected")
+    if(isTRUE(parameters$remove_stopwords)){
+      x<-cooccurrence(subset(db_data$token[,4], !( db_data$token[,6] %in% c("SPACE","PUNCT"))),group=db_data$token[,1],order = TRUE,skipgram=parameters$skip_window)
+      print("without punct")
+    }else{
+      x<-cooccurrence(db_data$token[,4],group=db_data$token[,1],order = TRUE,skipgram=parameters$skip_window)
+      print("with punct")
+    }
+  }
+ 
+  
+  return(x)
+}
+ 
 
 
 
