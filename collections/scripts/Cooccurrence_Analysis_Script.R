@@ -63,29 +63,38 @@ error<-try(expr = {
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
   #' calculating skipgram
-  
-  if (!is.na(parameters$skip_window)){
-    log_to_file(message = "<b>Step 6.5/8: Check for Skipgram</b>",file = logfile)
-    #print(parameters$skip_window)
-      x <- skipgram_cooc(db_data,parameters)
-      print(head(x,10))
-      log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating Skipgram",file = logfile)
-    
-  }
+  #if (isTRUE(parameters$skipgram)){
+  #  log_to_file(message = "<b>Step 6.5/8: Check for Skipgram</b>",file = logfile)
+  #  skip_gram <- skipgram_cooc(db_data,parameters)
+  #  log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating Skipgram",file = logfile)
+  #  
+  #}else{
+  #  log_to_file(message = "<b>Step 6.5/8: No Skipgram</b>",file = logfile)
+  #}
 
-  
-  
   #' calculating co-occurrences
-  log_to_file(message = "<b>Step 7/8: Calculating Co-occurrences</b>",file = logfile)
-  db_data$token<-db_data$token[,c("doc_id","token","lemma")]
-  coocs<-calculate_cooccurrences_all_measures(dtm=dtm)
-  coocs_matrix_dice<-coocs$coocs_matrix_dice
-  coocs_matrix_count<-coocs$coocs_matrix_count
-  coocs_matrix_log<-coocs$coocs_matrix_log
-  coocs_matrix_mi<-coocs$coocs_matrix_mi
-  terms<-coocs$terms
-  log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating co-occurrences",file = logfile)
- 
+  if (isTRUE(parameters$skipgram)){
+    log_to_file(message = "<b>Step 7/8: Calculating Co-occurrences with Skipgram</b>",file = logfile)
+    #db_data$token<-db_data$token[,c("doc_id","token","lemma")]
+    coocs<-calculate_skipgramm_all_measures(db_data,parameters)
+    coocs_matrix_dice<-coocs$coocs_matrix_dice
+    coocs_matrix_count<-coocs$coocs_matrix_count
+    coocs_matrix_log<-coocs$coocs_matrix_log
+    coocs_matrix_mi<-coocs$coocs_matrix_mi
+    terms<-coocs$terms
+    log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating co-occurrences",file = logfile)
+  }else{
+    log_to_file(message = "<b>Step 7/8: Calculating Co-occurrences</b>",file = logfile)
+    db_data$token<-db_data$token[,c("doc_id","token","lemma")]
+    coocs<-calculate_cooccurrences_all_measures(dtm=dtm)
+    coocs_matrix_dice<-coocs$coocs_matrix_dice
+    coocs_matrix_count<-coocs$coocs_matrix_count
+    coocs_matrix_log<-coocs$coocs_matrix_log
+    coocs_matrix_mi<-coocs$coocs_matrix_mi
+    terms<-coocs$terms
+    log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating co-occurrences",file = logfile)
+  }
+  
   #' Saving results
   log_to_file(message = "<b>Step 8/8: Saving results</b>",file = logfile)
   path0<-paste0("collections/results/cooccurrence-analysis/",paste(process_info[[1]],process_info[[2]],process_info[[4]],sep="_"),"/")
@@ -100,6 +109,11 @@ error<-try(expr = {
   save(coocs_matrix_count,file=paste0(path0,"count.RData"))
   save(coocs_matrix_mi,file=paste0(path0,"mi.RData"))
   save(coocs_matrix_log,file=paste0(path0,"log.RData"))
+  #################
+  if (isTRUE(parameters$skipgram)){
+    save(skip_gram,file = paste0(path0,"skipgram_info.RData"))
+  }
+  #################
   save(info,file=paste0(path0,"info.RData"))
   parameters<-parameters_original
   save(parameters,file=paste0(path0,"parameters.RData"))

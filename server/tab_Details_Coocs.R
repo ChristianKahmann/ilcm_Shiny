@@ -209,7 +209,7 @@ observeEvent(input$Det_CO_Update,{
 })
 
 
-#' visualize network for coccurrence analysis
+#' visualize network for cooccurrence analysis
 #' depends on:
 #'   values$cooc_nodes: nodes for cooccurrence
 #'   input$Det_CO_Threshold: threshold of cooccurrence
@@ -450,6 +450,8 @@ output$Det_CO_download_examples<-downloadHandler(
   }
 )  
 
+
+
 #' link downloadbutton for the top co-occurrecnes in coocs results tab
 #' depends on:
 #'   values$coocs_top_dl_dice: top dl for cooccurrence analysis with dice measurement
@@ -487,6 +489,7 @@ output$coocs_download_log<-downloadHandler(
     write.csv(data, con)
   }
 )  
+
 
 #' example stats for cooccurrence analysis
 #' depends on:
