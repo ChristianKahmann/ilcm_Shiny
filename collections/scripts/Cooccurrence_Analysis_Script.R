@@ -82,7 +82,7 @@ error<-try(expr = {
     coocs_matrix_log<-coocs$coocs_matrix_log
     coocs_matrix_mi<-coocs$coocs_matrix_mi
     terms<-coocs$terms
-    log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating co-occurrences",file = logfile)
+    log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating co-occurrences with Skipgram",file = logfile)
   }else{
     log_to_file(message = "<b>Step 7/8: Calculating Co-occurrences</b>",file = logfile)
     db_data$token<-db_data$token[,c("doc_id","token","lemma")]
@@ -109,11 +109,6 @@ error<-try(expr = {
   save(coocs_matrix_count,file=paste0(path0,"count.RData"))
   save(coocs_matrix_mi,file=paste0(path0,"mi.RData"))
   save(coocs_matrix_log,file=paste0(path0,"log.RData"))
-  #################
-  if (isTRUE(parameters$skipgram)){
-    save(skip_gram,file = paste0(path0,"skipgram_info.RData"))
-  }
-  #################
   save(info,file=paste0(path0,"info.RData"))
   parameters<-parameters_original
   save(parameters,file=paste0(path0,"parameters.RData"))

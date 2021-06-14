@@ -209,7 +209,7 @@ observeEvent(input$Det_CO_Update,{
 })
 
 
-#' visualize network for cooccurrence analysis
+#' visualize network for coccurrence analysis
 #' depends on:
 #'   values$cooc_nodes: nodes for cooccurrence
 #'   input$Det_CO_Threshold: threshold of cooccurrence
@@ -352,7 +352,7 @@ output$cooc_examples_table<-DT::renderDataTable({
   # make sure words are splitted in case n grams were used
   words <- input$coocs_examples_words
   words <- unlist(flatten(stringr::str_split(string = words,pattern = "_",simplify = F)))
-
+  
   for(i in 1:number_of_examples){
     tokens<-values$coocs_token[which(values$coocs_token[,1]==avail[i]),]
     tokens_orig<-tokens
@@ -450,8 +450,6 @@ output$Det_CO_download_examples<-downloadHandler(
   }
 )  
 
-
-
 #' link downloadbutton for the top co-occurrecnes in coocs results tab
 #' depends on:
 #'   values$coocs_top_dl_dice: top dl for cooccurrence analysis with dice measurement
@@ -489,7 +487,6 @@ output$coocs_download_log<-downloadHandler(
     write.csv(data, con)
   }
 )  
-
 
 #' example stats for cooccurrence analysis
 #' depends on:
@@ -668,4 +665,3 @@ output$coocs_top_log_table<-DT::renderDataTable({
   values$coocs_top_dl_log<-data
   datatable(data = data)
 })
-
