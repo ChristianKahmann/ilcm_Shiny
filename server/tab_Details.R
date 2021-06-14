@@ -905,7 +905,7 @@ observe({
   else{
     updateSelectizeInput(session = session,inputId = "Det_TM_validation_document",server = T,choices = choices_document_selection_by_topic_likelihood)
   }
-  values$Det_TM_fferquency_document_choices<-classic_choices
+  values$Det_TM_frqeuency_document_choices<-classic_choices
   updateSelectizeInput(session = session,inputId = "Det_TM_document_comparison_document",server = T,choices = classic_choices)
   updateSelectizeInput(session = session,inputId = "Det_TM_word_frequencies_document",server = T,choices = classic_choices)	
 })

@@ -480,7 +480,6 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
       just_save_custom=parameters$whitelist_only
     )
   )  
-
   # split token
   splitsize<-ceiling(100000/(dim(token)[1]/length(unique(token[,1]))))
   split<-split(unique(token[,1]), ceiling(seq_along(unique(token[,1]))/splitsize))
@@ -495,12 +494,14 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
     if(i==1){
       dtm_glob<-tow$process(control = control,backend = "quanteda")%>%
         tow$output(format = "sparseMatrix")
+      dtm_glob<-remove_duplicate_columns_in_matrix(dtm_glob)
     }
     else{
       dtm_local<-tow$process(control = control,backend = "quanteda")%>%
         tow$output(format = "sparseMatrix")
       if(dim(dtm_local)[2]>0){
-        rownames_dtm_glob <- c(rownames(dtm_glob),rownames(dtm_local)) 
+        rownames_dtm_glob <- c(rownames(dtm_glob),rownames(dtm_local))
+        dtm_local<-remove_duplicate_columns_in_matrix(dtm_local)
         dtm_glob<-rBind_huge(dtm_glob,dtm_local)
         rownames(dtm_glob) <- rownames_dtm_glob
       }
@@ -508,12 +509,13 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
     if(i %in% loghelper){
       if(length(split)>10){
         log_to_file(message = paste0("&emsp; ",names(which(loghelper==i)),"% of documents processed (",splitsize*i,")"),logfile)
-      }
+        }
       else{
         log_to_file(message = paste0("&emsp; ",names(which(loghelper==i)),"% of documents processed"),logfile)
       }
     }
   }
+  
   gc()
   log_to_file(message = paste0("&emsp; Pruning of documents"),logfile)
   dtm<-quanteda::as.dfm(x = dtm_glob)  
@@ -1980,6 +1982,23 @@ remove_locations<-function(token){
 }
 
 
+
+remove_duplicate_columns_in_matrix<-function(x){
+  duplicates<-names(which(table(colnames(x))>1))
+  if(length(duplicates)>0){
+    for(i in 1:length(duplicates)){
+      duplicate<-duplicates[i]
+      idx<-which(colnames(x)==duplicate)
+      sum<-Matrix::rowSums(x = x[,idx])
+      x[,idx[1]]<-sum
+      x<-x[,-idx[2:length(idx)]] 
+    }
+    return(x)
+  }
+  else{
+    return(x)
+  }
+}
 
 
 

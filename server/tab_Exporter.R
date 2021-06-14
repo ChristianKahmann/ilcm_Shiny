@@ -319,7 +319,8 @@ observe({
           shinyWidgets::sendSweetAlert(session=session,title = "no documents found.",text = "Have you clicked 'Prepare Documents'?",type = "warning")
         }
         else{
-          export_data<-values$export_token_tmp[which(values$export_token_tmp$id%in%((floor((dim(values$export_meta_tmp)[1]/values$export_number_of_buttons)*(i-1))+1):floor((dim(values$export_meta_tmp)[1]/values$export_number_of_buttons)*(i)))),]
+          unique_ids<-unique(values$export_token_tmp$id)
+          export_data<-values$export_token_tmp[which(values$export_token_tmp$id%in%unique_ids[((floor((dim(values$export_meta_tmp)[1]/values$export_number_of_buttons)*(i-1))+1):floor((dim(values$export_meta_tmp)[1]/values$export_number_of_buttons)*(i)))]),]
           export_data<-apply(X = export_data,MARGIN = 2,FUN = function(x){stringr::str_replace_all(string = x,pattern = '"',replacement = "'")})
           write.table(export_data, con,col.names = F,row.names = F,sep=",",quote = T)   
         }
