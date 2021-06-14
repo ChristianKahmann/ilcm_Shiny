@@ -199,15 +199,14 @@ error<-try(expr = {
     RMariaDB::dbDisconnect(mydb)
   }
   if(write_to_db==T){
-    log_to_file(message = paste0("Finished preprocessing. You can now select ",metadata[1,"dataset"]," in the Explorer Corpus Selection"),logfile)
+    log_to_file(message = paste0("Finished import You can now select ",metadata[1,"dataset"]," in the Explorer Corpus Selection"),logfile)
   }
   else{
-    log_to_file(message = paste0("Finished preprocessing. You can now import the created csv files in Import/Export Importer Upload Data to DB and
+    log_to_file(message = paste0("Finished import You can now import the created csv files in Import/Export Importer Upload Data to DB and
                                  Solr with the name:",metadata[1,"dataset"],"_",process_info[[1]] ),logfile)
   }
-  
   # save annotations?
-  if(length(parameters)==6){
+  if(!is.null(parameters$save_annotations)){
     if(parameters$save_annotations==TRUE){
       log_to_file(message = "Save Annotations from imported data to database",logfile)
       load("collections/tmp/tmp_annotations.RData")

@@ -2435,7 +2435,7 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
                 #start script
                 system(paste('Rscript collections/scripts/Import_Script.R','&'))
                 #show modal when process is started
-                shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success",closeOnEsc = T)
+                shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
               }
             }
           }
@@ -2512,7 +2512,7 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_db,{
     #start script
     system(paste('Rscript collections/scripts/Import_Script.R','&'))
     #show modal when process is started
-    shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success",closeOnEsc = T)
+    shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
   }
 })
 #' sanity check for the imported script
