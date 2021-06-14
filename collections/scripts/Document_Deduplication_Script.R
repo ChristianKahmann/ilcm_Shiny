@@ -309,9 +309,8 @@ error<-try(expr = {
     }
   }
   else{
-    log_to_file(message = "<b>No candidate for a possible dublicate could be detected!</b>",file = logfile)
-    stop("No candidate found. Therefore the task will be stopped now!")
-
+    log_to_file(message = "<b>No candidate for a possible dublicate could be detected!</b><br> Therefore no result directory will be created.",file = logfile)
+    
   }
   system(paste("mv ",logfile," collections/logs/finished/",sep=""))
   
