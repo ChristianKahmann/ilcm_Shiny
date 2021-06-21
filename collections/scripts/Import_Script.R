@@ -75,7 +75,7 @@ error<-try(expr = {
       #update meta tables in database
       #data<-data.frame(readtext::readtext(file = paste0("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv") ),stringsAsFactors = F)
       data<-data.frame(readr::read_delim(file = paste0("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv"), delim=',',
-                                         escape_double=FALSE, escape_backslash=TRUE, quote='"',col_names = F),
+                                         escape_double=F, escape_backslash=T, quote='"',col_names = F),
                        stringsAsFactors = F)
       data<-cbind(rep(paste0("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv"),nrow(data)),data)%>%
         mutate_all(as.character)
@@ -85,6 +85,8 @@ error<-try(expr = {
       rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_date (dataset, date) values ",paste(sprintf("('%s', '%s')", dates[,1], dates[,2]), collapse=', ') ,";"))
       #token
       token<-unique(data[,7])
+      token<-as.numeric(token)
+      token<-token[which(!is.na(token))]
       token<-cbind(rep(data[1,2],length(token)),token)
       rs<-dbSendStatement(mydb, paste0("Insert Ignore into ilcm.meta_token (dataset, token) values ",paste(sprintf("('%s', %s)", token[,1], token[,2]), collapse=', ') ,";"))
       #mde1

@@ -347,12 +347,11 @@ output$Det_DTM_Validation_Document<-renderUI({
   token<-cbind(1:dim(token)[1],token)
   relevant_documents<-which(values$dtm_results_additional$doc_belongings_to_time_slices==as.numeric(input$Det_DTM_validation_time))
   theta<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[1]]
-  theta<-theta[relevant_documents,]
+  theta<-theta[relevant_documents,,drop=F]
   phi<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[2]]
   doc.length<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[3]]
-  doc.length<-doc.length[relevant_documents]
+  doc.length<-doc.length[relevant_documents,drop=F]
   vocab<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[5]]
-  
   values$DTM_rel_counts <- round((colSums(theta * doc.length))*phi,digits = 2)
   
   if(input$Det_DTM_validation_relevance_measure=="estimated relative word frequency per topic"){
@@ -462,10 +461,10 @@ output$Det_DTM_validation_wordcloud <- wordcloud2::renderWordcloud2({
   # @values$DTM_relevance calculated with lamda= 0.3
   relevant_documents<-which(values$dtm_results_additional$doc_belongings_to_time_slices==as.numeric(input$Det_DTM_validation_time))
   theta<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[1]]
-  theta<-theta[relevant_documents,]
+  theta<-theta[relevant_documents,,drop=F]
   phi<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[2]]
   doc.length<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[3]]
-  doc.length<-doc.length[relevant_documents]
+  doc.length<-doc.length[relevant_documents,drop=F]
   vocab<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[5]]
   
   relevance<-calculate_topic_relevance(lambda=input$Det_DTM_validation_lambda,phi=phi,theta=theta,doc.length=doc.length)

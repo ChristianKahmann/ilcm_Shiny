@@ -11,6 +11,11 @@
 #' @export
 #' @example 
 preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,slow_mode=F){
+  metadata$body<-stringr::str_replace_all(string = metadata$body,pattern = '"',"'")
+  metadata$body<-stringr::str_replace_all(string = metadata$body,pattern = '\\\\0'," ")
+  text<-stringr::str_replace_all(string = text,pattern = '"',"'")
+  text<-stringr::str_replace_all(string = text,pattern = '\\\\0'," ")
+  
   empty_text<-which(text=="")
   if(length(empty_text)>0){
     log_to_file(message = paste0(length(empty_text)," empty doucments found and removed"),logfile)
@@ -45,6 +50,8 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
       # in order to limit this, very long documents will be processed in several chunks
       split_documents=T
     }
+
+    
   }
   split<-split(1:length(text), ceiling(seq_along(1:length(text))/min(length(text),split_size)))
   token<-NULL
@@ -152,7 +159,7 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
   #   metadata[count,dim(metadata)[2]]<-entities
   # }
   
-  # metadata<-escape_quotes(metadata)
+
   log_to_file(message = "Writing data",logfile)
   write.table(x = metadata,file = paste("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_id,".csv",sep=""),row.names = F,col.names = F,sep = ",")
   write.table(x = token,file = paste("data_import/processed_data/token_",metadata[1,"dataset"],"_",process_id,".csv",sep=""),row.names = F,col.names = F,sep = ",")

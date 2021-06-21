@@ -939,14 +939,14 @@ observe({
   relevant_documents<-which(values$dtm_results_additional$doc_belongings_to_time_slices==as.numeric(input$Det_DTM_validation_time))
   title_data<-title_data[relevant_documents,]
   theta<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[1]]
-  theta<-theta[relevant_documents,]
+  theta<-theta[relevant_documents,,drop=F]
   #title_data<-title_data[which(title_data[,"id_doc"]%in%rownames(theta)),]
   choices<-title_data$id_doc
   names(choices)<-paste0(title_data$title," (",title_data$id_doc,")")
   if(!is.null(input$Det_DTM_validation_document_selection)){
     if(input$Det_DTM_validation_document_selection=='by topic likelihood'){
       topic<-input$Det_DTM_validation_document_selection_topic_likelihood_t
-      n<-input$Det_DTM_validation_document_selection_topic_likelihood_n
+      n<-min(input$Det_DTM_validation_document_selection_topic_likelihood_n,length(relevant_documents))
       most_likely_documents<-order(theta[,topic],decreasing = T)[1:n]
       likelihoods<-theta[most_likely_documents,topic]
       choices<-choices[most_likely_documents]

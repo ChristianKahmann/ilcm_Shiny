@@ -114,6 +114,9 @@ output$search_results_datatable<-DT::renderDataTable({
   data<-data.frame(ind)
   colnames(data)<-colnames(ind)
   #just use Date information, no daytime
+  if(is.null(data$date)){
+    data$date<-rep(NA,nrow(data))
+  }
   data$date<-substr(data$date,1,10)
   values$Search_Results<-data
   #make titles appear bold
