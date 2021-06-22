@@ -1,7 +1,7 @@
 library(tidyverse)
 library(shinyWidgets)
 library(udpipe)
-library(R6)
+source("global/SkipCooc.R")
 #' getMetaData for given ids and datasets (which means via GUI a selected a collection)
 #'
 #' @param collectionIDs 
@@ -262,7 +262,7 @@ prepare_input_parameters<-function(param){
 ################ Skypgram ADD-on
   param$skipgram<- FALSE
   try({
-    if(!is.na(param$skip_window)){
+    if(param$cooc_window=="Skipgram"){
       param$skipgram<-TRUE
     }
   })
@@ -1988,225 +1988,33 @@ remove_locations<-function(token){
   
 }
 
-#' SKIPGRAM
-#' TO-DO:
-#'      Ergebnis in passendes Format bringen
-#' Cooc-Berechnung
-#' Return Cooc wert
-skipgram_cooc <-function(db_data,parameters){
-  # param$sentences_as_documents
-  # parameters$remove_stopwords
-    if(isTRUE(parameters$remove_stopwords)){
-      skipi<-cooccurrence(subset(db_data$token[,4], !( db_data$token[,6] %in% c("SPACE","PUNCT"))),group=c(db_data$token[,1],db_data$token[,2]),order = FALSE,skipgram=parameters$skip_window)
-      print("without punct")
-    }else{
-      skipi<-cooccurrence(db_data$token[,4],group=c(db_data$token[,1],db_data$token[,2]),order = TRUE,skipgram=parameters$skip_window)
-      print("with punct")
-  }
-  le<-length(skipi$term1)
-  test<-1:le
-  matSparse4 <- sparseMatrix(
-    i = test, 
-    j = test, 
-    x = skipi$cooc,
-    dims = c(le,le), 
-    dimnames = list(skipi$term1,skipi$term2)
-  )
-  ann<-tmca.cooccurrence::Skipgram$new()
-  dtm<-tmca.util::make_binary(dtm = dtm)
-  ann$set_doc(dtm)
-  
-  ann$set_measure("DICE")
-  test_dice_s<-ann$ccoocs()
-  
-  ann$set_measure("COUNT")
-  test_count<-ann$ccoocs()
-  
-  ann$set_measure("MI")
-  test_mi<-ann$ccoocs()
-  #print(head(test,5))
-  #print(head(skipi$cooc,5))
-  #print(nrow(skipi)/2)
-  #print(nrow(skipi$cooc))
-  #print(head(skipi,5))
-  #print(head(matSparse4,5))
-  return(matSparse4)
-}
+#' calculate all cooccurrence measurements with skipgram base
+calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
+  # prepare data: delete punctuation and numbers, put worda to lower case
+  prep<- data.frame(db_data$token[,4],db_data$token[,1],db_data$token[,2])
+  prep$db_data.token...4.<-tolower(prep$db_data.token...4.)
+  prep$db_data.token...4.[prep$db_data.token...4. == "."]<- " "
+  prep$db_data.token...4.[prep$db_data.token...4. == ":"]<- " "
+  prep$db_data.token...4.[prep$db_data.token...4. == ";"]<- " "
+  prep$db_data.token...4.[prep$db_data.token...4. == ","]<- " "
+  prep$db_data.token...4.[prep$db_data.token...4. == "“"]<- " "
+  prep$db_data.token...4.[prep$db_data.token...4. == "[0-9"]<-" "
+  dt<-data.table(prep)
+  # set words that are in dtm 
+  keep<-dtm@Dimnames$features
+  to_keep<-dt[which(dt$db_data.token...4. %in% keep),]
+  replacement<-dt[,replace(dt$db_data.token...4., !(dt$db_data.token...4. %in% to_keep$db_data.token...4.),"PLACEHOLDER")]
+  final<-dt
+  final$db_data.token...4.<-replacement 
+  skipi<-cooccurrence(final$db_data.token...4.,group=c(final$db_data.token...1.,final$db_data.token...2.),order = TRUE,skipgram=parameters$skip_window)
 
-Skip_cooc<-R6Class(
-  "Skip_cooc",
-  lock_objects=F,
-  public = list(
-    skip_tab=NULL,
-    measure=NULL,
-    initialize = function(skip_tab,
-                          measure="DICE"){
-      self$skip_tab <- skip_tab
-      self$measure <- measure
-    },
-    set_skip_cooc = function(skip_tab){
-      self$skip_tab = skip_tab
-      invisible(self)
-    },
-    set_measure = function(measure){
-      if(measure == "DICE" | measure == "LOGLIK" | measure == "MI" | measure == "COUNT"){
-        self$measure = measure
-        invisible(self)
-      }else{
-        print("No such measure.")
-      }
-    },
-    get_skip_cooc = function(){
-      return(self$skip_tab)
-      invisible(self)
-    },
-    get_measure = function(){
-      return(self$measure)
-      invisible(self)
-    },
-    skip_ccoocs=
-      function(){
-        length_tab <- length(self$skip_tab$term1)
-        range_tab <- 1:length_tab
-        skip_mat <- as.matrix(self$skip_tab)
-        #DELETE NA'S, Much faster on table object
-        tmp <- Matrix::summary(skip_mat)
-        if(dim(tmp)[1]==0){
-          return(Matrix(skip_mat))
-        }
-        
-        #set diagonals to 0's
-        tmp[tmp[, 1] == tmp[, 2], "x"] <- 0
-        
-        coocCounts <-
-          Matrix::sparseMatrix(
-            i = tmp[, 1],
-            j = tmp[, 2],
-            x = tmp[, 3],
-            dimnames = dimnames(skip_mat),
-            dims = dim(skip_mat)
-          )
-        
-        finalSig <-
-          Matrix::Matrix(
-            0,
-            nrow = nrow(coocCounts),
-            ncol = ncol(coocCounts),
-            sparse = T,
-            dimnames = dimnames(coocCounts)
-          )
-        k <- nrow(skip_mat)
-        kj<- colSums(skip_mat)
-        tmp_sig<-vector(
-          mode="numeric",length=length(kj))
-        names(tmp_sig)<-colnames(skip_mat)
-        relWords<-colnames(skip_mat)
-        
-        switch(
-          self$measure,
-          DICE={
-            tmp_c <- summary(coocCounts)
-            freqs <- colSums(skip_mat)
-            
-            p_1 <- freqs[tmp_c[,1]]
-            p_2 <- freqs[tmp_c[,2]]
-            
-            p_det<-p_1+p_2
-            
-            sig <- (2 * tmp_c$x) / p_det
-            finalSig <-
-              Matrix::sparseMatrix(
-                i = tmp_c [, 1],
-                j = tmp_c [, 2],
-                x = sig,
-                dimnames = dimnames(coocCounts),
-                dims = dim(coocCounts)
-              )
-            
-            colnames(finalSig) <- colnames(skip_mat)
-            rownames(finalSig) <- colnames(skip_mat)
-            return((finalSig))
-          },
-          MI = {
-            tmp_c <- summary(coocCounts)
-            freqs <- colSums(skip_mat)
-            
-            p_1 <- freqs[tmp_c[, 1]]
-            p_2 <- freqs[tmp_c[, 2]]
-            p_det <- log(p_1) + log(p_2)
-            
-            sig <-
-              (log(tmp_c$x) + log(k)) - p_det
-            
-            sig[is.na(sig)] <- 0
-            sig[is.infinite(sig)] <- 0
-            
-            finalSig <-
-              Matrix::sparseMatrix(
-                i = tmp_c [, 1],
-                j = tmp_c [, 2],
-                x = sig,
-                dimnames =
-                  dimnames(coocCounts),
-                dims =
-                  dim(coocCounts)
-              )
-            
-            colnames(finalSig) <- colnames(skip_mat)
-            rownames(finalSig) <- colnames(skip_mat)
-            gc()
-            return(finalSig)
-          },
-          LOGLIK = {
-            tmp_c <- summary(coocCounts)
-            freqs <- colSums(skip_mat)
-            
-            ki <- freqs[tmp_c[, 1]] + 0.001
-            kj_help <- freqs[tmp_c[, 2]] + 0.001
-            kij <- tmp_c$x
-            
-            sig <- 2 * ((k * log(k)) - (ki * log(ki)) - (kj_help * log(kj_help)) + (kij * log(kij))
-                        + (k - ki - kj_help + kij) * log(k - ki - kj_help + kij)
-                        + (ki - kij) * log(ki - kij) + (kj_help - kij) * log(kj_help - kij)
-                        - (k - ki) * log(k - ki) - (k - kj_help) * log(k - kj_help))
-            
-            
-            sig[is.na(sig)] <- 0
-            sig[is.infinite(sig)] <- 0
-            
-            finalSig <-
-              Matrix::sparseMatrix(
-                i = tmp_c [, 1],
-                j = tmp_c [, 2],
-                x = sig,
-                dimnames =
-                  dimnames(coocCounts),
-                dims = dim(coocCounts)
-              )
-            
-            colnames(finalSig) <- colnames(skip_mat)
-            rownames(finalSig) <- colnames(skip_mat)
-            gc()
-            return(finalSig)
-            
-          },
-          
-          COUNT = {
-            finalSig <- coocCounts
-            colnames(finalSig) <- colnames(skip_mat)
-            rownames(finalSig) <- colnames(skip_mat)
-            gc()
-            return(finalSig)
-          }
-        )
-        
-      }
-  )
-)
-  
-calculate_skipgramm_all_measures<-function(db_data,parameters){
-  skipi<-cooccurrence(db_data$token[,4],group=c(db_data$token[,1],db_data$token[,2]),order = TRUE,skipgram=parameters$skip_window)
+  skipi <- skipi[ !(skipi$term1 == 'PLACEHOLDER' | skipi$term2 == 'PLACEHOLDER'),] 
+  skip_mat <- as.matrix(skipi)
+  print(head(skip_mat,20))
   coocsCalc <- Skip_cooc$new(skipi)
+  coocsCalc$set_minCoocFreq(as.integer(parameters$min_cooc_freq))
+  coocsCalc$set_maxCoocFreq(10000000)
+  
   log_to_file(message = "&emsp; Calculating coocs with Dice-Significance measure",logfile)
   coocsCalc$set_measure("DICE")
   coocs_matrix_dice<-coocsCalc$skip_ccoocs()
@@ -2226,16 +2034,15 @@ calculate_skipgramm_all_measures<-function(db_data,parameters){
   coocsCalc$set_measure("LOGLIK")
   coocs_matrix_log<-coocsCalc$skip_ccoocs()
   log_to_file(message = "&emsp;  ✔ ",logfile)
-  
-  gc()
+    gc()
   #delete entries for words no co-occurrence
   diag(coocs_matrix_dice)<-0
-  #CS<-colSums(coocs_matrix_dice)
-  #coocs_matrix_count<-coocs_matrix_count[which(CS>0),which(CS>0)]
-  #coocs_matrix_dice<-coocs_matrix_dice[which(CS>0),which(CS>0)]
-  #coocs_matrix_mi<-coocs_matrix_mi[which(CS>0),which(CS>0)]
-  #coocs_matrix_log<-coocs_matrix_log[which(CS>0),which(CS>0)]
-  #gc()
+  CS<-colSums(coocs_matrix_dice)
+  coocs_matrix_count<-coocs_matrix_count[which(CS>0),which(CS>0)]
+  coocs_matrix_dice<-coocs_matrix_dice[which(CS>0),which(CS>0)]
+  coocs_matrix_mi<-coocs_matrix_mi[which(CS>0),which(CS>0)]
+  coocs_matrix_log<-coocs_matrix_log[which(CS>0),which(CS>0)]
+  gc()
   
   terms<-colnames(coocs_matrix_dice)
   

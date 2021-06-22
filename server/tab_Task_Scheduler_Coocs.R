@@ -43,34 +43,34 @@ output$Analysis_Parameter_CA<-renderUI({
                )),
       column(2,
              conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             sliderInput(inputId = "CA_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
-                     ,html=T)
-               )
-               )),
-           column(2,
+                              sliderInput(inputId = "CA_min_char",label = "Min #chars for words",value = c(2,50),min = 1,step = 1,max = 100)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Set the minimum and maximum number of characters of a word to be included in the analysis.", placement = "right"
+                                      ,html=T)
+                                )
+             )),
+      column(2,
              conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             textInput(inputId = "CA_remove_custom",label = HTML("Remove custom words"),placeholder ="Add words (Seperated by ,)")%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Delete specific words from the analysis. Seperate them with ','.", placement = "right"
-                   )
-               )
-               )
+                              textInput(inputId = "CA_remove_custom",label = HTML("Remove custom words"),placeholder ="Add words (Seperated by ,)")%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Delete specific words from the analysis. Seperate them with ','.", placement = "right"
+                                    )
+                                )
+             )
       ),
       column(2,
              conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             textInput(inputId = "CA_keep_custom",label = HTML("Keep custom words"),placeholder ="Add words (Seperated by ,)")%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Keep specific words in the analysis. Seperate them with ','. If both custom words and whitelist are specified, they will be merged together.", placement = "right"
-                   )
-               )
+                              textInput(inputId = "CA_keep_custom",label = HTML("Keep custom words"),placeholder ="Add words (Seperated by ,)")%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Keep specific words in the analysis. Seperate them with ','. If both custom words and whitelist are specified, they will be merged together.", placement = "right"
+                                    )
+                                )
              )
       )
     ),
@@ -85,54 +85,54 @@ output$Analysis_Parameter_CA<-renderUI({
                )),
       column(1,
              conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             checkboxInput(inputId = "CA_remove_stopwords",label = "Remove Stopwords",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
-                   )
-               )
-               )),
+                              checkboxInput(inputId = "CA_remove_stopwords",label = "Remove Stopwords",value = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Should stopwords be removed from the analysis? The stopwords of the language specified during dataimport for this dataset will be used.", placement = "top"
+                                    )
+                                )
+             )),
       column(1,
              conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             checkboxInput(inputId = "CA_remove_numbers",label = "Remove Numbers?",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Remove types which consist of numbers only from the analysis.", placement = "bottom"
-                   )
-               )
-               )),
+                              checkboxInput(inputId = "CA_remove_numbers",label = "Remove Numbers?",value = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Remove types which consist of numbers only from the analysis.", placement = "bottom"
+                                    )
+                                )
+             )),
       column(1,
              conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             checkboxInput(inputId = "CA_remove_numbers_all",label = "Remove everything containing a number number?",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Remove words which are composed of at least one number.", placement = "right"
-                   )
-               )
-               )),
+                              checkboxInput(inputId = "CA_remove_numbers_all",label = "Remove everything containing a number number?",value = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Remove words which are composed of at least one number.", placement = "right"
+                                    )
+                                )
+             )),
       column(1,
              conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             checkboxInput(inputId = "CA_remove_punctuation",label = "Remove Punctuation?",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Remove words, which reflect punctuation from the analysis.", placement = "right"
-                   )
-               )
-               )),
+                              checkboxInput(inputId = "CA_remove_punctuation",label = "Remove Punctuation?",value = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Remove words, which reflect punctuation from the analysis.", placement = "right"
+                                    )
+                                )
+             )),
       column(1,
              conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             checkboxInput(inputId = "CA_remove_hyphenation",label = "Remove Hyphenation?",value = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Remove words, which reflect hyphens from the analysis.", placement = "right"
-                   )
-               )
-               )),
+                              checkboxInput(inputId = "CA_remove_hyphenation",label = "Remove Hyphenation?",value = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Remove words, which reflect hyphens from the analysis.", placement = "right"
+                                    )
+                                )
+             )),
       column(1,
              checkboxInput(inputId = "CA_consolidate_entities",label = "Consolidate Entities?",value = F)%>%
                shinyInput_label_embed(
@@ -143,225 +143,221 @@ output$Analysis_Parameter_CA<-renderUI({
                ))
     ),
     conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-    fluidRow(
-      column(1,
-             checkboxInput(inputId = "CA_use_custom_blacklist",label = "use custom blacklist?",value = F)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Use one of the specified blacklists to remove a set of words from the analysis.", placement = "right"
-                   )
-               )
-      ),
-      column(2,
-                              uiOutput(outputId = "CA_blacklist_UI")
-                 ),
-      column(1,
-             checkboxInput(inputId = "CA_use_custom_whitelist",label = "use custom whitelist?",value = F)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Use of the specified whitelists to protect a set of words from the removal during the pre-processing or to calculate the analysis for these words exclusivly.", placement = "right"
-                   )
-               )
-      ),
-      column(2,
-                              uiOutput(outputId = "CA_whitelist_UI")
-                   )
-    ),
-    fluidRow(
-      conditionalPanel(condition = "input.CA_use_custom_whitelist==true || input.CA_keep_custom.length>=1",
-                       tags$br(),
-                       tags$h5("Whitelist Options:"),
+                     fluidRow(
                        column(1,
-                              checkboxInput(inputId = "CA_whitelist_only",label = "Exclude all words apart from the whitelist entries",value = FALSE)%>%
+                              checkboxInput(inputId = "CA_use_custom_blacklist",label = "use custom blacklist?",value = F)%>%
                                 shinyInput_label_embed(
                                   shiny_iconlink() %>%
                                     bs_embed_popover(
-                                      title = "Should all words apart from the entries in the whitelist be excluded from the analysis?", placement = "right"
+                                      title = "Use one of the specified blacklists to remove a set of words from the analysis.", placement = "right"
                                     )
                                 )
                        ),
+                       column(2,
+                              uiOutput(outputId = "CA_blacklist_UI")
+                       ),
                        column(1,
-                              conditionalPanel(condition = "(input.CA_use_custom_whitelist==true || input.CA_keep_custom.length>=1) && (input.CA_ngram.includes('2') || input.CA_ngram.includes('3'))",
-                                               checkboxInput(inputId = "CA_whitelist_expand",label = "Expand whitelist?",value = FALSE)%>%
+                              checkboxInput(inputId = "CA_use_custom_whitelist",label = "use custom whitelist?",value = F)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Use of the specified whitelists to protect a set of words from the removal during the pre-processing or to calculate the analysis for these words exclusivly.", placement = "right"
+                                    )
+                                )
+                       ),
+                       column(2,
+                              uiOutput(outputId = "CA_whitelist_UI")
+                       )
+                     ),
+                     fluidRow(
+                       conditionalPanel(condition = "input.CA_use_custom_whitelist==true || input.CA_keep_custom.length>=1",
+                                        tags$br(),
+                                        tags$h5("Whitelist Options:"),
+                                        column(1,
+                                               checkboxInput(inputId = "CA_whitelist_only",label = "Exclude all words apart from the whitelist entries",value = FALSE)%>%
                                                  shinyInput_label_embed(
                                                    shiny_iconlink() %>%
                                                      bs_embed_popover(
-                                                       title = "Should the words whitelist be expaned using n-grams?", placement = "right"
+                                                       title = "Should all words apart from the entries in the whitelist be excluded from the analysis?", placement = "right"
                                                      )
                                                  )
-                              )  
-                              
+                                        ),
+                                        column(1,
+                                               conditionalPanel(condition = "(input.CA_use_custom_whitelist==true || input.CA_keep_custom.length>=1) && (input.CA_ngram.includes('2') || input.CA_ngram.includes('3'))",
+                                                                checkboxInput(inputId = "CA_whitelist_expand",label = "Expand whitelist?",value = FALSE)%>%
+                                                                  shinyInput_label_embed(
+                                                                    shiny_iconlink() %>%
+                                                                      bs_embed_popover(
+                                                                        title = "Should the words whitelist be expaned using n-grams?", placement = "right"
+                                                                      )
+                                                                  )
+                                               )  
+                                               
+                                        )
                        )
-      )
-    ),
-    tags$hr(),
-    tags$h4("Pruning"),
-    fluidRow(
-      column(1,
-             tags$div(
-               selectInput(inputId = "CA_termfreq_type",label = "term frequency type",choices = c("count","prop","rank","quantile"),multiple = F,selected = "count")%>%
-                 shinyInput_label_embed(
-                   shiny_iconlink() %>%
-                     bs_embed_popover(
-                       title = "Remove words from the analysis that exhibit a specified lower and/or upper bound of occurrences.
+                     ),
+                     tags$hr(),
+                     tags$h4("Pruning"),
+                     fluidRow(
+                       column(1,
+                              tags$div(
+                                selectInput(inputId = "CA_termfreq_type",label = "term frequency type",choices = c("count","prop","rank","quantile"),multiple = F,selected = "count")%>%
+                                  shinyInput_label_embed(
+                                    shiny_iconlink() %>%
+                                      bs_embed_popover(
+                                        title = "Remove words from the analysis that exhibit a specified lower and/or upper bound of occurrences.
                        These bound can be specified by a explicit number of occurrences (count based), by setting a probability (prob),
                        by using a rank to keep just words within a certain range of occurrence ranks or by specifying a quantile to cut of.",
-                       placement = "right",
-                       html="true"
-                     )
-                 )
-             )
-      ),
-      column(2,
-             tags$br(),
-             conditionalPanel(condition = 'input.CA_termfreq_type=="count"',
-                              numericInput(inputId = "CA_min_termfreq_c",label = "min. term frequency",min = 0,step = 1,value=NULL),
-                              numericInput(inputId = "CA_max_termfreq_c",label = "max. term frequency",min = 1,step = 1,value=NULL)
-             ),
-             conditionalPanel(condition = 'input.CA_termfreq_type=="prop"',
-                              numericInput(inputId = "CA_min_termfreq_p",label = "min. term probability",min = 0,step = 0.01,max = 1,value=NULL),
-                              numericInput(inputId = "CA_max_termfreq_p",label = "max. term probability",min = 0.001,step = 0.01,max = 1,value=NULL)
-             ),
-             conditionalPanel(condition = 'input.CA_termfreq_type=="rank"',
-                              numericInput(inputId = "CA_min_termfreq_r",label = "min. term rank",min = 1,step = 1,value=NULL),
-                              numericInput(inputId = "CA_max_termfreq_r",label = "max. term rank",min = 1,step = 1,value=NULL)
-             ),
-             conditionalPanel(condition = 'input.CA_termfreq_type=="quantile"',
-                              numericInput(inputId = "CA_min_termfreq_q",label = "min. term quantile",min = 0,max = 1,step = 0.25,value=NULL),
-                              numericInput(inputId = "CA_max_termfreq_q",label = "max. term quantile",min = 0,max = 1,step = 0.25,value=NULL)
-             )
-      ),
-      column(1,
-             tags$div(
-               selectInput(inputId = "CA_docfreq_type",label = "doc frequency type",choices = c("count","prop","rank","quantile"),multiple = F,selected = "prop")%>%
-                 shinyInput_label_embed(
-                   shiny_iconlink() %>%
-                     bs_embed_popover(
-                       title = "Remove words from the analysis that exhibit a specified lower and/or upper bound of document occurrences.
+                                        placement = "right",
+                                        html="true"
+                                      )
+                                  )
+                              )
+                       ),
+                       column(2,
+                              tags$br(),
+                              conditionalPanel(condition = 'input.CA_termfreq_type=="count"',
+                                               numericInput(inputId = "CA_min_termfreq_c",label = "min. term frequency",min = 0,step = 1,value=NULL),
+                                               numericInput(inputId = "CA_max_termfreq_c",label = "max. term frequency",min = 1,step = 1,value=NULL)
+                              ),
+                              conditionalPanel(condition = 'input.CA_termfreq_type=="prop"',
+                                               numericInput(inputId = "CA_min_termfreq_p",label = "min. term probability",min = 0,step = 0.01,max = 1,value=NULL),
+                                               numericInput(inputId = "CA_max_termfreq_p",label = "max. term probability",min = 0.001,step = 0.01,max = 1,value=NULL)
+                              ),
+                              conditionalPanel(condition = 'input.CA_termfreq_type=="rank"',
+                                               numericInput(inputId = "CA_min_termfreq_r",label = "min. term rank",min = 1,step = 1,value=NULL),
+                                               numericInput(inputId = "CA_max_termfreq_r",label = "max. term rank",min = 1,step = 1,value=NULL)
+                              ),
+                              conditionalPanel(condition = 'input.CA_termfreq_type=="quantile"',
+                                               numericInput(inputId = "CA_min_termfreq_q",label = "min. term quantile",min = 0,max = 1,step = 0.25,value=NULL),
+                                               numericInput(inputId = "CA_max_termfreq_q",label = "max. term quantile",min = 0,max = 1,step = 0.25,value=NULL)
+                              )
+                       ),
+                       column(1,
+                              tags$div(
+                                selectInput(inputId = "CA_docfreq_type",label = "doc frequency type",choices = c("count","prop","rank","quantile"),multiple = F,selected = "prop")%>%
+                                  shinyInput_label_embed(
+                                    shiny_iconlink() %>%
+                                      bs_embed_popover(
+                                        title = "Remove words from the analysis that exhibit a specified lower and/or upper bound of document occurrences.
                                       These bound can be specified by a explicit number of document occurrences (count based), by setting a probability (prob),
                                       by using a rank to keep just words within a certain range of document occurrence ranks or by specifying a quantile to cut of.",
-                       placement = "right",
-                       html="true"
-                     )
-                 )
-             )
-      ),
-      column(2,
-             tags$br(),
-             conditionalPanel(condition = 'input.CA_docfreq_type=="count"',
-                              numericInput(inputId = "CA_min_docfreq_c",label = "min. doc frequency",min = 0,step = 1,value=NULL),
-                              numericInput(inputId = "CA_max_docfreq_c",label = "max. doc frequency",min = 1,step = 1,value=NULL)
-             ),
-             conditionalPanel(condition = 'input.CA_docfreq_type=="prop"',
-                              numericInput(inputId = "CA_min_docfreq_p",label = "min. doc probability",min = 0,step = 0.01,max = 1,value=NULL),
-                              numericInput(inputId = "CA_max_docfreq_p",label = "max. doc probability",min = 0.001,step = 0.01,max = 1,value=NULL)
-             ),
-             conditionalPanel(condition = 'input.CA_docfreq_type=="rank"',
-                              numericInput(inputId = "CA_min_docfreq_r",label = "min. doc rank",min = 1,step = 1,value=NULL),
-                              numericInput(inputId = "CA_max_docfreq_r",label = "max. doc rank",min = 1,step = 1,value=NULL)
-             ),
-             conditionalPanel(condition = 'input.CA_docfreq_type=="quantile"',
-                              numericInput(inputId = "CA_min_docfreq_q",label = "min. doc quantile",min = 0,max = 1,step = 0.25,value=NULL),
-                              numericInput(inputId = "CA_max_docfreq_q",label = "max. doc quantile",min = 0,max = 1,step = 0.25,value=NULL)
-             )
-      )
-    ) 
+                                        placement = "right",
+                                        html="true"
+                                      )
+                                  )
+                              )
+                       ),
+                       column(2,
+                              tags$br(),
+                              conditionalPanel(condition = 'input.CA_docfreq_type=="count"',
+                                               numericInput(inputId = "CA_min_docfreq_c",label = "min. doc frequency",min = 0,step = 1,value=NULL),
+                                               numericInput(inputId = "CA_max_docfreq_c",label = "max. doc frequency",min = 1,step = 1,value=NULL)
+                              ),
+                              conditionalPanel(condition = 'input.CA_docfreq_type=="prop"',
+                                               numericInput(inputId = "CA_min_docfreq_p",label = "min. doc probability",min = 0,step = 0.01,max = 1,value=NULL),
+                                               numericInput(inputId = "CA_max_docfreq_p",label = "max. doc probability",min = 0.001,step = 0.01,max = 1,value=NULL)
+                              ),
+                              conditionalPanel(condition = 'input.CA_docfreq_type=="rank"',
+                                               numericInput(inputId = "CA_min_docfreq_r",label = "min. doc rank",min = 1,step = 1,value=NULL),
+                                               numericInput(inputId = "CA_max_docfreq_r",label = "max. doc rank",min = 1,step = 1,value=NULL)
+                              ),
+                              conditionalPanel(condition = 'input.CA_docfreq_type=="quantile"',
+                                               numericInput(inputId = "CA_min_docfreq_q",label = "min. doc quantile",min = 0,max = 1,step = 0.25,value=NULL),
+                                               numericInput(inputId = "CA_max_docfreq_q",label = "max. doc quantile",min = 0,max = 1,step = 0.25,value=NULL)
+                              )
+                       )
+                     ) 
     ),
     #specific parameters
     tags$hr(),
     tags$h4("Co-occurrence Analysis parameters"),
     fluidRow(
       column(1,
-             selectInput(inputId = "CA_cooc_type",label = HTML("Co-occurrence type <br/>"),choices = c("Document","Sentence","Skipgram"),selected = "Sentence")%>%
+             selectInput(inputId = "CA_cooc_type",label = HTML("Co-occurrence window <br/>"),choices = c("Document","Sentence","Skipgram"),selected = "Sentence")%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
-                     title = "Specify the co-occurrence method. So far Document and Sentence and Skipgram co-occurrence calculation is implemented",
+                     title = "Specify the co-occurrence window. So far Document and Sentence and Skipgram co-occurrence calculation is implemented",
                      placement = "right"
                    )
                )
       ),
       column(1,
-             conditionalPanel(condition = 'input.CA_cooc_type == Skipgram',
-                              numericInput(inputId = "CA_skipgram_window",label = "windowsize for skipgram",min = 1,step = 1,value=NULL)
+             conditionalPanel(condition='input.CA_cooc_type == "Skipgram"',
+                              numericInput(inputId = "CA_skipgram_window",label = "windowsize for skipgram",min = 1,step = 1,value=2)
              )
       ),
       column(1,
-             conditionalPanel(condition = 'input.CA_cooc_type == Document || input.CA_cooc_type == Sentence',
-               numericInput(inputId = "CA_min_Cooc_Freq",label = "Minimum co-occurrence frequency:",value = 2,min = 1,step = 1)%>%
-                 shinyInput_label_embed(
-                   shiny_iconlink() %>%
-                     bs_embed_popover(
-                       title = "Minimum number of shared occurrences of 2 words to be included in the analysis as a co-occurrence",
-                       placement = "right"
-                     )
-                 )
-               
+             numericInput(inputId = "CA_min_Cooc_Freq",label = "Minimum co-occurrence frequency:",value = 2,min = 1,step = 1)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Minimum number of shared occurrences of 2 words to be included in the analysis as a co-occurrence",
+                     placement = "right"
+                   )
+               )
+      ),
+      column(1,
+             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
+                              selectInput(inputId = "CA_POS_TYPES",label = "Include POS-Types",
+                                          choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X") ,selected = "all",multiple = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Should the analysis be limited to words from a certain range of POS-Types. If this is the case make sure to exclude 'all' from the selection.",
+                                      placement = "right"
+                                    )
+                                )
              )
       ),
       column(1,
              conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             selectInput(inputId = "CA_POS_TYPES",label = "Include POS-Types",
-                         choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X") ,selected = "all",multiple = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Should the analysis be limited to words from a certain range of POS-Types. If this is the case make sure to exclude 'all' from the selection.",
-                     placement = "right"
-                   )
-               )
-             )
-      ),
-      column(1,
-             conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             selectInput(inputId = "CA_ENTITY_TYPES",label = " Include NER-Tags",
-                         choices =c("all","PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
-                                    "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = "all",multiple=T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-Tag option causes the consolidation of entities.",
-                     placement = "right"
-                   )
-               )
+                              selectInput(inputId = "CA_ENTITY_TYPES",label = " Include NER-Tags",
+                                          choices =c("all","PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+                                                     "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = "all",multiple=T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Should the analysis be limited to words from a certain range of NER-Tags. If this is the case make sure to exclude 'all' from the selection. Using the NER-Tag option causes the consolidation of entities.",
+                                      placement = "right"
+                                    )
+                                )
              )
       )
     ),
     fluidRow(
       column(1,offset=2,
              conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             selectInput(inputId = "CA_POS_TYPES_exclude",label = "Exclude POS-Types",
-                         choices =c("NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X"), selected=character(0),multiple = T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Remove words with a certain POS-Tag from the analysis.",
-                     placement = "right"
-                   )
-               )
+                              selectInput(inputId = "CA_POS_TYPES_exclude",label = "Exclude POS-Types",
+                                          choices =c("NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X"), selected=character(0),multiple = T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Remove words with a certain POS-Tag from the analysis.",
+                                      placement = "right"
+                                    )
+                                )
              )
       ),
       column(1,
              conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             selectInput(inputId = "CA_ENTITY_TYPES_exclude",label = "Exclude NER-Tags",
-                         choices =c("PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
-                                    "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = character(0),multiple=T)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(
-                     title = "Remove words with a certain NER-Tag from the analysis. Using this option causes the consolitation of entities.",
-                     placement = "right"
-                   )
-               )
+                              selectInput(inputId = "CA_ENTITY_TYPES_exclude",label = "Exclude NER-Tags",
+                                          choices =c("PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+                                                     "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = character(0),multiple=T)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "Remove words with a certain NER-Tag from the analysis. Using this option causes the consolitation of entities.",
+                                      placement = "right"
+                                    )
+                                )
              )
       )
     ),
     bsButton(inputId = "CA_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
 })
-
 
 
 #' show whitelists stored in collections/whitelists
@@ -387,6 +383,18 @@ observeEvent(ignoreNULL = T,input$CA_use_custom_whitelist,{
   }
   else{
     shinyjs::hide(id = "CA_whitelist")
+  }
+})
+
+#' show Skipgram window size options when Skipgram is selected
+#' depends on:
+#'   input$CA_skipgram: should skipgram analysis be used? 
+observeEvent(ignoreNULL = T,input$CA_cooc_type,{
+  if(input$CA_cooc_type == 'Skipgram'){
+    shinyjs::show(id = "CA_skipgram_window")
+  }
+  else{
+    shinyjs::hide(id = "CA_skipgram_window")
   }
 })
 
@@ -416,19 +424,6 @@ observeEvent(ignoreNULL = T,input$CA_use_custom_blacklist,{
   }
 })
 
-#' show skipgram option when skipgram selected
-#' depends on:
-#'   input$CA_skipgram: should skipgram analysis be used? 
-observeEvent(ignoreNULL = T,input$CA_cooc_type,{
-  if(input$CA_cooc_type == 'Skipgram'){
-    shinyjs::show(id = "CA_skipgram_window")
-    shinyjs::hide(id="CA_min_Cooc_Freq")
-  }
-  else{
-    shinyjs::hide(id = "CA_skipgram_window")
-    shinyjs::show(id="CA_min_Cooc_Freq")
-  }
-})
 
 #' start cooccurrence analysis script, if submit button is clicked
 #' depends on:
@@ -490,7 +485,7 @@ observeEvent(input$CA_Submit_Script,{
   if(isFALSE(valid)){
     shinyWidgets::confirmSweetAlert(session = session,title = "Check pruning settings!",text = HTML("It seems your current pruning input parameters don't make sense. It's very likely, that the whole vocabulary will be removed.
                            Check <a href='https://quanteda.io/reference/dfm_trim.html' title='quanteda pruning'> Quanteda Pruning Settings </a>"),html=T,inputId="CA_pruning_continue",
-                                      type="warning",closeOnClickOutside = T,btn_labels = c("Change Settings","Continue anyway!"))
+                                    type="warning",closeOnClickOutside = T,btn_labels = c("Change Settings","Continue anyway!"))
   }
   else if(isFALSE(valid_vocab)){
     shinyWidgets::confirmSweetAlert(session = session,title = "Check vocabulary",text = HTML("You chose to use a predefined vocabulary. It seems this vocabulary is not present."),html=T,inputId="CA_pruning_continue",
@@ -568,7 +563,7 @@ observeEvent(input$CA_Submit_Script,{
                      whitelist_only=input$CA_whitelist_only,
                      use_fixed_vocab=input$CA_use_fixed_vocab,
                      fixed_vocab=input$CA_fixed_vocab,
-                     skip_window=input$CA_skipgram_window
+                     skip_window = input$CA_skipgram_window
     )
     #create process ID
     ID<-get_task_id_counter()+1
@@ -725,7 +720,7 @@ observeEvent(input$CA_pruning_continue,ignoreInit = T,{
                    whitelist_only=input$CA_whitelist_only,
                    use_fixed_vocab=input$CA_use_fixed_vocab,
                    fixed_vocab=input$CA_fixed_vocab,
-                   skip_window=input$CA_skipgram_window
+                   skip_window = input$CA_skipgram_window
   )
   #create process ID
   ID<-get_task_id_counter()+1

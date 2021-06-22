@@ -76,7 +76,7 @@ error<-try(expr = {
   if (isTRUE(parameters$skipgram)){
     log_to_file(message = "<b>Step 7/8: Calculating Co-occurrences with Skipgram</b>",file = logfile)
     #db_data$token<-db_data$token[,c("doc_id","token","lemma")]
-    coocs<-calculate_skipgramm_all_measures(db_data,parameters)
+    coocs<-calculate_skipgramm_all_measures(db_data,parameters,dtm)
     coocs_matrix_dice<-coocs$coocs_matrix_dice
     coocs_matrix_count<-coocs$coocs_matrix_count
     coocs_matrix_log<-coocs$coocs_matrix_log
