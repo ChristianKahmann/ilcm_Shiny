@@ -2007,10 +2007,9 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   final<-dt
   final$db_data.token...4.<-replacement 
   skipi<-cooccurrence(final$db_data.token...4.,group=c(final$db_data.token...1.,final$db_data.token...2.),order = TRUE,skipgram=parameters$skip_window)
-
+  print(summary(skipi))
   skipi <- skipi[ !(skipi$term1 == 'PLACEHOLDER' | skipi$term2 == 'PLACEHOLDER'),] 
-  skip_mat <- as.matrix(skipi)
-  print(head(skip_mat,20))
+  print(summary(skipi))
   coocsCalc <- Skip_cooc$new(skipi)
   coocsCalc$set_minCoocFreq(as.integer(parameters$min_cooc_freq))
   coocsCalc$set_maxCoocFreq(10000000)

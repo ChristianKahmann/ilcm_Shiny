@@ -61,19 +61,21 @@ Skip_cooc<-R6Class(
     skip_ccoocs=
       function(){
         #length_tab1 <- length(unique(self$skip_tab$term1))
-        #range_tab1 <- 1:length_tab1
         #length_tab2 <- length(unique(self$skip_tab$term2))
-        #range_tab2 <- 1:length_tab2
+        #print(length_tab1)
+        #print(length_tab2)
         #TODO: finde neu Funktion zum erstellen einer Matrix
         # Idee: in Tabelle kommt gleiche Wort mehrfach vor - wird so in matrix übernommen = falsch
-        skip_mat <- as.matrix(self$skip_tab)
-        #skip_mat <- sparseMatrix(
-         # i = range_tab1, 
-        #  j = range_tab2, 
-         # x = self$skip_tab$cooc,
-          #dims = c(length_tab1,length_tab2), 
-          #dimnames = list(unique(self$skip_tab$term1),unique(self$skip_tab$term2))
+        skip_mat <- as.matrix(self$skip_tab,unique(self$skip_tab$term2))
+        #print(summary(skip_mat))
+        #test <- sparseMatrix(
+        #  i = max(range_tab2,range_tab1), 
+        #  j = max(range_tab2,range_tab1), 
+        #  x = self$skip_tab$cooc,
+        #  dims = c(length_tab1,length_tab2), 
+        #  dimnames = list(unique(self$skip_tab$term2),unique(self$skip_tab$term2))
         #)
+        #print(summary(test))
         tmp <- Matrix::summary(skip_mat)
         if(dim(tmp)[1]==0){
           return(Matrix(skip_mat))
