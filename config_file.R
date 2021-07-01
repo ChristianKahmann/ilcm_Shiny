@@ -51,3 +51,5 @@ if(hide_login==TRUE){
 # specify where gensim library can be found to be used in dynamic topic modelling
 reticulate_python_path<-"/home/rstudio/miniconda3/bin/python"
 
+credentials<-rbind(credentials,c('test',sodium::password_store('User'),'basic'))
+credentials<-rbind(credentials,c('test2',sodium::password_store('user'),'basic'))

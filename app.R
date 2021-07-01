@@ -187,8 +187,16 @@ server <- function(input, output, session) {
   values$user<-"unknown"
   values$logged_in<-FALSE
   values$random_seed<-random_seed
-  options(shiny.maxRequestSize=max_upload_file_size*1024^2) 
+  options(shiny.maxRequestSize=max_upload_file_size*1024^2)
+  # get current login setting from config file
+  if(any(grepl(x = readLines("config_file.R"),pattern = "hide_login=FALSE"))){
+    hide_login=FALSE
+  }
+  else{
+    hide_login=TRUE
+  }
   USER<- reactiveValues(login = hide_login)
+  values$use_login=!hide_login
   # when the app load start with the Explorer Tab selected
   shiny::updateTabsetPanel(session = session,inputId = "tabs",selected = "Explorer")
   
@@ -235,7 +243,7 @@ server <- function(input, output, session) {
   })
   
   
-
+  
   #source the server parts of the app
   # render the overall UI structure of the applications's body
   source(file.path("server","tab_body_overall.R"),local = T)$value
@@ -318,6 +326,5 @@ server <- function(input, output, session) {
 # start the app
 shiny::shinyApp(ui,server)
 
-
-
-
+# run in parallel for multiple users
+#shinyParallel::runApp(app, max.sessions=2, users.per.session=2);

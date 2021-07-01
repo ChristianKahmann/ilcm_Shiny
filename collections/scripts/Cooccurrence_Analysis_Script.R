@@ -8,9 +8,8 @@ source("global/functions_used_in_scripts.R")
 error<-try(expr = {
   library(Matrix)
   library(dplyr)
-  library(spacyr)
-  library(udpipe)
-  library(rapportools)
+  #library(spacyr)
+  
   #' load parameters
   load("collections/tmp/tmp.RData")
   parameters_original<-parameters
@@ -61,21 +60,10 @@ error<-try(expr = {
   log_to_file(message = "<b>Step 6/8: Calculating DTM</b>",file = logfile)
   dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
-  
-  #' calculating skipgram
-  #if (isTRUE(parameters$skipgram)){
-  #  log_to_file(message = "<b>Step 6.5/8: Check for Skipgram</b>",file = logfile)
-  #  skip_gram <- skipgram_cooc(db_data,parameters)
-  #  log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating Skipgram",file = logfile)
-  #  
-  #}else{
-  #  log_to_file(message = "<b>Step 6.5/8: No Skipgram</b>",file = logfile)
-  #}
 
   #' calculating co-occurrences
   if (isTRUE(parameters$skipgram)){
     log_to_file(message = "<b>Step 7/8: Calculating Co-occurrences with Skipgram</b>",file = logfile)
-    #db_data$token<-db_data$token[,c("doc_id","token","lemma")]
     coocs<-calculate_skipgramm_all_measures(db_data,parameters,dtm)
     coocs_matrix_dice<-coocs$coocs_matrix_dice
     coocs_matrix_count<-coocs$coocs_matrix_count
@@ -94,6 +82,7 @@ error<-try(expr = {
     terms<-coocs$terms
     log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating co-occurrences",file = logfile)
   }
+ 
   
   #' Saving results
   log_to_file(message = "<b>Step 8/8: Saving results</b>",file = logfile)

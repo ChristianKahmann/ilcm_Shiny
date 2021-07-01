@@ -1,26 +1,24 @@
 library(R6)
-library(udpipe)
-library(data.table)
-library(tm)
-library(rapportools)
-library(textclean)
-library(stringr)
 
 Skip_cooc<-R6Class(
   "Skip_cooc",
   lock_objects=F,
   public = list(
     skip_tab=NULL,
+    #DTM = NULL,
     measure=NULL,
     minCoocFreq = NULL,
     maxCoocFreq = NULL,
     initialize = function(skip_tab,
                           measure="DICE",minCoocFreq = 1,
-                          maxCoocFreq = 500){
+                          maxCoocFreq = 500
+                          #,DTM
+                          ){
       self$skip_tab <- skip_tab
       self$measure <- measure
       self$minCoocFreq <- minCoocFreq
       self$maxCoocFreq <- maxCoocFreq
+      #self$DTM <- DTM
     },
     set_skip_cooc = function(skip_tab){
       self$skip_tab = skip_tab
@@ -42,6 +40,10 @@ Skip_cooc<-R6Class(
       self$maxCoocFreq = maxCoocFreq
       invisible(self)
     },
+    set_DTM = function(DTM) {
+      self$DTM = DTM
+      invisible(self)
+    },
     get_skip_cooc = function(){
       return(self$skip_tab)
       invisible(self)
@@ -58,15 +60,18 @@ Skip_cooc<-R6Class(
       return(self$maxCoocFreq)
       invisible(self)
     },
+    get_DTM = function(){
+      return(self$DTM)
+      invisible(self)
+    },
     skip_ccoocs=
       function(){
-        #length_tab1 <- length(unique(self$skip_tab$term1))
-        #length_tab2 <- length(unique(self$skip_tab$term2))
-        #print(length_tab1)
-        #print(length_tab2)
-        #TODO: finde neu Funktion zum erstellen einer Matrix
-        # Idee: in Tabelle kommt gleiche Wort mehrfach vor - wird so in matrix übernommen = falsch
-        skip_mat <- as.matrix(self$skip_tab,unique(self$skip_tab$term2))
+        # PROBLEM: erzeugt nur im besten Fall eine Sparse Matrix
+        ## Dimension ist kleiner als die eigentliche von Skip_tab
+        #skip_mat <- as.matrix(self$skip_tab)
+        
+        #dtm_info<-length(self$DTM@Dimnames$features)
+        #print(dtm_info)
         #print(summary(skip_mat))
         #test <- sparseMatrix(
         #  i = max(range_tab2,range_tab1), 
@@ -76,14 +81,21 @@ Skip_cooc<-R6Class(
         #  dimnames = list(unique(self$skip_tab$term2),unique(self$skip_tab$term2))
         #)
         #print(summary(test))
-        tmp <- Matrix::summary(skip_mat)
+        #my_mat<- matrix(ncol = dtm_info, nrow = dtm_info)
+        #colnames(my_mat)<-c(self$DTM@Dimnames$features)
+        #tmp <- Matrix::summary(skip_mat)
+        tmp <- Matrix::summary(self$skip_tab)
         if(dim(tmp)[1]==0){
-          return(Matrix(skip_mat))
+          return(Matrix(self$skip_tab))
         }
-        
+        #print(head(tmp,20))
         #delete vocab whith no coocs
         tmp[tmp[, "x"] < self$minCoocFreq, "x"] <- 0
         tmp[tmp[, "x"] > self$maxCoocFreq, "x"] <- 0
+        
+        #set diagonals to 0's
+        tmp[tmp[, 1] == tmp[, 2], "x"] <- 0
+        
         coocCounts <-
           Matrix::sparseMatrix(
             i = tmp[, 1],
@@ -101,6 +113,7 @@ Skip_cooc<-R6Class(
             sparse = T,
             dimnames = dimnames(coocCounts)
           )
+        
         k <- nrow(skip_mat)
         kj<- colSums(skip_mat)
         tmp_sig<-vector(
@@ -109,6 +122,7 @@ Skip_cooc<-R6Class(
         relWords<-colnames(skip_mat)
         
         switch(
+          # PROBLEM: Dice Berechnung stimmt nicht, wenn ich Collection Leipzig wähle
           self$measure,
           DICE={
             tmp_c <- summary(coocCounts)

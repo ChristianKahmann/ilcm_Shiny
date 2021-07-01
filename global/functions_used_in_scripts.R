@@ -1,6 +1,8 @@
 library(tidyverse)
 library(shinyWidgets)
 library(udpipe)
+library(data.table)
+library(tm)
 source("global/SkipCooc.R")
 #' getMetaData for given ids and datasets (which means via GUI a selected a collection)
 #'
@@ -1991,26 +1993,23 @@ remove_locations<-function(token){
 #' calculate all cooccurrence measurements with skipgram base
 calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   # prepare data: delete punctuation and numbers, put worda to lower case
-  prep<- data.frame(db_data$token[,4],db_data$token[,1],db_data$token[,2])
-  prep$db_data.token...4.<-tolower(prep$db_data.token...4.)
-  prep$db_data.token...4.[prep$db_data.token...4. == "."]<- " "
-  prep$db_data.token...4.[prep$db_data.token...4. == ":"]<- " "
-  prep$db_data.token...4.[prep$db_data.token...4. == ";"]<- " "
-  prep$db_data.token...4.[prep$db_data.token...4. == ","]<- " "
-  prep$db_data.token...4.[prep$db_data.token...4. == "“"]<- " "
-  prep$db_data.token...4.[prep$db_data.token...4. == "[0-9"]<-" "
-  dt<-data.table(prep)
-  # set words that are in dtm 
-  keep<-dtm@Dimnames$features
-  to_keep<-dt[which(dt$db_data.token...4. %in% keep),]
-  replacement<-dt[,replace(dt$db_data.token...4., !(dt$db_data.token...4. %in% to_keep$db_data.token...4.),"PLACEHOLDER")]
-  final<-dt
-  final$db_data.token...4.<-replacement 
-  skipi<-cooccurrence(final$db_data.token...4.,group=c(final$db_data.token...1.,final$db_data.token...2.),order = TRUE,skipgram=parameters$skip_window)
-  print(summary(skipi))
-  skipi <- skipi[ !(skipi$term1 == 'PLACEHOLDER' | skipi$term2 == 'PLACEHOLDER'),] 
-  print(summary(skipi))
-  coocsCalc <- Skip_cooc$new(skipi)
+  skipi<- prepare_words_skipgram(db_data,dtm)
+  ## list will aber bei data.table oder data.frame bleiben
+  zsmfassen<-aggregate(skipi$cooc, by = list (skipi$term1, skipi$term2), FUN=sum)
+  worte<-unique(c(zsmfassen$Group.1,zsmfassen$Group.2))
+  test <- sparseMatrix(
+      i = length(worte), 
+      j = length(worte), 
+      x = zsmfassen$x,
+      dims = c(length(worte),length(worte)), 
+      dimnames = list(worte,worte)
+    )
+  #print(head(test,50))
+  #final <- data.table(term1=skipi$Group.1, term2= skipi$Group.2, cooc=skipi$x)
+  #print(length(unique(c(zsmfassen$Group.1,zsmfassen$Group.2))))
+  #print(length(unique(zsmfassen$Group.2)))
+  coocsCalc <- Skip_cooc$new(test)
+  
   coocsCalc$set_minCoocFreq(as.integer(parameters$min_cooc_freq))
   coocsCalc$set_maxCoocFreq(10000000)
   
@@ -2047,6 +2046,36 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   
   gc() 
   return(list(coocs_matrix_dice=coocs_matrix_dice,coocs_matrix_count=coocs_matrix_count,coocs_matrix_log=coocs_matrix_log,coocs_matrix_mi=coocs_matrix_mi,terms=terms))
+}
+
+prepare_words_skipgram<-function(db_data,dtm){
+ 
+  prep<- data.frame(db_data$token[,4],db_data$token[,1],db_data$token[,2])
+  
+  prep$db_data.token...4.<-tolower(prep$db_data.token...4.)
+  #prep$db_data.token...4.<-removePunctuation(prep$db_data.token...4.)
+  #prep$db_data.token...4. <- gsub('„', '', prep$db_data.token...4.)
+  #prep$db_data.token...4. <- gsub('“', '', prep$db_data.token...4.)
+  #prep$db_data.token...4. <- gsub('-', ' ', prep$db_data.token...4.)
+  #prep$db_data.token...4. <- gsub('[0-9]', ' ',prep$db_data.token...4.)
+  dt<-data.table(prep)
+  # set words that are in dtm 
+  keep<-dtm@Dimnames$features
+  ##aha<-keep[!(keep %in% db_data$token[,4])]
+  #print(aha)
+  to_keep<-dt[which(dt$db_data.token...4. %in% keep),]
+  replacement<-dt[,replace(dt$db_data.token...4., !(dt$db_data.token...4. %in% to_keep$db_data.token...4.),"PLACEHOLDER")]
+  final<-dt
+  #print(summary(replacement))
+  final$db_data.token...4.<-replacement 
+  
+  skipi<-cooccurrence(final$db_data.token...4.,group=c(final$db_data.token...1.,final$db_data.token...2.),order = TRUE,skipgram=parameters$skip_window)
+  skipi <- skipi[ !(skipi$term1 =='PLACEHOLDER' | skipi$term2 == 'PLACEHOLDER'),] 
+  #skipi<-final[,cooccurrence(db_data.token...4.,order=FALSE),by=list(db_data.token...1.,db_data.token...2.)]
+  #skipi<-subset(skipi, term1 !="PLACEHOLDER" & term2 !="PLACEHOLDER")
+  #print(head(skipi,50))
+  #print(summary(skipi))
+  return(skipi)
 }
 
 
