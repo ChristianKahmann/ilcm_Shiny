@@ -68,27 +68,14 @@ Skip_cooc<-R6Class(
       function(){
         # PROBLEM: erzeugt nur im besten Fall eine Sparse Matrix
         ## Dimension ist kleiner als die eigentliche von Skip_tab
-        #skip_mat <- as.matrix(self$skip_tab)
+        skip_mat <- as.matrix(self$skip_tab)
         
-        #dtm_info<-length(self$DTM@Dimnames$features)
-        #print(dtm_info)
-        #print(summary(skip_mat))
-        #test <- sparseMatrix(
-        #  i = max(range_tab2,range_tab1), 
-        #  j = max(range_tab2,range_tab1), 
-        #  x = self$skip_tab$cooc,
-        #  dims = c(length_tab1,length_tab2), 
-        #  dimnames = list(unique(self$skip_tab$term2),unique(self$skip_tab$term2))
-        #)
-        #print(summary(test))
-        #my_mat<- matrix(ncol = dtm_info, nrow = dtm_info)
-        #colnames(my_mat)<-c(self$DTM@Dimnames$features)
-        #tmp <- Matrix::summary(skip_mat)
-        tmp <- Matrix::summary(self$skip_tab)
+        tmp <- Matrix::summary(skip_mat)
+        #tmp <- Matrix::summary(self$skip_tab)
         if(dim(tmp)[1]==0){
-          return(Matrix(self$skip_tab))
+          return(Matrix(skip_mat))
         }
-        #print(head(tmp,20))
+        
         #delete vocab whith no coocs
         tmp[tmp[, "x"] < self$minCoocFreq, "x"] <- 0
         tmp[tmp[, "x"] > self$maxCoocFreq, "x"] <- 0

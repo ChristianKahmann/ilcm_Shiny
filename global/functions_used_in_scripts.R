@@ -1994,12 +1994,29 @@ remove_locations<-function(token){
 calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   
   skipi<- prepare_words_skipgram(db_data,dtm)
+  last_resort<-matrix(skipi$cooc, nrow=length(skipi$term1), ncol = length(skipi$term2))
+  rownames(last_resort)<-skipi$term1
+  colnames(last_resort)<-skipi$term2
+  
   ## Idee: Mache Term-Term Matrix mit Wörtern aus DTM
   ### an der Stelle wo in Matrix rowname=skipi$term1 und colname=skipi$term2 ist setze skipi$cooc ein
   ### um zu vermeiden das Zellen bei gleichem Term1 und Term2 immer überschrieben werden fasse gleiche Elemente zusammen und addiere coocs
   zsmfassen<-aggregate(skipi$cooc, by = list (skipi$term1, skipi$term2), FUN=sum)
+  zsmfassen<-as.data.frame(zsmfassen)
+  #print(summary(zsmfassen))
+  #print(head(zsmfassen,10))
+  mat_try<-matrix(NA, ncol(dtm),ncol(dtm))
+  colnames(mat_try)<-dtm@Dimnames$features
+  rownames(mat_try)<-dtm@Dimnames$features
   
-  
+  for (i in colnames(mat_try)){
+    for (j in rownames(mat_try)) {
+      if(i %in% colnames(last_resort) & j %in% rownames(last_resort)){
+        mat_try[j,i]<-last_resort[j,i]
+      }
+    }
+   }
+  #print(head(mat_try,10))
   coocsCalc <- Skip_cooc$new(skipi)
   
   coocsCalc$set_minCoocFreq(as.integer(parameters$min_cooc_freq))
