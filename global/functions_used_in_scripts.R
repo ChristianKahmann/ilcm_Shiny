@@ -1992,23 +1992,15 @@ remove_locations<-function(token){
 
 #' calculate all cooccurrence measurements with skipgram base
 calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
-  # prepare data: delete punctuation and numbers, put worda to lower case
+  
   skipi<- prepare_words_skipgram(db_data,dtm)
-  ## list will aber bei data.table oder data.frame bleiben
+  ## Idee: Mache Term-Term Matrix mit Wörtern aus DTM
+  ### an der Stelle wo in Matrix rowname=skipi$term1 und colname=skipi$term2 ist setze skipi$cooc ein
+  ### um zu vermeiden das Zellen bei gleichem Term1 und Term2 immer überschrieben werden fasse gleiche Elemente zusammen und addiere coocs
   zsmfassen<-aggregate(skipi$cooc, by = list (skipi$term1, skipi$term2), FUN=sum)
-  worte<-unique(c(zsmfassen$Group.1,zsmfassen$Group.2))
-  test <- sparseMatrix(
-      i = length(worte), 
-      j = length(worte), 
-      x = zsmfassen$x,
-      dims = c(length(worte),length(worte)), 
-      dimnames = list(worte,worte)
-    )
-  #print(head(test,50))
-  #final <- data.table(term1=skipi$Group.1, term2= skipi$Group.2, cooc=skipi$x)
-  #print(length(unique(c(zsmfassen$Group.1,zsmfassen$Group.2))))
-  #print(length(unique(zsmfassen$Group.2)))
-  coocsCalc <- Skip_cooc$new(test)
+  
+  
+  coocsCalc <- Skip_cooc$new(skipi)
   
   coocsCalc$set_minCoocFreq(as.integer(parameters$min_cooc_freq))
   coocsCalc$set_maxCoocFreq(10000000)
@@ -2053,6 +2045,8 @@ prepare_words_skipgram<-function(db_data,dtm){
   prep<- data.frame(db_data$token[,4],db_data$token[,1],db_data$token[,2])
   
   prep$db_data.token...4.<-tolower(prep$db_data.token...4.)
+  ## wenn ich im prep Schritt Punkte und Co. entferne werden Worte wie @franz.nachname nicht mit in die Cooc-einbezogen
+  ### diese Wörter sind aber zum Teil mit in der dtm
   #prep$db_data.token...4.<-removePunctuation(prep$db_data.token...4.)
   #prep$db_data.token...4. <- gsub('„', '', prep$db_data.token...4.)
   #prep$db_data.token...4. <- gsub('“', '', prep$db_data.token...4.)
@@ -2071,10 +2065,11 @@ prepare_words_skipgram<-function(db_data,dtm){
   
   skipi<-cooccurrence(final$db_data.token...4.,group=c(final$db_data.token...1.,final$db_data.token...2.),order = TRUE,skipgram=parameters$skip_window)
   skipi <- skipi[ !(skipi$term1 =='PLACEHOLDER' | skipi$term2 == 'PLACEHOLDER'),] 
+  
+  ## ANDERE VARIANTE: dataframe indem noch Document-ID und Satz-ID für jedes Wortpaar gelistet sind
   #skipi<-final[,cooccurrence(db_data.token...4.,order=FALSE),by=list(db_data.token...1.,db_data.token...2.)]
   #skipi<-subset(skipi, term1 !="PLACEHOLDER" & term2 !="PLACEHOLDER")
-  #print(head(skipi,50))
-  #print(summary(skipi))
+  ##
   return(skipi)
 }
 
