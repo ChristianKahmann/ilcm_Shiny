@@ -585,7 +585,7 @@ output$coocs_top_dice_table<-DT::renderDataTable({
   data<-data[order(data[,3],decreasing=T),,drop=F]
   data[,3]<-round(as.numeric(data[,3]),digits = 4)
   values$coocs_top_dl_dice<-data
-  datatable(data = data)
+  datatable(data = data,colnames = c('Term 1', 'Term 2','Value'))
 })
 
 #' show top result for cooccurrence with mutual information measurement
@@ -624,7 +624,7 @@ output$coocs_top_mi_table<-DT::renderDataTable({
   data<-data[order(data[,3],decreasing=T),,drop=F]
   data[,3]<-round(as.numeric(data[,3]),digits = 4)
   values$coocs_top_dl_mi<-data
-  datatable(data = data)
+  datatable(data = data,colnames = c('Term 1', 'Term 2','Value'))
 })
 
 #' show top result for cooccurrence with log likelihood measurement
@@ -663,6 +663,6 @@ output$coocs_top_log_table<-DT::renderDataTable({
   data<-data[order(as.numeric(data[,3]),decreasing=T),,drop=F]
   data[,3]<-round(as.numeric(data[,3]),digits = 4)
   values$coocs_top_dl_log<-data
-  datatable(data = data)
+  datatable(data = data,colnames = c('Term 1', 'Term 2','Value'))
 })
 
