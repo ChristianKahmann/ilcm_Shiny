@@ -733,8 +733,35 @@ output$Det_DD_download_duplicates<-downloadHandler(
     paste('duplicates', Sys.Date(), '.csv', sep='')
   },
   content = function(con) {
-    export_data<-as.matrix(values$Det_DD_meta[as.numeric(values$blacklist),])
-    export_data<-apply(X = export_data,MARGIN = 2,FUN = function(x){stringr::str_replace_all(string = x,pattern = '"',replacement = "'")})
-    write.table(export_data, con,col.names = F,row.names = F,sep=",",quote = T)
+    values$Det_DD_results->results
+    meta<-values$Det_DD_meta
+    blacklist<-values$blacklist
+    whitelist<-values$whitelist
+    all_na<-which(apply(X = meta,MARGIN = 2,FUN = function(x){
+      all(is.na(x))
+    }))
+    if(length(all_na)>0){
+      meta<-meta[,-all_na]
+    }
+    results<-results[which(results$score>input$Det_DD_threshold),]
+    results<-cbind(1:nrow(results),results)
+    duplicates<-matrix(c(""),nrow = (nrow(results)*2),ncol = (4+ncol(meta)))
+    count=0
+    for(i in 1:nrow(results)){
+      count=count+1
+      duplicate<-results[i,]
+      information1<-c(duplicate[1,1],duplicate[1,4],duplicate[1,2]%in%whitelist,duplicate[1,2]%in%blacklist)
+      information1<-c(information1,unlist(meta[as.numeric(duplicate[1,2]),,drop=T]))
+      duplicates[count,]<-information1
+      count=count+1
+      information2<-c(duplicate[1,1],duplicate[1,4],duplicate[1,3]%in%whitelist,duplicate[1,3]%in%blacklist)
+      information2<-c(information2,unlist(meta[as.numeric(duplicate[1,3]),,drop=T]))
+      duplicates[count,]<-information2
+    }
+    colnames(duplicates)<-c(c("Duplicate ID","Similarity","Keep","Delete"),colnames(meta))
+
+    #export_data<-as.matrix(values$Det_DD_meta[as.numeric(values$blacklist),])
+    export_data<-apply(X = duplicates,MARGIN = 2,FUN = function(x){stringr::str_replace_all(string = x,pattern = '"',replacement = "'")})
+    write.table(export_data, con,col.names = T,row.names = F,sep=",",quote = T)
   }
 )

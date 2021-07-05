@@ -30,7 +30,7 @@ output$collections <- DT::renderDataTable({
   #queries<-queries[order(queries[,1]),2]
   #collection_names<-sort(collection_names)
   values$collection_names<-collection_names$name
-
+  
   queries<-plyr::join(x = collection_names,y = queries,by="name")
   queries[which(is.na(queries[,2])),2]<-"unknown"
   too_long_to_display<-which(nchar(queries[,2])>249)
@@ -40,7 +40,7 @@ output$collections <- DT::renderDataTable({
   queries[,1]<-unlist(lapply(1:dim(queries)[1],FUN = function(x){
     return(as.character(tags$span(id=paste0("collection_name_",x),tags$b(queries[x,1]))))
   }))
-
+  
   
   
   df <- reactiveValues(
@@ -178,7 +178,7 @@ observeEvent(input$see_button, {
           inputId = "Collection_TS_timeintervall",
           choices = c("day", "month", "year"),
           multiple = F,
-          selected = "day",
+          selected = "month",
           label = NULL,
           width = "30%"
         ),
@@ -186,13 +186,8 @@ observeEvent(input$see_button, {
         tags$h5(paste0(
           "Size of Collection: ", dim(info[[6]])[1], " Documents"
         )),
-        column(
-          3,
-          downloadButton(outputId = "Collection_TS_download_dates", label = "csv")
-        ),
-        column(3#,
-               # downloadButton(outputId = "TS_download_memory",label = "csv"))
-        )
+        downloadButton(outputId = "Collection_TS_download_dates", label = "csv")
+        
       )
     )
     shinyjs::useShinyjs()
@@ -212,8 +207,8 @@ output$Collection_TS <- renderPlotly({
   ))
   dates <- values$collection_time_series
   missing_dates <-
-    seq.Date(from = min(as.Date(dates[, 1]),na.rm=T),
-             to = max(as.Date(dates[, 1]),na.rm=T),
+    seq.Date(from = as.Date(min(dates[, 1],na.rm=T)),
+             to = as.Date(max(dates[, 1],na.rm=T)),
              by = "day")
   if (input$Collection_TS_timeintervall == "day") {
     dates[, 1] <- substr(dates[, 1], 1, 10)
