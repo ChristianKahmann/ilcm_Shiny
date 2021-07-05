@@ -2001,24 +2001,34 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   ## Idee: Mache Term-Term Matrix mit Wörtern aus DTM
   ### an der Stelle wo in Matrix rowname=skipi$term1 und colname=skipi$term2 ist setze skipi$cooc ein
   ### um zu vermeiden das Zellen bei gleichem Term1 und Term2 immer überschrieben werden fasse gleiche Elemente zusammen und addiere coocs
-  zsmfassen<-aggregate(skipi$cooc, by = list (skipi$term1, skipi$term2), FUN=sum)
-  zsmfassen<-as.data.frame(zsmfassen)
-  #print(summary(zsmfassen))
-  #print(head(zsmfassen,10))
-  mat_try<-matrix(NA, ncol(dtm),ncol(dtm))
+  #zsmfassen<-aggregate(skipi$cooc, by = list (skipi$term1, skipi$term2), FUN=sum, simplify = TRUE)
+  #colnames(zsmfassen)<-c("Term1","Term2","cooc")
+ 
+
+  #test<-matrix(zsmfassen$cooc, nrow=length(zsmfassen$Term1), ncol = length(zsmfassen$Term2))
+  
+  #rownames(test)<-zsmfassen$Term1
+  #colnames(test)<-zsmfassen$Term2
+  
+  mat_try<-matrix(0, ncol(dtm),ncol(dtm))
   colnames(mat_try)<-dtm@Dimnames$features
   rownames(mat_try)<-dtm@Dimnames$features
   
-  for (i in colnames(mat_try)){
-    for (j in rownames(mat_try)) {
-      if(i %in% colnames(last_resort) & j %in% rownames(last_resort)){
-        mat_try[j,i]<-last_resort[j,i]
-      }
-    }
-   }
-  #print(head(mat_try,10))
-  coocsCalc <- Skip_cooc$new(skipi)
+  #mat_try[rownames(test),colnames(test)]<-test[match(colnames(test),colnames(mat_try),nomatch = 0)&match(rownames(test),rownames(mat_try))]
+  mat_try[rownames(last_resort),colnames(last_resort)]<-last_resort[match(colnames(last_resort),colnames(mat_try),nomatch = 0)&match(rownames(last_resort),rownames(mat_try))]
+  #for (i in colnames(test)){
+  #  for (j in rownames(test)) {
+  #    if(i %in% colnames(mat_try) & j %in% rownames(mat_try)){
+  #      mat_try[j,i]<-test[j,i]
+  #  }
+  #  }
+  # }
+  print(ncol(mat_try))
   
+  finish<-as(mat_try, "sparseMatrix") 
+
+  coocsCalc <- Skip_cooc$new(finish)
+  #coocsCalc <- Skip_cooc$new(skipi)
   coocsCalc$set_minCoocFreq(as.integer(parameters$min_cooc_freq))
   coocsCalc$set_maxCoocFreq(10000000)
   
