@@ -105,6 +105,7 @@ output$details_parameter<-renderUI({
     if(values$Details_Analysis=="DTM"){
       load(paste0(values$Details_Data_DTM,"/data_TM.RData"))
       load(paste0(values$Details_Data_DTM,"/meta_TM.RData"))
+      task_id<-HTML(paste0("Task ID: <b>",as.character(values$tasks_dtm[input$Dynamic_Topic_Results_rows_selected,"task.id"]),"</b>"))
       values$dtm_results<-results
       values$dtm_meta<-meta
       values$dtm_results_additional<-results_additional
@@ -112,6 +113,8 @@ output$details_parameter<-renderUI({
       #values$Det_DTM_topic_importances<-NULL
       return(
         tagList(
+          tags$h5(task_id),
+          tags$hr(),
           conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='LDA-Vis'",
                            selectInput(inputId = "Det_DTM_LDAvis_n",label = "Select Time Stamp to analyze",choices=setNames(nm = results_additional$time_slice_names,
                                                                                                                             object = 1:length(results)))
