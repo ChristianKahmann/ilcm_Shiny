@@ -58,12 +58,17 @@ Skip_cooc<-R6Class(
         # PROBLEM:Dimension ist kleiner als die eigentliche von skip_tab
        
         coocCounts <- self$skip_tab
+        #finish<-as(self$skip_tab, "sparseMatrix")
+        #print(as.matrix(coocCounts[1:10, 1:10]))
         #browser()
         #DELETE NA'S, Much faster on table object
+        
         tmp <- Matrix::summary(coocCounts)
-        #if(dim(tmp)[1]==0){
-        #  return(Matrix(coocCounts))
-        #}
+        
+        if(dim(tmp)[1]==0){
+          return(Matrix(coocCounts))
+        }
+        
         #delete vocab whith no coocs
         tmp[tmp[, "x"] < self$minCoocFreq, "x"] <- 0
         tmp[tmp[, "x"] > self$maxCoocFreq, "x"] <- 0
@@ -79,7 +84,7 @@ Skip_cooc<-R6Class(
             dimnames = dimnames(coocCounts),
             dims = dim(coocCounts)
           )
-        
+       
         finalSig <-
           Matrix::Matrix(
             0,
@@ -95,6 +100,7 @@ Skip_cooc<-R6Class(
           mode="numeric",length=length(kj))
         names(tmp_sig)<-colnames(self$skip_tab)
         relWords<-colnames(self$skip_tab)
+        
         
         switch(
           self$measure,

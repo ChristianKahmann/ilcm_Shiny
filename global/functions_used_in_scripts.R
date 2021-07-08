@@ -1994,28 +1994,31 @@ remove_locations<-function(token){
 calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   
   skipi<- prepare_words_skipgram(db_data,dtm)
-  last_resort<-matrix(skipi$cooc, nrow=length(skipi$term1), ncol = length(skipi$term2))
-  rownames(last_resort)<-skipi$term1
-  colnames(last_resort)<-skipi$term2
+  #last_resort<-matrix(skipi$cooc, nrow=length(skipi$term1), ncol = length(skipi$term2))
+  #rownames(last_resort)<-skipi$term1
+  #colnames(last_resort)<-skipi$term2
   
   ## Idee: Mache Term-Term Matrix mit Wörtern aus DTM
   ### an der Stelle wo in Matrix rowname=skipi$term1 und colname=skipi$term2 ist setze skipi$cooc ein
   ### um zu vermeiden das Zellen bei gleichem Term1 und Term2 immer überschrieben werden fasse gleiche Elemente zusammen und addiere coocs
-  #zsmfassen<-aggregate(skipi$cooc, by = list (skipi$term1, skipi$term2), FUN=sum, simplify = TRUE)
-  #colnames(zsmfassen)<-c("Term1","Term2","cooc")
+  zsmfassen<-aggregate(skipi$cooc, by = list (skipi$term1, skipi$term2), FUN=sum, simplify = TRUE)
+  colnames(zsmfassen)<-c("Term1","Term2","cooc")
  
-
-  #test<-matrix(zsmfassen$cooc, nrow=length(zsmfassen$Term1), ncol = length(zsmfassen$Term2))
+  #print(summary(zsmfassen))
+  test<-matrix(zsmfassen$cooc, nrow=length(zsmfassen$Term1), ncol = length(zsmfassen$Term2))
   
-  #rownames(test)<-zsmfassen$Term1
-  #colnames(test)<-zsmfassen$Term2
+  rownames(test)<-zsmfassen$Term1
+  colnames(test)<-zsmfassen$Term2
   
   mat_try<-matrix(0, ncol(dtm),ncol(dtm))
   colnames(mat_try)<-dtm@Dimnames$features
   rownames(mat_try)<-dtm@Dimnames$features
-  
-  #mat_try[rownames(test),colnames(test)]<-test[match(colnames(test),colnames(mat_try),nomatch = 0)&match(rownames(test),rownames(mat_try))]
-  mat_try[rownames(last_resort),colnames(last_resort)]<-last_resort[match(colnames(last_resort),colnames(mat_try),nomatch = 0)&match(rownames(last_resort),rownames(mat_try))]
+  start.time <- Sys.time()
+  mat_try[rownames(test),colnames(test)]<-test[match(colnames(test),colnames(mat_try),nomatch = 0)&match(rownames(test),rownames(mat_try))]
+  end.time <- Sys.time()
+  time.taken <- end.time - start.time
+  log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished calculating Matrix within",time.taken),file = logfile)
+  #mat_try[rownames(last_resort),colnames(last_resort)]<-last_resort[match(colnames(last_resort),colnames(mat_try),nomatch = 0)&match(rownames(last_resort),rownames(mat_try))]
   #for (i in colnames(test)){
   #  for (j in rownames(test)) {
   #    if(i %in% colnames(mat_try) & j %in% rownames(mat_try)){
@@ -2023,12 +2026,12 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   #  }
   #  }
   # }
-  print(ncol(mat_try))
+  
   
   finish<-as(mat_try, "sparseMatrix") 
-
+  print(as.matrix(finish[1:10,1:10]))
   coocsCalc <- Skip_cooc$new(finish)
-  #coocsCalc <- Skip_cooc$new(skipi)
+  #coocsCalc <- Skip_cooc$new(mat_try)
   coocsCalc$set_minCoocFreq(as.integer(parameters$min_cooc_freq))
   coocsCalc$set_maxCoocFreq(10000000)
   
@@ -2093,7 +2096,7 @@ prepare_words_skipgram<-function(db_data,dtm){
   skipi<-cooccurrence(final$db_data.token...4.,group=c(final$db_data.token...1.,final$db_data.token...2.),order = TRUE,skipgram=parameters$skip_window)
   skipi <- skipi[ !(skipi$term1 =='PLACEHOLDER' | skipi$term2 == 'PLACEHOLDER'),] 
   
-  ## ANDERE VARIANTE: dataframe indem noch Document-ID und Satz-ID für jedes Wortpaar gelistet sind
+    ## ANDERE VARIANTE: dataframe indem noch Document-ID und Satz-ID für jedes Wortpaar gelistet sind
   #skipi<-final[,cooccurrence(db_data.token...4.,order=FALSE),by=list(db_data.token...1.,db_data.token...2.)]
   #skipi<-subset(skipi, term1 !="PLACEHOLDER" & term2 !="PLACEHOLDER")
   ##
