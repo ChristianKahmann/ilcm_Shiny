@@ -4065,6 +4065,7 @@ output$Det_TM_validation_metadata_UI<-renderUI({
 #'   input$Det_TM_validation_color_most_important: detailed topic model validation colour for most important values
 #'   input$Det_TM_validation_color_use_pie_colors: validation color to use in pie chart for detailed topic models 
 output$TM_validation_UI<-renderUI({
+  values$tm_recalc
   return(
     tagList(
       fluidRow(style="margin-left:0px;margin-right:0px",
@@ -4242,6 +4243,7 @@ output$Det_TM_validation_wordcloud <- wordcloud2::renderWordcloud2({
   # normalize weights for wordcloud
   data$data <- data$data-min(data$data)
   data$data <- data$data/max(data$data)
+  shinyjs::runjs(paste0("Math.seedrandom('",values$random_seed,"')"))
   wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1,minRotation = -pi/2,maxRotation = -pi/2)
 })
 

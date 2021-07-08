@@ -1,3 +1,22 @@
+output$Det_DTM_frequencies_table<-DT::renderDataTable({
+  validate(
+    need(!is.null(input$coll),message=F),
+    need(!is.null(input$Det_DTM_Frequencies_n),message = F),
+    need(!is.null(values$dtm_results),message = F)
+  )
+  dtm<-values$dtm_dtm
+  if(input$Det_DTM_Frequencies_n!=0){
+    rel_idx<-which(values$dtm_results_additional$doc_belongings_to_time_slices==as.numeric(input$Det_DTM_Frequencies_n))
+    dtm<-dtm[rel_idx,,drop=F]   
+  }
+  # dtm<-tmca.util::make_binary(dtm)
+  term.frequency<-colSums(dtm)
+  data<-data.frame(Words=colnames(dtm),Frequencies=term.frequency)
+  data<-data[order(data$Frequencies,decreasing = T),]
+  datatable(data = data,selection = "none",rownames = F)
+})
+
+
 #' render detailed document term matrix for LDAvis
 #' depends on:
 #'    input$coll: selected collection
@@ -19,7 +38,20 @@ output$Det_DTM_LDAvis<-LDAvis::renderVis({
     doc.length<-current_result[[3]]
     vocab<-current_result[[5]]
     term.frequency<-current_result[[4]]
-    tm<-LDAvis::createJSON(phi=phi,theta = theta,doc.length = doc.length,vocab = vocab,term.frequency = term.frequency, 
+    dtm_orig <- values$dtm_dtm
+    #####################
+
+    rel_idx<-which(values$dtm_results_additional$doc_belongings_to_time_slices==as.numeric(input$Det_DTM_LDAvis_n))
+    #dtm<-tmca.util::make_binary(dtm)
+    dtm<-dtm_orig[rel_idx,,drop=F]   
+    theta<-theta[rel_idx,,drop=F]
+    doc.length<-doc.length[rel_idx]
+    ####################
+    doc.length<-rowSums(dtm)
+    term.frequency<-term.frequency[vocab]
+    #vocab<-paste0(vocab," (",as.numeric(term.frequency),")")
+    # browser()
+    tm<-create_LDA_JSON(phi=phi,theta = theta,doc.length = doc.length,vocab = vocab,term.frequency = term.frequency, 
                            reorder.topics = F)#mds.method = svd_tsne )
     return(tm)
   }
@@ -37,11 +69,21 @@ output$Det_DTM_dynamic_table<-DT::renderDataTable({
   validate(
     need(!is.null(input$Det_DTM_topic_dynamic_topic),message=F)
   )
-  top_relevant_words_per_time_stamp<-lapply(X = values$dtm_results,FUN = function(x){
-    relevance <- calculate_topic_relevance(lambda = input$Det_DTM_topic_dynamic_lambda,phi = x[[2]],theta = x[[1]],doc.length = x[[3]])[,input$Det_DTM_topic_dynamic_topic]
-    names(relevance)<-values$dtm_results[[1]][[5]]
-    names(sort(relevance,decreasing = T))[1:input$Det_DTM_topic_dynamic_number_of_words]
-  })
+    top_relevant_words_per_time_stamp<-lapply(X = 1:length(values$dtm_results),FUN = function(i){
+      x<-values$dtm_results[[i]]
+      phi<-x[[2]]
+      theta = x[[1]]
+      doc.length<-x[[3]]
+      dtm<-values$dtm_dtm
+      rel_idx<-which(values$dtm_results_additional$doc_belongings_to_time_slices==i)
+      theta<-theta[rel_idx,,drop=F]
+      doc.length<-rowSums(dtm[rel_idx,,drop=F])
+      
+      relevance <- calculate_topic_relevance(lambda = input$Det_DTM_topic_dynamic_lambda,phi = phi,theta = theta,doc.length = doc.length)[,input$Det_DTM_topic_dynamic_topic]
+      names(relevance)<-values$dtm_results[[i]][[5]]
+      names(sort(relevance,decreasing = T))[1:input$Det_DTM_topic_dynamic_number_of_words]
+      
+    })
   data<-do.call(cbind,top_relevant_words_per_time_stamp)
   colnames(data)<-values$dtm_results_additional$time_slice_names
   rownames(data)<-1:nrow(data)
@@ -103,26 +145,26 @@ output$Det_DTM_dynamic_wordcloud_UI<-renderUI({
   tagList(fluidRow(
     column(4,offset = 2,
            selectInput(inputId = "Det_DTM_dynamic_wordcloud_time_1",label = "Select Time Stamp #1",choices=setNames(nm = values$dtm_results_additional$time_slice_names,
-                                                                                                            object = 1:length(values$dtm_results)))
-            ),
+                                                                                                                    object = 1:length(values$dtm_results)))
+    ),
     column(4,
            selectInput(inputId = "Det_DTM_dynamic_wordcloud_time_2",label = "Select Time Stamp #2",choices=setNames(nm = values$dtm_results_additional$time_slice_names,
-                                                                                                            object = 1:length(values$dtm_results)))
-           )
+                                                                                                                    object = 1:length(values$dtm_results)))
+    )
   ),
   tags$hr(),
   fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
-    column(3,
-           DT::dataTableOutput(outputId = "Det_DTM_dynamic_wordcloud_table")
+           column(3,
+                  DT::dataTableOutput(outputId = "Det_DTM_dynamic_wordcloud_table")
            ),
-    column(4,offset=1,
-           tags$h4("Less important"),
-           wordcloud2Output(outputId = "Det_DTM_dynamic_wordcloud_plot_new")
+           column(4,offset=1,
+                  tags$h4("Less important"),
+                  wordcloud2Output(outputId = "Det_DTM_dynamic_wordcloud_plot_new")
            ),
-    column(4,
-           tags$h4("More important"),
-           wordcloud2Output(outputId = "Det_DTM_dynamic_wordcloud_plot_gone")
-    )
+           column(4,
+                  tags$h4("More important"),
+                  wordcloud2Output(outputId = "Det_DTM_dynamic_wordcloud_plot_gone")
+           )
   )
   )
 })
@@ -148,7 +190,7 @@ observe({
   names(phi2)<-values$dtm_results[[1]][[5]]
   data<-cbind(phi1,phi2,phi2-phi1)
   rownames(data)<-names(phi1)  
-
+  
   values$Det_DTM_dynamic_wordcloud_data<-data
 })
 
@@ -179,7 +221,7 @@ output$Det_DTM_dynamic_wordcloud_plot_gone<-renderWordcloud2({
   
   d<-data.frame(words=rownames(values$Det_DTM_dynamic_wordcloud_data),counts=values$Det_DTM_dynamic_wordcloud_data[,3])
   d[,2]<-round(d[,2],digits = 6)
-
+  
   d[,2]<-as.numeric(as.character(d[,2]))
   d[,1]<-(as.character(d[,1]))
   
@@ -210,7 +252,7 @@ output$Det_DTM_dynamic_wordcloud_plot_new<-renderWordcloud2({
   
   d<-data.frame(words=rownames(values$Det_DTM_dynamic_wordcloud_data),counts=values$Det_DTM_dynamic_wordcloud_data[,3])
   d[,2]<-round(d[,2],digits = 6)
-
+  
   d[,2]<-as.numeric(as.character(d[,2]))
   d[,1]<-(as.character(d[,1]))
   
@@ -242,7 +284,7 @@ output$Det_DTM_word_importance_plot<-renderPlotly({
   vocab_idx<-which(results[[1]][[5]]%in%input$Det_DTM_word_importance_Words)
   importance_values<-lapply(results,FUN = function(x){
     x[[2]][input$Det_DTM_word_importance_topic,vocab_idx]
-
+    
   })
   importance_values<-do.call(cbind,importance_values)
   rownames(importance_values)<-input$Det_DTM_word_importance_Words
@@ -276,6 +318,7 @@ output$Det_DTM_word_importance_plot<-renderPlotly({
 #'   input$Det_DTM_validation_color_most_important: detailed topic model validation colour for most important values
 #'   input$Det_DTM_validation_color_use_pie_colors: validation color to use in pie chart for detailed topic models 
 output$DTM_validation_UI<-renderUI({
+  values$dtm_recalc
   return(
     tagList(
       fluidRow(style="margin-left:0px;margin-right:0px",
@@ -458,6 +501,8 @@ output$Det_DTM_validation_wordcloud <- wordcloud2::renderWordcloud2({
       !is.null(input$Det_DTM_validation_topic),message=FALSE
     )
   )
+  # reactive variable to reload wordcloud if same resultset got opened twice
+  values$dtm_recalc
   # @values$DTM_relevance calculated with lamda= 0.3
   relevant_documents<-which(values$dtm_results_additional$doc_belongings_to_time_slices==as.numeric(input$Det_DTM_validation_time))
   theta<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[1]]
@@ -476,7 +521,9 @@ output$Det_DTM_validation_wordcloud <- wordcloud2::renderWordcloud2({
   # normalize weights for wordcloud
   data$data <- data$data-min(data$data)
   data$data <- data$data/max(data$data)
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1,minRotation = -pi/2,maxRotation = -pi/2)
+  shinyjs::runjs(paste0("Math.seedrandom('",values$random_seed,"')"))
+  #browser()
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1,minRotation = -pi/2,maxRotation = -pi/2,shuffle = F)
 })
 
 
@@ -508,7 +555,7 @@ output$Det_DTM_validation_document_topic_pie<-plotly::renderPlotly({
   data<-theta[which(values$dtm_meta$id_doc==input$Det_DTM_validation_document),]
   names(data)<-1:length(data)
   data<-data.frame(class=paste("Topic: ",names(data)),likelihood=data)
-
+  
   p <- plot_ly(data, labels = ~factor(class), values = ~likelihood, textposition = 'inside',source="DTM_validation_pie",marker = list(colors = colors),
                textinfo = 'label+percent') %>%
     plotly::add_pie(hole = 0.6) %>%

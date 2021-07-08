@@ -105,11 +105,14 @@ output$details_parameter<-renderUI({
     if(values$Details_Analysis=="DTM"){
       load(paste0(values$Details_Data_DTM,"/data_TM.RData"))
       load(paste0(values$Details_Data_DTM,"/meta_TM.RData"))
+      load(paste0(values$Details_Data_DTM,"/dtm_TM.RData"))
       task_id<-HTML(paste0("Task ID: <b>",as.character(values$tasks_dtm[input$Dynamic_Topic_Results_rows_selected,"task.id"]),"</b>"))
       values$dtm_results<-results
       values$dtm_meta<-meta
+      values$dtm_dtm<-dtm
       values$dtm_results_additional<-results_additional
       n_topics <- nrow(results[[1]][[2]])
+      values$dtm_recalc<-runif(1,0,1)
       #values$Det_DTM_topic_importances<-NULL
       return(
         tagList(
@@ -123,8 +126,6 @@ output$details_parameter<-renderUI({
                            sliderInput(inputId = "Det_DTM_topic_dynamic_lambda",label = "Lambda:",min=0,max=1,value=0.5,step=0.1),
                            sliderInput(inputId = "Det_DTM_topic_dynamic_topic",label = "Topic:",min=1,max=nrow(results[[1]][[2]]),step=1,value=1),
                            numericInput(inputId = "Det_DTM_topic_dynamic_number_of_words",label = "Number of words:",min=1,max=length(results[[1]][[5]]),value=10,step=1)
-                           
-                           
           ),
           conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Word Importance'",
                            selectizeInput(inputId = "Det_DTM_word_importance_Words",label="Words:",choices=NULL,multiple=T),
@@ -159,8 +160,11 @@ output$details_parameter<-renderUI({
                            ),
                            tags$hr(),
                            uiOutput("Det_DTM_validation_metadata_UI")%>%withSpinner()            
+          ),
+          conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Frequencies'",
+                           selectInput(inputId = "Det_DTM_Frequencies_n",label = "Select Time Stamp to analyze",choices=setNames(nm = c("overall",results_additional$time_slice_names),
+                                                                                                                            object = 0:length(results)))
           )
-          
         )
       )
     }
@@ -541,7 +545,7 @@ output$details_parameter<-renderUI({
       values$tm_term.frequency<-term.frequency
       load(paste0(values$Details_Data_TM,"/dtm_TM.RData"))	
       values$Det_TM_dtm<-dtm	
-      
+      values$tm_recalc<-runif(1,0,1)
       values$tm_meta<-meta
       mde_use<-colnames(meta_names[1,2:dim(meta_names)[2]])[which(!is.na(meta_names[1,2:dim(meta_names)[2]]))]
       meta<-meta[,c("id","dataset","title","id_doc","token","language",mde_use)]
@@ -1616,7 +1620,11 @@ output$details_visu<-renderUI({
                  ),
                  tabPanel("Validation",
                           uiOutput("DTM_validation_UI")
+                 ),
+                 tabPanel("Frequencies",
+                          DT::dataTableOutput("Det_DTM_frequencies_table")
                  )
+                 
           )
         )
       )

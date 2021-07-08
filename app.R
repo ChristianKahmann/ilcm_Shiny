@@ -94,6 +94,7 @@ source("global/is_date.R")
 source("global/change_annotation_offset_methods.R")
 source("global/relative_number_of_shared_elements.R")
 source("global/mixed_assoc.R")
+source("global/LDVIS_Create_JSON_DTM.R")
 # load the available themes
 source("www/ilcm_dashboard_theme.R")
 # load the current settings
@@ -154,6 +155,7 @@ ui <- dashboardPage(
     shinyjs::extendShinyjs(functions ="resetClick" ,text = "shinyjs.resetClick = function() { Shiny.onInputChange('.clientValue-plotly_click-A', 'null'); }"),
     # add extra function to shinyjs to get type of input to update this input when using a parameter preset in task scheduler
     shinyjs::extendShinyjs("www/app-shinyjs.js", functions = c("getInputType")),
+    tags$script(src="seedrandom.js"),
     # use custom css to style certain elements
     tags$head(
       tags$link(rel="stylesheet",type="text/css",href="custom.css"),
