@@ -261,14 +261,14 @@ prepare_input_parameters<-function(param){
       param$sentences_as_documents<-TRUE
     }
   })
-################ Skypgram ADD-on
+  ################ Skypgram ADD-on
   param$skipgram<- FALSE
   try({
     if(param$cooc_window=="Skipgram"){
       param$skipgram<-TRUE
     }
   })
-############################################
+  ############################################
   #assign("sentences_as_documents",sentences_as_documents,envir=.GlobalEnv)
   #append blacklist words to custom removal words
   if(!is.null(param$blacklist)){
@@ -491,7 +491,7 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
       just_save_custom=parameters$whitelist_only
     )
   )  
-
+  
   # split token
   splitsize<-ceiling(100000/(dim(token)[1]/length(unique(token[,1]))))
   split<-split(unique(token[,1]), ceiling(seq_along(unique(token[,1]))/splitsize))
@@ -1028,7 +1028,7 @@ calculate_diachron_frequencies<-function(dtm,meta){
   )
 }
 
-  
+
 
 
 
@@ -1569,7 +1569,7 @@ getAvailableValues <- function(dataToUse, columnName, columnContainsMultipleValu
 getAvailableValuesForGivenColumns <- function(dataToUse, columnNames, columnNamesContainingMultiValues, separatorsToUseForColumnsWithMultivalues){
   result <- vector("list", length(columnNames))
   names(result) <- columnNames
-
+  
   for(columnName in columnNames){
     isMultiValue <- (columnName %in% columnNamesContainingMultiValues)
     multiValueSeparator <- NULL
@@ -1618,14 +1618,14 @@ calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesA
         # separate each line and add up occurence of each value in statsForColumn
         indexOfSeparator <- which(columnsWithMultiValues == columnName)[[1]]
         separatorForMultiValuesForGivenColumn <- separatorsForMultiValues[indexOfSeparator]
- 
+        
         for(i in 1:dim(inputData)[1]){
           entry <- inputData[[columnName]][i]
           if(is.na(entry) | entry ==""){ # NA and empty values will be treated separately later
             next
           }
           splittedValues <- strsplit(entry,separatorForMultiValuesForGivenColumn)[[1]]
-
+          
           for(splittedValue in splittedValues){
             if(!splittedValue %in% statsForColumn$metaDataName){
               warning("Warning: For column \"",columnName ,"\" the following value appeared in the data but wasn't given via dataWithColumnNamesAndAvailableValues: \"", splittedValue, "\". It will be ignored. It is assumed that you don't want this value regarded by not providing it. If this is not thje case, provide all values via dataWithColumnNamesAndAvailableValues")
@@ -1948,21 +1948,21 @@ calcStatsPerMapPoint <- function(geocodingResultReducedToPointData,
 #' 
 #' @return subplot of final plots for distribution data
 createPlotsForDistributionData <- function(statsDistributionData, sortByValueDesc){
-    
-    finalPlots <- list()
-    statsToPlot <- statsDistributionData
-    distributionAspects <- names(statsToPlot)
-    for(aspectName in distributionAspects){
-      dataToPlot <- statsToPlot[[aspectName]]
-      dataToPlot <- dataToPlot[order(-dataToPlot$numberOfEntries,dataToPlot$metaDataName),]
-      if(sortByValueDesc & dim(dataToPlot)[1]>1){
-        dataToPlot$metaDataName <- factor(dataToPlot$metaDataName, levels = unique(dataToPlot$metaDataName)[order(dataToPlot$numberOfEntries, decreasing = TRUE)])
-      }
-      dataAsPlotly <- plot_ly(x = dataToPlot$metaDataName, y = dataToPlot$numberOfEntries, name = aspectName, type = "bar")
-      
-      finalPlots[[aspectName]] <-dataAsPlotly
+  
+  finalPlots <- list()
+  statsToPlot <- statsDistributionData
+  distributionAspects <- names(statsToPlot)
+  for(aspectName in distributionAspects){
+    dataToPlot <- statsToPlot[[aspectName]]
+    dataToPlot <- dataToPlot[order(-dataToPlot$numberOfEntries,dataToPlot$metaDataName),]
+    if(sortByValueDesc & dim(dataToPlot)[1]>1){
+      dataToPlot$metaDataName <- factor(dataToPlot$metaDataName, levels = unique(dataToPlot$metaDataName)[order(dataToPlot$numberOfEntries, decreasing = TRUE)])
     }
-    return(subplot(finalPlots))
+    dataAsPlotly <- plot_ly(x = dataToPlot$metaDataName, y = dataToPlot$numberOfEntries, name = aspectName, type = "bar")
+    
+    finalPlots[[aspectName]] <-dataAsPlotly
+  }
+  return(subplot(finalPlots))
   
 }
 
@@ -1992,47 +1992,27 @@ remove_locations<-function(token){
 
 #' calculate all cooccurrence measurements with skipgram base
 calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
+  skipgram_coocs<- prepare_words_skipgram(db_data,dtm)
+  delete<-which(skipgram_coocs$cooc<parameters$min_cooc_freq)
+  if(length(delete)>0){
+    skipgram_coocs<-skipgram_coocs[-delete,]
+  }
   
-  skipi<- prepare_words_skipgram(db_data,dtm)
-  #last_resort<-matrix(skipi$cooc, nrow=length(skipi$term1), ncol = length(skipi$term2))
-  #rownames(last_resort)<-skipi$term1
-  #colnames(last_resort)<-skipi$term2
-  
-  ## Idee: Mache Term-Term Matrix mit Wörtern aus DTM
-  ### an der Stelle wo in Matrix rowname=skipi$term1 und colname=skipi$term2 ist setze skipi$cooc ein
-  ### um zu vermeiden das Zellen bei gleichem Term1 und Term2 immer überschrieben werden fasse gleiche Elemente zusammen und addiere coocs
-  zsmfassen<-aggregate(skipi$cooc, by = list (skipi$term1, skipi$term2), FUN=sum, simplify = TRUE)
-  colnames(zsmfassen)<-c("Term1","Term2","cooc")
- 
-  #print(summary(zsmfassen))
-  test<-matrix(zsmfassen$cooc, nrow=length(zsmfassen$Term1), ncol = length(zsmfassen$Term2))
-  
-  rownames(test)<-zsmfassen$Term1
-  colnames(test)<-zsmfassen$Term2
-  
-  mat_try<-matrix(0, ncol(dtm),ncol(dtm))
-  colnames(mat_try)<-dtm@Dimnames$features
-  rownames(mat_try)<-dtm@Dimnames$features
   start.time <- Sys.time()
-  mat_try[rownames(test),colnames(test)]<-test[match(colnames(test),colnames(mat_try),nomatch = 0)&match(rownames(test),rownames(mat_try))]
+  skipgram_cooc_matrix<- Matrix::sparseMatrix(i = as.numeric(factor(skipgram_coocs$term1,levels = colnames(dtm))),
+                                 j = as.numeric(factor(skipgram_coocs$term2,levels = colnames(dtm))),
+                                 x = skipgram_coocs$cooc,
+                                 dims = c(ncol(dtm),ncol(dtm)))
+  
+  colnames(skipgram_cooc_matrix)<-dtm@Dimnames$features
+  rownames(skipgram_cooc_matrix)<-dtm@Dimnames$features
+  
   end.time <- Sys.time()
   time.taken <- end.time - start.time
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished calculating Matrix within",time.taken),file = logfile)
-  #mat_try[rownames(last_resort),colnames(last_resort)]<-last_resort[match(colnames(last_resort),colnames(mat_try),nomatch = 0)&match(rownames(last_resort),rownames(mat_try))]
-  #for (i in colnames(test)){
-  #  for (j in rownames(test)) {
-  #    if(i %in% colnames(mat_try) & j %in% rownames(mat_try)){
-  #      mat_try[j,i]<-test[j,i]
-  #  }
-  #  }
-  # }
   
+  coocsCalc <- Skip_cooc$new(skipgram_cooc_matrix)
   
-  finish<-as(mat_try, "sparseMatrix") 
-  print(as.matrix(finish[1:10,1:10]))
-  coocsCalc <- Skip_cooc$new(finish)
-  #coocsCalc <- Skip_cooc$new(mat_try)
-  coocsCalc$set_minCoocFreq(as.integer(parameters$min_cooc_freq))
   coocsCalc$set_maxCoocFreq(10000000)
   
   log_to_file(message = "&emsp; Calculating coocs with Dice-Significance measure",logfile)
@@ -2054,14 +2034,6 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   coocsCalc$set_measure("LOGLIK")
   coocs_matrix_log<-coocsCalc$skip_ccoocs()
   log_to_file(message = "&emsp;  ✔ ",logfile)
-    gc()
-  #delete entries for words no co-occurrence
-  diag(coocs_matrix_dice)<-0
-  CS<-colSums(coocs_matrix_dice)
-  coocs_matrix_count<-coocs_matrix_count[which(CS>0),which(CS>0)]
-  coocs_matrix_dice<-coocs_matrix_dice[which(CS>0),which(CS>0)]
-  coocs_matrix_mi<-coocs_matrix_mi[which(CS>0),which(CS>0)]
-  coocs_matrix_log<-coocs_matrix_log[which(CS>0),which(CS>0)]
   gc()
   
   terms<-colnames(coocs_matrix_dice)
@@ -2071,39 +2043,87 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
 }
 
 prepare_words_skipgram<-function(db_data,dtm){
- 
-  prep<- data.frame(db_data$token[,4],db_data$token[,1],db_data$token[,2])
+  prepare<- data.frame(words=db_data$token[,4],
+                    document_id=db_data$token[,1],
+                    sentence_id=db_data$token[,2])
   
-  prep$db_data.token...4.<-tolower(prep$db_data.token...4.)
-  ## wenn ich im prep Schritt Punkte und Co. entferne werden Worte wie @franz.nachname nicht mit in die Cooc-einbezogen
-  ### diese Wörter sind aber zum Teil mit in der dtm
-  #prep$db_data.token...4.<-removePunctuation(prep$db_data.token...4.)
-  #prep$db_data.token...4. <- gsub('„', '', prep$db_data.token...4.)
-  #prep$db_data.token...4. <- gsub('“', '', prep$db_data.token...4.)
-  #prep$db_data.token...4. <- gsub('-', ' ', prep$db_data.token...4.)
-  #prep$db_data.token...4. <- gsub('[0-9]', ' ',prep$db_data.token...4.)
-  dt<-data.table(prep)
+  
+  prepare$words<-tolower(prepare$words)
+  ##### check if tolower does the job - remove for final version
+  print(dplyr::sample_n(prepare,20))
+  # convert dataframe to datatable  
+  tmp_dt<-data.table(prepare)
   # set words that are in dtm 
-  keep<-dtm@Dimnames$features
-  ##aha<-keep[!(keep %in% db_data$token[,4])]
-  #print(aha)
-  to_keep<-dt[which(dt$db_data.token...4. %in% keep),]
-  replacement<-dt[,replace(dt$db_data.token...4., !(dt$db_data.token...4. %in% to_keep$db_data.token...4.),"PLACEHOLDER")]
-  final<-dt
-  #print(summary(replacement))
-  final$db_data.token...4.<-replacement 
+  keep_words<-dtm@Dimnames$features
   
-  skipi<-cooccurrence(final$db_data.token...4.,group=c(final$db_data.token...1.,final$db_data.token...2.),order = TRUE,skipgram=parameters$skip_window)
-  skipi <- skipi[ !(skipi$term1 =='PLACEHOLDER' | skipi$term2 == 'PLACEHOLDER'),] 
+  words_to_keep<-tmp_dt[which(tmp_dt$words %in% keep_words),]
+  # replace all words that are not in words_to_keep with phrase "PLACEHOLDER"
+  replacement<-tmp_dt[,replace(tmp_dt$words, !(tmp_dt$words %in% words_to_keep$words),"PLACEHOLDER")]
   
-    ## ANDERE VARIANTE: dataframe indem noch Document-ID und Satz-ID für jedes Wortpaar gelistet sind
-  #skipi<-final[,cooccurrence(db_data.token...4.,order=FALSE),by=list(db_data.token...1.,db_data.token...2.)]
-  #skipi<-subset(skipi, term1 !="PLACEHOLDER" & term2 !="PLACEHOLDER")
-  ##
-  return(skipi)
+  tmp_dt$words<-replacement 
+  
+  
+  skipgram_cooc<-cooccurrence_both_directions(tmp_dt$words,group=paste0(tmp_dt$document_id,"_",tmp_dt$sentence_id),order = T,skipgram=parameters$skip_window)
+  # delete all entries in datatable that contain the word "PLACEHOLDER"
+  skipgram_cooc <- skipgram_cooc[ !(skipgram_cooc$term1 =='PLACEHOLDER' | skipgram_cooc$term2 == 'PLACEHOLDER'),] 
+  
+  return(skipgram_cooc)
 }
 
 
-
+cooccurrence_both_directions <- function(x,group=rep(1,length(x)),order = TRUE, ..., relevant = rep(TRUE, length(x)), skipgram = 0){
+  stopifnot(all(skipgram >= 0))
+  cooc <- term1 <- term2 <- NULL
+  
+  ## skipdistances if it is only 1 value, it is considered the maximum skip distance between words, compute all skip n-grams between 0 and skipgram
+  ## if there are several values, consider them as such
+  skipdistances <- as.integer(skipgram)
+  if(length(skipdistances) == 1){
+    skipdistances <- seq(0, skipdistances, by = 1)
+  }else{
+    skipdistances <- union(0L, skipdistances)
+  }
+  
+  # look which word are followed with the next word, 
+  # look which word is followed by the 2nd next word, 3rd next word andsoforth
+  # but if the data is not considered relevant, do not use it
+  irrelevant <- !relevant
+  
+  result <- lapply(skipdistances, FUN=function(n){
+    result_forward<-result <- data.table(term1 = c(x),
+                                         term2 = c(txt_next(x, n = n + 1L)), 
+                                         cooc = 1L,
+                                         group1=c(group),
+                                         group2=c(group[(n + 2L):length(group)],rep(NA,(n+1L))))
+    
+    
+    result_backward<-data.table(term1 = c(x),
+                                 term2 = c(txt_previous(x, n = n + 1L)), 
+                                 cooc = 1L,
+                                 group1=c(group),
+                                 group2=c(rep(NA,(n+1L)),group[1:(length(group)-(n+1L))]))
+    result<-rbind(result_forward,result_backward)
+      # not_relevant <- txt_next(relevant, n = n + 1L)
+      # not_relevant <- irrelevant | (not_relevant %in% FALSE)
+      # if(sum(not_relevant) > 0){
+      #   result[not_relevant, term1 := NA_character_] 
+      #   result[not_relevant, term2 := NA_character_]  
+      # }
+      result <- subset(result, !is.na(term1) & !is.na(term2))
+      result <- subset(result, result$group1==result$group2)
+      result <- result[, list(cooc = sum(cooc)), by = list(term1, term2)]
+      result
+    })
+    result <- rbindlist(result)
+    result <- result[, list(cooc = sum(cooc)), by = list(term1, term2)]
+    #result_all<-rbind(result_all,result)
+  
+  
+  if(order){
+    setorder(result, -cooc)  
+  }
+  class(result) <- c("cooccurrence", "data.frame", "data.table")
+  result
+}
 
 
