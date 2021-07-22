@@ -7,18 +7,18 @@ tabPanel("Importer",
              "Preprocess Data",
              tags$div(style="height:79vh; overflow-y:auto;",
                       shinyWidgets::prettyRadioButtons(inputId = "Import_Type",label = "Which type of Import?",
-                                                       choices = c("csv","multiple text files"),
+                                                       choices = c("CSV/XLSX","multiple text files"),
                                                        fill=F,animation = "pulse",selected = character(0)),
-                      conditionalPanel(condition='input.Import_Type=="csv"',
+                      conditionalPanel(condition='input.Import_Type=="CSV/XLSX"',
                                        uiOutput(outputId = "UI_Import_csv_file"),
-                                       fileInput(inputId = "Import_csv_new",label = "Upload new CSV",multiple = F,accept = ".csv",width = "50%"),
+                                       fileInput(inputId = "Import_csv_new",label = "Upload new CSV",multiple = F,accept = c(".xlsx",".csv"),width = "50%"),
                                        conditionalPanel(condition='input.Import_csv_files!= null',
                                                         box(width=2,title = tags$div("CSV-Import Parameters",style="color:white;"),status = "primary",collapsible = T,solidHeader = T,
                                                             prettyCheckbox(inputId = "Import_load_csv_header",label = "header?",value = TRUE,status = "primary",shape = "curve"),
                                                             textInput(inputId = "import_load_csv_seperator",label = "seperator:",value = ",")
                                                         ),
                                                         withBusyIndicatorUI(
-                                                          shinyBS::bsButton(inputId = "Import_load_csv",label = "use selected csv",icon = icon("upload"),style = "info")
+                                                          shinyBS::bsButton(inputId = "Import_load_csv",label = "use selected CSV/XLSX",icon = icon("upload"),style = "info")
                                                         ),
                                                         
                                                         conditionalPanel(condition='output.data_load_csv_success==true',

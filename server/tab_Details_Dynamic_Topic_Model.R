@@ -578,3 +578,19 @@ observe({
   )
   updateSliderInput(session = session,inputId = "Det_DTM_validation_topic",value = as.numeric(click_pie_DTM_validation()$pointNumber+1) )
 })
+
+
+
+output$Det_DTM_download_relevant_documents <- downloadHandler(
+  filename = function(){
+    paste0("Task_",as.character(values$tasks_dtm[input$Dynamic_Topic_Results_rows_selected,"task.id"]),"_most_relevant_documents_for_topic_",input$Det_DTM_validation_topic,".csv")
+  },
+  content = function(file){
+    data<-values$dtm_meta
+    rownames(data)<-data$id_doc
+    data<-data[values$dtm_validation_by_topic_likelihood_ids,]
+    data<-cbind(values$dtm_validation_by_topic_likelihood_likelihoods,data)
+    colnames(data)[1]<-"topic likelihood"
+    write.csv2(data,file=file)
+  }
+)

@@ -351,13 +351,13 @@ values$Import_csv_split_scripts<-""
 output$UI_Import_csv_file<-renderUI({
   values$invalidate_csv_files
   validate(
-    need(length(list.files("data_import/unprocessed_data/",pattern = ".csv"))>0,message="No CSV-Files found in directory: data_import/unprocessed_data")
+    need(length(list.files("data_import/unprocessed_data/",pattern = ".csv|.xlsx"))>0,message="No CSV/XLSX-Files found in directory: data_import/unprocessed_data")
   )
   return(
     tagList(
       
-      shinyWidgets::prettyRadioButtons(inputId = "Import_csv_files",label = "CSV Files",
-                                       choices = stringr::str_replace_all(string = list.files("data_import/unprocessed_data/",pattern = ".csv"),pattern = ".txt",replacement = ""),
+      shinyWidgets::prettyRadioButtons(inputId = "Import_csv_files",label = "CSV/XLSX Files",
+                                       choices = stringr::str_replace_all(string = list.files("data_import/unprocessed_data/",pattern = ".csv|.xlsx"),pattern = ".txt",replacement = ""),
                                        fill=T,animation = "pulse",selected = character(0))
     )
   )
@@ -395,8 +395,13 @@ observeEvent(input$Import_csv_new,ignoreInit = T,{
 #'   values$Import_csv_split_scripts: import csv scripts to split
 observeEvent(input$Import_load_csv,{
   withBusyIndicatorServer("Import_load_csv", {
-    values$data_csv<-readr::read_delim(file = paste0("data_import/unprocessed_data/",input$Import_csv_files),col_names = input$Import_load_csv_header,
-                                       delim = input$import_load_csv_seperator,na = character() )
+    if(grepl(pattern = ".csv$",x = input$Import_csv_files)){
+      values$data_csv<-readr::read_delim(file = paste0("data_import/unprocessed_data/",input$Import_csv_files),col_names = input$Import_load_csv_header,
+                                         delim = input$import_load_csv_seperator,na = character() )
+    }
+    if(grepl(pattern = ".xlsx$",x = input$Import_csv_files)){
+      values$data_csv<-readxl::read_excel(path = paste0("data_import/unprocessed_data/",input$Import_csv_files), col_names = input$Import_load_csv_header)
+    }
     colnames(values$data_csv)<-stringr::str_replace_all(string = colnames(values$data_csv),pattern = "\\.",replacement = " ")
     values$Import_csv_scripts<-rep(default_script_decription_import,13) # 13 for id_doc, title, date, body and 9 mde's
     if(dim(values$data_csv)[1]<2 | dim(values$data_csv)[2]<2){

@@ -52,7 +52,7 @@ values$tm_stm_parameters_contentFormula <- ""
 #'  values$va_cy: volatility analysis cy
 #'  values$va_freq: frequencies from volatility analysis
 #'  values$va_words: volatility analysis words 
-#'  values$va_ner_tags: volatility analysis used entity (NER) tags
+#'  values$va_ner_tags: volatility analysis used entity (NER) tags 
 #'  values$va_pos_tags: volatility analysis used part of speech tags 
 #'  values$va_voldata: voldata from volatility analysis
 #'  values$va_un_dates: volatility analysis unsorted dates
@@ -159,11 +159,14 @@ output$details_parameter<-renderUI({
                                           )
                            ),
                            tags$hr(),
-                           uiOutput("Det_DTM_validation_metadata_UI")%>%withSpinner()            
+                           uiOutput("Det_DTM_validation_metadata_UI"),
+                           conditionalPanel(condition="input.Det_DTM_validation_document_selection=='by topic likelihood'",
+                                            downloadButton(outputId = "Det_DTM_download_relevant_documents",label = "relevant Documents")
+                           )
           ),
           conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Frequencies'",
                            selectInput(inputId = "Det_DTM_Frequencies_n",label = "Select Time Stamp to analyze",choices=setNames(nm = c("overall",results_additional$time_slice_names),
-                                                                                                                            object = 0:length(results)))
+                                                                                                                                 object = 0:length(results)))
           )
         )
       )
@@ -482,6 +485,7 @@ output$details_parameter<-renderUI({
       if(nchar(un_dates[1])==10){
         intervall<-c("month","year")
       }
+      
       #tagList for volatility analysis parameters for visualisation
       return(
         tagList(
@@ -957,8 +961,11 @@ observe({
       most_likely_documents<-order(theta[,topic],decreasing = T)[1:n]
       likelihoods<-theta[most_likely_documents,topic]
       choices<-choices[most_likely_documents]
+      values$dtm_validation_by_topic_likelihood_ids<-choices
+      values$dtm_validation_by_topic_likelihood_likelihoods<-likelihoods
       names(choices)<-paste0("(",round(likelihoods,digits = 2),") ",names(choices))
       choices_document_selection_by_topic_likelihood<-choices
+      values$dtm_validation_by_topic_likelihood_ids<-choices
     }
   }
   
@@ -1792,7 +1799,15 @@ output$details_visu<-renderUI({
                           DT::dataTableOutput(outputId = "Det_VA_lowV") %>% withSpinner(type = 6)
                  ),
                  tabPanel("Highest Volatility periodwise",
-                          plotlyOutput(outputId = "Det_VA_highest_period") %>% withSpinner(type = 6)
+                          plotlyOutput(outputId = "Det_VA_highest_period") %>% withSpinner(type = 6),
+                          tags$br(),
+                          tags$hr(),
+                          column(6,
+                                 wordcloud2Output(outputId = "Det_VA_highest_period_wc")
+                          ),
+                          column(6,
+                                 DT::dataTableOutput(outputId = "Det_VA_highest_period_table")
+                          )
                  ),
                  tabPanel("Wordclouds for Highest Volat",
                           uiOutput(outputId = "Det_VA_WC") %>% withSpinner(type = 6)

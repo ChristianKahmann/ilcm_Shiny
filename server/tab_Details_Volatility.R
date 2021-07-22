@@ -193,7 +193,12 @@ observeEvent(input$Det_VA_Update,{
     words<-rownames( values$va_voldata)
     freqs<-rowMeans(values$va_freq)
     volat<-rowMeans( values$va_voldata)
-    data<-cbind(words,freqs,volat)  
+    data<-cbind(words,freqs,volat)
+    data<-data.frame(data,stringsAsFactors = F)
+    class(data$freqs)<-"numeric"
+    class(data$volat)<-"numeric"
+    data$volat<-round(data$volat,digits = 4)
+    data$freqs<-round(data$freqs,digits = 2)
     if(length(isolate(input$Det_VA_maxFreq_high))>0){
       data<-data[which(as.numeric(data[,2])<isolate(input$Det_VA_maxFreq_high)),]
     }
@@ -210,6 +215,11 @@ observeEvent(input$Det_VA_Update,{
     freqs<-rowMeans(values$va_freq)
     volat<-rowMeans( values$va_voldata)
     data<-cbind(words,freqs,volat)  
+    data<-data.frame(data,stringsAsFactors = F)
+    class(data$freqs)<-"numeric"
+    class(data$volat)<-"numeric"
+    data$volat<-round(data$volat,digits = 4)
+    data$freqs<-round(data$freqs,digits = 2)
     if(length(isolate(input$Det_VA_maxFreq_low))>0){
       data<-data[which(as.numeric(data[,2])<isolate(input$Det_VA_maxFreq_low)),]
     }
@@ -241,6 +251,45 @@ observeEvent(input$Det_VA_Update,{
     p<-layout(p,yaxis=list(zeroline=FALSE,title="Context Volatility"),xaxis=list(zeroline=FALSE,title="Frequency",type="log"))
     return(p)
   })
+  
+  output$Det_VA_highest_period_wc<-renderWordcloud2({
+    id<-which(values$va_un_dates==(input$Det_VA_time))
+    words<-rownames(values$va_voldata)
+    volat<-values$va_voldata[,id]
+    if(input$Det_VA_POS!="all"){
+      words<-values$va_pos_tags[which(values$va_pos_tags[,2]==input$Det_VA_POS),1]
+      volat<-volat[words]
+    }
+    if(input$Det_VA_NER!="all"){
+      words<-intersect(values$va_ner_tags[which(values$va_ner_tags[,2]==input$Det_VA_NER),1],words)
+      volat<-volat[words]
+    }
+    data<-data.frame(word=words,volat=volat,stringsAsFactors = F)
+    data<-data[order(data$volat,decreasing=T),]
+    data<-data[1:25,]
+    wordcloud2(data = data,size = 0.4,minSize = 0.2,fontFamily = "Helvetica",color = "random-dark",minRotation = -pi/2,maxRotation = -pi/2)
+  })
+  
+  output$Det_VA_highest_period_table<-DT::renderDataTable({
+    id<-which(values$va_un_dates==(input$Det_VA_time))
+    words<-rownames( values$va_voldata)
+    frequence<-values$va_freq[,id]
+    volat<-values$va_voldata[,id]
+    if(input$Det_VA_POS!="all"){
+      words<-values$va_pos_tags[which(values$va_pos_tags[,2]==input$Det_VA_POS),1]
+      frequence<-frequence[words]
+      volat<-volat[words]
+    }
+    if(input$Det_VA_NER!="all"){
+      words<-intersect(values$va_ner_tags[which(values$va_ner_tags[,2]==input$Det_VA_NER),1],words)
+      frequence<-frequence[words]
+      volat<-volat[words]
+    }
+    data<-data.frame(word=words,freq=frequence,volat=volat,stringsAsFactors = F)
+    data<-data[order(data[,3],decreasing=T),]
+    datatable(data=data,selection="none",rownames = F)
+  })
+  
 })
 
 #' render wordcloud data for volatility analysis
