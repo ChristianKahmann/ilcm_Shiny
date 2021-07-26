@@ -423,6 +423,7 @@ observeEvent(input$coocs_kwic_document,{
   id_targets<-union(which(tolower(token[,"word"])%in%input$coocs_examples_words),which(tolower(token[,"lemma"])%in%input$coocs_examples_words))
   
   token[id_targets,"word"]<-paste0(' <b style="color:',"black",'">',token[id_targets,"word"],'</b> ')
+  ## edit: if skipgram selected show skigram windows back and front
   text<-paste(token[,"word"],collapse=" ")
   showModal(
     modalDialog(title = paste0("Document: ",dataset,"_",doc_id),easyClose = T,

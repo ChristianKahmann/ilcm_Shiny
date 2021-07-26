@@ -285,7 +285,12 @@ output$Analysis_Parameter_CA<-renderUI({
       ),
       column(1,
              conditionalPanel(condition='input.CA_cooc_type == "Skipgram"',
-                              numericInput(inputId = "CA_skipgram_window",label = "windowsize for skipgram",min = 1,step = 1,value=2)
+                              numericInput(inputId = "CA_skipgram_window_forward",label = "windowsize for skipgram pairing forward",min = 1,step = 1,value=2)
+             )
+      ),
+      column(1,
+             conditionalPanel(condition='input.CA_cooc_type == "Skipgram"',
+                              numericInput(inputId = "CA_skipgram_window_backward",label = "windowsize for skipgram pairing backward",min = 1,step = 1,value=2)
              )
       ),
       column(1,
@@ -391,10 +396,12 @@ observeEvent(ignoreNULL = T,input$CA_use_custom_whitelist,{
 #'   input$CA_skipgram: should skipgram analysis be used? 
 observeEvent(ignoreNULL = T,input$CA_cooc_type,{
   if(input$CA_cooc_type == 'Skipgram'){
-    shinyjs::show(id = "CA_skipgram_window")
+    shinyjs::show(id = "CA_skipgram_window_forward")
+    shinyjs::show(id = "CA_skipgram_window_backward")
   }
   else{
-    shinyjs::hide(id = "CA_skipgram_window")
+    shinyjs::hide(id = "CA_skipgram_window_forward")
+    shinyjs::hide(id = "CA_skipgram_window_backward")
   }
 })
 
@@ -563,7 +570,8 @@ observeEvent(input$CA_Submit_Script,{
                      whitelist_only=input$CA_whitelist_only,
                      use_fixed_vocab=input$CA_use_fixed_vocab,
                      fixed_vocab=input$CA_fixed_vocab,
-                     skip_window = input$CA_skipgram_window
+                     skip_window_forward = input$CA_skipgram_window_forward,
+                     skip_window_backward = input$CA_skipgram_window_backward
     )
     #create process ID
     ID<-get_task_id_counter()+1
@@ -720,7 +728,8 @@ observeEvent(input$CA_pruning_continue,ignoreInit = T,{
                    whitelist_only=input$CA_whitelist_only,
                    use_fixed_vocab=input$CA_use_fixed_vocab,
                    fixed_vocab=input$CA_fixed_vocab,
-                   skip_window = input$CA_skipgram_window
+                   skip_window_forward = input$CA_skipgram_window_forward,
+                   skip_window_backward = input$CA_skipgram_window_backward
   )
   #create process ID
   ID<-get_task_id_counter()+1

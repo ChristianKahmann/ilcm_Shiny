@@ -1942,7 +1942,7 @@ calcStatsPerMapPoint <- function(geocodingResultReducedToPointData,
   return(stats)
 }
 
-#' crearePlotsForDistributionData
+#' createPlotsForDistributionData
 #' @param statsDistributionData
 #' @param sortByValueDesc
 #' 
@@ -1991,6 +1991,11 @@ remove_locations<-function(token){
 }
 
 #' calculate all cooccurrence measurements with skipgram base
+#' @param db_data
+#' @param dtm
+#' @result list of all results from significance measurements
+#' @export
+#' @example 
 calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   skipgram_coocs<- prepare_words_skipgram(db_data,dtm)
   delete<-which(skipgram_coocs$cooc<parameters$min_cooc_freq)
@@ -2041,7 +2046,13 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   gc() 
   return(list(coocs_matrix_dice=coocs_matrix_dice,coocs_matrix_count=coocs_matrix_count,coocs_matrix_log=coocs_matrix_log,coocs_matrix_mi=coocs_matrix_mi,terms=terms))
 }
-
+#' prepare_words_skipgram
+#' @param db_data
+#' @param dtm
+#' 
+#' @result skipgram_cooc
+#' @export
+#' @example 
 prepare_words_skipgram<-function(db_data,dtm){
   prepare<- data.frame(words=db_data$token[,4],
                     document_id=db_data$token[,1],
@@ -2049,7 +2060,7 @@ prepare_words_skipgram<-function(db_data,dtm){
   
   
   prepare$words<-tolower(prepare$words)
-  ##### check if tolower does the job - remove for final version
+  
   print(dplyr::sample_n(prepare,20))
   # convert dataframe to datatable  
   tmp_dt<-data.table(prepare)
@@ -2063,67 +2074,83 @@ prepare_words_skipgram<-function(db_data,dtm){
   tmp_dt$words<-replacement 
   
   
-  skipgram_cooc<-cooccurrence_both_directions(tmp_dt$words,group=paste0(tmp_dt$document_id,"_",tmp_dt$sentence_id),order = T,skipgram=parameters$skip_window)
+  skipgram_cooc<-cooccurrence_both_directions(tmp_dt$words,group=paste0(tmp_dt$document_id,"_",tmp_dt$sentence_id),order = T,skipgram_front = parameters$skip_window_forward, skipgram_back = parameters$skip_window_backward)
   # delete all entries in datatable that contain the word "PLACEHOLDER"
   skipgram_cooc <- skipgram_cooc[ !(skipgram_cooc$term1 =='PLACEHOLDER' | skipgram_cooc$term2 == 'PLACEHOLDER'),] 
   
   return(skipgram_cooc)
 }
 
-
-cooccurrence_both_directions <- function(x,group=rep(1,length(x)),order = TRUE, ..., relevant = rep(TRUE, length(x)), skipgram = 0){
-  stopifnot(all(skipgram >= 0))
+#' cooccurrence_both_directions: calculate cooccurrence with help of skipgram
+#' @param x
+#' @param group
+#' @param order
+#' @param relevant
+#' @param skipgram_front
+#' @param skipgram_back
+#' 
+#' @result result_final (table with Term1 - Term2 - Cooc)
+#' @export
+#' @example 
+cooccurrence_both_directions <- function(x,group=rep(1,length(x)),order = TRUE, ..., relevant = rep(TRUE, length(x)), skipgram_front = 0, skipgram_back = 0){
+  stopifnot(all(max(skipgram_front,skipgram_back) >= 0))
   cooc <- term1 <- term2 <- NULL
   
   ## skipdistances if it is only 1 value, it is considered the maximum skip distance between words, compute all skip n-grams between 0 and skipgram
   ## if there are several values, consider them as such
-  skipdistances <- as.integer(skipgram)
-  if(length(skipdistances) == 1){
-    skipdistances <- seq(0, skipdistances, by = 1)
+  skipdistances_front <- as.integer(skipgram_front)
+  if(length(skipdistances_front) == 1){
+    skipdistances_front <- seq(0, skipdistances_front-1, by = 1)
   }else{
-    skipdistances <- union(0L, skipdistances)
+    skipdistances_front <- union(0L, skipdistances_front)
   }
-  
+  skipdistances_back <- as.integer(skipgram_back)
+  if(length(skipdistances_back) == 1){
+    skipdistances_back <- seq(0, skipdistances_back-1, by = 1)
+  }else{
+    skipdistances_back <- union(0L, skipdistances_back)
+  }
   # look which word are followed with the next word, 
   # look which word is followed by the 2nd next word, 3rd next word andsoforth
   # but if the data is not considered relevant, do not use it
   irrelevant <- !relevant
   
-  result <- lapply(skipdistances, FUN=function(n){
-    result_forward<-result <- data.table(term1 = c(x),
-                                         term2 = c(txt_next(x, n = n + 1L)), 
-                                         cooc = 1L,
-                                         group1=c(group),
-                                         group2=c(group[(n + 2L):length(group)],rep(NA,(n+1L))))
+  result_back <- lapply(skipdistances_back, FUN=function(n){
+    result_backward<-result_back<-data.table(term1 = c(x),
+                                             term2 = c(txt_previous(x, n = n + 1L)), 
+                                             cooc = 1L,
+                                             group1=c(group),
+                                             group2=c(rep(NA,(n+1L)),group[1:(length(group)-(n+1L))]))
+    result_back <- subset(result_back, !is.na(term1) & !is.na(term2))
+    result_back <- subset(result_back, result_back$group1==result_back$group2)
+    result_back <- result_back[, list(cooc = sum(cooc)), by = list(term1, term2)]
+    result_back
+  })
+  result_front <- lapply(skipdistances_front, FUN=function(n){
+    result_forward<-result_front <-  data.table(term1 = c(x),
+                                          term2 = c(txt_next(x, n = n + 1L)), 
+                                          cooc = 1L,
+                                          group1=c(group),
+                                          group2=c(group[(n + 2L):length(group)],rep(NA,(n+1L))))
     
-    
-    result_backward<-data.table(term1 = c(x),
-                                 term2 = c(txt_previous(x, n = n + 1L)), 
-                                 cooc = 1L,
-                                 group1=c(group),
-                                 group2=c(rep(NA,(n+1L)),group[1:(length(group)-(n+1L))]))
-    result<-rbind(result_forward,result_backward)
-      # not_relevant <- txt_next(relevant, n = n + 1L)
-      # not_relevant <- irrelevant | (not_relevant %in% FALSE)
-      # if(sum(not_relevant) > 0){
-      #   result[not_relevant, term1 := NA_character_] 
-      #   result[not_relevant, term2 := NA_character_]  
-      # }
-      result <- subset(result, !is.na(term1) & !is.na(term2))
-      result <- subset(result, result$group1==result$group2)
-      result <- result[, list(cooc = sum(cooc)), by = list(term1, term2)]
-      result
-    })
-    result <- rbindlist(result)
-    result <- result[, list(cooc = sum(cooc)), by = list(term1, term2)]
-    #result_all<-rbind(result_all,result)
+    result_front <- subset(result_front, !is.na(term1) & !is.na(term2))
+    result_front <- subset(result_front, result_front$group1==result_front$group2)
+    result_front <- result_front[, list(cooc = sum(cooc)), by = list(term1, term2)]
+    result_front
+  })
+  ## Warnings appear as the different iteration steps have different numbers of elements
+  unlist_result_back<-data.table::rbindlist(result_back, fill = TRUE)
+  unlist_result_front<-data.table::rbindlist(result_front, fill = TRUE)
+  result_final<-rbind(unlist_result_back,unlist_result_front)
+  
+  result_final <- result_final[, list(cooc = sum(cooc)), by = list(term1, term2)]
+
   
   
   if(order){
-    setorder(result, -cooc)  
+    setorder(result_final, -cooc)  
   }
-  class(result) <- c("cooccurrence", "data.frame", "data.table")
-  result
+  class(result_final) <- c("cooccurrence", "data.frame", "data.table")
+  result_final
 }
-
 
