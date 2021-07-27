@@ -85,6 +85,9 @@ Skip_cooc<-R6Class(
         
         
         switch(
+          
+##### WRONG CALCULATION: using 'leipzig' collectiob with skipgram_window_front = 4, skipgram_window_back=3
+######## dice will show values >1
           self$measure,
           DICE = {
             tmp_c <- summary(coocCounts)
