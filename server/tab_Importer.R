@@ -1502,9 +1502,8 @@ output$UI_Import_mtf_file<-renderUI({
   )
   return(
     tagList(
-      
       shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_files",label = "Directory",
-                                       choices = stringr::str_replace(string=list.dirs("data_import/unprocessed_data/")[-1],pattern="data_import/unprocessed_data//",replacement=""),
+                                       choices = list.dirs("data_import/unprocessed_data/",recursive = F,full.names = F),
                                        fill=T,animation = "pulse",selected = character(0))
     ))
   
@@ -2984,3 +2983,191 @@ observeEvent(input$confirm_delete_import,{
   }
 }
 )
+
+
+
+
+output$UI_Import_Wortschatz<-renderUI({
+  return(tagList(
+    tags$div(icon("info"))%>%
+      bs_embed_popover(
+        title ="You can download Wortschatz datasets from https://wortschatz.uni-leipzig.de/de/download/German#deu_news_2020", placement = "right"
+      ),
+    fileInput(inputId = "Import_Wortschatz_new",label = "Upload new Wortschatz dataset",multiple = F,accept = ".tar.gz",width = "50%"),
+    tags$br(),
+    tags$hr(),
+    uiOutput(outputId = "Import_Wortschatz_Dataset_Information"),
+    tags$br(),
+    uiOutput(outputId = "Import_Wortschatz_Transfer_to_CSV_UI"),
+    tags$br(),
+    uiOutput(outputId = "Import_Wortschatz_Dataset_ready_UI")
+    
+    
+  )
+  )
+})
+
+output$Import_Wortschatz_Dataset_ready_UI<-renderUI({
+  validate(
+    need(!is.null(values$Import_Wortschatz_sentences),FALSE)
+  )
+  return(tagList(
+    tags$h5("Number of Documents/Sentences:"),
+    tags$span(nrow(values$Import_Wortschatz_sentences)),
+    tags$br(),
+    shiny::actionButton(inputId = "Import_Wortschatz_Dataset_ready_more_details",label = "More Details",icon = icon("search"),styleclass = "default"),
+    tags$hr(),
+    textInput(inputId="Import_Wortschatz_Dataset_ready_csv_name",label="CSV Name:",value=stringr::str_replace(string = input$Import_Wortschatz_new$name,pattern = ".tar.gz",replacement = ""),width="30%"),
+    shiny::actionButton(inputId = "Import_Wortschatz_Dataset_ready_csv_save",label = "Save CSV File",styleclass = "primary",icon = icon("save"))
+  ))
+})
+
+
+
+
+
+
+observeEvent(input$Import_Wortschatz_Dataset_ready_more_details,{
+  showModal(
+    modalDialog(title = "Excerpt of prepared Dataset",easyClose = T,size = "l",
+                DT::dataTableOutput(outputId = "Import_Wortschatz_Dataset_ready_table")        
+    )
+  )
+})
+
+
+output$Import_Wortschatz_Dataset_ready_table<-DT::renderDataTable({
+  data<-values$Import_Wortschatz_sentences
+  data<-data[order(as.numeric(data[,1])),]
+  data<-data[1:min(nrow(data),5),]
+  data[,2]<-paste0(substr(data[,2],1,100),"...")
+  datatable(data,rownames=F)
+})
+
+
+output$Import_Wortschatz_Transfer_to_CSV_UI<-renderUI({
+  validate(
+    need(!is.null(input$Import_Wortschatz_new),message=F)
+  )
+  tagList(
+    checkboxInput(inputId="Input_Wortschatz_recreate_documents",label="Recreate Documents using Bag of Sentences Approach",value=T,width="27%")%>%
+      shinyInput_label_embed(
+        shiny_iconlink() %>%
+          bs_embed_popover(
+            title = "Sentences inside the Wortschatz-datasets are shuffeld due to copyright reasons. Therefor documents can only be reconstrcuted in a bag of sentences approach.", placement = "right"
+          )
+      ),
+    actionButton(inputId = "Import_Wortschatz_Transfer_to_CSV",label = "Prepare this Wortschatz-dataset",size = "large",styleclass = "primary")
+  )
+})
+
+observeEvent(input$Import_Wortschatz_new,ignoreInit = T,{
+  validate(
+    need(
+      !is.null(input$Import_Wortschatz_new),message=F
+    )
+  )
+  values$Import_Wortschatz_sentences<-NULL
+  file.remove(list.files(path = "collections/tmp/Wortschatz/",full.names =  T,recursive = T,include.dirs = T))
+  file.copy(from = input$Import_Wortschatz_new$datapath,to = paste0("collections/tmp/Wortschatz/",input$Import_Wortschatz_new$name))
+  values$Wortschatz_current_path<-paste0("collections/tmp/Wortschatz/",input$Import_Wortschatz_new$name)
+})  
+
+
+observeEvent(input$Import_Wortschatz_Dataset_ready_csv_save,{
+  file_already_exisiting<-file.exists(paste0("data_import/unprocessed_data/",input$Import_Wortschatz_Dataset_ready_csv_name,".csv"))
+  if(file_already_exisiting==FALSE){
+    data<-values$Import_Wortschatz_sentences
+    #file.remove(list.files(path = "collections/tmp/Wortschatz/",full.names =  T,recursive = T,include.dirs = T))
+    write.csv(x = data,file = paste0("data_import/unprocessed_data/",input$Import_Wortschatz_Dataset_ready_csv_name,".csv"),row.names = F)
+    values$invalidate_csv_files<-runif(1,0,1)
+    shinyWidgets::sendSweetAlert(session=session,title = "New CSV File created",text = HTML(paste0("Please go to CSV Input Mode, select the created File:<b>",
+                                 stringr::str_replace(string = input$Import_Wortschatz_new$name,pattern = ".tar.gz",replacement = "")," </b> and follow the regular input steps.")),type = "success",html = T)
+    
+  }
+  else{
+    shinyWidgets::confirmSweetAlert(session = session,inputId = "Import_Wortschatz_Confirm_Overwrite",type = "warning",
+                                    title = "A file with the specified name already exists",text = "Are you sure you want to overwrite the exisiting file?",danger_mode = T,btn_labels = c("Change Name","Overwrite"))
+  }
+})
+
+observeEvent(input$Import_Wortschatz_Confirm_Overwrite,{
+  if(isTRUE(input$Import_Wortschatz_Confirm_Overwrite)){
+    data<-values$Import_Wortschatz_sentences
+    #file.remove(list.files(path = "collections/tmp/Wortschatz/",full.names =  T,recursive = T,include.dirs = T))
+    write.csv(x = data,file = paste0("data_import/unprocessed_data/",input$Import_Wortschatz_Dataset_ready_csv_name,".csv"),row.names = F)
+    values$invalidate_csv_files<-runif(1,0,1)
+    shinyWidgets::sendSweetAlert(session=session,title = "New CSV File created",text = HTML(paste0("Please go to CSV Input Mode, select the created File:<b>",stringr::str_replace(string = input$Import_Wortschatz_new$name,pattern = ".tar.gz",replacement = ""),
+                                                                                                   " </b> and follow the regular input steps.")),type = "success",html = T)
+  }
+  else{
+    shinyWidgets::closeSweetAlert(session = session)    
+  }
+})
+
+
+observeEvent(input$Import_Wortschatz_Transfer_to_CSV,{
+  validate(need(
+    !is.null(values$Wortschatz_current_path),message="You need to upload a Wortschatz dataset before transfering it into CSV Format"
+  ))
+  withProgress(value = 0,message = "Unzipping Wortschatz Dataset" ,expr = {
+    path<-values$Wortschatz_current_path
+    untar(tarfile = path,exdir = "collections/tmp/Wortschatz")
+
+    incProgress(amount = 0.1,message = "Finished Unzipping")
+    file_name<-stringr::str_replace(string = input$Import_Wortschatz_new$name,pattern = ".tar.gz",replacement = "")
+    all_files<-list.files(path = "collections/tmp/Wortschatz",full.names = T,recursive = T)
+    
+    sentences_path<-all_files[grepl(pattern = "-sentences.txt",x = all_files)]
+    sources_path<-all_files[grepl(pattern = "-sources.txt",x = all_files)]
+    inv_source_path<-all_files[grepl(pattern = "-inv_so.txt",x = all_files)]
+    
+    incProgress(amount = 0.2,message = "Importing Sentences.txt")
+    sentences<-readLines(con = sentences_path)
+    sentences<-stringr::str_split(sentences,"\t",simplify = T)
+    
+    incProgress(amount = 0.2,message = "Importing Sources.txt")
+    sources<-readLines(con = sources_path)
+    sources<-stringr::str_split(sources,"\t",simplify = T)
+    
+    incProgress(amount = 0.2,message = "Importing inv_so.txt")
+    inv_sources<-readLines(con = inv_source_path)
+    inv_sources<-stringr::str_split(inv_sources,"\t",simplify = T)
+    
+    incProgress(amount = 0.1,message = "Merge Sentences and Sources")
+    inv_sources<-readLines(con = inv_source_path)
+    inv_sources<-stringr::str_split(inv_sources,"\t",simplify = T)
+    
+    sentences<-merge(x = sentences,y = inv_sources,by.x="V1",by.y="V2")
+    sentences<-merge(x=sentences,y=sources,by.x="V1.y",by.y="V1")
+    
+    sentences<-sentences[,-2]
+    colnames(sentences)<-c("ID_Quelle","Satz","Quelle","Date")
+    sentences<-data.frame(sentences,stringsAsFactors = F)
+    
+    if(input$Input_Wortschatz_recreate_documents==TRUE){
+      incProgress(amount = 0.1,message = "Recreate Documents")
+      sentences<-cbind(aggregate(sentences$Satz,by = sentences['ID_Quelle'],paste,collapse=" "),aggregate(sentences$Quelle,by = sentences['ID_Quelle'],first)[,2],aggregate(sentences$Date,by = sentences['ID_Quelle'],first)[,2])
+      colnames(sentences)<-c("ID_Quelle","Satz","Quelle","Date")
+      values$Import_Wortschatz_sentences<-sentences
+      incProgress(amount = 0.1,message = "Finished")
+    }
+    else{
+      incProgress(amount = 0.2,message = "Finished")
+      values$Import_Wortschatz_sentences<-sentences
+    }
+    shinyWidgets::sendSweetAlert(session=session,title = "Wortschatz-dataset ready",text = HTML(paste0("The Wortschatz-dataset:<b> ",file_name,"</b> is ready to be tranfered to a CSV.")),type = "success",html = T)
+  })
+})
+
+
+
+output$Import_Wortschatz_Dataset_Information<-renderUI({
+  validate(
+    need(!is.null(input$Import_Wortschatz_new),message=F)
+  )
+  tagList(tags$h4("Filename:"),
+          tags$div(input$Import_Wortschatz_new$name),
+          tags$h4("Filesize:"),
+          tags$div(paste0(as.numeric(input$Import_Wortschatz_new$size/1000000)," MB")))
+})

@@ -65,13 +65,12 @@ error<-try(expr = {
   log_to_file(message = "<b>Step 4/10: Preparing input parameters</b>",file = logfile)
   parameters<-prepare_input_parameters(parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
-  
+
   
   #preparing token object
   log_to_file(message = "<b>Step 5/10: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
-  
   
   #calculating dtm
   log_to_file(message = "<b>Step 6/10: Calculating DTM</b>",file = logfile)
