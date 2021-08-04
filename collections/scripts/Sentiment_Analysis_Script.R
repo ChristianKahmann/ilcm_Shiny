@@ -51,6 +51,7 @@ error<-try(expr = {
   log_to_file(message = "<b>Step 5/7: Importing sentiments</b>",file = logfile)
   Sentiments <- as.data.frame(read_csv(paste0("collections/sentiments/",parameters$Sentiment_Dictionary), 
                                        col_names = TRUE, col_types = cols(X1 = col_skip())))
+  Sentiments<-Sentiments[,(ncol(Sentiments)-1):(ncol(Sentiments))]
   colnames(Sentiments)<-c("word","score")
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished importing sentiments",file = logfile)
   

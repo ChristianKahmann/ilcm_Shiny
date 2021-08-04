@@ -1021,7 +1021,9 @@ observeEvent(input$wrong_topic,{
       shinyWidgets::sendSweetAlert(session=session,title = "Correct",text = "You found the intruder!",type = "success")
     }
     else{
-      shinyWidgets::sendSweetAlert(session=session,title = "False",text = "You did not found the intruder!",type = "error")
+      shinyWidgets::sendSweetAlert(session=session,html = T,title = "False",text = HTML((paste0("You did not found the intruder! It would have been: <b>",(values$TM_Coherence_word_intrusion_words[values$word_intrusion_results[dim(isolate(values$word_intrusion_results))[1],2]]),"</b>.",
+                                                                                                "<br> The selected Topic was number: <b>",values$word_intrusion_random_topic_number,"</b>"))),type = "error")
+      
     }
     values$right_prediction<-length(which((apply(values$topic_intrusion_results,1,FUN = function(x){x[2]==x[3]}))==TRUE))/dim(values$topic_intrusion_results)[1]
     
@@ -1195,31 +1197,28 @@ observe({
   values$word_intrusion_random_topic_number<-random_topic_number
   
   #use relevance score from ldavis paper
-  theta=0.25
-  pw<-colSums(values$tm_phi)/sum(colSums(values$tm_phi))
-  pwt<-isolate(values$tm_phi)[as.numeric(random_topic_number),]
+  lambda=input$Det_TM_word_intrusion_lambda
+  relevance<-calculate_topic_relevance(lambda = lambda,phi = values$tm_phi,theta = values$tm_theta,doc.length = values$tm_doc.length)
   
-  data<-theta*log(pwt)+(1-theta)*log(pwt/pw)
   #sample most likely data, so its not always the same worsd occcuring
-  top_words<-sort(data, decreasing = T)
-  top_words_setsize<-names(sort(data,decreasing = T))[sample(x = max(25,(input$TM_Coherence_setsize - 1)),size = (input$TM_Coherence_setsize - 1),prob = max(25,(input$TM_Coherence_setsize - 1)):1 )]  
-  
+  top_words<-sort(relevance[,random_topic_number], decreasing = T)
+  top_words_setsize<-names(top_words)[sample(x = max(25,(input$TM_Coherence_setsize - 1)),size = (input$TM_Coherence_setsize - 1),prob = max(25,(input$TM_Coherence_setsize - 1)):1 )]  
+   
   #top_words <- sort(values$tm_phi[random_topic_number, ], decreasing = T)
   #top_words_setsize <- names(top_words[1:(input$TM_Coherence_setsize - 1)])
   
   V <- ncol(values$tm_phi)
-  topN <- min(c(V, 25))
-  high_prob_terms <- apply(values$tm_phi[-random_topic_number, ], 1, FUN = function(x) {
-    pwt<-x
-    data<-theta*log(pwt)+(1-theta)*log(pwt/pw)
-    names(sort(data, decreasing = T)[1:topN])
+  topN <- min(c(V, 15))
+  high_prob_terms <- lapply(setdiff((1:nrow(values$tm_phi)),random_topic_number),  FUN = function(x) {
+    names(sort(relevance[,x], decreasing = T))[1:topN]
   })
+  high_prob_terms<-do.call(cbind,high_prob_terms)
   high_prob_terms <- unique(as.vector(high_prob_terms))
-  low_prob_terms <- names(top_words[ceiling(V * 0.25):V])
+  low_prob_terms <- names(top_words[ceiling(V * 0.5):V])
   selection_terms <- intersect(high_prob_terms, low_prob_terms)
   if(length(selection_terms)==0){
     selection_terms<-low_prob_terms
-    print("Actung kein wort, das im topic niedrig wahrscheinlich aber in anderen wahrscheinlich ist, konnte gefunden werden")
+    print("Achtung kein wort, das im topic niedrig wahrscheinlich aber in anderen wahrscheinlich ist, konnte gefunden werden")
   }
   intruder <- sample(selection_terms, 1)
   
@@ -6194,10 +6193,6 @@ output$TM_topic_labels_UI<-renderUI({
   
   values$TM_topic_labels_relevance<-relevance
   values$TM_topic_labels_recalc<-runif(1,0,1)
-  
-  car<-shinydashboardPlus::accordion(id = "Det_TM_Label_carousel"
-                                )
-
   
   screens<-lapply(1:ncol(values$tm_theta),FUN = function(x){
     shinyglide::screen(

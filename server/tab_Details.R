@@ -644,7 +644,8 @@ output$details_parameter<-renderUI({
       panelCoherence <- conditionalPanel(condition = 'input.tabBox_tm=="Coherence"',
                                          sliderInput("TM_Coherence_runs", "Number of runs for interactive coherence measure", min = 5, max = 50, value = 10,step=1),
                                          sliderInput("TM_Coherence_setsize", "set size for interactive coherence measure", min = 3, max = values$tm_number_of_topics, value = 4,step = 1),
-                                         checkboxInput("TM_Coherence_chance_correction",label = "chance correction?",value = F)
+                                         checkboxInput("TM_Coherence_chance_correction",label = "chance correction?",value = F),
+                                         sliderInput(inputId="Det_TM_word_intrusion_lambda",label="Lambda",min=0,max=1,value=0.3)
       )
       panelDateDistribution <- conditionalPanel(condition = 'input.tabBox_tm=="Date distribution"',
                                                 tags$head(tags$style(HTML("div.col-sm-12 {padding:1px}; float:up;"))),

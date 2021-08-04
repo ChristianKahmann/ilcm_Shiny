@@ -7,7 +7,7 @@ output$Fac_meta_UI<-renderUI({
   empty_metadata<-names(which(apply(ava,MARGIN = 2,function(x){all(is.na(x))})))
   not_empty_metadata<-names(which(!apply(ava,MARGIN = 2,function(x){all(is.na(x))})))[-1]
   meta<-setdiff(c("mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9"),empty_metadata)
-  names<-apply(ava[,meta],MARGIN = 2,FUN = function(x){paste(x,collapse="/")})
+  names<-apply(ava[,meta,drop=F],MARGIN = 2,FUN = function(x){paste(x,collapse="/")})
   names<-stringr::str_replace_all(string = names,pattern = "/NA","")
   names<-stringr::str_replace_all(string = names,pattern = "NA/","")
   values$facet_names<-names

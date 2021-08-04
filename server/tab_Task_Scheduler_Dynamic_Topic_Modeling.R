@@ -377,6 +377,16 @@ output$Analysis_Parameter_DTM<-renderUI({
                                 )
                        ),
                        column(2,
+                              selectInput(inputId = "DTM_ByDate_Type",label="Time Intervall",choices=c("Decade","Year","Month","Week","Day"),selected="Year")%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "What timeintervall shall be used to split the data?",
+                                      placement = "right"
+                                    )
+                                )
+                       ),
+                       column(2,
                               conditionalPanel(condition = 'input.DTM_Date_Split_How=="Automatic Chunking"',
                                                numericInput(inputId = "DTM_Chunksize",label="Number of Chunks",value=5,min=1,step=1)%>%
                                                  shinyInput_label_embed(
@@ -388,14 +398,6 @@ output$Analysis_Parameter_DTM<-renderUI({
                                                  )
                               ),
                               conditionalPanel(condition = 'input.DTM_Date_Split_How=="By Date"',
-                                               selectInput(inputId = "DTM_ByDate_Type",label="Time Intervall",choices=c("Decade","Year","Month","Week","Day"),selected="Year")%>%
-                                                 shinyInput_label_embed(
-                                                   shiny_iconlink() %>%
-                                                     bs_embed_popover(
-                                                       title = "What timeintervall shall be used to split the data?",
-                                                       placement = "right"
-                                                     )
-                                                 ),
                                                numericInput(inputId = "DTM_ByDate_n",label="number of specified time intervalls per used period",value=1,min=1,step=1)%>%
                                                  shinyInput_label_embed(
                                                    shiny_iconlink() %>%
@@ -409,7 +411,7 @@ output$Analysis_Parameter_DTM<-renderUI({
                        )
                        
                      )
-                  
+                     
                      
     ),
     bsButton(inputId = "DTM_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
