@@ -550,6 +550,10 @@ output$details_parameter<-renderUI({
       load(paste0(values$Details_Data_TM,"/dtm_TM.RData"))	
       values$Det_TM_dtm<-dtm	
       values$tm_recalc<-runif(1,0,1)
+      #ensure meta has same order as theta
+      meta<-meta[order(match(meta$id_doc,rownames(theta))),]
+      isolate(values$tm_dates<-data.frame(as.character(meta$date),stringsAsFactors = F))	
+      isolate(colnames(values$tm_dates)<-"date")	
       values$tm_meta<-meta
       mde_use<-colnames(meta_names[1,2:dim(meta_names)[2]])[which(!is.na(meta_names[1,2:dim(meta_names)[2]]))]
       meta<-meta[,c("id","dataset","title","id_doc","token","language",mde_use)]
@@ -579,12 +583,6 @@ output$details_parameter<-renderUI({
       values$tm_number_of_topics<-dim(phi)[1]
       values$tm_timeline_ids<-NULL
       values$tm_random<-runif(n = 1,min = 0,max = 1)
-      if(class(info[[6]])!="data.frame"){
-        isolate(values$tm_dates<-data.frame(as.character(info[[6]]),stringsAsFactors = F))
-      }
-      else{
-        isolate(values$tm_dates<-info[[6]])
-      }
       isolate(colnames(values$tm_dates)<-"date")
       #create output objects for wordclouds
       wordcloud_list<-lapply(1:dim(phi)[1],function(i){
@@ -652,8 +650,11 @@ output$details_parameter<-renderUI({
                                                 tags$head(tags$style(HTML("div.col-sm-12 {padding:1px}; float:up;"))),
                                                 shinyBS::bsButton(inputId = "TM_Timeline_Reset",label = "reset chart",style = "success",size = "extra-small"),
                                                 tags$br(),
-                                                sliderTextInput(inputId = "TM_Timeline_Range",label = NULL,choices = c("Day","Month","Year"),force_edges = T,grid = T,selected = "Month"),
-                                                sliderTextInput(inputId = "TM_Timeline_Measure",label = NULL,choices = c("Document Count","Document Probability","relative Document Count"),force_edges = T,grid=T),
+                                                #sliderTextInput(inputId = "TM_Timeline_Range",label = NULL,choices = c("Day","Month","Year"),force_edges = T,grid = T,selected = "Month"),
+                                                selectInput(inputId = "TM_Timeline_Range",label = "Time Range",choices=c("Day","Month","Year"),multiple = F),
+                                                tags$br(),
+                                                selectInput(inputId = "TM_Timeline_Measure",label = "Measure",choices=c("Document Count","Document Probability","relative Document Count"),multiple = F),
+                                                #sliderTextInput(inputId = "TM_Timeline_Measure",label = NULL,choices = c("Document Count","Document Probability","relative Document Count"),force_edges = T,grid=T),
                                                 materialSwitch(inputId = "TM_Timeline_Rank1",label = "Use Rank1 for selecting document membership",value = T,status = "warning"),
                                                 conditionalPanel(condition = 'input.TM_Timeline_Rank1==false',
                                                                  knobInput(inputId = "TM_Timeline_Prob",label = "Minimal Probability",value = 0.5,min = 0,max = 1,step = 0.01)
@@ -668,15 +669,32 @@ output$details_parameter<-renderUI({
                                                         tags$hr(),
                                                         uiOutput(outputId = "Det_meta_select_ui2")
       )
+      pabelTopicLabels <- conditionalPanel(condition = 'input.tabBox_tm=="Topic Labels"',
+                                           sliderInput(inputId="Det_TM_topic_labels_lambda",label="Lambda",min=0,max=1,step=0.01,value=0.25),
+                                           tags$br(),
+                                           shiny::actionButton(inputId = "Det_TM_topic_labels_save",label = "Save Labels",icon = icon("save")),
+                                           tags$hr(),
+                                           uiOutput(outputId = "Det_TM_topic_labels_topics_labeled")
+      )
       panelValidation <- conditionalPanel(condition = 'input.tabBox_tm=="Validation"',
                                           shinyWidgets::prettyRadioButtons(inputId = "Det_TM_validation_document_selection",label = "Document selection:",choices = c("independently","by topic likelihood"),selected = "by topic likelihood"),
                                           conditionalPanel(condition = "input.Det_TM_validation_document_selection=='by topic likelihood'",
                                                            numericInput(inputId="Det_TM_validation_document_selection_topic_likelihood_n",label="number of documents in selection",min=1,value=min(50,nrow(meta))),
-                                                           sliderInput(inputId = "Det_TM_validation_document_selection_topic_likelihood_t",label = "most relevant for which topic?",min = 1,value = 1,max = dim(phi)[1],step = 1)
+                                                           conditionalPanel(condition = "input.Det_TM_use_custom_labels==true",
+                                                                            selectInput(inputId = "Det_TM_validation_document_selection_topic_likelihood_t_custom_labels",label = "most relevant for which topic?",choices=1:dim(phi)[1],multiple=F)
+                                                           ),
+                                                           conditionalPanel(condition = "input.Det_TM_use_custom_labels==false",
+                                                                            sliderInput(inputId = "Det_TM_validation_document_selection_topic_likelihood_t",label = "most relevant for which topic?",min = 1,value = 1,max = dim(phi)[1],step = 1)
+                                                           )
                                           ),
                                           selectizeInput(inputId = "Det_TM_validation_document",label="Document:",choices=NULL,multiple=F),
                                           tags$hr(),
-                                          sliderInput(inputId = "Det_TM_validation_topic",label = "Topic:",min = 1,value = 1,max = dim(phi)[1],step = 1),
+                                          conditionalPanel(condition = "input.Det_TM_use_custom_labels==true",
+                                                           selectInput(inputId = "Det_TM_validation_topic_custom_labels",label = "Highlighting for Topic:",choices=1:dim(phi)[1],multiple=F)
+                                          ),
+                                          conditionalPanel(condition = "input.Det_TM_use_custom_labels==false",
+                                                           sliderInput(inputId = "Det_TM_validation_topic",label = "Highlighting for Topic:",min = 1,value = 1,max = dim(phi)[1],step = 1)
+                                          ),
                                           dropdownButton(status = "info",tooltip = "Options",icon=icon("gear"),
                                                          tags$h4("Options for validation colour scale"),
                                                          selectInput(inputId = "Det_TM_validation_relevance_measure",label="Relevance measure",
@@ -694,7 +712,10 @@ output$details_parameter<-renderUI({
                                                          )
                                           ),
                                           tags$hr(),
-                                          uiOutput("Det_TM_validation_metadata_UI")%>%withSpinner()
+                                          uiOutput("Det_TM_validation_metadata_UI"),
+                                          conditionalPanel(condition="input.Det_TM_validation_document_selection=='by topic likelihood'",
+                                                           downloadButton(outputId = "Det_TM_download_relevant_documents",label = "relevant Documents")
+                                          )
       )
       panelDocumentComparison <- conditionalPanel(condition='input.tabBox_tm=="Document Comparison"',
                                                   selectizeInput(inputId = "Det_TM_document_comparison_document",label="Documents:",choices=NULL,multiple=T),
@@ -722,7 +743,7 @@ output$details_parameter<-renderUI({
                                                   downloadButton(outputId = "Det_TM_document_clustering_download_clustering_result",label = "current clustering result",icon=icon("download"))
       )
       panelTopicDispersion <- conditionalPanel(condition = 'input.tabBox_tm=="Topic Dispersion"',
-                                               selectizeInput(inputId="Det_TM_dispersion_topic",label="Topic",choices=1:values$tm_number_of_topics,multiple=T,selected=character(0)),
+                                               uiOutput(outputId = "Det_TM_dispersion_topic_UI"),
                                                knobInput(inputId = "Det_TM_dispersion_probability_threshold",label = "Minimal Probability",value = 0.2,min = 0,max = 1,step = 0.01)
                                                
       )
@@ -829,6 +850,7 @@ output$details_parameter<-renderUI({
       if(values$tm_method =="stm"){
         returnValue <-  tagList(
           tags$h5(task_id),
+          shinyWidgets::materialSwitch(inputId = "Det_TM_use_custom_labels",label = "Use custom labels",value = FALSE),
           tags$hr(),
           panelLDAVIs,
           panelEstWordFrequencies,
@@ -845,11 +867,13 @@ output$details_parameter<-renderUI({
           panelModelReproducibility,
           panelTopicProportions,
           panelDocumentTopicTopicConnection,
-          panelSTM
+          panelSTM,
+          pabelTopicLabels
         )
       }else{
         returnValue <-  tagList(
           tags$h5(task_id),
+          shinyWidgets::materialSwitch(inputId = "Det_TM_use_custom_labels",label = "Use custom labels",value = FALSE),
           tags$hr(),
           panelLDAVIs,
           panelEstWordFrequencies,
@@ -865,7 +889,8 @@ output$details_parameter<-renderUI({
           panelDocumentGrouping,
           panelModelReproducibility,
           panelTopicProportions,
-          panelDocumentTopicTopicConnection
+          panelDocumentTopicTopicConnection,
+          pabelTopicLabels
         )
       }
       return (returnValue)
@@ -899,12 +924,19 @@ observe({
   classic_choices<-choices
   if(!is.null(input$Det_TM_validation_document_selection)){
     if(input$Det_TM_validation_document_selection=='by topic likelihood'){
-      topic<-input$Det_TM_validation_document_selection_topic_likelihood_t
+      if(input$Det_TM_use_custom_labels==TRUE){
+        topic<-as.numeric(input$Det_TM_validation_document_selection_topic_likelihood_t_custom_labels)
+      }
+      else{
+        topic<-as.numeric(input$Det_TM_validation_document_selection_topic_likelihood_t)
+      }
       n<-input$Det_TM_validation_document_selection_topic_likelihood_n
       theta<-values$tm_theta
       most_likely_documents<-order(theta[,topic],decreasing = T)[1:n]
       likelihoods<-theta[most_likely_documents,topic]
       choices<-choices[most_likely_documents]
+      values$tm_validation_by_topic_likelihood_ids<-choices
+      values$tm_validation_by_topic_likelihood_likelihoods<-likelihoods
       names(choices)<-paste0("(",round(likelihoods,digits = 2),") ",names(choices))
       choices_document_selection_by_topic_likelihood<-choices
     }
@@ -1126,6 +1158,9 @@ output$details_visu<-renderUI({
                                             uiOutput(("TM_topic_proportions_UI"))
                                             
       )
+      tabPanelTopic_Labels <- tabPanel("Topic Labels",
+                                       uiOutput("TM_topic_labels_UI")
+      )
       if(length(list.files("collections/results/topic-model/"))>1){
         tabPanelReproducibility <- tabPanel("Model Reproducibility",
                                             uiOutput("TM_model_reproducibility_UI")
@@ -1291,7 +1326,8 @@ output$details_visu<-renderUI({
                  tabPanelClustering,
                  tabPanelGrouping,
                  tabPanelReproducibility,
-                 tabPanelSTM
+                 tabPanelSTM,
+                 tabPanelTopic_Labels
           )
           
         )
@@ -1314,11 +1350,11 @@ output$details_visu<-renderUI({
                  tabPanelClustering,
                  tabPanelGrouping,
                  tabPanelReproducibility,
-                 tabPanelTopicTopicConnection	
+                 tabPanelTopicTopicConnection,
+                 tabPanelTopic_Labels
           )
         )
       }
-      
       return (returnValue)
       
     }

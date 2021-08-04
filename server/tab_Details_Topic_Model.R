@@ -119,8 +119,9 @@ observeEvent(values$tm_phi,{
       dates<-matrix(dates,ncol = 2)
       plotname_wc=paste0("tm_wc_",i)
       plotname_sp=paste0("tm_sp_",i)
+      hoverFunction = htmlwidgets :: JS ( "function hover() {}" )
       output[[plotname_wc]]<-renderWordcloud2({
-        wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1,minRotation = -pi/2, maxRotation = -pi/2)
+        wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1,minRotation = -pi/2, maxRotation = -pi/2,hoverFunction = hoverFunction)
       }
       )
       output[[plotname_sp]]<-renderSparkline({
@@ -247,10 +248,20 @@ output$TM_Timeline<-renderPlotly({
       }
     }
   }
-  p<-plot_ly(x=rownames(timeline_data),y=timeline_data[,1],type = "scatter",mode="lines+markers",name=paste0("Topic:",values$tm_timeline_ids[1]," ",paste(names(sort(isolate(values$tm_phi)[values$tm_timeline_ids[1],],decreasing = T))[1:5],collapse = " ")))
-  if(length(values$tm_timeline_ids)>1){
-    for(i in 2:length(values$tm_timeline_ids)){
-      p<-add_trace(p,y=timeline_data[,i],name=paste0("Topic:",values$tm_timeline_ids[i]," ",paste(names(sort(isolate(values$tm_phi)[values$tm_timeline_ids[i],],decreasing = T))[1:5],collapse = " ")))
+  if(input$Det_TM_use_custom_labels==TRUE){
+    p<-plot_ly(x=rownames(timeline_data),y=timeline_data[,1],type = "scatter",mode="lines+markers",name=values$Det_TM_topic_labels[1])
+    if(length(values$tm_timeline_ids)>1){
+      for(i in 2:length(values$tm_timeline_ids)){
+        p<-add_trace(p,y=timeline_data[,i],name=values$Det_TM_topic_labels[i])
+      }
+    }
+  }
+  else{
+    p<-plot_ly(x=rownames(timeline_data),y=timeline_data[,1],type = "scatter",mode="lines+markers",name=paste0("Topic:",values$tm_timeline_ids[1]," ",paste(names(sort(isolate(values$tm_phi)[values$tm_timeline_ids[1],],decreasing = T))[1:5],collapse = " ")))
+    if(length(values$tm_timeline_ids)>1){
+      for(i in 2:length(values$tm_timeline_ids)){
+        p<-add_trace(p,y=timeline_data[,i],name=paste0("Topic:",values$tm_timeline_ids[i]," ",paste(names(sort(isolate(values$tm_phi)[values$tm_timeline_ids[i],],decreasing = T))[1:5],collapse = " ")))
+      }
     }
   }
   if(input$TM_Timeline_Measure=="relative Document Count"){
@@ -290,8 +301,14 @@ output$TM_Subcollection_Table<-DT::renderDataTable({
       print("ersatz")
       isolate(values$tm_sub_selected<-c(isolate(values$tm_sub_selected),FALSE))
     }
-    words<-cbind(paste("<h4>Topic: ",values$tm_timeline_ids,"</h4>",sep = ""),words,
-                 keep=shinyInput_material(shinyWidgets::materialSwitch,dim(words)[1],"tmsubcoll_",values=c(isolate(values$tm_sub_selected),FALSE),label=NULL,status="info"))
+    if(input$Det_TM_use_custom_labels==TRUE){
+      words<-cbind(paste("<h4> ",values$Det_TM_topic_labels[values$tm_timeline_ids],"</h4>",sep = ""),words,
+                   keep=shinyInput_material(shinyWidgets::materialSwitch,dim(words)[1],"tmsubcoll_",values=c(isolate(values$tm_sub_selected),FALSE),label=NULL,status="info"))
+    }
+    else{
+      words<-cbind(paste("<h4>Topic: ",values$tm_timeline_ids,"</h4>",sep = ""),words,
+                   keep=shinyInput_material(shinyWidgets::materialSwitch,dim(words)[1],"tmsubcoll_",values=c(isolate(values$tm_sub_selected),FALSE),label=NULL,status="info"))
+    }
     colnames(words)<-c("Topic","most coherent words","Use topic for sub-collection?")
     values$tm_random2<-runif(1,0,1)
     return(datatable(data = words,rownames = F,options = list(dom="pt",ordering=F,preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
@@ -769,10 +786,18 @@ outputOptions(output, "TM_Coherence_show", suspendWhenHidden = FALSE)
 output$TM_Coherence_topic_coherence<-renderPlotly({
   topic_coherence<-tmca.util::tmca_topic_coherence(DTM = values$TM_Coherence_dtm,phi = values$tm_phi)
   values$topic_coherence_results<-topic_coherence
-  p<-plot_ly(x=factor(paste("topic:",1:length(topic_coherence))),y=topic_coherence,type = "scatter", marker = list(size = 15,
-                                                                                                                   color = 'rgba(255, 182, 193, .9)',
-                                                                                                                   line = list(color = 'rgba(152, 0, 0, .8)',
-                                                                                                                               width = 2)))
+  if(input$Det_TM_use_custom_labels){
+    p<-plot_ly(x=values$Det_TM_topic_labels,y=topic_coherence,type = "scatter", marker = list(size = 15,
+                                                                                              color = 'rgba(255, 182, 193, .9)',
+                                                                                              line = list(color = 'rgba(152, 0, 0, .8)',
+                                                                                                          width = 2)))
+  }
+  else{
+    p<-plot_ly(x=factor(paste("topic:",1:length(topic_coherence))),y=topic_coherence,type = "scatter", marker = list(size = 15,
+                                                                                                                     color = 'rgba(255, 182, 193, .9)',
+                                                                                                                     line = list(color = 'rgba(152, 0, 0, .8)',
+                                                                                                                                 width = 2)))
+  }
   p<-layout(p,xaxis=list(categoryorder="array",categoryarray=factor(paste("topic:",1:length(topic_coherence)))))  
   return(p)
 })
@@ -920,10 +945,14 @@ observe({
   
   document<-paste(token[,"word"],collapse=" ")
   
-  topic_names <- apply(isolate(values$tm_relevance), 2, FUN = function(x) {
-    paste(names(sort(x, decreasing = T)[1:10]), collapse = " ")
-  })
-  
+  if(input$Det_TM_use_custom_labels==TRUE){
+    topic_names<-values$Det_TM_topic_labels
+  }
+  else{
+    topic_names <- apply(isolate(values$tm_relevance), 2, FUN = function(x) {
+      paste(names(sort(x, decreasing = T)[1:10]), collapse = " ")
+    })
+  }
   top_topics <- as.numeric(names(values$tm_theta[random_doc_number,])[order(values$tm_theta[random_doc_number, ], decreasing = T)])
   
   top_topic_names <- topic_names[top_topics[1:(input$TM_Coherence_setsize-1)]]
@@ -1555,7 +1584,13 @@ output$Det_TM_meta_membership_heatmap_table<-DT::renderDataTable({
   df<-data.frame(result,stringsAsFactors = F)
   
   rownames(df)<-paste0(meta_classes," (n=",table(meta_all)[meta_classes],")")
-  colnames(df)<-paste0("Topic ",colnames(result)," (n=",colSums(df),")")
+  if(input$Det_TM_use_custom_labels==TRUE){
+    colnames(df)<-paste0(values$Det_TM_topic_labels," (n=",colSums(df),")")
+  }
+  else{
+    colnames(df)<-paste0("Topic ",colnames(result)," (n=",colSums(df),")")
+  }
+  
   df<-df[order(rowSums(df),decreasing = T),]
   #get colors 
   
@@ -1706,7 +1741,12 @@ output$Det_TM_Meta_Correlations_table_simple<-DT::renderDataTable({
     }
   }
   colnames(results)<-colnames(meta)
-  rownames(results)<-paste0("Topic:",colnames(theta))
+  if(input$Det_TM_use_custom_labels==TRUE){
+    rownames(results)<-values$Det_TM_topic_labels
+  }
+  else{
+    rownames(results)<-paste0("Topic:",colnames(theta))    
+  }
   results<-round(results,digits = 3)
   return(DT::datatable(data = results, selection = "none",escape=F,class = 'cell-border stripe',options = list(paging=F,dom="t"))%>%
            formatStyle(colnames(results),
@@ -1727,6 +1767,13 @@ output$Det_meta_select_ui<-renderUI({
     need(!is.null(values$TM_meta),message=F
     )
   )
+  if(input$Det_TM_use_custom_labels){
+    topic_input<-selectInput(inputId = "Det_meta_topic",label="Which topic should be analyzed?",choices=set_names(x = 1:dim(values$tm_theta)[2],
+                                                                                                                  nm = values$Det_TM_topic_labels))
+  }
+  else{
+    topic_input<-numericInput(inputId = "Det_meta_topic",label="Which topic should be analyzed?",value = 1,min = 1,max = dim(values$tm_theta)[2],step = 1)
+  }
   tagList(
     selectInput(inputId = "Det_meta_select",label = "Choose a Meta Category",choices = colnames(values$TM_meta)[5:length(colnames(values$TM_meta))]),
     checkboxInput(inputId ="Det_TM_meta_multi_valued", label = "Metadata field multi valued?", FALSE),
@@ -1737,7 +1784,7 @@ output$Det_meta_select_ui<-renderUI({
     conditionalPanel(condition='input.Det_TM_meta_use_quantiles==true',
                      tableOutput(outputId = "Det_TM_meta_quantiles")
     ),
-    numericInput(inputId = "Det_meta_topic",label="Which topic should be analyzed?",value = 1,min = 1,max = dim(values$tm_theta)[2],step = 1),
+    topic_input,
     materialSwitch(inputId = "TM_meta_Rank1",label = "Use Rank1 for selecting document memebership",value = T,status = "warning"),
     conditionalPanel(condition = 'input.TM_meta_Rank1==false',
                      knobInput(inputId = "TM_meta_Prob",label = "Minimal Probability",value = 0.5,min = 0,max = 1,step = 0.001)
@@ -3969,14 +4016,21 @@ output$TM_ewf_bar<-renderPlotly({
     })
     )
   }
-  p<-plot_ly(x=paste("topic:",1:dim(data)[1],sep=" " ),y=data[,1],type = "bar",name=input$Det_TM_ewf_word[1])
-  
+  #browser()
+  if(input$Det_TM_use_custom_labels==TRUE){
+    p<-plot_ly(x=  values$Det_TM_topic_labels,y=data[,1],type = "bar",name=input$Det_TM_ewf_word[1])
+    p<-layout(p,title="Estimated word frequencies",xaxis=list(categoryorder="array",categoryarray=paste("topic:",1:dim(data)[1],sep=" "),automargin=F))
+  }
+  else{
+    p<-plot_ly(x=paste("topic:",1:dim(data)[1],sep=" " ),y=data[,1],type = "bar",name=input$Det_TM_ewf_word[1])
+    p<-layout(p,title="Estimated word frequencies",xaxis=list(categoryorder="array",categoryarray=paste("topic:",1:dim(data)[1],sep=" ")))
+  } 
   if(dim(data)[2]>1){
     for(i in 2:dim(data)[2]){
       p<-add_trace(p,y=data[,i],name=input$Det_TM_ewf_word[i])    
     }
   }
-  p<-layout(p,title="Estimated word frequencies",xaxis=list(categoryorder="array",categoryarray=paste("topic:",1:dim(data)[1],sep=" " )))
+  
   return(p)
 })
 
@@ -3998,7 +4052,12 @@ output$TM_ewf_table<-DT::renderDataTable({
     data<-round(data,digits = 2)
   }
   colnames(data)<-input$Det_TM_ewf_word
-  rownames(data)<-paste("topic:",1:dim(data)[1],sep=" " )
+  if(input$Det_TM_use_custom_labels==TRUE){
+    rownames(data)<-values$Det_TM_topic_labels
+  }
+  else{
+    rownames(data)<-paste("topic:",1:dim(data)[1],sep=" " )
+  }
   values$tm_counts<-data
   datatable(data = data,options=list(dom="pt"))
 })
@@ -4045,6 +4104,30 @@ output$Det_TM_validation_metadata_UI<-renderUI({
     tags$div(metadata[1,"token"])
   ))
 })
+
+
+output$Det_TM_download_relevant_documents <- downloadHandler(
+  filename = function(){
+    if(input$Det_TM_use_custom_labels==TRUE){
+      return(
+        paste0("Task_",as.character(values$tasks_tm[input$Topic_Results_rows_selected,"task.id"]),"_most_relevant_documents_for_topic_",input$Det_TM_validation_topic_custom_labels,".csv")
+      )
+    }
+    else{
+      return( 
+        paste0("Task_",as.character(values$tasks_tm[input$Topic_Results_rows_selected,"task.id"]),"_most_relevant_documents_for_topic_",input$Det_TM_validation_topic,".csv"))
+    }
+    
+  },
+  content = function(file){
+    data<-values$tm_meta
+    rownames(data)<-data$id_doc
+    data<-data[values$tm_validation_by_topic_likelihood_ids,]
+    data<-cbind(values$tm_validation_by_topic_likelihood_likelihoods,data)
+    colnames(data)[1]<-"topic likelihood"
+    write.csv2(data,file=file)
+  }
+)
 
 
 #' plot for topic validation tab showing the document with the words highlighted, which are relevant in the chosen topic
@@ -4136,6 +4219,13 @@ output$Det_TM_validation_Document<-renderUI({
   token<-cbind(1:dim(token)[1],token)
   phi<-values$tm_phi
   
+  if(input$Det_TM_use_custom_labels==TRUE){
+    chosen_topic<-input$Det_TM_validation_topic_custom_labels
+  }
+  else{
+    chosen_topic<-input$Det_TM_validation_topic
+  }
+  
   
   if(input$Det_TM_validation_relevance_measure=="estimated relative word frequency per topic"){
     data<-values$tm_rel_counts
@@ -4145,7 +4235,7 @@ output$Det_TM_validation_Document<-renderUI({
     )
     data<-round(data,digits = 2)
     colnames(data)<-colnames(values$tm_rel_counts)
-    data<-data[input$Det_TM_validation_topic,intersect(unique(features),colnames(data))]
+    data<-data[as.numeric(chosen_topic),intersect(unique(features),colnames(data))]
     data<-data.frame(features=names(data),weight=data)
     min=0
     max=1
@@ -4157,15 +4247,15 @@ output$Det_TM_validation_Document<-renderUI({
     #relevance<-relevance-apply(relevance,1, FUN=min)
     #relevance<-t(t(as.matrix(relevance))/rowSums(relevance))
     #relevance<-relevance/max(relevance)
-    data<-relevance[,input$Det_TM_validation_topic]
+    data<-relevance[,as.numeric(chosen_topic)]
     data<-data.frame(features=names(data),weight=data)
     if(input$Det_TM_validation_minmax_gobal=="over all topics"){
       min=min(relevance)
       max=max(relevance)
     }
     if(input$Det_TM_validation_minmax_gobal=="inside chosen topic"){
-      min=min(relevance[,input$Det_TM_validation_topic])
-      max=max(relevance[,input$Det_TM_validation_topic])
+      min=min(relevance[,as.numeric(chosen_topic)])
+      max=max(relevance[,as.numeric(chosen_topic)])
     }
     if(input$Det_TM_validation_minmax_gobal=="inside chosen document"){
       max<-max(data[intersect(unique(features),rownames(data)),"weight"])
@@ -4173,7 +4263,7 @@ output$Det_TM_validation_Document<-renderUI({
     }
   }
   if(input$Det_TM_validation_relevance_measure=="word probability"){
-    data<-values$tm_phi[input$Det_TM_validation_topic,]
+    data<-values$tm_phi[as.numeric(chosen_topic),]
     data<-data.frame(features=names(data),weight=data)
     if(input$Det_TM_validation_minmax_gobal=="over all topics"){
       max<-max(values$tm_phi)
@@ -4195,7 +4285,7 @@ output$Det_TM_validation_Document<-renderUI({
   getPalette = colorRampPalette(brewer.pal(12, "Paired"))
   colors<-getPalette(dim(values$tm_phi)[1])
   #colors<-colors[order(values$tm_theta[input$Det_TM_validation_document,],decreasing = F)]
-  color<-colors[input$Det_TM_validation_topic]
+  color<-colors[as.numeric(chosen_topic)]
   if(input$Det_TM_validation_color_use_pie_colors==TRUE){
     rbPal_pos <- colorRampPalette(c('floralwhite',color))
   }
@@ -4236,7 +4326,12 @@ output$Det_TM_validation_wordcloud <- wordcloud2::renderWordcloud2({
       !is.null(input$Det_TM_validation_topic),message=FALSE
     )
   )
-  data <- values$tm_relevance[,input$Det_TM_validation_topic]
+  if(input$Det_TM_use_custom_labels==TRUE){
+    data <- values$tm_relevance[,as.numeric(input$Det_TM_validation_topic_custom_labels)]
+  }
+  else{
+    data <- values$tm_relevance[,as.numeric(input$Det_TM_validation_topic)]
+  }
   data <- data[order(data,decreasing=T)][1:50]
   data <- data.frame(cbind(names(data),data),stringsAsFactors = FALSE)
   class(data$data) <- "numeric"
@@ -4244,7 +4339,8 @@ output$Det_TM_validation_wordcloud <- wordcloud2::renderWordcloud2({
   data$data <- data$data-min(data$data)
   data$data <- data$data/max(data$data)
   shinyjs::runjs(paste0("Math.seedrandom('",values$random_seed,"')"))
-  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1,minRotation = -pi/2,maxRotation = -pi/2)
+  hoverFunction = htmlwidgets :: JS ( "function hover() {}" )
+  wordcloud2(data = data,size=0.32,fontFamily = "Helvetica",color = "random-dark",minSize = 0.1,minRotation = -pi/2,maxRotation = -pi/2,hoverFunction = hoverFunction)
 })
 
 
@@ -4265,7 +4361,41 @@ output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
   getPalette = colorRampPalette(brewer.pal(12, "Paired"))
   colors<-getPalette(dim(values$tm_phi)[1])
   data<-values$tm_theta[input$Det_TM_validation_document,]
-  data<-data.frame(class=paste("Topic: ",names(data)),likelihood=data)
+  if(input$Det_TM_use_custom_labels==TRUE){
+    data<-data.frame(class=labels<-unlist(lapply(stringr::str_split(string = values$Det_TM_topic_labels,pattern = " ",simplify = F),function(x){
+      if(length(x)>2){
+        res<-""
+        for(i in 1:length(x)){
+          if(i>1){
+            if(i%%2==0){
+              if(i!=length(x)){
+                res<-paste0(res,x[i],"<br>")
+              }
+              else{
+                res<-paste0(res,x[i],"")
+              }
+            }
+            else{
+              res<-paste0(res,x[i]," ")
+            }
+          }
+          else{
+            res<-paste0(res,x[i]," ")
+          }
+        }
+        return(res)
+      }
+      else{
+        return(x)
+      }
+    }
+    )
+    )
+    ,likelihood=data)
+  }
+  else{
+    data<-data.frame(class=paste("Topic: ",names(data)),likelihood=data)
+  }
   
   p <- plot_ly(data, labels = ~factor(class), values = ~likelihood, textposition = 'inside',source="tm_validation_pie",marker = list(colors = colors),
                textinfo = 'label+percent') %>%
@@ -4287,7 +4417,13 @@ observe({
   validate(
     need(!is.null(click_pie_tm_validation()),message = F)
   )
-  updateSliderInput(session = session,inputId = "Det_TM_validation_topic",value = as.numeric(click_pie_tm_validation()$pointNumber+1) )
+  if(input$Det_TM_use_custom_labels==TRUE){
+    updateSliderInput(session = session,inputId = "Det_TM_validation_topic_custom_labels",value = as.numeric(click_pie_tm_validation()$pointNumber+1) )
+  }
+  else{
+    updateSliderInput(session = session,inputId = "Det_TM_validation_topic",value = as.numeric(click_pie_tm_validation()$pointNumber+1) )
+  }
+  
 })
 
 
@@ -4308,6 +4444,24 @@ output$TM_dispersion_ui<-renderUI({
   ))
 })
 
+
+output$Det_TM_dispersion_topic_UI<-renderUI({
+  validate(
+    need(
+      !is.null(input$Det_TM_use_custom_labels),message=F
+    )
+  )
+  if(input$Det_TM_use_custom_labels==TRUE){
+    return(
+      selectizeInput(inputId="Det_TM_dispersion_topic",label="Topic",choices=setNames(object = 1:values$tm_number_of_topics,nm = values$Det_TM_topic_labels),multiple=T,selected=character(0))
+    )
+  }
+  else{
+    return(
+      selectizeInput(inputId="Det_TM_dispersion_topic",label="Topic",choices=1:values$tm_number_of_topics,multiple=T,selected=character(0))
+    )
+  }
+})
 
 
 
@@ -4337,7 +4491,13 @@ output$Det_TM_dispersion_summary_table<-DT::renderDataTable({
     length(which(x>0.9))
   })
   data<-data.frame(Topic_Importnace=topic_importance, Greater010=greater010,Greater025=greater025,Greater050=greater050,Greater075=greater075,Greater090=greater090)
-  rownames(data)<-paste("Topic:",1:nrow(data))
+  if(input$Det_TM_use_custom_labels==TRUE){
+    rownames(data)<-values$Det_TM_topic_labels
+  }
+  else{
+    rownames(data)<-paste("Topic:",1:nrow(data))
+  }
+  
   colnames(data)<-c("topic importance",">0.1", ">0.25", ">0.5", ">0.75", ">0.9")
   datatable(data = data,options = list(dom="T",pageLength = nrow(data), info = FALSE,
                                        lengthMenu = list(c(15, -1), c("15", "All"))))%>%
@@ -4386,14 +4546,27 @@ output$Det_TM_dispersion_detailed_plot<-plotly::renderPlotly({
   data<-values$tm_theta[,input$Det_TM_dispersion_topic,drop=F]
   data[which(data<input$Det_TM_dispersion_probability_threshold,arr.ind = T)]<-NA
   plot_list<-list()
-  plot_list[[1]]<-plot_ly(x = data[,input$Det_TM_dispersion_topic[1]]) %>%
-    add_histogram(name=paste("Topic:",input$Det_TM_dispersion_topic[1]))
-  if(length(input$Det_TM_dispersion_topic)>1){
-    for(i in 2:length(input$Det_TM_dispersion_topic)){
-      plot_list[[i]]<-plot_ly(x = data[,input$Det_TM_dispersion_topic[i]]) %>%
-        add_histogram(name=paste("Topic:",input$Det_TM_dispersion_topic[i]))
+  if(input$Det_TM_use_custom_labels==TRUE){
+    plot_list[[1]]<-plot_ly(x = data[,input$Det_TM_dispersion_topic[1]]) %>%
+      add_histogram(name=values$Det_TM_topic_labels[as.numeric(input$Det_TM_dispersion_topic[1])])
+    if(length(input$Det_TM_dispersion_topic)>1){
+      for(i in 2:length(input$Det_TM_dispersion_topic)){
+        plot_list[[i]]<-plot_ly(x = data[,input$Det_TM_dispersion_topic[i]]) %>%
+          add_histogram(name=values$Det_TM_topic_labels[as.numeric(input$Det_TM_dispersion_topic[i])])
+      }
     }
   }
+  else{
+    plot_list[[1]]<-plot_ly(x = data[,input$Det_TM_dispersion_topic[1]]) %>%
+      add_histogram(name=paste("Topic:",input$Det_TM_dispersion_topic[1]))
+    if(length(input$Det_TM_dispersion_topic)>1){
+      for(i in 2:length(input$Det_TM_dispersion_topic)){
+        plot_list[[i]]<-plot_ly(x = data[,input$Det_TM_dispersion_topic[i]]) %>%
+          add_histogram(name=paste("Topic:",input$Det_TM_dispersion_topic[i]))
+      }
+    }
+  }
+  
   return(
     subplot(plot_list)
   )
@@ -4410,11 +4583,22 @@ output$Det_TM_dispersion_detailed_single_hist<-plotly::renderPlotly({
   )
   data<-values$tm_theta[,input$Det_TM_dispersion_topic,drop=F]
   data[which(data<input$Det_TM_dispersion_probability_threshold,arr.ind = T)]<-NA
-  hist<-plot_ly(x = data[,input$Det_TM_dispersion_topic[1]],alpha = 0.7) %>%
-    add_histogram(name=paste("Topic:",input$Det_TM_dispersion_topic[1]))
-  if(length(input$Det_TM_dispersion_topic)>1){
-    for(i in 2:length(input$Det_TM_dispersion_topic)){
-      hist<-add_histogram(p=hist,x = data[,input$Det_TM_dispersion_topic[i]],name=paste("Topic:",input$Det_TM_dispersion_topic[i]))
+  if(input$Det_TM_use_custom_labels==TRUE){
+    hist<-plot_ly(x = data[,input$Det_TM_dispersion_topic[1]],alpha = 0.7) %>%
+      add_histogram(name=values$Det_TM_topic_labels[as.numeric(input$Det_TM_dispersion_topic[1])])
+    if(length(input$Det_TM_dispersion_topic)>1){
+      for(i in 2:length(input$Det_TM_dispersion_topic)){
+        hist<-add_histogram(p=hist,x = data[,input$Det_TM_dispersion_topic[i]],name=values$Det_TM_topic_labels[as.numeric(input$Det_TM_dispersion_topic[i])])
+      }
+    }
+  }
+  else{
+    hist<-plot_ly(x = data[,input$Det_TM_dispersion_topic[1]],alpha = 0.7) %>%
+      add_histogram(name=paste("Topic:",input$Det_TM_dispersion_topic[1]))
+    if(length(input$Det_TM_dispersion_topic)>1){
+      for(i in 2:length(input$Det_TM_dispersion_topic)){
+        hist<-add_histogram(p=hist,x = data[,input$Det_TM_dispersion_topic[i]],name=paste("Topic:",input$Det_TM_dispersion_topic[i]))
+      }
     }
   }
   hist<-layout(p=hist,barmode = "overlay",
@@ -4475,7 +4659,13 @@ output$Det_TM_document_comparison_table<-DT::renderDataTable({
   rownames(titles)<-titles$id_doc
   titles<-titles[colnames(data),]
   titles<-paste0(titles$title," (",titles$id_doc,")")
-  rownames(data) <- paste0("<b>Topic ",1:ncol(values$tm_theta),"</b>")
+  if(input$Det_TM_use_custom_labels){
+    rownames(data) <- paste0("<b>",values$Det_TM_topic_labels,"</b>")
+  }
+  else{
+    rownames(data) <- paste0("<b>Topic ",1:ncol(values$tm_theta),"</b>")
+  }
+  
   colnames(data) <- titles
   return(DT::datatable(data = data, selection = "none",escape=F,class = 'cell-border stripe',options = list(paging=F,dom="t"))%>%
            formatStyle(colnames(data),
@@ -4507,7 +4697,41 @@ output$Det_TM_document_comparison_pie<-plotly::renderPlotly({
   data<-t(data)
   data<-round(data,digits = 3)
   for(k in 1:length(input$Det_TM_document_comparison_document)){
-    data_pie<-data.frame(prob=data[k,], names=paste0("Topic: ",colnames(theta)))
+    
+    if(input$Det_TM_use_custom_labels){
+      data_pie<-data.frame(prob=data[k,], names=unlist(lapply(stringr::str_split(string = values$Det_TM_topic_labels,pattern = " ",simplify = F),function(x){
+        if(length(x)>2){
+          res<-""
+          for(i in 1:length(x)){
+            if(i>1){
+              if(i%%2==0){
+                if(i!=length(x)){
+                  res<-paste0(res,x[i],"<br>")
+                }
+                else{
+                  res<-paste0(res,x[i],"")
+                }
+              }
+              else{
+                res<-paste0(res,x[i]," ")
+              }
+            }
+            else{
+              res<-paste0(res,x[i]," ")
+            }
+          }
+          return(res)
+        }
+        else{
+          return(x)
+        }
+      }
+      )
+      ))
+    }
+    else{
+      data_pie<-data.frame(prob=data[k,], names=paste0("Topic: ",colnames(theta)))
+    }
     subplots<-plotly::add_pie(subplots,data = data_pie,values=~prob, labels=~names,
                               name=  titles[k],
                               textposition="inside",
@@ -4960,8 +5184,15 @@ output$Det_TM_grouping_avg_topic_distribution_plot<-plotly::renderPlotly({
   theta_group1<-colMeans(values$tm_theta[ids_group1,,drop=F])
   theta_group2<-colMeans(values$tm_theta[ids_group2,,drop=F])
   
-  p<-plotly::plot_ly(z=rbind(theta_group2,theta_group1),x=paste0("Topic:",names(theta_group1)),y=c("Group 2","Group 1"),type="heatmap")%>%
-    plotly::layout(xaxis=list(type="category"),yaxis=list(type="category"))
+  if(input$Det_TM_use_custom_labels==TRUE){
+    p<-plotly::plot_ly(z=rbind(theta_group2,theta_group1),x=values$Det_TM_topic_labels,y=c("Group 2","Group 1"),type="heatmap")%>%
+      plotly::layout(xaxis=list(type="category"),yaxis=list(type="category"))
+  }
+  else{
+    p<-plotly::plot_ly(z=rbind(theta_group2,theta_group1),x=paste0("Topic:",names(theta_group1)),y=c("Group 2","Group 1"),type="heatmap")%>%
+      plotly::layout(xaxis=list(type="category"),yaxis=list(type="category"))
+  }
+  
   return(p)
 })
 
@@ -4984,7 +5215,14 @@ output$Det_TM_grouping_avg_topic_distribution_table<-DT::renderDataTable({
   data<-rbind(theta_group1,theta_group2)
   data<-round(data,digits = 3)
   
-  colnames(data) <- paste0("<b>Topic ",1:ncol(values$tm_theta),"</b>")
+  if(input$Det_TM_use_custom_labels==TRUE){
+    colnames(data) <- paste0("<b>",values$Det_TM_topic_labels,"</b>")
+  }
+  else{
+    colnames(data) <- paste0("<b>Topic ",1:ncol(values$tm_theta),"</b>")
+  }
+  
+  
   rownames(data) <- c("Group 1","Group 2")
   return(DT::datatable(data = data, selection = "none",escape=F,class = 'cell-border stripe',options = list(paging=F,dom="t"))%>%
            formatStyle(colnames(data),
@@ -5194,7 +5432,13 @@ output$Det_TM_model_reproducibility_specific_table<-DT::renderDataTable({
   }))
   data<-similarities
   values$Det_TM_model_reproducibility_specific_number_of_reference_topics<-length(values$Det_TM_model_reproducibility_top_words_per_result_per_topic[[j]])
-  names(data)<-paste("Topic:",1:length(values$Det_TM_model_reproducibility_top_words_per_result_per_topic[[j]]))
+  
+  if(input$Det_TM_use_custom_labels==TRUE){
+    names(data)<-values$Det_TM_topic_labels
+  }
+  else{
+    names(data)<-paste("Topic:",1:length(values$Det_TM_model_reproducibility_top_words_per_result_per_topic[[j]]))
+  }
   data<-round(data,digits=3)
   data<-t(as.data.frame(data))
   datatable(data = data,selection=list(mode="single", target="cell"),rownames = F,class = 'cell-border stripe',
@@ -5330,7 +5574,12 @@ observeEvent(input$Det_TM_reproducibility_calculate,ignoreNULL = F,{
     )
     )
     data<-cbind(data,relevant_words)
-    rownames(data)<-paste0("Topic: ",1:nrow(values$tm_phi))
+    if(input$Det_TM_use_custom_labels==TRUE){
+      rownames(data)<-values$Det_TM_topic_labels
+    }
+    else{
+      rownames(data)<-paste0("Topic: ",1:nrow(values$tm_phi))
+    }
     colnames(data)<-c("Reproducibility","most relevant words")
     datatable(data = data,options=list(dom="t",pageLength=nrow(values$tm_phi)),escape = F,selection = "single")
   })
@@ -5473,10 +5722,15 @@ output$TM_topic_proportions_UI<-renderUI({
   # get mean topic proportions per decade
   topic_proportion_per_time_intervall <- aggregate(theta, by = list(time = time), mean)
   # set topic names to aggregated columns
-  topicNames<-unlist(lapply(1:nrow(phi),FUN = function(x){
-    relevance<-calculate_topic_relevance(lambda = input$Det_TM_proportions_lambda,phi = phi,theta = theta,doc.length = values$tm_doc.length)
-    paste(names(sort(calculate_topic_relevance(lambda = input$Det_TM_proportions_lambda,phi = phi,theta = theta,doc.length = values$tm_doc.length)[,x],decreasing = T)[1:input$Det_TM_proportions_number_of_words]),collapse = ", ")
-  }))
+  if(input$Det_TM_use_custom_labels==TRUE){
+    topicNames<-values$Det_TM_topic_labels
+  }
+  else{
+    topicNames<-unlist(lapply(1:nrow(phi),FUN = function(x){
+      relevance<-calculate_topic_relevance(lambda = input$Det_TM_proportions_lambda,phi = phi,theta = theta,doc.length = values$tm_doc.length)
+      paste(names(sort(calculate_topic_relevance(lambda = input$Det_TM_proportions_lambda,phi = phi,theta = theta,doc.length = values$tm_doc.length)[,x],decreasing = T)[1:input$Det_TM_proportions_number_of_words]),collapse = ", ")
+    }))
+  }
   colnames(topic_proportion_per_time_intervall)[2:(nrow(phi)+1)] <- topicNames
   
   # reshape data frame
@@ -5573,20 +5827,37 @@ output$TM_topic_topic_connection_UI<-renderUI({
   }
   
   l1<-NULL
-  for(i in 1:ncol(theta)){
-    l1<-c(l1,rep(paste0("Topic:",i),ncol(theta)))
+  if(input$Det_TM_use_custom_labels==TRUE){
+    for(i in 1:ncol(theta)){
+      l1<-c(l1,rep(values$Det_TM_topic_labels[i],ncol(theta)))
+    }
   }
-  
+  else{
+    for(i in 1:ncol(theta)){
+      l1<-c(l1,rep(paste0("Topic:",i),ncol(theta)))
+    }
+  }
   dat <- expand.grid(x = topic_labels, y = topic_labels,stringsAsFactors = T)
   dat$z <- c(matrix_corrs_theta)
   dat$l1<-l1
-  dat$l2<-rep(paste("Topic:",1:ncol(theta)),ncol(theta))
-  values$Det_TM_topic_topic_connection_dat_theta<-dat
+  if(input$Det_TM_use_custom_labels==TRUE){
+    dat$l2<-rep(values$Det_TM_topic_labels,ncol(theta))
+  }
+  else{
+    dat$l2<-rep(paste("Topic:",1:ncol(theta)),ncol(theta))
+  }
   
+  values$Det_TM_topic_topic_connection_dat_theta<-dat
   dat_thresh <- expand.grid(x = topic_labels, y = topic_labels,stringsAsFactors = T)
   dat_thresh$z <- c(matrix_corrs_thresh)
   dat_thresh$l1<-l1
-  dat_thresh$l2<-rep(paste("Topic:",1:ncol(theta)),ncol(theta))
+  if(input$Det_TM_use_custom_labels==TRUE){
+    dat_thresh$l2<-rep(values$Det_TM_topic_labels,ncol(theta))
+  }
+  else{
+    dat_thresh$l2<-rep(paste("Topic:",1:ncol(theta)),ncol(theta))
+  }
+  
   values$Det_TM_topic_topic_connection_dat_thresh<-dat_thresh
   
   return(tagList(
@@ -5615,14 +5886,18 @@ output$Det_TM_topic_topic_connection_heatmap_theta<-plotly::renderPlotly({
   border <- as.integer(null_value * colorlength)
   colorscale <- as.list(1:colorlength)
   #colorscale below zero
-  s <- scales::seq_gradient_pal("blue", "white", "Lab")(seq(0,1,length.out=border))
-  for (i in 1:border) {
-    colorscale[[i]] <- c((i - 1) / colorlength, s[i])
+  if(min(correlation,na.rm=T)<0){
+    s <- scales::seq_gradient_pal("blue", "white", "Lab")(seq(0,1,length.out=border))
+    for (i in 1:border) {
+      colorscale[[i]] <- c((i - 1) / colorlength, s[i])
+    }
   }
   #colorscale above zero
-  s <- scales::seq_gradient_pal("white", "red", "Lab")(seq(0,1,length.out=colorlength - border))
-  for (i in 1:(colorlength - border)) {
-    colorscale[[i + border]] <- c((i + border) / colorlength, s[i])
+  if(max(correlation,na.rm = T)>0){
+    s <- scales::seq_gradient_pal("white", "red", "Lab")(seq(0,1,length.out=colorlength - border))
+    for (i in 1:(colorlength - border)) {
+      colorscale[[i + border]] <- c((i + border) / colorlength, s[i])
+    }
   }
   plotly::plot_ly(data = dat, x = ~l1, y = ~l2, z = ~z,type="heatmap", hoverinfo = 'text',source = "Det_TM_topic_topic_heatmap_theta",
                   key=~z,
@@ -5674,14 +5949,18 @@ output$Det_TM_topic_topic_connection_heatmap_thresh<-plotly::renderPlotly({
   border <- as.integer(null_value * colorlength)
   colorscale <- as.list(1:colorlength)
   #colorscale below zero
-  s <- scales::seq_gradient_pal("blue", "white", "Lab")(seq(0,1,length.out=border))
-  for (i in 1:border) {
-    colorscale[[i]] <- c((i - 1) / colorlength, s[i])
+  if(min(correlation,na.rm=T)<0){
+    s <- scales::seq_gradient_pal("blue", "white", "Lab")(seq(0,1,length.out=border))
+    for (i in 1:border) {
+      colorscale[[i]] <- c((i - 1) / colorlength, s[i])
+    }
   }
   #colorscale above zero
-  s <- scales::seq_gradient_pal("white", "red", "Lab")(seq(0,1,length.out=colorlength - border))
-  for (i in 1:(colorlength - border)) {
-    colorscale[[i + border]] <- c((i + border) / colorlength, s[i])
+  if(max(correlation,na.rm = T)>0){
+    s <- scales::seq_gradient_pal("white", "red", "Lab")(seq(0,1,length.out=colorlength - border))
+    for (i in 1:(colorlength - border)) {
+      colorscale[[i + border]] <- c((i + border) / colorlength, s[i])
+    }
   }
   plotly::plot_ly(data = dat, x = ~l1, y = ~l2, z = ~z,type="heatmap", hoverinfo = 'text',source = "Det_TM_topic_topic_heatmap_thresh",
                   key=~z,
@@ -5875,4 +6154,251 @@ output$Det_TM_word_occurrences_document_UI<-renderUI({
   
 })
 
+
+##################################################################################################################
+##                                             Topic Labels                                                    ##
+#################################################################################################################
+
+
+output$TM_topic_labels_UI<-renderUI({
+  validate(
+    need(!is.null(values$tm_theta),message=F),
+    need(!is.null(values$tm_recalc),message = F)
+  )
+  path<-paste0(isolate(values$Details_Data_TM),"/Topic_Labels.RData")
+  if(file.exists(path)){
+    load(path)
+  }
+  else{
+    topic_labels<-rep("",ncol(values$tm_theta))
+  }
+  
+  #values$TM_topic_labels_create_outputs<-runif(1,0,1)
+  
+  
+  relevance<-calculate_topic_relevance(lambda=input$Det_TM_topic_labels_lambda,phi=values$tm_phi,theta=values$tm_theta,doc.length=values$tm_doc.length)
+  top_documents<-list()
+  top_documents<-lapply(1:ncol(values$tm_theta),FUN = function(x){
+    ids<-order(values$tm_theta[,x],decreasing=T)[1:5]
+    titles<-values$tm_meta[ids,"title"]
+    texts<-values$tm_meta[ids,"body"]
+    likelihoods<-values$tm_theta[ids,x]
+    info<-list()
+    info$titles<-titles
+    info$texts<-texts
+    info$likelihoods<-likelihoods
+    top_documents[[x]]<-info
+  }
+  )
+  values$TM_topic_labels_top_documents<-top_documents
+  
+  values$TM_topic_labels_relevance<-relevance
+  values$TM_topic_labels_recalc<-runif(1,0,1)
+  
+  car<-shinydashboardPlus::accordion(id = "Det_TM_Label_carousel"
+                                )
+
+  
+  screens<-lapply(1:ncol(values$tm_theta),FUN = function(x){
+    shinyglide::screen(
+                       column(12,align="center",
+                              tags$h2(paste0("Label for Topic: ",x))
+                       ),
+                       fluidRow(style="margin-left:0px;margin-right:0px",
+                                column(3,
+                                       box(title = "Topic Label",width = 12,solidHeader = T,status = "primary",
+                                           textAreaInput(resize = "vertical",inputId=paste0("Det_TM_topic_labels_text_",x),label="Topic Label",value = topic_labels[x],rows = 17)
+                                       )
+                                ),
+                                column(4,
+                                       box(title = "Most relevant Words",width = 12,solidHeader = T,status = "primary",
+                                           wordcloud2Output(outputId = paste0("Det_TM_topic_labels_wc_",x))
+                                       )
+                                ),
+                                column(5,
+                                       box(title = "Most Relevant Documents",width = 12,solidHeader = T,status = "primary",style="height: 37vh ;overflow-y:scroll;",
+                                           selectInput(inputId=paste0("Det_TM_topic_labels_document_selection_",x),label="Choose Document",multiple=F,choices=setNames(object = c(1:5),
+                                                                                                                                                                       nm = paste0(top_documents[[x]]$titles," (",round(as.numeric(top_documents[[x]]$likelihoods),digits = 3),")"))),
+                                           uiOutput(outputId = paste0("Det_TM_topic_labels_document_",x))
+                                       )
+                                )
+                       )
+    )
+  })
+  
+  
+  # for(x in 1:ncol(values$tm_theta)){
+  #   car<-bsplus::bs_append(tag=car,
+  #                          title_side=paste0("Topic ",x),
+  #                          content_side=textAreaInput(resize = "vertical",inputId=paste0("Det_TM_topic_labels_text_",x),label="Topic Label",value = topic_labels[x],rows = 5),
+  #                          content_main=tagList(
+  #                            fluidRow(style="margin-left:0px;margin-right:0px",
+  #                                     column(6,
+  #                                            box(title = "Most relevant Words",width = 12,solidHeader = T,status = "primary",
+  #                                                wordcloud2Output(outputId = paste0("Det_TM_topic_labels_wc_",x))
+  #                                            )
+  #                                     ),
+  #                                     column(6,
+  #                                            box(title = "Most Relevant Documents",width = 12,solidHeader = T,status = "primary",style="height: 37vh ;overflow-y:scroll;",
+  #                                                selectInput(inputId=paste0("Det_TM_topic_labels_document_selection_",x),label="Choose Document",multiple=F,choices=setNames(object = c(1:5),
+  #                                                                                                                                                                            nm = paste0(top_documents[[x]]$titles," (",round(as.numeric(top_documents[[x]]$likelihoods),digits = 3),")"))),
+  #                                                uiOutput(outputId = paste0("Det_TM_topic_labels_document_",x))
+  #                                            )
+  #                                     )
+  #                            )
+  #                          )
+  #   )
+  # }
+
+  
+  return(tagList(
+    tags$br(),
+    shinyglide::glide(do.call(tagList,screens),id = "shiynglidetest",keyboard = F)
+    #car
+  ))
+})
+
+
+
+
+#update wordclouds
+observe({
+  validate(
+    need(
+      !is.null(values$TM_topic_labels_relevance),message=F
+    ),
+    need(!is.null(values$TM_topic_labels_recalc),message=F)
+  )
+  #values$TM_topic_labels_create_outputs
+  relevance<-values$TM_topic_labels_relevance
+  
+  for(x in 1:ncol(isolate(values$tm_theta))){
+    local({
+      wc_id<-paste0("Det_TM_topic_labels_wc_",x)
+      data<-data.frame(stringsAsFactors = F,Word=rownames(relevance),Relevance=as.numeric(relevance[,x]))
+      data<-data[order(as.numeric(data[,2]),decreasing = T),]
+      data<-data[1:min(100,nrow(data)),]
+      data$Relevance<-data$Relevance-min(data$Relevance)
+      data$Relevance<-data$Relevance/max(data$Relevance)
+      data$Relevance<-round(data$Relevance,digits = 3)
+      data<-data[order(as.numeric(data[,2]),decreasing = T),]
+      hoverFunction = htmlwidgets :: JS ( "function hover() {}" )
+      output[[wc_id]]<-renderWordcloud2({
+        wordcloud2(data = data,size=0.9,fontFamily = "Helvetica",color = "random-dark",minSize = 0.2,backgroundColor = "white",minRotation = -pi/2,maxRotation = -pi/2,hoverFunction = hoverFunction)
+      })
+    })
+    
+  }  
+})
+
+# update documents
+observe({
+  validate(
+    need(
+      !is.null(values$TM_topic_labels_relevance),message=F
+    ),
+    need(
+      !is.null(input$Det_TM_topic_labels_document_selection_1),message=F
+    )
+  )
+  #values$TM_topic_labels_create_outputs
+  relevance<-values$TM_topic_labels_relevance
+  for(x in 1:ncol(isolate(values$tm_theta))){
+    local({
+      text_id<-paste0("Det_TM_topic_labels_document_",x)
+      text<-values$TM_topic_labels_top_documents[[x]]$texts[as.numeric(input[[paste0("Det_TM_topic_labels_document_selection_",x)]])]
+      output[[text_id]]<-renderUI({
+        tags$div(text)
+      })
+      
+    })
+    
+  }  
+})
+
+
+observeEvent(input$Det_TM_topic_labels_save,{
+  #get input labels
+  topic_labels<-unlist(lapply(X = 1:nrow(values$tm_theta),FUN = function(x){
+    input[[paste0("Det_TM_topic_labels_text_",x)]]
+  }))
+  save(topic_labels,file = paste0(values$Details_Data_TM,"/Topic_Labels.RData"))
+  shinyWidgets::sendSweetAlert(session = session,title = "Labels saved!",type = "success",closeOnClickOutside = T)
+})
+
+
+
+observe({
+  validate(
+    need(
+      !is.null(input$Det_TM_use_custom_labels),message=F
+    )
+  )
+  if(input$Det_TM_use_custom_labels==TRUE){
+    path<-paste0(isolate(values$Details_Data_TM),"/Topic_Labels.RData")
+    if(file.exists(path)){
+      load(path)
+      if(any(topic_labels=="")){
+        shinyWidgets::sendSweetAlert(session = session,title = "Not all Labels defined",text = "Please make sure that for every topic a label is defined!",type = "warning")
+        shinyWidgets::updateMaterialSwitch(session = session,inputId = "Det_TM_use_custom_labels",value = FALSE)
+      }
+      else{
+        values$Det_TM_topic_labels<-topic_labels
+        updateSelectInput(session = session,inputId = "Det_TM_validation_topic_custom_labels",choices = setNames(object = 1:ncol(values$tm_theta),
+                                                                                                                 nm = topic_labels))
+        updateSelectInput(session = session,inputId = "Det_TM_validation_document_selection_topic_likelihood_t_custom_labels",choices = setNames(object = 1:ncol(values$tm_theta),
+                                                                                                                                                 nm = topic_labels))
+      }
+    }
+    else{
+      shinyWidgets::sendSweetAlert(session = session,title = "No Custom Lables found!",text = "Please specify Custom Labels inside the 'Topic Labels Tab' before!",type = "warning")
+      shinyWidgets::updateMaterialSwitch(session = session,inputId = "Det_TM_use_custom_labels",value = FALSE)
+      values$Det_TM_topic_labels<-1:ncol(isolate(values$tm_theta))
+    }
+  }
+})
+
+
+
+output$Det_TM_topic_labels_topics_labeled<-renderUI({
+  validate(
+    need(!is.null(
+      input$Det_TM_topic_labels_text_1
+    ),message=F)
+  )
+  labels<-unlist(lapply(X = 1:ncol(isolate(values$tm_theta)),FUN = function(x){
+      input[[paste0("Det_TM_topic_labels_text_",x)]] 
+    
+  }))
+  
+  out<-lapply(1:length(labels),FUN = function(x){
+    if(labels[x]!=""){
+      return(
+        tagList(
+          tags$b(paste0("Topic ",x,": ")),
+          tags$i(
+            class = "fa fa-check-square", 
+            style = "color: rgb(69,255,41)"
+          ),
+          tags$br()
+          )
+      )
+    }
+    else{
+      return(
+        tagList(
+          tags$b(paste0("Topic ",x,": ")),
+          tags$i(
+            class = "fas fa-times", 
+            style = "color: rgb(255,0,13)"
+          ),
+          tags$br()
+        )
+      )
+    }
+  })
+  return(
+    do.call(tagList,out)
+  )
+})
 
