@@ -2015,7 +2015,7 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   end.time <- Sys.time()
   time.taken <- end.time - start.time
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished calculating Matrix within",time.taken),file = logfile)
-  
+  save(skipgram_cooc_matrix,file = "~/ilcm_Git/TEST/kontrolle.Rdata")
   coocsCalc <- Skip_cooc$new(skipgram_cooc_matrix)
   
   coocsCalc$set_maxCoocFreq(10000000)

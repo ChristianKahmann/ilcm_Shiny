@@ -83,17 +83,17 @@ Skip_cooc<-R6Class(
         names(tmp_sig)<-colnames(self$skip_tab)
         relWords<-colnames(self$skip_tab)
         
-        
+        #browser()
         switch(
-          
-##### WRONG CALCULATION: using 'leipzig' collectiob with skipgram_window_front = 4, skipgram_window_back=3
-######## dice will show values >1
           self$measure,
           DICE = {
             tmp_c <- summary(coocCounts)
-            
-            freqs <- colSums(self$skip_tab)
-            
+            # open question: what to do if matrix is symmetric
+            # create instance to calculate rowSums without diagonal elements
+            no_dia<-self$skip_tab
+            diag(no_dia)<-0
+            freqs <- colSums(self$skip_tab)+rowSums(no_dia)
+            names(kj)<-colnames(self$skip_tab)
             p_1 <- freqs[tmp_c[, 1]]
             p_2 <- freqs[tmp_c[, 2]]
             
@@ -113,7 +113,9 @@ Skip_cooc<-R6Class(
             #parallel::stopCluster(cl)
             colnames(finalSig) <- colnames(self$skip_tab)
             rownames(finalSig) <- colnames(self$skip_tab)
+            browser()
             return((finalSig))
+            
           },
           MI = {
             #browser()
@@ -121,7 +123,9 @@ Skip_cooc<-R6Class(
             
             tmp_c <- summary(coocCounts)
             
-            freqs <- colSums(self$skip_tab)
+            no_dia<-self$skip_tab
+            diag(no_dia)<-0
+            freqs <- colSums(self$skip_tab)+rowSums(no_dia)
             
             p_1 <- freqs[tmp_c[, 1]]
             p_2 <- freqs[tmp_c[, 2]]
@@ -154,7 +158,9 @@ Skip_cooc<-R6Class(
             #browser()
             #need to be sparse
             tmp_c <- summary(coocCounts)
-            freqs <- colSums(self$skip_tab)
+            no_dia<-self$skip_tab
+            diag(no_dia)<-0
+            freqs <- colSums(self$skip_tab)+rowSums(no_dia)
             
             ki <- freqs[tmp_c[, 1]] + 0.001
             kj_help <- freqs[tmp_c[, 2]] + 0.001
