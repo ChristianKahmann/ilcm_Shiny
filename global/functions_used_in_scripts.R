@@ -2095,49 +2095,62 @@ prepare_words_skipgram<-function(db_data,dtm){
 cooccurrence_both_directions <- function(x,group=rep(1,length(x)),order = TRUE, ..., relevant = rep(TRUE, length(x)), skipgram_front = 0, skipgram_back = 0){
   stopifnot(all(max(skipgram_front,skipgram_back) >= 0))
   cooc <- term1 <- term2 <- NULL
-  
+  is_front_zero<-FALSE
+  is_back_zero<-FALSE
   ## skipdistances if it is only 1 value, it is considered the maximum skip distance between words, compute all skip n-grams between 0 and skipgram
   ## if there are several values, consider them as such
   skipdistances_front <- as.integer(skipgram_front)
-  if(length(skipdistances_front) == 1){
+  if(length(skipdistances_front) == 1 & skipdistances_front!=0){
     skipdistances_front <- seq(0, skipdistances_front-1, by = 1)
   }else{
+    is_front_zero<-TRUE
     skipdistances_front <- union(0L, skipdistances_front)
+    
   }
   skipdistances_back <- as.integer(skipgram_back)
-  if(length(skipdistances_back) == 1){
+  if(length(skipdistances_back) == 1 & skipgram_back !=0){
     skipdistances_back <- seq(0, skipdistances_back-1, by = 1)
   }else{
+    is_back_zero<-TRUE
     skipdistances_back <- union(0L, skipdistances_back)
   }
   # look which word are followed with the next word, 
   # look which word is followed by the 2nd next word, 3rd next word andsoforth
   # but if the data is not considered relevant, do not use it
   irrelevant <- !relevant
+  if(is_back_zero!=TRUE){
+    result_back <- lapply(skipdistances_back, FUN=function(n){
+      result_backward<-result_back<-data.table(term1 = c(x),
+                                               term2 = c(txt_previous(x, n = n + 1L)), 
+                                               cooc = 1L,
+                                               group1=c(group),
+                                               group2=c(rep(NA,(n+1L)),group[1:(length(group)-(n+1L))]))
+      result_back <- subset(result_back, !is.na(term1) & !is.na(term2))
+      result_back <- subset(result_back, result_back$group1==result_back$group2)
+      result_back <- result_back[, list(cooc = sum(cooc)), by = list(term1, term2)]
+      result_back
+    })
+  }
+  else{
+    result_back<-vector(mode = "list", length = 2)
+  }
+  if(is_front_zero!=TRUE){
+    result_front <- lapply(skipdistances_front, FUN=function(n){
+      result_forward<-result_front <-  data.table(term1 = c(x),
+                                                  term2 = c(txt_next(x, n = n + 1L)), 
+                                                  cooc = 1L,
+                                                  group1=c(group),
+                                                  group2=c(group[(n + 2L):length(group)],rep(NA,(n+1L))))
+      
+      result_front <- subset(result_front, !is.na(term1) & !is.na(term2))
+      result_front <- subset(result_front, result_front$group1==result_front$group2)
+      result_front <- result_front[, list(cooc = sum(cooc)), by = list(term1, term2)]
+      result_front
+    })
+  }else{
+    result_front<-vector(mode = "list", length = 2)
+  }
   
-  result_back <- lapply(skipdistances_back, FUN=function(n){
-    result_backward<-result_back<-data.table(term1 = c(x),
-                                             term2 = c(txt_previous(x, n = n + 1L)), 
-                                             cooc = 1L,
-                                             group1=c(group),
-                                             group2=c(rep(NA,(n+1L)),group[1:(length(group)-(n+1L))]))
-    result_back <- subset(result_back, !is.na(term1) & !is.na(term2))
-    result_back <- subset(result_back, result_back$group1==result_back$group2)
-    result_back <- result_back[, list(cooc = sum(cooc)), by = list(term1, term2)]
-    result_back
-  })
-  result_front <- lapply(skipdistances_front, FUN=function(n){
-    result_forward<-result_front <-  data.table(term1 = c(x),
-                                          term2 = c(txt_next(x, n = n + 1L)), 
-                                          cooc = 1L,
-                                          group1=c(group),
-                                          group2=c(group[(n + 2L):length(group)],rep(NA,(n+1L))))
-    
-    result_front <- subset(result_front, !is.na(term1) & !is.na(term2))
-    result_front <- subset(result_front, result_front$group1==result_front$group2)
-    result_front <- result_front[, list(cooc = sum(cooc)), by = list(term1, term2)]
-    result_front
-  })
   ## Warnings appear as the different iteration steps have different numbers of elements
   unlist_result_back<-data.table::rbindlist(result_back, fill = TRUE)
   unlist_result_front<-data.table::rbindlist(result_front, fill = TRUE)

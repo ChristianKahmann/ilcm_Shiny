@@ -285,12 +285,12 @@ output$Analysis_Parameter_CA<-renderUI({
       ),
       column(1,
              conditionalPanel(condition='input.CA_cooc_type == "Skipgram"',
-                              numericInput(inputId = "CA_skipgram_window_forward",label = "windowsize for skipgram pairing forward",min = 1,step = 1,value=2)
+                              numericInput(inputId = "CA_skipgram_window_forward",label = "windowsize for skipgram pairing forward",min = 0,step = 1,value=2)
              )
       ),
       column(1,
              conditionalPanel(condition='input.CA_cooc_type == "Skipgram"',
-                              numericInput(inputId = "CA_skipgram_window_backward",label = "windowsize for skipgram pairing backward",min = 1,step = 1,value=2)
+                              numericInput(inputId = "CA_skipgram_window_backward",label = "windowsize for skipgram pairing backward",min = 0,step = 1,value=2)
              )
       ),
       column(1,

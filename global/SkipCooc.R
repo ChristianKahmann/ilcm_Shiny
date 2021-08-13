@@ -113,7 +113,7 @@ Skip_cooc<-R6Class(
             #parallel::stopCluster(cl)
             colnames(finalSig) <- colnames(self$skip_tab)
             rownames(finalSig) <- colnames(self$skip_tab)
-            browser()
+            #browser()
             return((finalSig))
             
           },
