@@ -9,11 +9,13 @@ Skip_cooc<-R6Class(
     maxCoocFreq = NULL,
     initialize = function(skip_tab,
                           measure="DICE",
+                          minCoocFreq=1,
                           maxCoocFreq = 500
                           ){
       self$skip_tab <- skip_tab
       self$measure <- measure
       self$maxCoocFreq <- maxCoocFreq
+      self$minCoocFreq <- minCoocFreq
     },
     set_skip_cooc = function(skip_tab){
       self$skip_tab = skip_tab
@@ -31,6 +33,10 @@ Skip_cooc<-R6Class(
       self$maxCoocFreq = maxCoocFreq
       invisible(self)
     },
+    set_minCoocFreq = function(minCoocFreq){
+      self$minCoocFreq = minCoocFreq
+      invisible(self)
+    },
     get_skip_cooc = function(){
       return(self$skip_tab)
       invisible(self)
@@ -43,11 +49,16 @@ Skip_cooc<-R6Class(
       return(self$maxCoocFreq)
       invisible(self)
     },
+    get_minCoocFreq = function(){
+      return(self$minCoocFreq)
+      invisible(self)
+    },
     skip_ccoocs=
       function(){
        
        
         coocCounts <- self$skip_tab
+        sym<-isSymmetric(coocCounts)
         
         tmp <- Matrix::summary(coocCounts)
         
@@ -57,7 +68,7 @@ Skip_cooc<-R6Class(
         
         #delete vocab whith no coocs
         tmp[tmp[, "x"] > self$maxCoocFreq, "x"] <- 0
-        
+        tmp[tmp[, "x"] < self$minCoocFreq, "x"] <- 0
         coocCounts <-
           Matrix::sparseMatrix(
             i = tmp[, 1],
@@ -87,12 +98,18 @@ Skip_cooc<-R6Class(
         switch(
           self$measure,
           DICE = {
+            
             tmp_c <- summary(coocCounts)
             # open question: what to do if matrix is symmetric
             # create instance to calculate rowSums without diagonal elements
-            no_dia<-self$skip_tab
-            diag(no_dia)<-0
-            freqs <- colSums(self$skip_tab)+rowSums(no_dia)
+            if(sym == TRUE){
+              freqs <- rowSums(self$skip_tab)
+            }else{
+              no_dia<-self$skip_tab
+              diag(no_dia)<-0
+              freqs <- colSums(self$skip_tab)+rowSums(no_dia)
+            }
+            
             names(kj)<-colnames(self$skip_tab)
             p_1 <- freqs[tmp_c[, 1]]
             p_2 <- freqs[tmp_c[, 2]]
@@ -123,9 +140,13 @@ Skip_cooc<-R6Class(
             
             tmp_c <- summary(coocCounts)
             
-            no_dia<-self$skip_tab
-            diag(no_dia)<-0
-            freqs <- colSums(self$skip_tab)+rowSums(no_dia)
+            if(sym == TRUE){
+              freqs <- rowSums(self$skip_tab)
+            }else{
+              no_dia<-self$skip_tab
+              diag(no_dia)<-0
+              freqs <- colSums(self$skip_tab)+rowSums(no_dia)
+            }
             
             p_1 <- freqs[tmp_c[, 1]]
             p_2 <- freqs[tmp_c[, 2]]
@@ -151,6 +172,7 @@ Skip_cooc<-R6Class(
             colnames(finalSig) <- colnames(self$skip_tab)
             rownames(finalSig) <- colnames(self$skip_tab)
             gc()
+            browser()
             return(finalSig)
             
           },
@@ -158,10 +180,13 @@ Skip_cooc<-R6Class(
             #browser()
             #need to be sparse
             tmp_c <- summary(coocCounts)
-            no_dia<-self$skip_tab
-            diag(no_dia)<-0
-            freqs <- colSums(self$skip_tab)+rowSums(no_dia)
-            
+            if(sym == TRUE){
+              freqs <- rowSums(self$skip_tab)
+            }else{
+              no_dia<-self$skip_tab
+              diag(no_dia)<-0
+              freqs <- colSums(self$skip_tab)+rowSums(no_dia)
+            }
             ki <- freqs[tmp_c[, 1]] + 0.001
             kj_help <- freqs[tmp_c[, 2]] + 0.001
             kij <- tmp_c$x

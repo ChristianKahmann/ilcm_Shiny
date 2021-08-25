@@ -1998,10 +1998,12 @@ remove_locations<-function(token){
 #' @example 
 calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   skipgram_coocs<- prepare_words_skipgram(db_data,dtm)
-  delete<-which(skipgram_coocs$cooc<parameters$min_cooc_freq)
-  if(length(delete)>0){
-    skipgram_coocs<-skipgram_coocs[-delete,]
-  }
+  ## If we delete the min here - the significance measurments will not be accurate
+  #save(skipgram_coocs,file = "~/ilcm_Git/TEST/kontrolle_tabelle_harry_uncut.Rdata")
+  #delete<-which(skipgram_coocs$cooc<parameters$min_cooc_freq)
+  #if(length(delete)>0){
+  #  skipgram_coocs<-skipgram_coocs[-delete,]
+  #}
   
   start.time <- Sys.time()
   skipgram_cooc_matrix<- Matrix::sparseMatrix(i = as.numeric(factor(skipgram_coocs$term1,levels = colnames(dtm))),
@@ -2014,10 +2016,13 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   
   end.time <- Sys.time()
   time.taken <- end.time - start.time
-  log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished calculating Matrix within",time.taken),file = logfile)
-  save(skipgram_cooc_matrix,file = "~/ilcm_Git/TEST/kontrolle.Rdata")
+  time.taken<-round(time.taken, 6)
+  log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished calculating Matrix within",time.taken,"min"),file = logfile)
+  #save(skipgram_coocs,file = "~/ilcm_Git/TEST/kontrolle_tabelle_harry.Rdata")
+  #save(skipgram_cooc_matrix,file = "~/ilcm_Git/TEST/kontrolle_matrix_harry.Rdata")
   coocsCalc <- Skip_cooc$new(skipgram_cooc_matrix)
   
+  coocsCalc$set_minCoocFreq(skipgram_coocs$cooc<parameters$min_cooc_freq)
   coocsCalc$set_maxCoocFreq(10000000)
   
   log_to_file(message = "&emsp; Calculating coocs with Dice-Significance measure",logfile)
@@ -2073,7 +2078,7 @@ prepare_words_skipgram<-function(db_data,dtm){
   
   tmp_dt$words<-replacement 
   
-  
+  log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished calculating Skipgram Cooccurrence for front window: ",parameters$skip_window_forward," and back window: ", parameters$skip_window_backward),file = logfile)
   skipgram_cooc<-cooccurrence_both_directions(tmp_dt$words,group=paste0(tmp_dt$document_id,"_",tmp_dt$sentence_id),order = T,skipgram_front = parameters$skip_window_forward, skipgram_back = parameters$skip_window_backward)
   # delete all entries in datatable that contain the word "PLACEHOLDER"
   skipgram_cooc <- skipgram_cooc[ !(skipgram_cooc$term1 =='PLACEHOLDER' | skipgram_cooc$term2 == 'PLACEHOLDER'),] 

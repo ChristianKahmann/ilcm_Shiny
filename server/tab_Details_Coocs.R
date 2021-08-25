@@ -571,10 +571,10 @@ output$coocs_top_dice_table<-DT::renderDataTable({
       matrix<-t(matrix)
     }
   }
-  y <- matrix[which(matrix>0)]
-  keep<-order(y,decreasing=T)[1:min(length(y),(2*input$coocs_top_max))]
-  x <- which(matrix>0, arr.ind = T)
-  x<-x[keep,,drop=F]
+  y <- matrix[which(matrix !=0)]
+  #keep<-order(y,decreasing=T)[1:min(length(y),(2*input$coocs_top_max))]
+  x <- which(matrix != 0, arr.ind = T)
+  #x<-x[keep,,drop=F]
   #remove dublicates
   x<-t(apply(x,1, function(i) sort(i)))
   x<-as.data.frame(x)
@@ -611,10 +611,11 @@ output$coocs_top_mi_table<-DT::renderDataTable({
       matrix<-t(matrix)
     }
   }
-  y <- matrix[which(matrix>0)]
-  keep<-order(y,decreasing=T)[1:min(length(y),(2*input$coocs_top_max))]
-  x <- which(matrix>0, arr.ind = T)
-  x<-x[keep,,drop=F]
+  y <- matrix[which(matrix != 0)]
+  #keep<-order(y,decreasing=T)[1:min(length(y),(2*input$coocs_top_max))]
+  x <- which(matrix != 0, arr.ind = T)
+
+  #x<-x[keep,,drop=F]
   x<-t(apply(x,1, function(i) sort(i)))
   x<-as.data.frame(x)
   x<-unique(x,Margin=1)
@@ -650,10 +651,12 @@ output$coocs_top_log_table<-DT::renderDataTable({
       matrix<-t(matrix)
     }
   }
-  y <- matrix[which(matrix>0)]
-  keep<-order(y,decreasing=T)[1:min(length(y),(2*input$coocs_top_max))]
-  x <- which(matrix>0, arr.ind = T)
-  x<-x[keep,,drop=F]
+  y <- matrix[which(matrix != 0)]
+  
+  #keep<-order(y,decreasing=T)[1:min(length(y),(2*input$coocs_top_max))]
+  x <- which(matrix != 0, arr.ind = T)
+ 
+  #x<-x[keep,,drop=F]
   x<-t(apply(x,1, function(i) sort(i)))
   x<-as.data.frame(x)
   x<-unique(x,Margin=1)
