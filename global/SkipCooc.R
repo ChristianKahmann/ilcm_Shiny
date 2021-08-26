@@ -58,6 +58,7 @@ Skip_cooc<-R6Class(
        
        
         coocCounts <- self$skip_tab
+        #browser()
         sym<-isSymmetric(coocCounts)
         
         tmp <- Matrix::summary(coocCounts)
@@ -103,7 +104,7 @@ Skip_cooc<-R6Class(
             # open question: what to do if matrix is symmetric
             # create instance to calculate rowSums without diagonal elements
             if(sym == TRUE){
-              freqs <- rowSums(self$skip_tab)
+              freqs <- colSums(self$skip_tab)
             }else{
               no_dia<-self$skip_tab
               diag(no_dia)<-0

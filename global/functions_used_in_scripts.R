@@ -2022,7 +2022,7 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   #save(skipgram_cooc_matrix,file = "~/ilcm_Git/TEST/kontrolle_matrix_harry.Rdata")
   coocsCalc <- Skip_cooc$new(skipgram_cooc_matrix)
   
-  coocsCalc$set_minCoocFreq(skipgram_coocs$cooc<parameters$min_cooc_freq)
+  coocsCalc$set_minCoocFreq(parameters$min_cooc_freq)
   coocsCalc$set_maxCoocFreq(10000000)
   
   log_to_file(message = "&emsp; Calculating coocs with Dice-Significance measure",logfile)
