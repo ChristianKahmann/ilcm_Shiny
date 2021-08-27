@@ -69,7 +69,7 @@ Skip_cooc<-R6Class(
         
         #delete vocab whith no coocs
         tmp[tmp[, "x"] > self$maxCoocFreq, "x"] <- 0
-        tmp[tmp[, "x"] < self$minCoocFreq, "x"] <- 0
+        #tmp[tmp[, "x"] < self$minCoocFreq, "x"] <- 0
         coocCounts <-
           Matrix::sparseMatrix(
             i = tmp[, 1],
@@ -110,7 +110,7 @@ Skip_cooc<-R6Class(
               diag(no_dia)<-0
               freqs <- colSums(self$skip_tab)+rowSums(no_dia)
             }
-            
+            browser()
             names(kj)<-colnames(self$skip_tab)
             p_1 <- freqs[tmp_c[, 1]]
             p_2 <- freqs[tmp_c[, 2]]

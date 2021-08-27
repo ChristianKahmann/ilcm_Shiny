@@ -571,7 +571,7 @@ output$coocs_top_dice_table<-DT::renderDataTable({
       matrix<-t(matrix)
     }
   }
-  y <- matrix[which(matrix !=0)]
+  #y <- matrix[which(matrix != 0)]
   #keep<-order(y,decreasing=T)[1:min(length(y),(2*input$coocs_top_max))]
   x <- which(matrix != 0, arr.ind = T)
   #x<-x[keep,,drop=F]
@@ -611,7 +611,7 @@ output$coocs_top_mi_table<-DT::renderDataTable({
       matrix<-t(matrix)
     }
   }
-  y <- matrix[which(matrix != 0)]
+  #y <- matrix[which(matrix != 0)]
   #keep<-order(y,decreasing=T)[1:min(length(y),(2*input$coocs_top_max))]
   x <- which(matrix != 0, arr.ind = T)
 
@@ -651,7 +651,7 @@ output$coocs_top_log_table<-DT::renderDataTable({
       matrix<-t(matrix)
     }
   }
-  y <- matrix[which(matrix != 0)]
+  #y <- matrix[which(matrix =! 0)]
   
   #keep<-order(y,decreasing=T)[1:min(length(y),(2*input$coocs_top_max))]
   x <- which(matrix != 0, arr.ind = T)
