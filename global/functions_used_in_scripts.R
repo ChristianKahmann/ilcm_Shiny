@@ -1989,7 +1989,11 @@ remove_locations<-function(token){
   
   
 }
-
+## problem: when using parameters$min_cooc_freq the significance measurements will not be properly calculatet
+### reason: the number of occurences is no longer equal to the real appearance of the words in the text 
+### so when using the min_cooc_freq all coocurrences will be deleted that are below this value
+### as the number of occurences of the words will rise (due to the skipgramwindow size) online a few values will be deleted
+### this only causes issues with calculating the real significance values
 #' calculate all cooccurrence measurements with skipgram base
 #' @param db_data
 #' @param dtm
@@ -2020,9 +2024,13 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished calculating Matrix within",time.taken,"min"),file = logfile)
   #save(skipgram_coocs,file = "~/ilcm_Git/TEST/kontrolle_tabelle_harry.Rdata")
   #save(skipgram_cooc_matrix,file = "~/ilcm_Git/TEST/kontrolle_matrix_harry.Rdata")
+  #dtm<-tmca.util.make_binary(dtm = dtm)
+  
+  
   coocsCalc <- Skip_cooc$new(skipgram_cooc_matrix)
   
-  coocsCalc$set_minCoocFreq(parameters$min_cooc_freq)
+  
+  #coocsCalc$set_minCoocFreq(parameters$min_cooc_freq)
   coocsCalc$set_maxCoocFreq(10000000)
   
   log_to_file(message = "&emsp; Calculating coocs with Dice-Significance measure",logfile)

@@ -5,11 +5,13 @@ Skip_cooc<-R6Class(
   lock_objects=F,
   public = list(
     skip_tab=NULL,
+    
     measure=NULL,
     maxCoocFreq = NULL,
     initialize = function(skip_tab,
+                          
                           measure="DICE",
-                          minCoocFreq=1,
+                          minCoocFreq=0,
                           maxCoocFreq = 500
                           ){
       self$skip_tab <- skip_tab
@@ -55,8 +57,6 @@ Skip_cooc<-R6Class(
     },
     skip_ccoocs=
       function(){
-       
-       
         coocCounts <- self$skip_tab
         #browser()
         sym<-isSymmetric(coocCounts)
@@ -66,10 +66,8 @@ Skip_cooc<-R6Class(
         if(dim(tmp)[1]==0){
           return(Matrix(coocCounts))
         }
-        
-        #delete vocab whith no coocs
         tmp[tmp[, "x"] > self$maxCoocFreq, "x"] <- 0
-        #tmp[tmp[, "x"] < self$minCoocFreq, "x"] <- 0
+        tmp[tmp[, "x"] < self$minCoocFreq, "x"] <- 0
         coocCounts <-
           Matrix::sparseMatrix(
             i = tmp[, 1],
@@ -102,16 +100,18 @@ Skip_cooc<-R6Class(
             
             tmp_c <- summary(coocCounts)
             # open question: what to do if matrix is symmetric
-            # create instance to calculate rowSums without diagonal elements
+             #create instance to calculate rowSums without diagonal elements
             if(sym == TRUE){
-              freqs <- colSums(self$skip_tab)
-            }else{
+             freqs <- colSums(self$skip_tab)
+          }else{
               no_dia<-self$skip_tab
               diag(no_dia)<-0
               freqs <- colSums(self$skip_tab)+rowSums(no_dia)
             }
+            freqs <- colSums(self$skip_tab)
             browser()
             names(kj)<-colnames(self$skip_tab)
+            
             p_1 <- freqs[tmp_c[, 1]]
             p_2 <- freqs[tmp_c[, 2]]
             

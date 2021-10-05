@@ -9,6 +9,7 @@
 #' @return ergeb (result matrix of kwic)
 #'   
 kwic2<-function(Tokens,target,k,n,indices=NULL){
+
   ergeb<-matrix(c(0),0,3)
   colnames(ergeb)<-c("before","target","after")
   

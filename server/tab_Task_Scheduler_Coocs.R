@@ -294,6 +294,7 @@ output$Analysis_Parameter_CA<-renderUI({
              )
       ),
       column(1,
+            
              numericInput(inputId = "CA_min_Cooc_Freq",label = "Minimum co-occurrence frequency:",value = 2,min = 1,step = 1)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
@@ -398,6 +399,7 @@ observeEvent(ignoreNULL = T,input$CA_cooc_type,{
   if(input$CA_cooc_type == 'Skipgram'){
     shinyjs::show(id = "CA_skipgram_window_forward")
     shinyjs::show(id = "CA_skipgram_window_backward")
+    shinyjs::hide(id = "CA_min_Cooc_Freq")
   }
   else{
     shinyjs::hide(id = "CA_skipgram_window_forward")
