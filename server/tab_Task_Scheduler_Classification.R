@@ -325,6 +325,16 @@ output$Analysis_Parameter_CL<-renderUI({
                    )
                )
       ),
+      column(2,selectizeInput(inputId = "CL_Method",label="Classification Method",choices=c("SVM","randomForest", "XGBoost", "decissionTree"))%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(
+                     title = "Which algorithm/method should be used for classification?",
+                     placement = "right",
+                     html="true"
+                   )
+               )
+      ),
       column(2,
              selectizeInput(inputId = "CL_Project",label="Project",choices=stringr::str_replace_all(string = list.files("collections/annotation_schemes/"),pattern = ".RData",replacement = ""),selected=character(0))%>%
                shinyInput_label_embed(
@@ -718,7 +728,8 @@ observeEvent(ignoreInit = T,input$CL_Submit_Script,{
                        cl_active_learning_strategy=input$CL_active_learning_strategy,
                        cl_c=input$CL_c,
                        use_fixed_vocab=input$CL_use_fixed_vocab,
-                       fixed_vocab=input$CL_fixed_vocab
+                       fixed_vocab=input$CL_fixed_vocab,
+                       CL_Method = input$CL_Method
       )
       #create process ID
       ID<-get_task_id_counter()+1
@@ -909,7 +920,8 @@ observeEvent(ignoreInit=T,input$CL_pruning_continue,{
                      cl_active_learning_strategy=input$CL_active_learning_strategy,
                      cl_c=input$CL_c,
                      use_fixed_vocab=input$CL_use_fixed_vocab,
-                     fixed_vocab=input$CL_fixed_vocab
+                     fixed_vocab=input$CL_fixed_vocab,
+                     CL_Method = input$CL_Method
     )
     #create process ID
     ID<-get_task_id_counter()+1
