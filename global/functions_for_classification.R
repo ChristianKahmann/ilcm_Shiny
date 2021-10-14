@@ -246,8 +246,10 @@ set_learning_samples_svm<-function(parameters, gold_table, dtm){
   c_weights <- table(trainingLabels) / length(trainingLabels)
   c_weights <- abs(c_weights - 1) 
   model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = parameters$cl_c,epsilon = 0.01,bias = 1)
+  #print(head(model))
   testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
   predicted <- predict(model, testDTM,proba = T) 
+  #print(head(predicted))
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
@@ -268,6 +270,7 @@ set_learning_samples_svm<-function(parameters, gold_table, dtm){
   
   log_to_file(message = "&emsp; Choose active learning examples",file = logfile)
   if (parameters$cl_active_learning_strategy == "LC") {
+    print(head(predicted$probabilities))
     boundary_distances <- abs(predicted$probabilities[,parameters$cl_Category] - 0.5)
     uncertain_decisions <- order(boundary_distances)
     unset_labels <- which(!rownames(dtm)%in%gold_table[which(!gold_table[,2]%in%c("dictionary lookup","sampled negative examples")),1])
@@ -336,7 +339,7 @@ set_learning_samples_svm<-function(parameters, gold_table, dtm){
 ############################################
 #           Training Set Evaluation        #
 ############################################
-set_training_eval_svm<-function(parameters, gold_table, dtm){
+set_training_eval<-function(parameters, gold_table, dtm){
   idx<-which(gold_table[,1]%in%rownames(dtm))
   selector_idx<-gold_table[idx,1]
   #reduce feature space to features of gold documents
@@ -463,7 +466,7 @@ set_active_learning_whole_svm<-function(parameters, gold_table, dtm){
 ############################################
 #       Classify on entire collection      #
 ############################################
-classify_whole_collection<-function(parameters, gold_table, dtm){
+classify_whole_collection_svm<-function(parameters, gold_table, dtm){
   #use neg examples in training classifier and remove examples tagged as neg afterwards
   #gold_table<-gold_table[which(gold_table[,2]!="NEG"),]
   idx<-which(gold_table[,1]%in%rownames(dtm))
@@ -478,7 +481,6 @@ classify_whole_collection<-function(parameters, gold_table, dtm){
   c_weights <- table(trainingLabels) / length(trainingLabels)
   c_weights <- abs(c_weights - 1) 
   model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = parameters$cl_c,epsilon = 0.01,bias = 1)
-  
   feature_matrix<-model$W
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
   # delete bias term from feature matrix

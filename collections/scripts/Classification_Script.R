@@ -7,14 +7,17 @@ source("global/rbind_huge_sparse_Matrix.R")
 source("global/functions_used_in_scripts.R")
 source("global/utils.R")
 source("global/functions_for_classification.R")
+source("global/classification_randomForest.R")
+source("global/classification_xgBoost.R")
 error<-try(expr = {
   library(Matrix)
   library(dplyr)
   library(spacyr)
   library(magrittr)
+  library(randomForest)
   require(LiblineaR)
   require(SparseM)
-  
+  require(xgboost)
   #load parameters
   load("collections/tmp/tmp.RData")
   parameters_original<-parameters
@@ -214,15 +217,25 @@ error<-try(expr = {
     ############################################
     log_to_file(message = "<b>Step 12/13: Producing 50 new active learning examples</b>",file = logfile)
     log_to_file(message = paste("&emsp;",count, "Training sets (annotations and approved classifications) were found and used"),file = logfile)
-    
+    if(parameters$CL_Method == "SVM"){
     set_learning_samples_svm(parameters, gold_table, dtm)
+    print("SVM selected")
+    }
+    if(parameters$CL_Method == "randomForest"){
+      set_learning_samples_rF(parameters, gold_table, dtm)
+      print("random Forest selected")
+    }
+    if(parameters$CL_Method == "XGBoost"){
+      set_learning_samples_xgb(parameters, gold_table, dtm)
+      print("XGBoost selected")
+    }
   }
   if(parameters$cl_Mode=="Evaluate Training Set"){
     ############################################
     #           Training Set Evaluation        #
     ############################################
     log_to_file(message = "<b>Step 12/13: Evaluating Training Set</b>",file = logfile)
-    set_training_eval_svm(parameters, gold_table, dtm)
+    set_training_eval(parameters, gold_table, dtm)
   }
   
   if(parameters$cl_Mode=="Active learning on whole documents"){
@@ -231,14 +244,24 @@ error<-try(expr = {
     ############################################
     log_to_file(message = "<b>Step 12/13: Active learning on whole documents</b>",file = logfile)
     #add negative examples if no other categories tagged or no NEG examples given
+    if(parameters$CL_Method == "SVM"){
     set_active_learning_whole_svm(parameters, gold_table, dtm)
+    }
+    if(parameters$CL_Method == "randomForest"){
+      set_active_learning_whole_rF(parameters, gold_table, dtm)
+    }
   }
   if(parameters$cl_Mode=="Classify on entire collection"){
     ############################################
     #       Classify on entire collection      #
     ############################################
     log_to_file(message = "<b>Step 12/13: Classification on entire collection</b>",file = logfile)
-    classify_whole_collection(parameters, gold_table, dtm)
+    if(parameters$CL_Method == "SVM"){
+    classify_whole_collection_svm(parameters, gold_table, dtm)
+    }
+    if(parameters$CL_Method == "randomForest"){
+      classify_whole_collection_rF(parameters, gold_table, dtm)
+    }
   }
   
   
