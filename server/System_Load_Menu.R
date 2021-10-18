@@ -470,6 +470,7 @@ observeEvent(ignoreInit = T,input$options_solr_change,{
 #'   values$solr_url: current solr url
 output$options_solr_connected<-renderUI({
   solr_valid=FALSE
+  browser()
   try({
     response<-as.character(httr::GET(url = values$solr_url))
     if(grepl(x = response,pattern = '\"numFound')){

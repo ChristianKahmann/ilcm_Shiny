@@ -42,6 +42,7 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
   dtm<-dtm[,features]
   dtm<-dtm[,order(colnames(dtm))]
 ###########
+  ## effizienter
   trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
   trainingDTM$class <-gold_table[idx,2]
  

@@ -45,7 +45,7 @@ observeEvent(input$simple_action,{
       if(nchar(s)>0){
         q<-s
       }
-      
+      #browser()
       #check wheater solr query is valid and get solq query back
       response<-NULL
       try({
