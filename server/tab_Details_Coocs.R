@@ -272,6 +272,7 @@ output$visNetwork_cooc_net<-visNetwork::renderVisNetwork({
   nodes<-cbind(nodes,apply(nodes,MARGIN = 1,FUN = function(x){paste0(x[2],": ",x[4])}))
   values$name_for_cooc_knk<-nodes[,"name"]
   colnames(nodes)<-c("id","label","group","value","shadow","title")
+
   if(input$Det_CO_use_igraph_layout==TRUE){
     return(
       visNetwork::visNetwork(nodes = nodes,edges = edges)%>%
@@ -352,7 +353,7 @@ output$cooc_examples_table<-DT::renderDataTable({
   # make sure words are splitted in case n grams were used
   words <- input$coocs_examples_words
   words <- unlist(flatten(stringr::str_split(string = words,pattern = "_",simplify = F)))
-
+  
   for(i in 1:number_of_examples){
     tokens<-values$coocs_token[which(values$coocs_token[,1]==avail[i]),]
     tokens_orig<-tokens
@@ -666,3 +667,201 @@ output$coocs_top_log_table<-DT::renderDataTable({
   datatable(data = data,colnames = c('Term 1', 'Term 2','Value'))
 })
 
+
+
+
+######################################################################################################
+#                                      shortest paths                                                #
+######################################################################################################
+
+output$Det_CO_shortest_paths_UI<-renderUI({
+  validate(
+    need(!is.null(input$Det_CO_shortest_path_treshold),message=FALSE)
+  )
+  shiny::withProgress(message = "Calculating shortest paths...",value = 0,min = 0,max = 1,expr = {
+    shiny::incProgress(amount = 0,message = "Loading cooccurrence inforamtion...")
+    load(paste0(values$Details_Data_CO,"/dice.RData"))
+    shiny::incProgress(amount = 0.1,message = "Searching shortest paths...")
+    
+    data<-coocs_matrix_dice
+    values$Det_CO_shortest_paths_cooc_matrix<-data
+    data<-Matrix::triu(data)
+    library(igraph)
+    my_list=list()
+    
+    
+    t<-summary(data)
+    t<-t[which(t$x>=input$Det_CO_shortest_path_treshold),]
+    e<-aggregate(t$j,by=list(t$i),FUN=function(x){
+      c(x)
+    })
+    
+    t5<-Sys.time()
+    my_list4<- parallel::mclapply(1:nrow(data),mc.preschedule = T,mc.cleanup = T,mc.cores = (parallel::detectCores()-1),FUN = function(j){
+      if(j%in%e$Group.1){
+        return(e$x[[which(e$Group.1==j)]])
+      }
+      else{
+        return(integer(0))
+      }
+    })
+    t6<-Sys.time()-t5
+    
+    g<-graph_from_adj_list(my_list4)
+    g<-as.undirected(graph = g,mode = "collapse")
+    E(g)
+    V(g)$name <- as_ids(V(g))
+    V(g)$label <- colnames(data)
+    values$Det_CO_shortest_path_g<-g
+  })
+  
+  return(visNetwork::visNetworkOutput(outputId = "Det_CO_shortest_paths_network",height = "75vh"))
+})
+
+
+output$Det_CO_shortest_paths_network<-visNetwork::renderVisNetwork({
+  validate(
+    need(!is.null(values$Det_CO_shortest_path_g),message=F),
+    need(!is.null(input$Det_CO_shortest_paths_word1),message=FALSE),
+    need(!is.null(input$Det_CO_shortest_paths_word2),message=FALSE),
+    need(input$Det_CO_shortest_paths_word1!="",message="Please specify word 1"),
+    need(input$Det_CO_shortest_paths_word2!="",message="Please specify word 2"),
+    need(input$Det_CO_shortest_paths_word1!=input$Det_CO_shortest_paths_word2,message="Please specify two seperate words!")
+  )
+  
+  values$Det_CO_shortest_path_g->g
+  
+  from<-which(V(g)$label==input$Det_CO_shortest_paths_word1)
+  to<-which(V(g)$label==input$Det_CO_shortest_paths_word2)
+  
+  #paths<-all_simple_paths(graph = g,from = from,to = to,mode = "out")
+  #shortest.paths(graph = g,v = from,to = to)
+  #distance_table(graph = g,directed = F)->dt
+  
+  nodes_of_interest <- c(from,to)
+  selnodes <- V(g)[name %in% nodes_of_interest]
+  selegoV <- ego(g, order=input$Det_CO_shortest_path_max_length_of_paths_shown, nodes = selnodes, mode = "all", mindist = 0)
+  selegoG <- induced_subgraph(g,unlist(selegoV))
+  from_new<-which(names(V(selegoG))==as.character(from))
+  to_new<-which(names(V(selegoG))==as.character(to))
+  
+  shortest_path<-get.all.shortest.paths(graph =selegoG,from = from_new,to = to_new )
+  validate(
+    need(length(shortest_path$res)>0,message="No path between the 2 selected words was found! Specify different words or change the other parameters.")
+  )
+  
+  print("calculating all paths...")
+  if(length(shortest_path$res)>10){
+    all_paths<-shortest_path$res
+  }
+  else{
+    all_paths<-all_simple_paths(graph = selegoG, from = from_new,to_new,cutoff = max(input$Det_CO_shortest_path_max_length_of_paths_shown,length(shortest_path$res[[1]])))
+  }
+  all_nodes_nec<-as.integer(unique(unlist(lapply(all_paths,FUN = function(x){
+    names(x)
+  }))))
+  
+  selnodes <- V(g)[name %in% all_nodes_nec]
+  selegoV <- ego(g, order=1, nodes = selnodes, mode = "all", mindist = 0)
+  selegoG <- induced_subgraph(g,unlist(selegoV))
+  #from_new<-which(names(V(selegoG))==as.character(from))
+  #to_new<-which(names(V(selegoG))==as.character(to))
+  
+  nodes<-visNetwork::toVisNetworkData(igraph = selegoG)$nodes
+  nodes$label<- V(selegoG)$label
+  # delete unnec. nodes
+  nec_nodes<-unique(unlist(lapply(all_paths,function(x){
+    names(x)
+  })))
+  
+  nodes<-nodes[which(nodes$id%in%as.numeric(nec_nodes)),]
+  edges<-visNetwork::toVisNetworkData(igraph = selegoG)$edges
+  
+  edges<-edges[intersect(which(edges$from%in%nodes$id),which(edges$to%in%nodes$id)),]
+  # All Paths
+  all_paths<-all_paths[ order(unlist(lapply(all_paths,FUN = function(x){
+    length(names(x))
+  })),decreasing = F)]
+  
+  nec_edges<-lapply(X = 1:length(all_paths),FUN = function(x){
+      get_relevant_edge_ids_for_paths(edges=edges,path = all_paths[[x]])
+  })
+
+  for(i in 1:length(nec_edges)){
+    l<-length(unique(unlist(nec_edges[1:i])))
+    if(l>input$Det_CO_shortest_path_max_number_edges){
+      nec_edges<-unique(unlist(nec_edges[1:(i-1)]))
+      break;
+    }
+    if(i==length(nec_edges)){
+      nec_edges<-unique(unlist(nec_edges))
+    }
+  }
+
+
+  edges<-edges[nec_edges,]
+ 
+  nec_nodes<-unique(c(edges[,1],edges[,2]))
+  nodes<-nodes[as.character(nec_nodes),]
+  edges$width<-rep(4,nrow(edges))
+  edges$color<-"#fff291"
+  edges$shadow=FALSE
+  edges$smooth<-TRUE
+  # add edgle labels using coocs significance
+  #browser()
+  edges$title<-round(values$Det_CO_shortest_paths_cooc_matrix[cbind(edges[,1],edges[,2])],digits=4)
+  edges$value<-round(values$Det_CO_shortest_paths_cooc_matrix[cbind(edges[,1],edges[,2])],digits=4)
+  # Start Nodes
+  nodes$group<-rep("all",nrow(nodes))
+  nodes$group[which(nodes$id%in%c(from,to))]<-"start"
+  nodes$size<-rep(10,nrow(nodes))
+  nodes$size[which(nodes$id%in%c(from,to))]<-50
+  nodes$font<-rep("14px arial black",nrow(nodes))
+  nodes$font[which(nodes$id%in%c(from,to))]<-"34px arial red"
+  # Shortest Path
+  nodes$size[which(nodes$id%in%setdiff(as.numeric(names(shortest_path$res[[1]])),c(from,to)))]<-25
+  nodes$group[which(nodes$id%in%setdiff(as.numeric(names(shortest_path$res[[1]])),c(from,to)))]<-"shortest_path"
+  
+  
+
+  all_paths<-all_paths[ order(unlist(lapply(all_paths,FUN = function(x){
+    length(names(x))
+  })),decreasing = T)]
+
+  all_paths_lengths<-unlist(lapply(all_paths,function(x){
+    return(length(x))
+  }))
+  
+  min_length<-min(all_paths_lengths)
+  rel_path_edge<-get_relevant_edge_ids_for_paths(path = all_paths[[which(all_paths_lengths==min_length)]],edges = edges)
+  edges$color[rel_path_edge]<-"#F6412D"
+  edges$shadow[rel_path_edge]=TRUE
+  ledges <- data.frame(color =  "#F6412D",
+                       label = c(min_length))
+  if(length(unique(all_paths_lengths))>1){
+    rel_paths<-which(all_paths_lengths==(1+min_length))
+    rel_path_edge<-unique(unlist(lapply(rel_paths,FUN = function(x){
+      get_relevant_edge_ids_for_paths(path = all_paths[[x]],edges = edges)
+    })
+    )
+    )
+    edges$color[rel_path_edge]<-"#FF9800"
+    edges$shadow[rel_path_edge]=TRUE
+    ledges <- rbind(ledges,c("#FF9800",(min_length+1)))
+  }
+  
+
+  
+  validate(
+    need(nrow(edges)<400,"The current settings results in more than 400 edges. Please adjust the settings of the graph.")
+  )
+  
+
+  
+  graph<-visNetwork::visNetwork(nodes = nodes,edges = edges)%>%
+    visIgraphLayout(layout = "layout_in_circle")%>%
+    visNetwork::visNodes(font = list(color="black",size=20,background="white",face="Helvetica"))%>%
+    visNetwork::visEdges(scaling=list(min=5,max=20))%>%
+    visLegend(addEdges = ledges,  useGroups = FALSE)
+  return(graph)
+})

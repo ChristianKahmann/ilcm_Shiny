@@ -26,7 +26,15 @@ output$download_phi<-downloadHandler(
     write.csv(data, con)
   }
 )  
-
+output$download_meta<-downloadHandler(	
+  filename = function() {	
+    paste('Meta-', Sys.Date(), '.csv', sep='')	
+  },	
+  content = function(con) {	
+    data<-as.matrix(values$tm_meta)	
+    write.csv(data, con)	
+  }	
+) 
 
 #' link downloadbutton for lda vis in Topic Models Tab
 #' depends on:
@@ -1203,7 +1211,7 @@ observe({
   #sample most likely data, so its not always the same worsd occcuring
   top_words<-sort(relevance[,random_topic_number], decreasing = T)
   top_words_setsize<-names(top_words)[sample(x = max(25,(input$TM_Coherence_setsize - 1)),size = (input$TM_Coherence_setsize - 1),prob = max(25,(input$TM_Coherence_setsize - 1)):1 )]  
-   
+  
   #top_words <- sort(values$tm_phi[random_topic_number, ], decreasing = T)
   #top_words_setsize <- names(top_words[1:(input$TM_Coherence_setsize - 1)])
   
@@ -4357,8 +4365,14 @@ output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
       input$Det_TM_validation_document!="",message=F
     )
   )
-  getPalette = colorRampPalette(brewer.pal(12, "Paired"))
-  colors<-getPalette(dim(values$tm_phi)[1])
+  if(input$Det_TM_use_custom_colors==TRUE){
+    colors<-values$Det_TM_topic_colors
+  }
+  else{
+    getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+    colors<-getPalette(dim(values$tm_phi)[1])
+  }
+  
   data<-values$tm_theta[input$Det_TM_validation_document,]
   if(input$Det_TM_use_custom_labels==TRUE){
     data<-data.frame(class=labels<-unlist(lapply(stringr::str_split(string = values$Det_TM_topic_labels,pattern = " ",simplify = F),function(x){
@@ -4385,7 +4399,12 @@ output$Det_TM_validation_document_topic_pie<-plotly::renderPlotly({
         return(res)
       }
       else{
-        return(x)
+        if(length(x)==2){
+          return(paste0(x,collapse=" "))
+        }
+        else{
+          return(x)
+        }
       }
     }
     )
@@ -4722,7 +4741,12 @@ output$Det_TM_document_comparison_pie<-plotly::renderPlotly({
           return(res)
         }
         else{
-          return(x)
+          if(length(x)==2){
+            return(paste0(x,collapse=" "))
+          }
+          else{
+            return(x)
+          }
         }
       }
       )
@@ -5725,9 +5749,9 @@ output$TM_topic_proportions_UI<-renderUI({
     topicNames<-values$Det_TM_topic_labels
   }
   else{
+    relevance<-calculate_topic_relevance(lambda = input$Det_TM_proportions_lambda,phi = phi,theta = theta,doc.length = values$tm_doc.length)
     topicNames<-unlist(lapply(1:nrow(phi),FUN = function(x){
-      relevance<-calculate_topic_relevance(lambda = input$Det_TM_proportions_lambda,phi = phi,theta = theta,doc.length = values$tm_doc.length)
-      paste(names(sort(calculate_topic_relevance(lambda = input$Det_TM_proportions_lambda,phi = phi,theta = theta,doc.length = values$tm_doc.length)[,x],decreasing = T)[1:input$Det_TM_proportions_number_of_words]),collapse = ", ")
+      paste(names(sort(relevance[,x],decreasing = T)[1:input$Det_TM_proportions_number_of_words]),collapse = ", ")
     }))
   }
   colnames(topic_proportion_per_time_intervall)[2:(nrow(phi)+1)] <- topicNames
@@ -5761,9 +5785,13 @@ output$Det_TM_proportion_plot<-renderPlotly({
     data_t<-cbind(data_t,data_real[(((i-1)*n_dates)+1):(i*n_dates),3])
     colnames(data_t)[ncol(data_t)]<-as.character(data_real[(i*n_dates),2])
   }
-  getPalette = colorRampPalette(RColorBrewer::brewer.pal(12, "Paired"))
-  colors<-getPalette((ncol(data_t)-1))
-  
+  if(input$Det_TM_use_custom_colors==TRUE){
+    colors<-values$Det_TM_topic_colors
+  }
+  else{
+    getPalette = colorRampPalette(RColorBrewer::brewer.pal(12, "Paired"))
+    colors<-getPalette((ncol(data_t)-1))
+  }
   p<-plot_ly(x=values$Det_TM_time_slice_names,y=data_t[,2],type="bar",name=colnames(data_t)[2],marker=list(color = colors[1]))
   for(i in 3:ncol(data_t)){
     p<-add_trace(p=p, y=data_t[,i],name=colnames(data_t)[i],marker=list(color=colors[(i-1)]))  
@@ -6165,15 +6193,21 @@ output$TM_topic_labels_UI<-renderUI({
     need(!is.null(values$tm_recalc),message = F)
   )
   path<-paste0(isolate(values$Details_Data_TM),"/Topic_Labels.RData")
+  path_colors<-paste0(isolate(values$Details_Data_TM),"/Topic_Colors.RData")
   if(file.exists(path)){
     load(path)
   }
   else{
     topic_labels<-rep("",ncol(values$tm_theta))
   }
-  
-  #values$TM_topic_labels_create_outputs<-runif(1,0,1)
-  
+  if(file.exists(path_colors)){
+    load(path_colors)
+  }
+  else{
+    #Standard Farben von Plotly hier einfügen
+    getPalette = colorRampPalette(RColorBrewer::brewer.pal(12, "Paired"))
+    topic_colors<-   colors<-getPalette((ncol(values$tm_theta)))
+  }
   
   relevance<-calculate_topic_relevance(lambda=input$Det_TM_topic_labels_lambda,phi=values$tm_phi,theta=values$tm_theta,doc.length=values$tm_doc.length)
   top_documents<-list()
@@ -6196,28 +6230,34 @@ output$TM_topic_labels_UI<-renderUI({
   
   screens<-lapply(1:ncol(values$tm_theta),FUN = function(x){
     shinyglide::screen(
-                       column(12,align="center",
-                              tags$h2(paste0("Label for Topic: ",x))
-                       ),
-                       fluidRow(style="margin-left:0px;margin-right:0px",
-                                column(3,
-                                       box(title = "Topic Label",width = 12,solidHeader = T,status = "primary",
-                                           textAreaInput(resize = "vertical",inputId=paste0("Det_TM_topic_labels_text_",x),label="Topic Label",value = topic_labels[x],rows = 17)
-                                       )
-                                ),
-                                column(4,
-                                       box(title = "Most relevant Words",width = 12,solidHeader = T,status = "primary",
-                                           wordcloud2Output(outputId = paste0("Det_TM_topic_labels_wc_",x))
-                                       )
-                                ),
-                                column(5,
-                                       box(title = "Most Relevant Documents",width = 12,solidHeader = T,status = "primary",style="height: 37vh ;overflow-y:scroll;",
-                                           selectInput(inputId=paste0("Det_TM_topic_labels_document_selection_",x),label="Choose Document",multiple=F,choices=setNames(object = c(1:5),
-                                                                                                                                                                       nm = paste0(top_documents[[x]]$titles," (",round(as.numeric(top_documents[[x]]$likelihoods),digits = 3),")"))),
-                                           uiOutput(outputId = paste0("Det_TM_topic_labels_document_",x))
-                                       )
-                                )
-                       )
+      column(12,align="center",
+             tags$h2(paste0("Label for Topic: ",x))
+      ),
+      fluidRow(style="margin-left:0px;margin-right:0px",
+               column(3,
+                      box(title = "Topic Label",width = 12,solidHeader = T,status = "primary",
+                          textAreaInput(resize = "vertical",inputId=paste0("Det_TM_topic_labels_text_",x),label="Topic Label",value = topic_labels[x],rows = 8)
+                      ),
+                      tags$br(),
+                      box(
+                        itle = "Topic Color",width = 12,solidHeader = T,status = "primary",
+                        colourpicker::colourInput(inputId=paste0("Det_TM_topic_labels_color_",x),label="Topic Color",allowTransparent = F,value = topic_colors[x])
+                      )
+                      
+               ),
+               column(4,
+                      box(title = "Most relevant Words",width = 12,solidHeader = T,status = "primary",
+                          wordcloud2Output(outputId = paste0("Det_TM_topic_labels_wc_",x))
+                      )
+               ),
+               column(5,
+                      box(title = "Most Relevant Documents",width = 12,solidHeader = T,status = "primary",style="height: 37vh ;overflow-y:scroll;",
+                          selectInput(inputId=paste0("Det_TM_topic_labels_document_selection_",x),label="Choose Document",multiple=F,choices=setNames(object = c(1:5),
+                                                                                                                                                      nm = paste0(top_documents[[x]]$titles," (",round(as.numeric(top_documents[[x]]$likelihoods),digits = 3),")"))),
+                          uiOutput(outputId = paste0("Det_TM_topic_labels_document_",x))
+                      )
+               )
+      )
     )
   })
   
@@ -6244,7 +6284,7 @@ output$TM_topic_labels_UI<-renderUI({
   #                          )
   #   )
   # }
-
+  
   
   return(tagList(
     tags$br(),
@@ -6314,11 +6354,20 @@ observe({
 
 observeEvent(input$Det_TM_topic_labels_save,{
   #get input labels
-  topic_labels<-unlist(lapply(X = 1:nrow(values$tm_theta),FUN = function(x){
+  topic_labels<-unlist(lapply(X = 1:ncol(values$tm_theta),FUN = function(x){
     input[[paste0("Det_TM_topic_labels_text_",x)]]
   }))
-  save(topic_labels,file = paste0(values$Details_Data_TM,"/Topic_Labels.RData"))
-  shinyWidgets::sendSweetAlert(session = session,title = "Labels saved!",type = "success",closeOnClickOutside = T)
+  topic_colors<-unlist(lapply(X = 1:ncol(values$tm_theta),FUN = function(x){
+    input[[paste0("Det_TM_topic_labels_color_",x)]]
+  }))
+  if(length(topic_labels)!=length(unique(topic_labels))){
+    shinyWidgets::sendSweetAlert(session = session,title = "Not all of your definded topic labels are unique!",text = "Please specify a unique label, for each topic!",type = "warning",closeOnClickOutside = T)
+  }
+  else{
+    save(topic_labels,file = paste0(values$Details_Data_TM,"/Topic_Labels.RData"))
+    save(topic_colors,file = paste0(values$Details_Data_TM,"/Topic_Colors.RData"))
+    shinyWidgets::sendSweetAlert(session = session,title = "Labels and Colors saved!",type = "success",closeOnClickOutside = T)
+  }
 })
 
 
@@ -6331,6 +6380,7 @@ observe({
   )
   if(input$Det_TM_use_custom_labels==TRUE){
     path<-paste0(isolate(values$Details_Data_TM),"/Topic_Labels.RData")
+    path_colors<-paste0(isolate(values$Details_Data_TM),"/Topic_Colors.RData")
     if(file.exists(path)){
       load(path)
       if(any(topic_labels=="")){
@@ -6353,6 +6403,34 @@ observe({
   }
 })
 
+observe({
+  validate(
+    need(
+      !is.null(input$Det_TM_use_custom_colors),message=F
+    )
+  )
+  if(input$Det_TM_use_custom_colors==TRUE){
+    path<-paste0(isolate(values$Details_Data_TM),"/Topic_Colors.RData")
+    if(file.exists(path)){
+      load(path)
+      if(any(topic_colors=="")){
+        shinyWidgets::sendSweetAlert(session = session,title = "Not all Colors defined",text = "Please make sure that for every topic a color is defined!",type = "warning")
+        shinyWidgets::updateMaterialSwitch(session = session,inputId = "Det_TM_use_custom_colors",value = FALSE)
+      }
+      else{
+        values$Det_TM_topic_colors<-topic_colors
+      }
+    }
+    else{
+      shinyWidgets::sendSweetAlert(session = session,title = "No Custom Colors found!",text = "Please specify Custom Colors inside the 'Topic Labels Tab' before!",type = "warning")
+      shinyWidgets::updateMaterialSwitch(session = session,inputId = "Det_TM_use_custom_colors",value = FALSE)
+      getPalette = colorRampPalette(RColorBrewer::brewer.pal(12, "Paired"))
+      topic_colors<-   colors<-getPalette((ncol(values$tm_theta)))
+      values$Det_TM_topic_labels<-topic_colors
+    }
+  }
+})
+
 
 
 output$Det_TM_topic_labels_topics_labeled<-renderUI({
@@ -6362,10 +6440,13 @@ output$Det_TM_topic_labels_topics_labeled<-renderUI({
     ),message=F)
   )
   labels<-unlist(lapply(X = 1:ncol(isolate(values$tm_theta)),FUN = function(x){
-      input[[paste0("Det_TM_topic_labels_text_",x)]] 
+    input[[paste0("Det_TM_topic_labels_text_",x)]] 
     
   }))
-  
+  colors<-unlist(lapply(X = 1:ncol(isolate(values$tm_theta)),FUN = function(x){
+    input[[paste0("Det_TM_topic_labels_color_",x)]] 
+    
+  }))
   out<-lapply(1:length(labels),FUN = function(x){
     if(labels[x]!=""){
       return(
@@ -6373,10 +6454,10 @@ output$Det_TM_topic_labels_topics_labeled<-renderUI({
           tags$b(paste0("Topic ",x,": ")),
           tags$i(
             class = "fa fa-check-square", 
-            style = "color: rgb(69,255,41)"
+            style = paste0("color: ",colors[x])
           ),
           tags$br()
-          )
+        )
       )
     }
     else{
@@ -6385,7 +6466,7 @@ output$Det_TM_topic_labels_topics_labeled<-renderUI({
           tags$b(paste0("Topic ",x,": ")),
           tags$i(
             class = "fas fa-times", 
-            style = "color: rgb(255,0,13)"
+            style = paste0("color: ",colors[x])
           ),
           tags$br()
         )
@@ -6396,4 +6477,3 @@ output$Det_TM_topic_labels_topics_labeled<-renderUI({
     do.call(tagList,out)
   )
 })
-

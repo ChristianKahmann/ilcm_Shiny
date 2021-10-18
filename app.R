@@ -95,6 +95,7 @@ source("global/change_annotation_offset_methods.R")
 source("global/relative_number_of_shared_elements.R")
 source("global/mixed_assoc.R")
 source("global/LDVIS_Create_JSON_DTM.R")
+source("global/get_relevant_edges_from_path.R")
 # load the available themes
 source("www/ilcm_dashboard_theme.R")
 # load the current settings

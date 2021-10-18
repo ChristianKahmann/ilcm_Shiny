@@ -340,6 +340,13 @@ output$details_parameter<-renderUI({
           conditionalPanel(condition='input.tabBox_coocs=="Co-occurrence Matrix"',
                            downloadButton(outputId = "Det_CO_download_coocs",label = "Download matrix",icon=icon("download"))
           ),
+          conditionalPanel(condition='input.tabBox_coocs=="Shortest Paths"',
+                           selectizeInput(inputId = "Det_CO_shortest_paths_word1",label="Word 1:",choices=NULL,multiple=F,width="90%"),
+                           selectizeInput(inputId = "Det_CO_shortest_paths_word2",label="Word 2:",choices=NULL,multiple=F,width="90%"),
+                           numericInput(inputId="Det_CO_shortest_path_max_length_of_paths_shown",label="maximal length of paths shown",value=2,min=1,max=10),
+                           numericInput(inputId="Det_CO_shortest_path_treshold",label="min significance threshold",value=0.05,min=0.001,max=1,step=0.01),
+                           numericInput(inputId="Det_CO_shortest_path_max_number_edges",label="max number of edges",value=50,min=1,max=200)
+          ),
           conditionalPanel(condition='input.tabBox_coocs=="Kwic"',
                            selectizeInput(inputId = "coocs_examples_words",label="Words:",choices=NULL,width = "90%",multiple=T),
                            numericInput(inputId = "coocs_examples_n",label = "number of examples",value = 10,min = 1,max = 50,step = 1),
@@ -673,7 +680,7 @@ output$details_parameter<-renderUI({
       pabelTopicLabels <- conditionalPanel(condition = 'input.tabBox_tm=="Topic Labels"',
                                            sliderInput(inputId="Det_TM_topic_labels_lambda",label="Lambda",min=0,max=1,step=0.01,value=0.25),
                                            tags$br(),
-                                           shiny::actionButton(inputId = "Det_TM_topic_labels_save",label = "Save Labels",icon = icon("save")),
+                                           shiny::actionButton(inputId = "Det_TM_topic_labels_save",label = "Save Labels and Colors",icon = icon("save")),
                                            tags$hr(),
                                            uiOutput(outputId = "Det_TM_topic_labels_topics_labeled")
       )
@@ -696,6 +703,8 @@ output$details_parameter<-renderUI({
                                           conditionalPanel(condition = "input.Det_TM_use_custom_labels==false",
                                                            sliderInput(inputId = "Det_TM_validation_topic",label = "Highlighting for Topic:",min = 1,value = 1,max = dim(phi)[1],step = 1)
                                           ),
+                                          checkboxInput(inputId="Det_TM_validation_use_page_structure",label="seperate pages",value=TRUE),
+                                          checkboxInput(inputId="Det_TM_validation_use_newline",label="display linebreaks",value=FALSE),
                                           dropdownButton(status = "info",tooltip = "Options",icon=icon("gear"),
                                                          tags$h4("Options for validation colour scale"),
                                                          selectInput(inputId = "Det_TM_validation_relevance_measure",label="Relevance measure",
@@ -852,6 +861,7 @@ output$details_parameter<-renderUI({
         returnValue <-  tagList(
           tags$h5(task_id),
           shinyWidgets::materialSwitch(inputId = "Det_TM_use_custom_labels",label = "Use custom labels",value = FALSE),
+          shinyWidgets::materialSwitch(inputId = "Det_TM_use_custom_colors",label = "Use custom colors",value = FALSE),
           tags$hr(),
           panelLDAVIs,
           panelEstWordFrequencies,
@@ -875,6 +885,7 @@ output$details_parameter<-renderUI({
         returnValue <-  tagList(
           tags$h5(task_id),
           shinyWidgets::materialSwitch(inputId = "Det_TM_use_custom_labels",label = "Use custom labels",value = FALSE),
+          shinyWidgets::materialSwitch(inputId = "Det_TM_use_custom_colors",label = "Use custom colors",value = FALSE),
           tags$hr(),
           panelLDAVIs,
           panelEstWordFrequencies,
@@ -1377,7 +1388,8 @@ output$details_visu<-renderUI({
       updateSelectizeInput(session = session,inputId = "coocs_examples_words",server = T,choices = vocab)
       updateSelectizeInput(session = session,inputId = "coocs_top_word1",server = T,choices = vocab,selected = character(0))
       updateSelectizeInput(session = session,inputId = "coocs_top_word2",server = T,choices = vocab,selected = character(0))
-      
+      updateSelectizeInput(session = session,inputId = "Det_CO_shortest_paths_word1",server = T,choices = vocab,selected = character(0))
+      updateSelectizeInput(session = session,inputId = "Det_CO_shortest_paths_word2",server = T,choices = vocab,selected = character(0))
       #return cooccurrence graph depending on the chosen Display Type
       return(
         tagList(
@@ -1385,11 +1397,14 @@ output$details_visu<-renderUI({
             tabBox(id="tabBox_coocs",width = 12,
                    tabPanel("Co-occurrence Graph",
                             busyIndicator(text = "loading data",wait = 0),
-                            visNetwork::visNetworkOutput(outputId = "visNetwork_cooc_net",height = "70vh")
+                            visNetwork::visNetworkOutput(outputId = "visNetwork_cooc_net",height="70vh")
                    ),
                    tabPanel("Co-occurrence Matrix",
                             busyIndicator(text = "loading data",wait = 0),
                             plotlyOutput(outputId = "cooc_heatmap",height = "70vh") 
+                   ),
+                   tabPanel("Shortest Paths",
+                            uiOutput("Det_CO_shortest_paths_UI")
                    ),
                    tabPanel("Kwic",
                             busyIndicator(text = "loading data",wait = 0),

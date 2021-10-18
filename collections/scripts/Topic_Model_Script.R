@@ -101,6 +101,8 @@ error<-try(expr = {
   #   dtm<-dtm[,-remove]
   # }
   # #remove all that contains non asci2
+  meta<-meta[order(match(meta$id_doc,rownames(dtm))),]
+  documents<-documents[order(match(documents$doc_id,rownames(dtm))),]
   remove<-which(unlist(lapply(colnames(dtm),function(i){max(utf8ToInt(i))}))>256)
   if(length(remove)>0){
     dtm<-dtm[,-remove]
@@ -126,8 +128,8 @@ error<-try(expr = {
     documents_original<-documents_original[-empty,]
     info[[6]]<-data.frame(info[[6]][-empty,1],stringsAsFactors = F)
     meta<-meta[-empty,]
-    
   }
+  
   log_to_file(message = paste0("<b style='color:green'> ✔ </b>  Deleted ",length(empty)," documents from topic model, because they are empty with the current settings"),logfile)  
   
   
@@ -137,7 +139,6 @@ error<-try(expr = {
   #calculate topic model
   log_to_file(message = "<b>Step 11/13: Create Topic Model</b>",file = logfile)
   if(isTRUE(parameters_original$tm_use_precalculated_topic_model)){
-    #browser()
     log_to_file(message = "&emsp;Use of a predefinded topic model",file = logfile)
     info_orig<-info
     load(paste0("collections/results/topic-model/",parameters_original$tm_precalculated_topic_model,"/data_TM.RData"))
@@ -196,6 +197,8 @@ error<-try(expr = {
     if(length(empty)>0){
       dtm<-dtm[,-empty]
     }
+    
+    
     t <- tmca.unsupervised::tmodel$new(method =parameters$tm_method)
     t$input_preprocessed(dtm = dtm,documents)
     

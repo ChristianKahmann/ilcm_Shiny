@@ -97,7 +97,7 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
           }
           else{
             boundary<-nrow(toks)
-            new_offset<-toks[(boundary),"idx"]+1
+            new_offset<-nchar(document)+1
           }
           token_doc<-rbind(token_doc,toks)
         }
