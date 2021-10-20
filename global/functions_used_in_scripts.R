@@ -3,6 +3,7 @@ library(shinyWidgets)
 library(udpipe)
 library(data.table)
 library(tm)
+library(dplyr)
 source("global/SkipCooc.R")
 #' getMetaData for given ids and datasets (which means via GUI a selected a collection)
 #'
@@ -1989,11 +1990,8 @@ remove_locations<-function(token){
   
   
 }
-## problem: when using parameters$min_cooc_freq the significance measurements will not be properly calculatet
-### reason: the number of occurences is no longer equal to the real appearance of the words in the text 
-### so when using the min_cooc_freq all coocurrences will be deleted that are below this value
-### as the number of occurences of the words will rise (due to the skipgramwindow size) online a few values will be deleted
-### this only causes issues with calculating the real significance values
+## PROBLEM:
+# zu Leistungs-intensiv bei langen Datensätzen (>>100Dokumente), bzw. wenn Skipgramm Fenster zu groß
 #' calculate all cooccurrence measurements with skipgram base
 #' @param db_data
 #' @param dtm
@@ -2001,7 +1999,7 @@ remove_locations<-function(token){
 #' @export
 #' @example 
 calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
-  skipgram_coocs<- prepare_words_skipgram(db_data,dtm)
+  skipgram_coocs<- prepare_words_skipgram(db_data,dtm, parameters)
   ## If we delete the min here - the significance measurments will not be accurate
   #save(skipgram_coocs,file = "~/ilcm_Git/TEST/kontrolle_tabelle_harry_uncut.Rdata")
   #delete<-which(skipgram_coocs$cooc<parameters$min_cooc_freq)
@@ -2025,8 +2023,7 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   #save(skipgram_coocs,file = "~/ilcm_Git/TEST/kontrolle_tabelle_harry.Rdata")
   #save(skipgram_cooc_matrix,file = "~/ilcm_Git/TEST/kontrolle_matrix_harry.Rdata")
   #dtm<-tmca.util.make_binary(dtm = dtm)
-  
-  
+ 
   coocsCalc <- Skip_cooc$new(skipgram_cooc_matrix)
   
   
@@ -2059,6 +2056,7 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   gc() 
   return(list(coocs_matrix_dice=coocs_matrix_dice,coocs_matrix_count=coocs_matrix_count,coocs_matrix_log=coocs_matrix_log,coocs_matrix_mi=coocs_matrix_mi,terms=terms))
 }
+
 #' prepare_words_skipgram
 #' @param db_data
 #' @param dtm
@@ -2066,7 +2064,7 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
 #' @result skipgram_cooc
 #' @export
 #' @example 
-prepare_words_skipgram<-function(db_data,dtm){
+prepare_words_skipgram<-function(db_data,dtm, parameters){
   prepare<- data.frame(words=db_data$token[,4],
                     document_id=db_data$token[,1],
                     sentence_id=db_data$token[,2])
@@ -2074,12 +2072,42 @@ prepare_words_skipgram<-function(db_data,dtm){
   
   prepare$words<-tolower(prepare$words)
   
-  print(dplyr::sample_n(prepare,20))
+  #print(dplyr::sample_n(prepare,20))
   # convert dataframe to datatable  
   tmp_dt<-data.table(prepare)
   # set words that are in dtm 
-  keep_words<-dtm@Dimnames$features
+  binDTM <-dtm
+  if (any(binDTM  > 1)) {
+    binDTM <- binDTM >= 1 + 0
+  }
   
+  # calculate cooccurrence counts
+  coocCounts <- t(binDTM) %*% binDTM
+  
+  #DELETE NA'S, Much faster on table object
+  tmp <- Matrix::summary(coocCounts)
+  if(dim(tmp)[1]==0){
+    return(Matrix(coocCounts))
+  }
+ 
+  coocCounts <-
+    Matrix::sparseMatrix(
+      i = tmp[, 1],
+      j = tmp[, 2],
+      x = tmp[, 3],
+      dimnames = dimnames(coocCounts),
+      dims = dim(coocCounts)
+    )
+  filter_help <- as.data.table(summary(coocCounts))
+  #filter_help <- as.data.frame(summary(coocCounts))
+  filter_help$term1 <- rownames(coocCounts)[filter_help$i]
+  filter_help$term2 <- colnames(coocCounts)[filter_help$j]
+
+  filter_help <- filter_help[,c("i","j"):= NULL]
+  #filter_help <- subset(filter_help, select = -i )
+  #filter_help <- subset(filter_help, select = -j )
+  print(summary(filter_help))
+  keep_words<-dtm@Dimnames$features
   words_to_keep<-tmp_dt[which(tmp_dt$words %in% keep_words),]
   # replace all words that are not in words_to_keep with phrase "PLACEHOLDER"
   replacement<-tmp_dt[,replace(tmp_dt$words, !(tmp_dt$words %in% words_to_keep$words),"PLACEHOLDER")]
@@ -2088,9 +2116,14 @@ prepare_words_skipgram<-function(db_data,dtm){
   
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished calculating Skipgram Cooccurrence for front window: ",parameters$skip_window_forward," and back window: ", parameters$skip_window_backward),file = logfile)
   skipgram_cooc<-cooccurrence_both_directions(tmp_dt$words,group=paste0(tmp_dt$document_id,"_",tmp_dt$sentence_id),order = T,skipgram_front = parameters$skip_window_forward, skipgram_back = parameters$skip_window_backward)
+  skipgram_cooc<-setDT(skipgram_cooc)
   # delete all entries in datatable that contain the word "PLACEHOLDER"
   skipgram_cooc <- skipgram_cooc[ !(skipgram_cooc$term1 =='PLACEHOLDER' | skipgram_cooc$term2 == 'PLACEHOLDER'),] 
-  
+  skipgram_cooc <- left_join(x = skipgram_cooc, y = filter_help)
+  skipgram_cooc<-skipgram_cooc[which(skipgram_cooc$x > parameters$min_cooc_freq),]
+ 
+  print(summary(skipgram_cooc))
+
   return(skipgram_cooc)
 }
 
@@ -2170,8 +2203,6 @@ cooccurrence_both_directions <- function(x,group=rep(1,length(x)),order = TRUE, 
   result_final<-rbind(unlist_result_back,unlist_result_front)
   
   result_final <- result_final[, list(cooc = sum(cooc)), by = list(term1, term2)]
-
-  
   
   if(order){
     setorder(result_final, -cooc)  

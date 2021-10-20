@@ -109,7 +109,7 @@ Skip_cooc<-R6Class(
               freqs <- colSums(self$skip_tab)+rowSums(no_dia)
             }
             freqs <- colSums(self$skip_tab)
-            browser()
+            #browser()
             names(kj)<-colnames(self$skip_tab)
             
             p_1 <- freqs[tmp_c[, 1]]
@@ -173,7 +173,7 @@ Skip_cooc<-R6Class(
             colnames(finalSig) <- colnames(self$skip_tab)
             rownames(finalSig) <- colnames(self$skip_tab)
             gc()
-            browser()
+            #browser()
             return(finalSig)
             
           },
