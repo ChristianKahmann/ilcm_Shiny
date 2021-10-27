@@ -2122,7 +2122,7 @@ prepare_words_skipgram<-function(db_data,dtm, parameters){
   skipgram_cooc <- left_join(x = skipgram_cooc, y = filter_help)
   skipgram_cooc<-skipgram_cooc[which(skipgram_cooc$x > parameters$min_cooc_freq),]
  
-  print(summary(skipgram_cooc))
+  #print(summary(skipgram_cooc))
 
   return(skipgram_cooc)
 }
