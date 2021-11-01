@@ -1,6 +1,5 @@
 library(xgboost)
-# Problem:
-## Input.data von xgboost ist nicht korrekt
+library(Matrix)
 set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   if(parameters$use_dictionary==TRUE){
     log_to_file(message = "&emsp; Dictionary lookup",file = logfile)
@@ -41,16 +40,23 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   features<-which(colSums(gold_dtm)>0)
   dtm<-dtm[,features]
   dtm<-dtm[,order(colnames(dtm))]
-  trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
-  trainingLabels <- gold_table[idx,2]
-  names(trainingLabels)<-gold_table[idx,1]
+  #trainingDTM <- as(quanteda::as.dfm(dtm[selector_idx, ]), "sparseMatrix")
+  trainingLabels <- as.numeric(factor(gold_table[idx,2]))
+  #names(trainingLabels)<-gold_table[idx,1]
   c_weights <- table(trainingLabels) / length(trainingLabels)
   c_weights <- abs(c_weights - 1) 
 #####
-  model <- xgboost(data = trainingDTM, label = trainingLabels, max.depth = 2, eta = 1, nthread = 2, nrounds = 2, objective = "binary:logistic", verbose = 0)
-  #print(head(model))
-  testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
+  trainingLabels[trainingLabels == "1"] <- "0"
+  trainingLabels[trainingLabels == "2"] <- "1"
+  trainingDTM <-as.matrix(dtm[selector_idx, ])
+  trainingDTM <- as(trainingDTM, "dgCMatrix")
+  model <- xgboost(data = trainingDTM, label = trainingLabels, max.depth = 2, eta = 1, nthread = 2, nround = 2)
+  #print((model))
+  testDTM<-as(quanteda::as.dfm(dtm),"dgCMatrix")
+  # returns vector of lenght of nrow(testDTM)
   predicted <- predict(model, testDTM) 
+  #print(head(testDTM,10))
+  # to do: herausfinden, ob 1 oder 0 die gewählte klasse repräsentiert
   print(head(predicted))
 #####
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
@@ -60,12 +66,14 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   result=NULL
   results_complete<-list()
   count=0
+  trainingDTM_og <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
+  trainingLabels_og <- gold_table[idx,2]
   for (cParameter in cParameterValues) {
     count=count+1
-    print(paste0("C = ", cParameter))
+    #print(paste0("C = ", cParameter))
     #if enough training data available use k=10, else min number of trainign samples
-    evalMeasures <- k_fold_cross_validation(trainingDTM, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM)[1]))
-    print(evalMeasures$means)
+    evalMeasures <- k_fold_cross_validation(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+    #print(evalMeasures$means)
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
   }
@@ -73,15 +81,15 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   
   log_to_file(message = "&emsp; Choose active learning examples",file = logfile)
   if (parameters$cl_active_learning_strategy == "LC") {
-    print(head(predicted$probabilities))
-    boundary_distances <- abs(predicted$probabilities[,parameters$cl_Category] - 0.5)
+    #print(head(predicted$probabilities))
+    boundary_distances <- abs(predicted[,parameters$cl_Category] - 0.5)
     uncertain_decisions <- order(boundary_distances)
     unset_labels <- which(!rownames(dtm)%in%gold_table[which(!gold_table[,2]%in%c("dictionary lookup","sampled negative examples")),1])
     uncertain_decisions <- intersect(uncertain_decisions,unset_labels)[1:50]
     examples <- rownames(dtm)[uncertain_decisions]
   }
   if (parameters$cl_active_learning_strategy == "MC") {
-    boundary_distances <- abs(predicted$probabilities[,parameters$cl_Category] - 1)
+    boundary_distances <- abs(predicted[,parameters$cl_Category] - 1)
     certain_decisions <- order(boundary_distances)
     unset_labels <- which(!rownames(dtm)%in%gold_table[which(!gold_table[,2]%in%c("dictionary lookup","sampled negative examples")),1])
     certain_decisions <- intersect(certain_decisions,unset_labels)[1:50]
@@ -90,9 +98,9 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   if (parameters$cl_active_learning_strategy == "LCB") {
     pp <- length(which(gold_table[idx,2] == parameters$cl_Category)) / dim(gold_table)[1]
     pmax <- mean(c(0.5, 1 - pp))
-    prob_positive <- predicted$probabilities[, parameters$cl_Category]
+    prob_positive <- predicted[, parameters$cl_Category]
     lidx <- prob_positive < pmax
-    uncertain_decisions <- rep(0, length(predicted$predicted))
+    uncertain_decisions <- rep(0, length(predicted))
     uncertain_decisions[lidx] <- prob_positive[lidx] / pmax
     uncertain_decisions[!lidx] <- (1 - prob_positive[!lidx]) / (1 - pmax)
     uncertain_decisions <- order(uncertain_decisions,decreasing=T)

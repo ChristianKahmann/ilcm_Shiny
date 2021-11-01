@@ -53,7 +53,7 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
   testDTM<-data.frame(as.matrix(dtm))
   #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
   predicted <- predict(model, testDTM, type="prob") 
-  print(head(predicted))
+  #print(head(predicted))
 ###########
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
