@@ -2028,7 +2028,7 @@ calculate_skipgramm_all_measures<-function(db_data,parameters,dtm){
   
   
   #coocsCalc$set_minCoocFreq(parameters$min_cooc_freq)
-  coocsCalc$set_maxCoocFreq(10000000)
+  #coocsCalc$set_maxCoocFreq(10000000)
   
   log_to_file(message = "&emsp; Calculating coocs with Dice-Significance measure",logfile)
   coocsCalc$set_measure("DICE")
@@ -2089,7 +2089,11 @@ prepare_words_skipgram<-function(db_data,dtm, parameters){
   if(dim(tmp)[1]==0){
     return(Matrix(coocCounts))
   }
- 
+  tmp[tmp[, "x"] < parameters$minCoocFreq, "x"] <- 0
+  tmp[tmp[, "x"] > parameters$maxCoocFreq, "x"] <- 0
+  
+  #set diagonals to 0's
+  #tmp[tmp[, 1] == tmp[, 2], "x"] <- 0
   coocCounts <-
     Matrix::sparseMatrix(
       i = tmp[, 1],
@@ -2099,14 +2103,11 @@ prepare_words_skipgram<-function(db_data,dtm, parameters){
       dims = dim(coocCounts)
     )
   filter_help <- as.data.table(summary(coocCounts))
-  #filter_help <- as.data.frame(summary(coocCounts))
+  
   filter_help$term1 <- rownames(coocCounts)[filter_help$i]
   filter_help$term2 <- colnames(coocCounts)[filter_help$j]
 
   filter_help <- filter_help[,c("i","j"):= NULL]
-  #filter_help <- subset(filter_help, select = -i )
-  #filter_help <- subset(filter_help, select = -j )
-  print(summary(filter_help))
   keep_words<-dtm@Dimnames$features
   words_to_keep<-tmp_dt[which(tmp_dt$words %in% keep_words),]
   # replace all words that are not in words_to_keep with phrase "PLACEHOLDER"
@@ -2119,11 +2120,14 @@ prepare_words_skipgram<-function(db_data,dtm, parameters){
   skipgram_cooc<-setDT(skipgram_cooc)
   # delete all entries in datatable that contain the word "PLACEHOLDER"
   skipgram_cooc <- skipgram_cooc[ !(skipgram_cooc$term1 =='PLACEHOLDER' | skipgram_cooc$term2 == 'PLACEHOLDER'),] 
+  # filter all pairs smaller than mincoocFreq
   skipgram_cooc <- left_join(x = skipgram_cooc, y = filter_help)
   skipgram_cooc<-skipgram_cooc[which(skipgram_cooc$x > parameters$min_cooc_freq),]
- 
+  skipgram_cooc<-skipgram_cooc[,-4] 
   #print(summary(skipgram_cooc))
-
+  path0<-paste0("collections/results/cooccurrence-analysis/",paste(process_info[[1]],process_info[[2]],process_info[[4]],sep="_"),"/")
+  dir.create(path0)
+  save(skipgram_cooc,file=paste0(path0,"skipgram_cooc.RData"))
   return(skipgram_cooc)
 }
 

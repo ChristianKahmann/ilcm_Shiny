@@ -66,8 +66,8 @@ Skip_cooc<-R6Class(
         if(dim(tmp)[1]==0){
           return(Matrix(coocCounts))
         }
-        tmp[tmp[, "x"] > self$maxCoocFreq, "x"] <- 0
-        tmp[tmp[, "x"] < self$minCoocFreq, "x"] <- 0
+        #tmp[tmp[, "x"] > self$maxCoocFreq, "x"] <- 0
+        #tmp[tmp[, "x"] < self$minCoocFreq, "x"] <- 0
         coocCounts <-
           Matrix::sparseMatrix(
             i = tmp[, 1],
@@ -99,19 +99,20 @@ Skip_cooc<-R6Class(
           DICE = {
             
             tmp_c <- summary(coocCounts)
-            # open question: what to do if matrix is symmetric
+          
              #create instance to calculate rowSums without diagonal elements
             if(sym == TRUE){
              freqs <- colSums(self$skip_tab)
+             print("sym")
           }else{
               no_dia<-self$skip_tab
               diag(no_dia)<-0
               freqs <- colSums(self$skip_tab)+rowSums(no_dia)
             }
-            freqs <- colSums(self$skip_tab)
+            #freqs <- colSums(self$skip_tab)
             #browser()
             names(kj)<-colnames(self$skip_tab)
-            
+            print(freqs["pants"])
             p_1 <- freqs[tmp_c[, 1]]
             p_2 <- freqs[tmp_c[, 2]]
             
