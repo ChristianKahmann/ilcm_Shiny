@@ -379,6 +379,9 @@ set_training_eval<-function(parameters, gold_table, dtm){
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
 }
 
+############################################
+#           learning whole                 #
+############################################
 set_active_learning_whole_svm<-function(parameters, gold_table, dtm){
   if(length(unique(gold_table[,2]))==1){
     gold_table <- rbind(gold_table, cbind(sample(setdiff(rownames(dtm),gold_table[,1]),dim(gold_table)[1],replace = F),"NEG","sampled negative examples",as.character(Sys.time())))
@@ -494,7 +497,8 @@ classify_whole_collection_svm<-function(parameters, gold_table, dtm){
   
   testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
   predicted <- predict(model, testDTM,proba = T) 
-  
+  print(head(predicted$predictions))
+  print(head(predicted$probabilities))
   predictions<-as.character(predicted$predictions)
   probabilities<-predicted$probabilities
   names(predictions)<-rownames(dtm)

@@ -1,10 +1,8 @@
-library(xgboost)
-library(Matrix)
-## NOTE: umdenken bei label bennenung, vielleicht alles auf factor umstellen
+library(rpart)
 ############################################
 #           learning example               #
 ############################################
-set_learning_samples_xgb<-function(parameters, gold_table, dtm){
+set_learning_samples_dT<-function(parameters, gold_table, dtm){
   if(parameters$use_dictionary==TRUE){
     log_to_file(message = "&emsp; Dictionary lookup",file = logfile)
     training_dict=NULL
@@ -44,41 +42,35 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   features<-which(colSums(gold_dtm)>0)
   dtm<-dtm[,features]
   dtm<-dtm[,order(colnames(dtm))]
-  #trainingDTM <- as(quanteda::as.dfm(dtm[selector_idx, ]), "sparseMatrix")
-  trainingLabels <- as.numeric(factor(gold_table[idx,2]))
-  #names(trainingLabels)<-gold_table[idx,1]
-  c_weights <- table(trainingLabels) / length(trainingLabels)
-  c_weights <- abs(c_weights - 1) 
-#####
-  trainingLabels[trainingLabels == "1"] <- "0"
-  trainingLabels[trainingLabels == "2"] <- "1"
-  trainingDTM <-as.matrix(dtm[selector_idx, ])
-  trainingDTM <- as(trainingDTM, "dgCMatrix")
-  model <- xgboost(data = trainingDTM, label = trainingLabels, max.depth = 2, eta = 1, nthread = 2, nround = 2)
-  #print((model))
-  testDTM<-as(quanteda::as.dfm(dtm),"dgCMatrix")
-  # returns vector of lenght of nrow(testDTM)
-  predicted <- predict(model, testDTM) 
-  one_vec<-rep(1,length(predicted))
-  NEG <- one_vec - predicted
-  frame_pred<-data.frame(predicted,NEG)
-  names(frame_pred)<- parameters$cl_Category
-  print(head(frame_pred))
-#####
-  log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
+  trainingLabels <- gold_table[idx,2]
+  names(trainingLabels)<-gold_table[idx,1]
+  ###########
+  ## effizienter
+  trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
+  trainingDTM$class <-trainingLabels
   
+  model <-rpart(class ~ .,data =trainingDTM, method = 'class')
+  #print(head(model))
+  testDTM<-data.frame(as.matrix(dtm))
+  #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
+  predicted <- predict(model, testDTM, type = "prob") 
+  print(head(predicted))
+  print(typeof(predicted))
+  ###########
+  log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
   cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
   result=NULL
   results_complete<-list()
   count=0
   trainingDTM_og <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
-  trainingLabels_og <- gold_table[idx,2]
+  trainingLabels <- gold_table[idx,2]
+  names(trainingLabels)<-gold_table[idx,1]
   for (cParameter in cParameterValues) {
     count=count+1
-    #print(paste0("C = ", cParameter))
+    print(paste0("C = ", cParameter))
     #if enough training data available use k=10, else min number of trainign samples
-    evalMeasures <- k_fold_cross_validation(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+    evalMeasures <- k_fold_cross_validation(trainingDTM_og, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
     #print(evalMeasures$means)
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
@@ -87,15 +79,14 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   
   log_to_file(message = "&emsp; Choose active learning examples",file = logfile)
   if (parameters$cl_active_learning_strategy == "LC") {
-    #print(head(predicted$probabilities))
-    boundary_distances <- abs(frame_pred[,parameters$cl_Category] - 0.5)
+    boundary_distances <- abs(predicted[,parameters$cl_Category] - 0.5)
     uncertain_decisions <- order(boundary_distances)
     unset_labels <- which(!rownames(dtm)%in%gold_table[which(!gold_table[,2]%in%c("dictionary lookup","sampled negative examples")),1])
     uncertain_decisions <- intersect(uncertain_decisions,unset_labels)[1:50]
     examples <- rownames(dtm)[uncertain_decisions]
   }
   if (parameters$cl_active_learning_strategy == "MC") {
-    boundary_distances <- abs(frame_pred[,parameters$cl_Category] - 1)
+    boundary_distances <- abs(predicted[,parameters$cl_Category] - 1)
     certain_decisions <- order(boundary_distances)
     unset_labels <- which(!rownames(dtm)%in%gold_table[which(!gold_table[,2]%in%c("dictionary lookup","sampled negative examples")),1])
     certain_decisions <- intersect(certain_decisions,unset_labels)[1:50]
@@ -104,9 +95,9 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   if (parameters$cl_active_learning_strategy == "LCB") {
     pp <- length(which(gold_table[idx,2] == parameters$cl_Category)) / dim(gold_table)[1]
     pmax <- mean(c(0.5, 1 - pp))
-    prob_positive <- frame_pred[, parameters$cl_Category]
+    prob_positive <- predicted[, parameters$cl_Category]
     lidx <- prob_positive < pmax
-    uncertain_decisions <- rep(0, length(frame_pred))
+    uncertain_decisions <- rep(0, length(predicted))
     uncertain_decisions[lidx] <- prob_positive[lidx] / pmax
     uncertain_decisions[!lidx] <- (1 - prob_positive[!lidx]) / (1 - pmax)
     uncertain_decisions <- order(uncertain_decisions,decreasing=T)
@@ -114,11 +105,13 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
     uncertain_decisions <- intersect(uncertain_decisions,unset_labels)[1:50]
     examples <- rownames(dtm)[uncertain_decisions]
   }
-  log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
-  feature_matrix<-xgb.importance(data = dimnames(trainingDTM)[[2]], model = model)
-  colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
+  ####
+  feature_matrix<-as.matrix(model$variable.importance)
+  print(head(feature_matrix))
+  #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
+  ####
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
   
@@ -151,13 +144,13 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   save(parameters,file=paste0(path0,"parameters.RData"))
   save(info,file=paste0(path0,"info.RData"))
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
+  
 }
 
 ############################################
 #           learning whole                 #
 ############################################
-#problem format von prediction
-set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
+set_active_learning_whole_dT<-function(parameters, gold_table, dtm){
   if(length(unique(gold_table[,2]))==1){
     gold_table <- rbind(gold_table, cbind(sample(setdiff(rownames(dtm),gold_table[,1]),dim(gold_table)[1],replace = F),"NEG","sampled negative examples",as.character(Sys.time())))
   }
@@ -168,18 +161,18 @@ set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
   features<-which(colSums(gold_dtm)>0)
   dtm<-dtm[,features]
   dtm<-dtm[,order(colnames(dtm))]
-  trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
+  #trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
   trainingLabels <- gold_table[idx,2]
   names(trainingLabels)<-gold_table[idx,1]
-  c_weights <- table(trainingLabels) / length(trainingLabels)
-  c_weights <- abs(c_weights - 1) 
-###
-  trainingLabels[trainingLabels == "1"] <- "0"
-  trainingLabels[trainingLabels == "2"] <- "1"
-  trainingDTM <-as.matrix(dtm[selector_idx, ])
-  trainingDTM <- as(trainingDTM, "dgCMatrix")
-  model <- xgboost(data = trainingDTM, label = trainingLabels, max.depth = 2, eta = 1, nthread = 2, nround = 2)
-###
+  #c_weights <- table(trainingLabels) / length(trainingLabels)
+  #c_weights <- abs(c_weights - 1) 
+####
+  trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
+  trainingDTM$class <-trainingLabels
+  
+  model <-rpart(class ~ .,data =trainingDTM, method = 'class')
+  print(summary(model))
+####
   #sample documents
   sentence_ids<-setdiff(rownames(dtm),gold_table[,1])
   known_docs<-unique(stringr::str_extract(string = gold_table[,1],pattern = ".+?_[0-9]+"))
@@ -191,20 +184,21 @@ set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
   random_sample<-sample(doc_ids,min(10,length(doc_ids)))
   #extending doc_ids to sentence_ids
   random_sample_sentences<-setdiff(rownames(dtm),gold_table[,1])[which(stringr::str_replace(string = setdiff(rownames(dtm),gold_table[,1]),pattern = "_[0-9]+$",replacement = "")%in%random_sample)]
-###
-  testDTM<-as(quanteda::as.dfm(dtm[random_sample_sentences,]),"dgCMatrix")
-  labels <- predict(model, testDTM) 
-  one_vec<-rep(1,length(labels))
-  NEG <- one_vec - labels
-  labels<-data.frame(labels,NEG)
-  #names(labels)<-random_sample_sentences
+###  
+  testDTM<-data.frame(as.matrix(dtm))
+  #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
+  labels <- predict(model, testDTM, type = "prob") 
+  
+  print(head(labels))
+  
+  #names(labels$predictions)<-random_sample_sentences
   rownames(labels)<-random_sample_sentences
-####  
+###  
   #remove prediction of class "NEG"
   NEG_predictions<-which(labels=="NEG")
   if(length(NEG_predictions)>0){
     labels<-labels[-NEG_predictions]
-    #labels<-labels[-NEG_predictions,]
+    #labels$probabilities<-labels$probabilities[-NEG_predictions,]
   }
   #check whether enough predictions have been made
   if(length(labels)<1){
@@ -233,7 +227,7 @@ set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
   texts<-texts[ord,]
   colnames(texts)<-c("dataset","id_doc","sen_id","text","title","date","approved","denied","ignored","other")
   labels<-labels[ord]
-  #labels$probabilities<-labels$probabilities[ord,]
+ # labels$probabilities<-labels$probabilities[ord,]
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
   log_to_file(message = "<b>Step 13/13: Saving results</b>",file = logfile)
@@ -251,7 +245,7 @@ set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
 ############################################
 #       Classify on entire collection      #
 ############################################
-classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
+classify_whole_collection_dT<-function(parameters, gold_table, dtm){
   #use neg examples in training classifier and remove examples tagged as neg afterwards
   #gold_table<-gold_table[which(gold_table[,2]!="NEG"),]
   idx<-which(gold_table[,1]%in%rownames(dtm))
@@ -263,19 +257,14 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
   trainingLabels <- gold_table[idx,2]
   names(trainingLabels)<-gold_table[idx,1]
-  c_weights <- table(trainingLabels) / length(trainingLabels)
-  c_weights <- abs(c_weights - 1) 
-###
-  trainingLabels<-factor(trainingLabels)
-  #trainingLabels[trainingLabels == "1"] <- "0"
-  #trainingLabels[trainingLabels == "2"] <- "1"
-  trainingDTM <-as.matrix(dtm[selector_idx, ])
-  trainingDTM <- as(trainingDTM, "dgCMatrix")
-  model <- xgboost(data = trainingDTM, label = trainingLabels, max.depth = 2, eta = 1, nthread = 2, nround = 2)
-  feature_matrix<-xgb.importance(data = dimnames(trainingDTM)[[2]], model = model)
-  print(head(feature_matrix))
-###
-  colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
+#####
+  trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
+  trainingDTM$class <-trainingLabels
+  
+  model <-rpart(class ~ .,data =trainingDTM, method = 'class')
+  feature_matrix<-as.matrix(model$variable.importance)
+#####
+  # colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
   # delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
   # if only 2 categories were used, transform feature matrix
@@ -284,15 +273,12 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
     rownames(feature_matrix)<-setdiff(unique(gold_table[,2]),"NEG")
   }
   word_counts<-colSums(dtm)  
-##  
-  testDTM<-as(quanteda::as.dfm(dtm),"dgCMatrix")
-  predicted <- predict(model, testDTM) 
-  one_vec<-rep(1,length(predicted))
-  NEG <- one_vec - predicted
-  frame_pred<-data.frame(predicted,NEG)
-  names(frame_pred)<- parameters$cl_Category
-##  
-  predictions<-as.character(colnames(predicted))
+#### 
+  testDTM<-data.frame(as.matrix(dtm))
+  #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
+  predicted <- predict(model, testDTM, type = "prob")
+###
+  predictions<-as.character(predicted)
   probabilities<-predicted
   names(predictions)<-rownames(dtm)
   rownames(probabilities)<-rownames(dtm)
@@ -356,4 +342,3 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   save(info,file=paste0(path0,"info.RData"))
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
 }
-

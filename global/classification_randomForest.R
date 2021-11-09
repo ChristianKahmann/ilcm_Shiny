@@ -1,6 +1,6 @@
-# Problem:
-#### 50 Beispiele werden nicht angezeigt 
-#### feature matrix hat noch das falsche format
+############################################
+#           learning example               #
+############################################
 set_learning_samples_rF<-function(parameters, gold_table, dtm){
   if(parameters$use_dictionary==TRUE){
     log_to_file(message = "&emsp; Dictionary lookup",file = logfile)
@@ -144,6 +144,9 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
   
 }
 
+############################################
+#           learning whole                 #
+############################################
 # Problem:
 #### zeigt immer nur eine klasse und dadurch kann nicht klassifiziert werden
 #### kann aber aktuell nicht auf die dokumente zugreifen um das zu validieren

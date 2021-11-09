@@ -9,6 +9,7 @@ source("global/utils.R")
 source("global/functions_for_classification.R")
 source("global/classification_randomForest.R")
 source("global/classification_xgBoost.R")
+source("global/classification_decissionTree.R")
 error<-try(expr = {
   library(Matrix)
   library(dplyr)
@@ -229,6 +230,9 @@ error<-try(expr = {
       set_learning_samples_xgb(parameters, gold_table, dtm)
       print("XGBoost selected")
     }
+    if(parameters$CL_Method == "decissionTree"){
+      set_learning_samples_dT(parameters, gold_table, dtm)
+    }
   }
   if(parameters$cl_Mode=="Evaluate Training Set"){
     ############################################
@@ -250,6 +254,13 @@ error<-try(expr = {
     if(parameters$CL_Method == "randomForest"){
       set_active_learning_whole_rF(parameters, gold_table, dtm)
     }
+    if(parameters$CL_Method == "XGBoost"){
+      set_active_learning_whole_xgb(parameters, gold_table, dtm)
+    }
+    if(parameters$CL_Method == "decissionTree"){
+      set_active_learning_whole_dT(parameters, gold_table, dtm)
+    }
+    
   }
   if(parameters$cl_Mode=="Classify on entire collection"){
     ############################################
@@ -261,6 +272,12 @@ error<-try(expr = {
     }
     if(parameters$CL_Method == "randomForest"){
       classify_whole_collection_rF(parameters, gold_table, dtm)
+    }
+    if(parameters$CL_Method == "XGBoost"){
+      classify_whole_collection_xgb(parameters, gold_table, dtm)
+    }
+    if(parameters$CL_Method == "decissionTree"){
+      classify_whole_collection_dT(parameters, gold_table, dtm)
     }
   }
   
