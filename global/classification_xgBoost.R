@@ -1,6 +1,6 @@
 library(xgboost)
 library(Matrix)
-## NOTE: umdenken bei label bennenung, vielleicht alles auf factor umstellen
+
 ############################################
 #           learning example               #
 ############################################
@@ -271,29 +271,39 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   #trainingLabels[trainingLabels == "2"] <- "1"
   trainingDTM <-as.matrix(dtm[selector_idx, ])
   trainingDTM <- as(trainingDTM, "dgCMatrix")
-  model <- xgboost(data = trainingDTM, label = trainingLabels, max.depth = 2, eta = 1, nthread = 2, nround = 2)
-  feature_matrix<-xgb.importance(data = dimnames(trainingDTM)[[2]], model = model)
-  print(head(feature_matrix))
+  #dtrain <- xgb.DMatrix(data = train$data, label=train$label)
+  model_ws <- xgboost(data = trainingDTM, label = as.numeric(trainingLabels), max.depth = 2, eta = 1, nthread = 2, nround = 2, "objective" = "multi:softprob",
+                   "eval_metric" = "mlogloss",
+                   "num_class" = length(unique(as.numeric(trainingLabels)))+1)
+  model_label <- xgboost(data = trainingDTM, label = as.numeric(trainingLabels), max.depth = 2, eta = 1, nthread = 2, nround = 2, "objective" = "multi:softmax",
+                      "eval_metric" = "mlogloss",
+                      "num_class" = length(unique(as.numeric(trainingLabels)))+1)
+  #feature_matrix<-xgb.importance(model = model)
+  feature_matrix <-xgb.importance( model = model_label, data = trainingDTM, label = trainingLabels)
+  #print(head(feature_matrix))
 ###
-  colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
+  #feature_matrix[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
   # delete bias term from feature matrix
-  feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
+  #feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
   # if only 2 categories were used, transform feature matrix
-  if(nrow(feature_matrix)==1){
-    feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))
-    rownames(feature_matrix)<-setdiff(unique(gold_table[,2]),"NEG")
-  }
+  #if(nrow(feature_matrix)==1){
+  #  feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))
+  #  rownames(feature_matrix)<-setdiff(unique(gold_table[,2]),"NEG")
+  #}
   word_counts<-colSums(dtm)  
 ##  
   testDTM<-as(quanteda::as.dfm(dtm),"dgCMatrix")
-  predicted <- predict(model, testDTM) 
-  one_vec<-rep(1,length(predicted))
-  NEG <- one_vec - predicted
-  frame_pred<-data.frame(predicted,NEG)
-  names(frame_pred)<- parameters$cl_Category
+ 
+  #dtest <- xgb.DMatrix(data = test$data, label=test$label)
+  predicted <- predict(model_label, testDTM) 
+  
 ##  
-  predictions<-as.character(colnames(predicted))
-  probabilities<-predicted
+  predictions<-levels(trainingLabels)[predicted]
+  
+  # add: document names to predict and classes that were selected
+  probabilities<- predict(model_ws, testDTM)
+  probabilities<-as.matrix(probabilities,nrow = 454, ncol = 7)
+  print(head(probabilities))
   names(predictions)<-rownames(dtm)
   rownames(probabilities)<-rownames(dtm)
   probabilities<-apply(probabilities,1,max)

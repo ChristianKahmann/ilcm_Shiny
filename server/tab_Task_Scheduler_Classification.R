@@ -315,7 +315,7 @@ output$Analysis_Parameter_CL<-renderUI({
     tags$h4("Classification parameters"),
     fluidRow(
       column(2,
-             selectizeInput(inputId = "CL_Context_Unit",label="Context Unit",choices=c("Sentence","Document"))%>%
+             selectizeInput(inputId = "CL_Context_Unit",label="Context Unit",choices=c("Document","Sentence"))%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(

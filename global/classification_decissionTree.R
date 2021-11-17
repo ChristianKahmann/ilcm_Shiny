@@ -254,7 +254,7 @@ classify_whole_collection_dT<-function(parameters, gold_table, dtm){
   features<-which(colSums(gold_dtm)>0)
   dtm<-dtm[,features]
   dtm<-dtm[,order(colnames(dtm))]
-  trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
+  
   trainingLabels <- gold_table[idx,2]
   names(trainingLabels)<-gold_table[idx,1]
 #####
@@ -315,6 +315,7 @@ classify_whole_collection_dT<-function(parameters, gold_table, dtm){
   count=0
   for (cParameter in cParameterValues) {
     count=count+1
+    trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
     print(paste0("C = ", cParameter))
     #if enough trainign data available use k=10, else min number of trainign samples
     evalMeasures <- k_fold_cross_validation(trainingDTM, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM)[1]))

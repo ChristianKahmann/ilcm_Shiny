@@ -493,12 +493,11 @@ classify_whole_collection_svm<-function(parameters, gold_table, dtm){
     feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))
     rownames(feature_matrix)<-setdiff(unique(gold_table[,2]),"NEG")
   }
+  print(head(feature_matrix))
   word_counts<-colSums(dtm)  
   
   testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
   predicted <- predict(model, testDTM,proba = T) 
-  print(head(predicted$predictions))
-  print(head(predicted$probabilities))
   predictions<-as.character(predicted$predictions)
   probabilities<-predicted$probabilities
   names(predictions)<-rownames(dtm)

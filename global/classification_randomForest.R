@@ -106,8 +106,10 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
   
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
   ####
-  feature_matrix<-varImpPlot(model, scale = TRUE)
-  #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
+  feature_matrix <-as.data.frame(importance(model))
+  feature_matrix<-feature_matrix[head(seq_len(ncol(feature_matrix)), -2)]
+  feature_matrix<-t(feature_matrix)
+  colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
   ####
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
@@ -147,9 +149,7 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
 ############################################
 #           learning whole                 #
 ############################################
-# Problem:
-#### zeigt immer nur eine klasse und dadurch kann nicht klassifiziert werden
-#### kann aber aktuell nicht auf die dokumente zugreifen um das zu validieren
+
 set_active_learning_whole_rF<-function(parameters, gold_table, dtm){
   if(length(unique(gold_table[,2]))==1){
     gold_table <- rbind(gold_table, cbind(sample(setdiff(rownames(dtm),gold_table[,1]),dim(gold_table)[1],replace = F),"NEG","sampled negative examples",as.character(Sys.time())))
@@ -237,8 +237,7 @@ set_active_learning_whole_rF<-function(parameters, gold_table, dtm){
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
 }
 
-# Problem:
-### Feature Matrix hat das falsche Format
+
 classify_whole_collection_rF<-function(parameters, gold_table, dtm){
   #use neg examples in training classifier and remove examples tagged as neg afterwards
   #gold_table<-gold_table[which(gold_table[,2]!="NEG"),]
@@ -257,9 +256,13 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
   model <-randomForest(as.factor(class) ~ .,data =trainingDTM,importance=TRUE,
                        proximity=TRUE,type="classification")
   
-  feature_matrix<-varImpPlot(model, scale = TRUE)
+  #feature_matrix<-varImpPlot(model, scale = TRUE)
+  feature_matrix <-as.data.frame(importance(model))
+  feature_matrix<-feature_matrix[head(seq_len(ncol(feature_matrix)), -2)]
+  feature_matrix<-t(feature_matrix)
+  #print(head(feature_matrix))
 #####
-  #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
+  colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
   # delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
   # if only 2 categories were used, transform feature matrix
@@ -267,13 +270,15 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
     feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))
     rownames(feature_matrix)<-setdiff(unique(gold_table[,2]),"NEG")
   }
+  
   word_counts<-colSums(dtm)  
 ####
   testDTM<-data.frame(as.matrix(dtm))
   #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
   predicted <- predict(model, testDTM, type="prob") 
 ####
-  predictions<-as.character(predicted)
+  #predictions<-as.character(predicted$predictions)
+  predictions<-as.character(predict(model, testDTM, type="response"))
   probabilities<-predicted
   names(predictions)<-rownames(dtm)
   rownames(probabilities)<-rownames(dtm)

@@ -268,15 +268,19 @@ error<-try(expr = {
     ############################################
     log_to_file(message = "<b>Step 12/13: Classification on entire collection</b>",file = logfile)
     if(parameters$CL_Method == "SVM"){
+      log_to_file(message = " <b style='color:green'>Support Vector Machine</b>",logfile)
     classify_whole_collection_svm(parameters, gold_table, dtm)
     }
     if(parameters$CL_Method == "randomForest"){
+      log_to_file(message = " <b style='color:green'>Random Forest</b>",logfile)
       classify_whole_collection_rF(parameters, gold_table, dtm)
     }
     if(parameters$CL_Method == "XGBoost"){
+      log_to_file(message = " <b style='color:green'>XGBoost</b>",logfile)
       classify_whole_collection_xgb(parameters, gold_table, dtm)
     }
     if(parameters$CL_Method == "decissionTree"){
+      log_to_file(message = " <b style='color:green'>Decission Tree</b>",logfile)
       classify_whole_collection_dT(parameters, gold_table, dtm)
     }
   }
