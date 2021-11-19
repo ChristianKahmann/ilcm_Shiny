@@ -907,7 +907,7 @@ calculate_diachron_frequencies<-function(dtm,meta){
     doc_freqs_day<-rbind(doc_freqs_day,colSums(x = bin_dtm[relevant,,drop=FALSE]))
     if(count %in% loghelper){
       if(length(un_dates_day)>10){
-        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",un_dates_day[i],")"),logfile)
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",count,"/",length(un_dates_day),")"),logfile)
       }
       else{
         log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed"),logfile)
@@ -930,7 +930,7 @@ calculate_diachron_frequencies<-function(dtm,meta){
     doc_freqs_week<-rbind(doc_freqs_week,colSums(x = bin_dtm[relevant,,drop=FALSE]))
     if(count %in% loghelper){
       if(length(un_dates_week)>10){
-        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",un_dates_week[i],")"),logfile)
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",count,"/",length(un_dates_week), ")"),logfile)
       }
       else{
         log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed"),logfile)
@@ -953,7 +953,7 @@ calculate_diachron_frequencies<-function(dtm,meta){
     doc_freqs_month<-rbind(doc_freqs_month,colSums(x = bin_dtm[relevant,,drop=FALSE]))
     if(count %in% loghelper){
       if(length(un_dates_month)>10){
-        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",un_dates_month[i],")"),logfile)
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",count,"/",length(un_dates_month),")"),logfile)
       }
       else{
         log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed"),logfile)
@@ -976,7 +976,7 @@ calculate_diachron_frequencies<-function(dtm,meta){
     doc_freqs_year<-rbind(doc_freqs_year,colSums(x = bin_dtm[relevant,,drop=FALSE]))
     if(count %in% loghelper){
       if(length(un_dates_year)>10){
-        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",un_dates_year[i],")"),logfile)
+        log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed (",count,"/",length(un_dates_year),")"),logfile)
       }
       else{
         log_to_file(message = paste0("&emsp; ",names(which(loghelper==count)),"% of unique points in time processed"),logfile)

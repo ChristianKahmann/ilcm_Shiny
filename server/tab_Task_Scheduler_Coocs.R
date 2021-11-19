@@ -105,7 +105,7 @@ output$Analysis_Parameter_CA<-renderUI({
                )),
       column(1,
              conditionalPanel(condition='input.CA_use_fixed_vocab==false',
-             checkboxInput(inputId = "CA_remove_numbers_all",label = "Remove everything containing a number number?",value = T)%>%
+             checkboxInput(inputId = "CA_remove_numbers_all",label = "Remove every word containing a number?",value = T)%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
