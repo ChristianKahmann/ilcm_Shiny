@@ -500,6 +500,7 @@ observeEvent(input$Class_all_categories_save,{
 #'    values$class_anno_names: annoation names
 #'    values$class_anno_selected: selected annotation
 output$Class_classifications<-DT::renderDataTable({
+  input$Classifications_Reset
   values$Class_update_classifications
   files<-list.files(path = paste0("collections/results/classification/activeLearning/",input$project_selected),full.names = T,include.dirs = F,recursive = T,pattern = "training_examples.RData")
   validate(
@@ -688,8 +689,7 @@ observe({
                                                   shinyBS::bsButton(inputId="Class_eval_close",label = "Dismiss",style = "danger",icon=icon("close")),
                                                   tags$br(),
                                                   tags$hr(),
-                                                  uiOutput(outputId = "Class_eval_examples")%>%
-                                                    withSpinner(type = 6)
+                                                  uiOutput(outputId = "Class_eval_examples")
                                                 )
                                        ),
                                        tabPanel("Document",
@@ -720,19 +720,19 @@ output$Class_eval_feature_breakdown_plot<-plotly::renderPlotly({
       !is.null( values$Class_eval_feature_matrix),message=F
     )
   )
-    pos<- values$Class_eval_feature_matrix[,order( values$Class_eval_feature_matrix,decreasing = T)][1:(input$Class_eval_feature_breakdown_n/2)]
-    neg<- values$Class_eval_feature_matrix[,order( values$Class_eval_feature_matrix,decreasing = F)][1:(input$Class_eval_feature_breakdown_n/2)]
-    neg<-sort(neg,decreasing = F)
-    pos<-sort(pos,decreasing = F)
-    yform <- list(categoryorder = "array",
-                  categoryarray = c(names(neg),names(pos)),
-                  title="features")
-    
-   p<-plotly::plot_ly()%>%
-      plotly::add_bars(x=pos,y=factor(names(pos)),orientation="h",name="positive weights",marker=list(color="#1FDE78",line=list(color="#136639",width=1)))%>%
-      plotly::add_bars(x = neg,y = factor(names(neg)),name="negative weights",marker=list(color="#D42750",line=list(color="#460F1C",width=1)))%>%
-      plotly::layout(yaxis=yform,xaxis=list(title="SVM weights"))
-   return(p)
+  pos<- values$Class_eval_feature_matrix[,order( values$Class_eval_feature_matrix,decreasing = T)][1:(input$Class_eval_feature_breakdown_n/2)]
+  neg<- values$Class_eval_feature_matrix[,order( values$Class_eval_feature_matrix,decreasing = F)][1:(input$Class_eval_feature_breakdown_n/2)]
+  neg<-sort(neg,decreasing = F)
+  pos<-sort(pos,decreasing = F)
+  yform <- list(categoryorder = "array",
+                categoryarray = c(names(neg),names(pos)),
+                title="features")
+  
+  p<-plotly::plot_ly()%>%
+    plotly::add_bars(x=pos,y=factor(names(pos)),orientation="h",name="positive weights",marker=list(color="#1FDE78",line=list(color="#136639",width=1)))%>%
+    plotly::add_bars(x = neg,y = factor(names(neg)),name="negative weights",marker=list(color="#D42750",line=list(color="#460F1C",width=1)))%>%
+    plotly::layout(yaxis=yform,xaxis=list(title="SVM weights"))
+  return(p)
 })
 
 

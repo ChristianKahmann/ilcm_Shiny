@@ -72,21 +72,23 @@ error<-try(expr = {
     stop("Token empty")
   }
   #annotations for documents in collection?
-  anno_ids<-unique(c(paste0(annotations[,"dataset"],"_",annotations[,"id"]),paste0(classifications_approved[,"dataset"],"_",classifications_approved[,"doc_id"])))
-  if(length(anno_ids)==0){
-    log_to_file(message = "&emsp;<b style='color:red'>&#10008; No annotations found for chosen project.</b>",logfile)
-    stop("No annotations")
-  }
-  else{
-    log_to_file(message = paste0("&emsp; ✔ ",length(anno_ids)," Annotations or approved classifications found that belong to project: ",parameters$Project),logfile)
-  }
-  anno_ids_in_token<-intersect(anno_ids,unique(db_data$token$id))
-  if(length(anno_ids_in_token)==0){
-    log_to_file(message = "&emsp;<b style='color:red'>&#10008; No annotations belong to chosen collection</b>",logfile)
-    stop("No annotations for collection")
-  }
-  else{
-    log_to_file(message = paste0("&emsp; ✔ ",length(anno_ids_in_token)," Annotations found that belong to chosen collection"),logfile)
+  if(parameters$use_dictionary==F){
+    anno_ids<-unique(c(paste0(annotations[,"dataset"],"_",annotations[,"id"]),paste0(classifications_approved[,"dataset"],"_",classifications_approved[,"doc_id"])))
+    if(length(anno_ids)==0){
+      log_to_file(message = "&emsp;<b style='color:red'>&#10008; No annotations found for chosen project.</b>",logfile)
+      stop("No annotations")
+    }
+    else{
+      log_to_file(message = paste0("&emsp; ✔ ",length(anno_ids)," Annotations or approved classifications found that belong to project: ",parameters$Project),logfile)
+    }
+    anno_ids_in_token<-intersect(anno_ids,unique(db_data$token$id))
+    if(length(anno_ids_in_token)==0){
+      log_to_file(message = "&emsp;<b style='color:red'>&#10008; No annotations belong to chosen collection</b>",logfile)
+      stop("No annotations for collection")
+    }
+    else{
+      log_to_file(message = paste0("&emsp; ✔ ",length(anno_ids_in_token)," Annotations found that belong to chosen collection"),logfile)
+    }
   }
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished sanity checks",file = logfile)
   
@@ -179,185 +181,196 @@ error<-try(expr = {
   #get_annotated_doc_ids
   log_to_file(message = paste0("&emsp; Reduce feature space"),logfile)
   pos_ident<-NULL
+  ign<-NULL
   #anno_pos<-annotations[which(annotations[,"Annotation"]==parameters$cl_Category),]
   anno_pos<-annotations
-  if(parameters$cooc_window=="Sentence"){
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-    for(i in 1:dim(anno_pos)[1]){
-      id_ws<-paste(anno_pos[i,"from"]:anno_pos[i,"to"],collapse = ", ")
-      identifier<-paste(anno_pos[i,"dataset"],anno_pos[i,"id"],unique(RMariaDB::dbGetQuery(mydb, paste("select sid from token where dataset='",anno_pos[i,"dataset"],"' and id= ",anno_pos[i,"id"],";",sep=""))[anno_pos[i,"from"]:anno_pos[i,"to"],1]),sep="_")
-      pos_ident<-c(pos_ident,identifier)
-    }
-    RMariaDB::dbDisconnect(mydb)
-    #anno_appr_pos<-classifications_approved[intersect(which(classifications_approved[,"category"]==parameters$cl_Category),which(classifications_approved[,"status"]=="approved")),]
-    #anno_appr_pos<-rbind(anno_appr_pos,classifications_approved[which(classifications_approved[,"status"]==paste0("denied_",parameters$cl_Category)),])
-    ign<-which(classifications_approved[,"status"]=="ignored")
-    if(length(ign)>0){
-      anno_appr<-classifications_approved[-ign,]
-    }
-    else{
-      anno_appr<-classifications_approved
-    }
-    for(i in 1:dim(anno_appr)[1]){
-      identifier<-paste(tolower(anno_appr[i,1]),anno_appr[i,2],anno_appr[i,3],sep="_")
-      pos_ident<-c(pos_ident,identifier)
-    }
-    
-    #reduce dtm by "ignored" examples
-    ignored<-classifications_approved[ign,]
-    ignored_ids<-NULL
-    if(dim(ignored)[1]>0){
-      for(i in 1:dim(ignored)[1]){
-        identifier<-paste(tolower(ignored[i,1]),ignored[i,2],ignored[i,3],sep="_")
-        ignored_ids<-c(ignored_ids,identifier)
+  if(parameters$use_dictionary==F){
+    if(nrow(anno_pos)>0){
+      if(parameters$cooc_window=="Sentence"){
+        mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+        for(i in 1:dim(anno_pos)[1]){
+          id_ws<-paste(anno_pos[i,"from"]:anno_pos[i,"to"],collapse = ", ")
+          identifier<-paste(anno_pos[i,"dataset"],anno_pos[i,"id"],unique(RMariaDB::dbGetQuery(mydb, paste("select sid from token where dataset='",anno_pos[i,"dataset"],"' and id= ",anno_pos[i,"id"],";",sep=""))[anno_pos[i,"from"]:anno_pos[i,"to"],1]),sep="_")
+          pos_ident<-c(pos_ident,identifier)
+        }
+        RMariaDB::dbDisconnect(mydb)
+        #anno_appr_pos<-classifications_approved[intersect(which(classifications_approved[,"category"]==parameters$cl_Category),which(classifications_approved[,"status"]=="approved")),]
+        #anno_appr_pos<-rbind(anno_appr_pos,classifications_approved[which(classifications_approved[,"status"]==paste0("denied_",parameters$cl_Category)),])
+        ign<-which(classifications_approved[,"status"]=="ignored")
+        if(length(ign)>0){
+          anno_appr<-classifications_approved[-ign,]
+        }
+        else{
+          anno_appr<-classifications_approved
+        }
+        for(i in 1:dim(anno_appr)[1]){
+          identifier<-paste(tolower(anno_appr[i,1]),anno_appr[i,2],anno_appr[i,3],sep="_")
+          pos_ident<-c(pos_ident,identifier)
+        }
+        
+        #reduce dtm by "ignored" examples
+        ignored<-classifications_approved[ign,]
+        ignored_ids<-NULL
+        if(dim(ignored)[1]>0){
+          for(i in 1:dim(ignored)[1]){
+            identifier<-paste(tolower(ignored[i,1]),ignored[i,2],ignored[i,3],sep="_")
+            ignored_ids<-c(ignored_ids,identifier)
+          }
+          ignored_ids<-which(rownames(dtm)%in%ignored_ids)
+          if(length(ignored_ids)>0){
+            dtm<-dtm[-ignored_ids,]
+          }
+        }
+        #pos_ident<-pos_ident[which(pos_ident%in%rownames(dtm))]
+        #x<-dtm[pos_ident,]
+        #features<-which(colSums(x)>0)
+        #dtm<-dtm[,features]
       }
-      ignored_ids<-which(rownames(dtm)%in%ignored_ids)
-      if(length(ignored_ids)>0){
-        dtm<-dtm[-ignored_ids,]
+      if(parameters$cooc_window=="Document"){
+        for(i in 1:dim(anno_pos)[1]){
+          identifier<-paste(anno_pos[i,"dataset"],anno_pos[i,"id"],sep="_")
+          pos_ident<-c(pos_ident,identifier)
+        }
+        #anno_appr_pos<-classifications_approved[intersect(which(classifications_approved[,"category"]==parameters$cl_Category),which(classifications_approved[,"status"]=="approved")),]
+        #anno_appr_pos<-rbind(anno_appr_pos,classifications_approved[which(classifications_approved[,"status"]==paste0("denied_",parameters$cl_Category)),])
+        ign<-which(classifications_approved[,"status"]=="ignored")
+        if(length(ign)>0){
+          anno_appr<-classifications_approved[-ign,]
+        }
+        else{
+          anno_appr<-classifications_approved
+        }
+        if(dim(anno_appr)[1]>0){
+          for(i in 1:dim(anno_appr)[1]){
+            identifier<-paste(tolower(anno_appr[i,1]),anno_appr[i,2],sep="_")
+            pos_ident<-c(pos_ident,identifier)
+          }
+        }
+        #reduce dtm by "ignored" examples
+        ignored<-classifications_approved[ign,]
+        ignored_ids<-NULL
+        if(dim(ignored)[1]>0){
+          for(i in 1:dim(ignored)[1]){
+            identifier<-paste(tolower(ignored[i,1]),ignored[i,2],sep="_")
+            ignored_ids<-c(ignored_ids,identifier)
+          }
+        }
+        ignored_ids<-which(rownames(dtm)%in%ignored_ids)
+        if(length(ignored_ids)>0){
+          dtm<-dtm[-ignored_ids,]
+        }
       }
     }
-    #pos_ident<-pos_ident[which(pos_ident%in%rownames(dtm))]
-    #x<-dtm[pos_ident,]
-    #features<-which(colSums(x)>0)
-    #dtm<-dtm[,features]
   }
-  if(parameters$cooc_window=="Document"){
-    for(i in 1:dim(anno_pos)[1]){
-      identifier<-paste(anno_pos[i,"dataset"],anno_pos[i,"id"],sep="_")
-      pos_ident<-c(pos_ident,identifier)
-    }
-    #anno_appr_pos<-classifications_approved[intersect(which(classifications_approved[,"category"]==parameters$cl_Category),which(classifications_approved[,"status"]=="approved")),]
-    #anno_appr_pos<-rbind(anno_appr_pos,classifications_approved[which(classifications_approved[,"status"]==paste0("denied_",parameters$cl_Category)),])
-    ign<-which(classifications_approved[,"status"]=="ignored")
-    if(length(ign)>0){
-      anno_appr<-classifications_approved[-ign,]
-    }
-    else{
-      anno_appr<-classifications_approved
-    }
-    if(dim(anno_appr)[1]>0){
-      for(i in 1:dim(anno_appr)[1]){
-        identifier<-paste(tolower(anno_appr[i,1]),anno_appr[i,2],sep="_")
-        pos_ident<-c(pos_ident,identifier)
-      }
-    }
-    #reduce dtm by "ignored" examples
-    ignored<-classifications_approved[ign,]
-    ignored_ids<-NULL
-    if(dim(ignored)[1]>0){
-      for(i in 1:dim(ignored)[1]){
-        identifier<-paste(tolower(ignored[i,1]),ignored[i,2],sep="_")
-        ignored_ids<-c(ignored_ids,identifier)
-      }
-    }
-    ignored_ids<-which(rownames(dtm)%in%ignored_ids)
-    if(length(ignored_ids)>0){
-      dtm<-dtm[-ignored_ids,]
-    }
-  }
-  
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished formatting classification input",file = logfile)
-  
   
   
   #insert made annotations and approved classifications
   log_to_file(message = "<b>Step 11/13: Inserting made annotations and approved classifications as training input</b>",file = logfile)
   gold_table<-matrix(c(0),0,4)
-  if(parameters$cooc_window=="Sentence"){
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
-    count=0
-    try({
-      for(i in 1:dim(annotations)[1]){
-        id_ws<-paste(annotations[i,"from"]:annotations[i,"to"],collapse = ", ")
-        identifier<-paste(annotations[i,"dataset"],annotations[i,"id"],unique(RMariaDB::dbGetQuery(mydb, paste("select sid from token where dataset='",annotations[i,"dataset"],"' and id= ",annotations[i,"id"],";",sep=""))[annotations[i,"from"]:annotations[i,"to"],1]),sep="_")
-        try({
-          # my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class=as.character(annotations[i,"Annotation"]),coder=as.character(annotations[i,"User"]),timestamp=as.character(annotations[i,"Annotation_Date"])))
-          count=count+1
-          gold_table<-rbind(gold_table,cbind(identifier,as.character(annotations[i,"Annotation"]),as.character(annotations[i,"User"]),as.character(annotations[i,"Annotation_Date"])))
-        })
-      }
-      #for approved classifications
-      if(length(ign)>1){
-        class_appr<-classifications_approved[-ign,]
-      }
-      else{
-        class_appr<-classifications_approved
-      }
-      for(i in 1:dim(class_appr)[1]){
-        identifier<-paste(tolower(class_appr[i,1]),class_appr[i,2],class_appr[i,3],sep="_")
-        try({
-          if(as.character(class_appr[i,"status"])!="denied_"){
-            if(grepl("denied_",as.character(class_appr[i,"status"]))){
-              if(grepl("NEG",as.character(class_appr[i,"status"]))){
-                #  my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class="NEG",coder="classified as NEG during active learning",timestamp=as.character(class_appr[i,"timestamp"])))
-                count=count+1
-                gold_table<-rbind(gold_table,cbind(identifier,"NEG","classified as NEG during active learning",as.character(class_appr[i,"timestamp"])))
-              }
-              else{
-                category<-as.character(stringr::str_split(string = as.character(class_appr[i,"status"]),pattern = "_",simplify = T)[1,2])
-                # my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class=category,coder="marked as opposite class during active learning",timestamp=as.character(class_appr[i,"timestamp"])))
-                count=count+1
-                gold_table<-rbind(gold_table,cbind(identifier,category,"marked as opposite class during active learning",as.character(class_appr[i,"timestamp"])))
-              }
-            }
-            else{
-              # my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class=as.character(class_appr[i,"category"]),coder="approved classification",timestamp=as.character(class_appr[i,"timestamp"])))
+  count=0
+  if(parameters$use_dictionary==F){
+    if(parameters$cooc_window=="Sentence"){
+      mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+      try({
+        if(nrow(annotations)>0){
+          for(i in 1:dim(annotations)[1]){
+            id_ws<-paste(annotations[i,"from"]:annotations[i,"to"],collapse = ", ")
+            identifier<-paste(annotations[i,"dataset"],annotations[i,"id"],unique(RMariaDB::dbGetQuery(mydb, paste("select sid from token where dataset='",annotations[i,"dataset"],"' and id= ",annotations[i,"id"],";",sep=""))[annotations[i,"from"]:annotations[i,"to"],1]),sep="_")
+            try({
+              # my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class=as.character(annotations[i,"Annotation"]),coder=as.character(annotations[i,"User"]),timestamp=as.character(annotations[i,"Annotation_Date"])))
               count=count+1
-              gold_table<-rbind(gold_table,cbind(identifier,as.character(class_appr[i,"category"]),"approved classification",as.character(class_appr[i,"timestamp"])))
-            }
+              gold_table<-rbind(gold_table,cbind(identifier,as.character(annotations[i,"Annotation"]), "manual annotation",as.character(annotations[i,"Annotation_Date"])))
+            })
           }
-        })
-      }
-    })
-    RMariaDB::dbDisconnect(mydb)
-  }
-  if(parameters$cooc_window=="Document"){
-    count=0
-    try({
-      for(i in 1:dim(annotations)[1]){
-        identifier<-paste(anno_pos[i,"dataset"],anno_pos[i,"id"],sep="_")
-        try({
-          #  my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class=as.character(annotations[i,"Annotation"]),coder=as.character(annotations[i,"User"]),timestamp=as.character(annotations[i,"Annotation_Date"])))
-          count=count+1
-          gold_table<-rbind(gold_table,c(identifier,as.character(annotations[i,"Annotation"]),as.character(annotations[i,"User"]),as.character(annotations[i,"Annotation_Date"])))
-        })
-      }
-      #for approved classifications
-      if(length(ign)>1){
-        class_appr<-classifications_approved[-ign,]
-      }
-      else{
-        class_appr<-classifications_approved
-      }
-      for(i in 1:dim(class_appr)[1]){
-        identifier<-paste(tolower(class_appr[i,1]),class_appr[i,2],sep="_")
-        try({
-          if(as.character(class_appr[i,"status"])!="denied_"){
-            if(grepl("denied_",as.character(class_appr[i,"status"]))){
-              if(grepl("NEG",as.character(class_appr[i,"status"]))){
-                #    my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class="NEG",coder="classified as NEG during active learning",timestamp=as.character(class_appr[i,"timestamp"])))
-                count=count+1
-                gold_table<-rbind(gold_table,c(identifier,"NEG","classified as NEG during active learning",as.character(class_appr[i,"timestamp"])))
+        }
+        #for approved classifications
+        if(length(ign)>1){
+          class_appr<-classifications_approved[-ign,]
+        }
+        else{
+          class_appr<-classifications_approved
+        }
+        if(nrow(class_appr)>0){
+          for(i in 1:dim(class_appr)[1]){
+            identifier<-paste(tolower(class_appr[i,1]),class_appr[i,2],class_appr[i,3],sep="_")
+            try({
+              if(as.character(class_appr[i,"status"])!="denied_"){
+                if(grepl("denied_",as.character(class_appr[i,"status"]))){
+                  if(grepl("NEG",as.character(class_appr[i,"status"]))){
+                    #  my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class="NEG",coder="classified as NEG during active learning",timestamp=as.character(class_appr[i,"timestamp"])))
+                    count=count+1
+                    gold_table<-rbind(gold_table,cbind(identifier,"NEG","classified as NEG during active learning",as.character(class_appr[i,"timestamp"])))
+                  }
+                  else{
+                    category<-as.character(stringr::str_split(string = as.character(class_appr[i,"status"]),pattern = "_",simplify = T)[1,2])
+                    # my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class=category,coder="marked as opposite class during active learning",timestamp=as.character(class_appr[i,"timestamp"])))
+                    count=count+1
+                    gold_table<-rbind(gold_table,cbind(identifier,category,"marked as opposite class during active learning",as.character(class_appr[i,"timestamp"])))
+                  }
+                }
+                else{
+                  # my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class=as.character(class_appr[i,"category"]),coder="approved classification",timestamp=as.character(class_appr[i,"timestamp"])))
+                  count=count+1
+                  gold_table<-rbind(gold_table,cbind(identifier,as.character(class_appr[i,"category"]),"approved classification",as.character(class_appr[i,"timestamp"])))
+                }
               }
-              else{
-                category<-as.character(stringr::str_split(string = as.character(class_appr[i,"status"]),pattern = "_",simplify = T)[1,2])
-                # my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class=category,coder="marked as opposite class during active learning",timestamp=as.character(class_appr[i,"timestamp"])))
-                count=count+1
-                gold_table<-rbind(gold_table,c(identifier,category,"marked as opposite class during active learning",as.character(class_appr[i,"timestamp"])))
-              }
-            }
-            else{
-              #  my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class=as.character(class_appr[i,"category"]),coder="approved classification",timestamp=as.character(class_appr[i,"timestamp"])))
+            })
+          }
+        }
+      })
+      RMariaDB::dbDisconnect(mydb)
+    }
+    if(parameters$cooc_window=="Document"){
+      count=0
+      try({
+        if(nrow(annotations)>0){
+          for(i in 1:dim(annotations)[1]){
+            identifier<-paste(anno_pos[i,"dataset"],anno_pos[i,"id"],sep="_")
+            try({
+              #  my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class=as.character(annotations[i,"Annotation"]),coder=as.character(annotations[i,"User"]),timestamp=as.character(annotations[i,"Annotation_Date"])))
               count=count+1
-              gold_table<-rbind(gold_table,c(identifier,as.character(class_appr[i,"category"]),"approved classification",as.character(class_appr[i,"timestamp"])))
-            }
+              gold_table<-rbind(gold_table,c(identifier,as.character(annotations[i,"Annotation"]),"manual annotation",as.character(annotations[i,"Annotation_Date"])))
+            })
           }
-        })
-      }
-    })
-    
+        }
+        #for approved classifications
+        if(length(ign)>1){
+          class_appr<-classifications_approved[-ign,]
+        }
+        else{
+          class_appr<-classifications_approved
+        }
+        if(nrow(class_appr)>0){
+          for(i in 1:dim(class_appr)[1]){
+            identifier<-paste(tolower(class_appr[i,1]),class_appr[i,2],sep="_")
+            try({
+              if(as.character(class_appr[i,"status"])!="denied_"){
+                if(grepl("denied_",as.character(class_appr[i,"status"]))){
+                  if(grepl("NEG",as.character(class_appr[i,"status"]))){
+                    #    my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class="NEG",coder="classified as NEG during active learning",timestamp=as.character(class_appr[i,"timestamp"])))
+                    count=count+1
+                    gold_table<-rbind(gold_table,c(identifier,"NEG","classified as NEG during active learning",as.character(class_appr[i,"timestamp"])))
+                  }
+                  else{
+                    category<-as.character(stringr::str_split(string = as.character(class_appr[i,"status"]),pattern = "_",simplify = T)[1,2])
+                    # my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class=category,coder="marked as opposite class during active learning",timestamp=as.character(class_appr[i,"timestamp"])))
+                    count=count+1
+                    gold_table<-rbind(gold_table,c(identifier,category,"marked as opposite class during active learning",as.character(class_appr[i,"timestamp"])))
+                  }
+                }
+                else{
+                  #  my_gold$gold[which(ref_id_cut%in%unlist(identifier))]<-list(data.table(class=as.character(class_appr[i,"category"]),coder="approved classification",timestamp=as.character(class_appr[i,"timestamp"])))
+                  count=count+1
+                  gold_table<-rbind(gold_table,c(identifier,as.character(class_appr[i,"category"]),"approved classification",as.character(class_appr[i,"timestamp"])))
+                }
+              }
+            })
+          }
+        }
+      })
+    }
   }
-  
   
   
   if(count<1 && parameters$use_dictionary==F){
@@ -379,16 +392,24 @@ error<-try(expr = {
     ############################################
     log_to_file(message = "<b>Step 12/13: Producing 50 new active learning examples</b>",file = logfile)
     log_to_file(message = paste("&emsp;",count, "Training sets (annotations and approved classifications) were found and used"),file = logfile)
-    
     if(parameters$use_dictionary==TRUE){
       log_to_file(message = "&emsp; Dictionary lookup",file = logfile)
       training_dict=NULL
-      for(entry in names(dict))
-      {
+      for(entry in names(dict)){
         Short_dict <- list()
         Short_dict[[entry]] <- dict[[entry]]
         Short_dict <- quanteda::dictionary(Short_dict)
-        training_dict <- rbind(training_dict,cbind(unique(quanteda::kwic(quanteda::corpus(documents_original$token,docnames=documents_original$doc_id),pattern = Short_dict,window = 5)$docname),entry,"dictionary lookup",as.character(Sys.time())))
+        
+        found_examples <- quanteda::kwic(quanteda::corpus(documents_original$token,docnames=documents_original$doc_id),pattern = Short_dict,window = 5)
+        doc_names <- found_examples$docname
+        doc_names <- names(sort(table(doc_names), decreasing = T))
+        doc_names <- doc_names[1:min(100,length(doc_names))]
+        training_dict <- rbind(training_dict,
+                               cbind(doc_names,
+                                     entry,
+                                     "dictionary lookup",
+                                     as.character(Sys.time()))
+        )
       }
       
       already_known<-which(training_dict[,1]%in%gold_table[,1])
@@ -398,7 +419,6 @@ error<-try(expr = {
       gold_table<-rbind(gold_table,training_dict)
       log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
     }
-    
     log_to_file(message = "&emsp; Training Classifier",file = logfile)
     gold_table[which(gold_table[,2]!=parameters$cl_Category),2]<-"NEG"
     #check if enough NEG data avaiable
@@ -444,19 +464,18 @@ error<-try(expr = {
       results_complete[[count]]<-evalMeasures$complete
     }
     log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
-    
     log_to_file(message = "&emsp; Choose active learning examples",file = logfile)
     if (parameters$cl_active_learning_strategy == "LC") {
       boundary_distances <- abs(predicted$probabilities[,parameters$cl_Category] - 0.5)
       uncertain_decisions <- order(boundary_distances)
-      unset_labels <- which(!rownames(dtm)%in%gold_table[which(!gold_table[,2]%in%c("dictionary lookup","sampled negative examples")),1])
+      unset_labels <- which(!rownames(dtm)%in%gold_table[which(gold_table[,3]%in%c("sampled negative examples","approved classification","manual annotation")),1])
       uncertain_decisions <- intersect(uncertain_decisions,unset_labels)[1:50]
       examples <- rownames(dtm)[uncertain_decisions]
     }
     if (parameters$cl_active_learning_strategy == "MC") {
       boundary_distances <- abs(predicted$probabilities[,parameters$cl_Category] - 1)
       certain_decisions <- order(boundary_distances)
-      unset_labels <- which(!rownames(dtm)%in%gold_table[which(!gold_table[,2]%in%c("dictionary lookup","sampled negative examples")),1])
+      unset_labels <- which(!rownames(dtm)%in%gold_table[which(gold_table[,3]%in%c("sampled negative examples","approved classification","manual annotation")),1])
       certain_decisions <- intersect(certain_decisions,unset_labels)[1:50]
       examples <- rownames(dtm)[certain_decisions]
     }
@@ -469,7 +488,7 @@ error<-try(expr = {
       uncertain_decisions[lidx] <- prob_positive[lidx] / pmax
       uncertain_decisions[!lidx] <- (1 - prob_positive[!lidx]) / (1 - pmax)
       uncertain_decisions <- order(uncertain_decisions,decreasing=T)
-      unset_labels <- which(!rownames(dtm)%in%gold_table[which(!gold_table[,2]%in%c("dictionary lookup","sampled negative examples")),1])
+      unset_labels <- which(!rownames(dtm)%in%gold_table[which(gold_table[,3]%in%c("sampled negative examples","approved classification","manual annotation")),1])
       uncertain_decisions <- intersect(uncertain_decisions,unset_labels)[1:50]
       examples <- rownames(dtm)[uncertain_decisions]
     }

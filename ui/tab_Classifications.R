@@ -2,7 +2,7 @@
 tabPanel("Classifications",
          tags$div(
            style = 'height:82vh; overflow-y:auto;',
-           busyIndicator(text = "Loading...",wait = 0),
+           shinyBS::bsButton(inputId = "Classifications_Reset",label = "reload",style = "success",size = "extra-small",icon=icon("refresh")),
            uiOutput(outputId = "classification_UI")
-               )
+         )
 )
