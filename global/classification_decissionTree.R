@@ -54,8 +54,8 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
   testDTM<-data.frame(as.matrix(dtm))
   #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
   predicted <- predict(model, testDTM, type = "prob") 
-  print(head(predicted))
-  print(typeof(predicted))
+ # print(head(predicted))
+  #print(typeof(predicted))
   ###########
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
@@ -109,12 +109,12 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
   ####
   feature_matrix<-as.matrix(model$variable.importance)
-  print(head(feature_matrix))
+  
   #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
   ####
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-  
+  print(summary(feature_matrix))
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   

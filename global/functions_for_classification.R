@@ -301,10 +301,11 @@ set_learning_samples_svm<-function(parameters, gold_table, dtm){
   
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
   feature_matrix<-model$W
+  
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-  
+  print(head(feature_matrix))
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   

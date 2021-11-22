@@ -1,6 +1,8 @@
 library(xgboost)
 library(Matrix)
 
+# PROBLEM: FeatureMatrix aufstellen
+
 ############################################
 #           learning example               #
 ############################################
@@ -280,7 +282,7 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
                       "num_class" = length(unique(as.numeric(trainingLabels)))+1)
   #feature_matrix<-xgb.importance(model = model)
   feature_matrix <-xgb.importance( model = model_label, data = trainingDTM, label = trainingLabels)
-  #print(head(feature_matrix))
+  print(head(model_label))
 ###
   #feature_matrix[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
   # delete bias term from feature matrix

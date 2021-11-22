@@ -1,6 +1,7 @@
 ############################################
 #           learning example               #
 ############################################
+# feature matrix format!!
 set_learning_samples_rF<-function(parameters, gold_table, dtm){
   if(parameters$use_dictionary==TRUE){
     log_to_file(message = "&emsp; Dictionary lookup",file = logfile)
@@ -113,7 +114,7 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
   ####
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-  
+  print(head(feature_matrix))
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
@@ -260,7 +261,7 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
   feature_matrix <-as.data.frame(importance(model))
   feature_matrix<-feature_matrix[head(seq_len(ncol(feature_matrix)), -2)]
   feature_matrix<-t(feature_matrix)
-  #print(head(feature_matrix))
+  print(head(feature_matrix))
 #####
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
   # delete bias term from feature matrix
