@@ -75,7 +75,7 @@ error<-try(expr = {
       #update meta tables in database
       #data<-data.frame(readtext::readtext(file = paste0("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv") ),stringsAsFactors = F)
       data<-data.frame(readr::read_delim(file = paste0("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv"), delim=',',
-                                         escape_double=F, escape_backslash=T, quote='"',col_names = F),
+                                         quote='"',col_names = F),
                        stringsAsFactors = F)
       data<-cbind(rep(paste0("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv"),nrow(data)),data)%>%
         mutate_all(as.character)

@@ -272,7 +272,7 @@ output$visNetwork_cooc_net<-visNetwork::renderVisNetwork({
   nodes<-cbind(nodes,apply(nodes,MARGIN = 1,FUN = function(x){paste0(x[2],": ",x[4])}))
   values$name_for_cooc_knk<-nodes[,"name"]
   colnames(nodes)<-c("id","label","group","value","shadow","title")
-
+  
   if(input$Det_CO_use_igraph_layout==TRUE){
     return(
       visNetwork::visNetwork(nodes = nodes,edges = edges)%>%
@@ -329,8 +329,13 @@ output$Det_CO_download_coocs<-downloadHandler(
 #'   values$host: selected host
 #'   values$port: selected port
 output$cooc_examples_table<-DT::renderDataTable({
+  load(paste0(values$Details_Data_CO,"/parameters.RData"))
+  validate(
+    need(parameters$baseform_reduction!="stemming","KWIC does not work rightnow with stemmed texts. You can either use Lemmatization or no baseform reduction to use KWIC.")
+  )
   validate(
     need(length(input$coocs_examples_words)>0,"Please choose at least one word")
+    
   )
   dtm<-values$cooc_examples_dtm[,input$coocs_examples_words,drop=F]
   avail<-rownames(dtm)[which(rowSums(dtm)==length(input$coocs_examples_words))]
@@ -784,9 +789,9 @@ output$Det_CO_shortest_paths_network<-visNetwork::renderVisNetwork({
   })),decreasing = F)]
   
   nec_edges<-lapply(X = 1:length(all_paths),FUN = function(x){
-      get_relevant_edge_ids_for_paths(edges=edges,path = all_paths[[x]])
+    get_relevant_edge_ids_for_paths(edges=edges,path = all_paths[[x]])
   })
-
+  
   for(i in 1:length(nec_edges)){
     l<-length(unique(unlist(nec_edges[1:i])))
     if(l>input$Det_CO_shortest_path_max_number_edges){
@@ -797,10 +802,10 @@ output$Det_CO_shortest_paths_network<-visNetwork::renderVisNetwork({
       nec_edges<-unique(unlist(nec_edges))
     }
   }
-
-
+  
+  
   edges<-edges[nec_edges,]
- 
+  
   nec_nodes<-unique(c(edges[,1],edges[,2]))
   nodes<-nodes[as.character(nec_nodes),]
   edges$width<-rep(4,nrow(edges))
@@ -823,11 +828,11 @@ output$Det_CO_shortest_paths_network<-visNetwork::renderVisNetwork({
   nodes$group[which(nodes$id%in%setdiff(as.numeric(names(shortest_path$res[[1]])),c(from,to)))]<-"shortest_path"
   
   
-
+  
   all_paths<-all_paths[ order(unlist(lapply(all_paths,FUN = function(x){
     length(names(x))
   })),decreasing = T)]
-
+  
   all_paths_lengths<-unlist(lapply(all_paths,function(x){
     return(length(x))
   }))
@@ -850,13 +855,13 @@ output$Det_CO_shortest_paths_network<-visNetwork::renderVisNetwork({
     ledges <- rbind(ledges,c("#FF9800",(min_length+1)))
   }
   
-
+  
   
   validate(
     need(nrow(edges)<400,"The current settings results in more than 400 edges. Please adjust the settings of the graph.")
   )
   
-
+  
   
   graph<-visNetwork::visNetwork(nodes = nodes,edges = edges)%>%
     visIgraphLayout(layout = "layout_in_circle")%>%

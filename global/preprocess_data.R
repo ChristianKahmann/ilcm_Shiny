@@ -50,7 +50,7 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
       # in order to limit this, very long documents will be processed in several chunks
       split_documents=T
     }
-
+    
     
   }
   split<-split(1:length(text), ceiling(seq_along(1:length(text))/min(length(text),split_size)))
@@ -148,20 +148,22 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
   
   log_to_file(message = "extracting entities disabled",logfile)
   metadata<-cbind(metadata,rep(0,dim(metadata)[1]))
-  # count=0
-  # for(j in unique(token[,2])){
-  #   count=count+1
-  #   toks<-token[which(token[,2]==j),c("doc_id"  ,    "sentence_id", "token_id"  ,  "token"    ,   "lemma"     ,  "pos"    ,     "entity",  "idx")]
-  #   class(toks)<-c("spacyr_parsed","data.frame")  
-  #   entities<-unique(spacyr::entity_extract(toks,type = "named")[,3])
-  #   entities<-stringr::str_replace_all(string = entities,pattern = " ",replacement = "_")
-  #   entities<-paste(entities,collapse=" ")
-  #   metadata[count,dim(metadata)[2]]<-entities
-  # }
-  
-
+  count=0
+  for(j in unique(token[,2])){
+    count=count+1
+    toks<-token[which(token[,2]==j),c("doc_id"  ,    "sentence_id", "token_id"  ,  "token"    ,   "lemma"     ,  "pos"    ,     "entity",  "idx")]
+    class(toks)<-c("spacyr_parsed","data.frame")
+    entities<-unique(spacyr::entity_extract(toks,type = "named")[,3])
+    entities<-stringr::str_replace_all(string = entities,pattern = " ",replacement = "_")
+    entities<-paste(entities,collapse=" ")
+    metadata[count,dim(metadata)[2]]<-entities
+  }
+  # ensure no quotes detroy csv structure
+  for(i in 1:ncol(metadata)){
+    metadata[,i]<-stringr::str_replace_all(string = metadata[,i],pattern = '"',replacement = "'")
+  }
   log_to_file(message = "Writing data",logfile)
-  write.table(x = metadata,file = paste("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_id,".csv",sep=""),row.names = F,col.names = F,sep = ",")
-  write.table(x = token,file = paste("data_import/processed_data/token_",metadata[1,"dataset"],"_",process_id,".csv",sep=""),row.names = F,col.names = F,sep = ",")
+  write.table(x = metadata,file = paste("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_id,".csv",sep=""),row.names = F,col.names = F,sep = ",",fileEncoding = "UTF-8",quote = TRUE)
+  write.table(x = token,file = paste("data_import/processed_data/token_",metadata[1,"dataset"],"_",process_id,".csv",sep=""),row.names = F,col.names = F,sep = ",",fileEncoding = "UTF-8")
   log_to_file(message = "Finished writing data",logfile)
 }
