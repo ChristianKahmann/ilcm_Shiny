@@ -114,7 +114,7 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
   ####
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-  print(summary(feature_matrix))
+  print(head(feature_matrix))
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   

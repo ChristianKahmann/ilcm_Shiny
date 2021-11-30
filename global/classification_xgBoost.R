@@ -65,7 +65,7 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   NEG <- one_vec - predicted
   frame_pred<-data.frame(predicted,NEG)
   names(frame_pred)<- parameters$cl_Category
-  print(head(frame_pred))
+ # print(head(frame_pred))
 #####
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
@@ -120,6 +120,7 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
   feature_matrix<-xgb.importance(data = dimnames(trainingDTM)[[2]], model = model)
+  print(head(feature_matrix))
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]

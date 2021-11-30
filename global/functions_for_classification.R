@@ -301,11 +301,11 @@ set_learning_samples_svm<-function(parameters, gold_table, dtm){
   
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
   feature_matrix<-model$W
-  
+  print(head(feature_matrix,10))
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-  print(head(feature_matrix))
+  print(head(feature_matrix,10))
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
@@ -415,7 +415,7 @@ set_active_learning_whole_svm<-function(parameters, gold_table, dtm){
   
   testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm[random_sample_sentences,]))
   labels <- predict(model, testDTM,proba = T) 
-  
+  print(head(labels))
   names(labels$predictions)<-random_sample_sentences
   rownames(labels$probabilities)<-random_sample_sentences
   
@@ -489,16 +489,18 @@ classify_whole_collection_svm<-function(parameters, gold_table, dtm){
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
   # delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
+  #print(head(feature_matrix))
   # if only 2 categories were used, transform feature matrix
   if(nrow(feature_matrix)==1){
     feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))
     rownames(feature_matrix)<-setdiff(unique(gold_table[,2]),"NEG")
   }
-  print(head(feature_matrix))
+  #print(head(feature_matrix))
   word_counts<-colSums(dtm)  
   
   testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
   predicted <- predict(model, testDTM,proba = T) 
+  
   predictions<-as.character(predicted$predictions)
   probabilities<-predicted$probabilities
   names(predictions)<-rownames(dtm)
