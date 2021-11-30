@@ -29,13 +29,14 @@ tabPanel("Time Series",
                                   plotlyOutput(outputId = "TS_plot") %>% withSpinner(type = 7)
                            )
                            
-                  ),
-                  tags$div(style='width:100%;',
-                           column(10,offset=1,
-                                  tags$h2("Calender Heatmap"),
-                                  uiOutput(outputId = "TS_calender") %>% withSpinner(type = 7)
-                           )
-                  )                
+                  )
+                  # ,
+                  # tags$div(style='width:100%;',
+                  #          column(10,offset=1,
+                  #                 tags$h2("Calender Heatmap"),
+                  #                 uiOutput(outputId = "TS_calender") %>% withSpinner(type = 7)
+                  #          )
+                  # )                
                   
          )
 )
