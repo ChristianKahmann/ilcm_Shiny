@@ -168,11 +168,16 @@ observeEvent(input$save_annotation_tagset,{
 #'   input$Save_Tagset_name: save name of tagset
 #'   values$newscheme: new scheme
 observeEvent(input$Save_Tagset_confirm,{
-  shiny::removeModal()
-  isolate(values$anno<-NULL)
-  path<-paste0("collections/annotation_schemes/",input$Save_Tagset_name,".RData")
-  save(anno,file=path)
-  values$newscheme<-runif(1,0,1)
+  if(grepl(pattern = "_",x = input$Save_Tagset_name)==F){
+    shiny::removeModal()
+    isolate(values$anno<-NULL)
+    path<-paste0("collections/annotation_schemes/",input$Save_Tagset_name,".RData")
+    save(anno,file=path)
+    values$newscheme<-runif(1,0,1)
+  }
+  else{
+    shinyWidgets::sendSweetAlert(session = session,title = "Please use a name without '_' for the annotation scheme name.",type = "warning") 
+  }
 })
 
 #' change annotation tagset

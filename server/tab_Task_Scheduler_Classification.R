@@ -930,12 +930,6 @@ observeEvent(ignoreInit=T,input$CL_pruning_continue,{
     else{
       system(paste('Rscript collections/scripts/Classification_Script.R','&'))
       #show modal when process is started%>%
-      shinyInput_label_embed(
-        shiny_iconlink() %>%
-          bs_embed_popover(
-            title = "Use an already existing vocabulary instead of performing a parameterized preprocessing. Vocabularies can be added and adjusted in Scripts-->Vocabularies.", placement = "right"
-          )
-      )
       showModal(modalDialog(
         title = "Process started",
         "The process was succesfully started. Check details in 'My Tasks'."

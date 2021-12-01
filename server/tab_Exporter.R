@@ -368,8 +368,8 @@ output$download_export_RData_meta <- downloadHandler(
     paste0(input$export_collection,"_meta.RData")
   },
   content = function(file){
-    token<-values$export_meta_tmp
-    save(token,file=file)
+    meta<-values$export_meta_tmp
+    save(meta,file=file)
   }
 )
 
@@ -382,8 +382,8 @@ output$download_export_RData_token <- downloadHandler(
     paste0(input$export_collection,"_token.RData")
   },
   content = function(file){
-    meta<-values$export_token_tmp
-    save(meta,file=file)
+    token<-values$export_token_tmp
+    save(token,file=file)
   }
 )
 

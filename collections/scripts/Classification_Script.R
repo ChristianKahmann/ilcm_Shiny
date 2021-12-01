@@ -178,6 +178,7 @@ error<-try(expr = {
   log_to_file(message = "<b>Step 10/13: Formatting classification input</b>",file = logfile)
   #feature_list<-calculate_dtm(tibble=T)
   dtm<-calculate_dtm(tibble=F,token = db_data$token,parameters = parameters,lang = db_data$language)
+  log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   #get_annotated_doc_ids
   log_to_file(message = paste0("&emsp; Reduce feature space"),logfile)
   pos_ident<-NULL
@@ -396,14 +397,15 @@ error<-try(expr = {
       log_to_file(message = "&emsp; Dictionary lookup",file = logfile)
       training_dict=NULL
       for(entry in names(dict)){
-        Short_dict <- list()
-        Short_dict[[entry]] <- dict[[entry]]
-        Short_dict <- quanteda::dictionary(Short_dict)
-        
-        found_examples <- quanteda::kwic(quanteda::corpus(documents_original$token,docnames=documents_original$doc_id),pattern = Short_dict,window = 5)
-        doc_names <- found_examples$docname
-        doc_names <- names(sort(table(doc_names), decreasing = T))
-        doc_names <- doc_names[1:min(100,length(doc_names))]
+        bin_dtm<-tmca.util::make_binary(dtm)
+        dict_terms_avail<-dict[[entry]][which(dict[[entry]]%in%colnames(bin_dtm))]
+        log_to_file(message = paste("&emsp;" ,"Found dictiony entries for category <b>",entry,"</b>:<i>",paste0(dict_terms_avail,collapse=", "),"</i>"),file = logfile)
+        dict_sums<-rowSums(bin_dtm[,dict_terms_avail])
+        rowsums<-rowSums(dtm)
+        relative_dict_sums <- dict_sums/rowsums
+        relative_dict_sums<-relative_dict_sums[which(relative_dict_sums>0)]
+        relative_dict_sums<-relative_dict_sums[order(relative_dict_sums,decreasing = T)]
+        doc_names <- names(relative_dict_sums)[1:min(100,length(relative_dict_sums))]
         training_dict <- rbind(training_dict,
                                cbind(doc_names,
                                      entry,
