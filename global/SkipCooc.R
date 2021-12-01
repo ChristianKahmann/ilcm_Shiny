@@ -112,7 +112,7 @@ Skip_cooc<-R6Class(
             #freqs <- colSums(self$skip_tab)
             #browser()
             names(kj)<-colnames(self$skip_tab)
-            print(freqs["pants"])
+            
             p_1 <- freqs[tmp_c[, 1]]
             p_2 <- freqs[tmp_c[, 2]]
             
