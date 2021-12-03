@@ -225,7 +225,7 @@ output$Class_all_categories_annotations<-DT::renderDataTable({
   }
   
   values$highlight_spans<-highlight
-  #create yes/no checkbox
+  # create yes/no checkbox
   checkboxes<-lapply(rownames(highlight),function(x){
     radio_id<-paste0("Class_correct_annotation_",x)
     condition<-paste0('input.',radio_id,'=="deny"')
@@ -359,11 +359,11 @@ observe({
   denied<-rn[which(x=="deny")]
   ignored<-rn[which(x=="ignore")]
   other<-y[which(x=="deny")]
-  #set to default
+  # set to default
   print("change of set values")
   isolate(values$Class_all_documents_texts[rn,7:9]<-FALSE)
   isolate(values$Class_all_documents_texts[rn,10]<-FALSE)
-  #adjsut to input values
+  # adjsut to input values
   isolate(values$Class_all_documents_texts[approved,7]<-TRUE)
   isolate(values$Class_all_documents_texts[denied,8]<-TRUE)
   isolate(values$Class_all_documents_texts[denied,10]<-other)
@@ -583,7 +583,6 @@ observeEvent(input$classification_buttons_rerun,{
   ID<-get_task_id_counter()+1
   set_task_id_counter(ID)
   
-  
   load(list.files(path = paste0("collections/results/classification/activeLearning/",input$project_selected),
                   full.names = T,include.dirs = F,recursive = T,pattern = "parameters.RData")[file_id])
   
@@ -625,6 +624,10 @@ observe({
   values$class_eval_id_selected<-stringr::str_split(string = x,pattern = "_",simplify = T)[1,4]
   button_input<-str_split(string = x,pattern = "_",simplify = TRUE)[2:4]
   load(list.files(path = paste0("collections/results/classification/activeLearning/",input$project_selected),full.names = T,include.dirs = F,recursive = T,pattern = "training_examples.RData")[as.numeric(button_input[3])])
+  # counter variable dor see document buttons
+  values$Class_document_button_counter<-rep(0,nrow(data))
+  names<-paste0("Class_eval_link_document_",rownames(data))
+  isolate(names(values$Class_document_button_counter)<-names)
   data$other<-as.character(data$other)
   values$Class_eval_data<-data[1:10,]
   values$class_eval_data_index<-10
@@ -655,7 +658,7 @@ observe({
   if(button_input=="eval"){
     if(values$Class_eval_meta$context_unit=="Document"){
       showModal(modalDialog(title = "Evaluate machine classified examples",easyClose = F,size = "l",
-                            navbarPage(title = "Evaluate Classification",id = "Eval",
+                            navbarPage(title = "Evaluate Classification",id = "Eval",selected = "Evaluate",
                                        tabPanel("Evaluate",
                                                 tags$h2(learning_meta$category),
                                                 tags$div(
@@ -676,8 +679,8 @@ observe({
     }
     else{
       showModal(modalDialog(title = "Evaluate machine classified examples",easyClose = F,size = "l",
-                            navbarPage(title = "Evaluate Classification",id = "Eval",
-                                       tabPanel("Evaluate",
+                            navbarPage(title = "Evaluate Classification",id = "Eval",selected = "Evaluate",
+                                       tabPanel("Evaluate", 
                                                 tags$h2(learning_meta$category),
                                                 tags$div(
                                                   "Load new examples:",
@@ -761,6 +764,7 @@ shiny::observeEvent(ignoreInit = T,input$Class_eval_close,{
 #'   values$class_anno_selected:selected annotation
 output$Class_eval_examples<-renderUI({
   if(values$Class_eval_meta$context_unit=="Document"){
+    values$Class_document_link_ids<-paste0("Class_eval_link_document_",rownames(values$Class_eval_data))
     values_pairs<-paste(paste0("('",stringr::str_split(values$Class_eval_data$doc_id_global,pattern = "_",simplify = T)[,1],"' , ",stringr::str_split(values$Class_eval_data$doc_id_global,pattern = "_",simplify = T)[,2],")"),
                         collapse=", ")
     mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
@@ -799,6 +803,7 @@ output$Class_eval_examples<-renderUI({
     )
   }
   else{
+    values$Class_document_link_ids<-paste0("Class_eval_link_document_",rownames(values$Class_eval_data))
     examples<-lapply(X = 1:dim(values$Class_eval_data)[1],FUN = function(x){
       radio_id<-paste0("Class_eval_radio_buttons_",isolate(values$class_eval_id_selected),"_",rownames(values$Class_eval_data)[x])
       #replace whitespaces in order to get javascript condition to work
@@ -813,7 +818,7 @@ output$Class_eval_examples<-renderUI({
         tags$br(),
         fluidRow(
           column(4,
-                 shinyBS::bsButton(inputId = paste0("Class_eval_link_document_",rownames(values$Class_eval_data)[x]),label = "See document",icon = icon("eye"),onclick = 'Shiny.onInputChange(\"Class_eval_doclink\",  this.id)')
+                 shinyBS::bsButton(type="action",inputId = paste0("Class_eval_link_document_",rownames(values$Class_eval_data)[x]),label = "See document",icon = icon("eye"),onclick = 'Shiny.onInputChange(\"Class_eval_doclink\",  this.id)')
           ),
           column(7,offset = 1,
                  
@@ -867,7 +872,6 @@ observe({
   validate(
     need(!is.null(values$Class_eval_data),message=FALSE)
   )
-  
   x<-unlist(lapply(rownames(values$Class_eval_data),function(i){
     #replace whitespaces in dataset name
     i<-stringr::str_replace_all(string = i,pattern = " ",replacement = "")
@@ -1100,17 +1104,40 @@ observeEvent(input$Class_eval_save,{
 #'   values$Class_eval_doc_id: document id for evaluating the classifications
 observe({
   validate(
-    need(!is.null(values$Class_eval_data),message=FALSE)
+    need(!is.null(isolate(values$Class_eval_data)),message=FALSE),
+    need(!is.null(values$Class_document_link_ids),message=F)
   )
-  
-  doc_id<-(stringr::str_split(string = input$Class_eval_doclink,pattern = "_",simplify = T)[5:7])
-  
+  document_button_values<-unlist(lapply(1:length(values$Class_document_link_ids),FUN = function(x){
+    d<-input[[values$Class_document_link_ids[x]]]
+    if(!is.null(d)){
+      names(d)<-values$Class_document_link_ids[x]
+    }
+    return(d)
+  }))
   validate(
-    need(!is.na(doc_id),message=FALSE)
+    need(!is.null(document_button_values)  ,message=F)
   )
-  
-  values$Class_eval_doc_id<-doc_id
-  updateTabsetPanel(session = session,inputId = "Eval",selected = "Document")
+  validate(
+    need(any(document_button_values>0)  ,message=F)
+  )
+  if(all(document_button_values==isolate(values$Class_document_button_counter[names(document_button_values)]))){
+    isolate(values$Class_document_button_counter[names(document_button_values)]<-0)
+    
+  }
+  else{
+    isolate(document_button_values<-document_button_values-isolate(values$Class_document_button_counter[names(document_button_values)]))
+    isolate(values$Class_document_button_counter[names(document_button_values)]<-isolate(values$Class_document_button_counter[names(document_button_values)])+document_button_values)
+    
+    validate(
+      need(any(document_button_values>0)  ,message=F)
+    )
+    doc_id<-(stringr::str_split(string = input$Class_eval_doclink,pattern = "_",simplify = T)[5:7])
+    validate(
+      need(!is.na(doc_id),message=FALSE)
+    )
+    values$Class_eval_doc_id<-doc_id
+    updateTabsetPanel(session = session,inputId = "Eval",selected = "Document")
+  }
 })
 
 #' evaluate documents
