@@ -105,12 +105,12 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
   }
   
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
-  ####
+####
   feature_matrix <-as.data.frame(importance(model))
   feature_matrix<-feature_matrix[head(seq_len(ncol(feature_matrix)), -2)]
   feature_matrix<-t(feature_matrix)
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
-  ####
+####
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[-2,,drop=F]
   print(head(feature_matrix))

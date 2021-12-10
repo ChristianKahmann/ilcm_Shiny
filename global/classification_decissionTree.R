@@ -44,19 +44,21 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
   dtm<-dtm[,order(colnames(dtm))]
   trainingLabels <- gold_table[idx,2]
   names(trainingLabels)<-gold_table[idx,1]
-  ###########
+###########
   ## effizienter
   trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
   trainingDTM$class <-trainingLabels
   
-  model <-rpart(class ~ .,data =trainingDTM, method = 'class')
-  #print(head(model))
+  model <-rpart(class ~ .,data =trainingDTM, method = 'class',maxdepth = 5, 
+                minsplit = 2, 
+                minbucket = 1)
+  #print(head(model,10))
   testDTM<-data.frame(as.matrix(dtm))
   #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
   predicted <- predict(model, testDTM, type = "prob") 
- # print(head(predicted))
+  #print(head(predicted))
   #print(typeof(predicted))
-  ###########
+###########
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
   cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
@@ -107,14 +109,16 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
   }
   
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
-  ####
-  feature_matrix<-as.matrix(model$variable.importance)
-  
+####
+  feature_matrix<-as.data.frame(model$variable.importance)
   #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
-  ####
-  #delete bias term from feature matrix
-  feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
+  colnames(feature_matrix)<-NULL
+  feature_matrix<-t(feature_matrix)
   print(head(feature_matrix))
+####
+  #delete bias term from feature matrix
+  #feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
+  
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
@@ -261,12 +265,18 @@ classify_whole_collection_dT<-function(parameters, gold_table, dtm){
   trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
   trainingDTM$class <-trainingLabels
   
-  model <-rpart(class ~ .,data =trainingDTM, method = 'class')
-  feature_matrix<-as.matrix(model$variable.importance)
+  model <-rpart(class ~ .,data =trainingDTM, method = 'class',maxdepth = 5, 
+                minsplit = 2, 
+                minbucket = 1)
+  feature_matrix<-as.data.frame(model$variable.importance)
+  #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
+  colnames(feature_matrix)<-NULL
+  feature_matrix<-t(feature_matrix)
+  print(head(feature_matrix))
 #####
   # colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
   # delete bias term from feature matrix
-  feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
+  #feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
   # if only 2 categories were used, transform feature matrix
   if(nrow(feature_matrix)==1){
     feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))

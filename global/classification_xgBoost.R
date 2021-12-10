@@ -57,7 +57,7 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   trainingDTM <-as.matrix(dtm[selector_idx, ])
   trainingDTM <- as(trainingDTM, "dgCMatrix")
   model <- xgboost(data = trainingDTM, label = trainingLabels, max.depth = 2, eta = 1, nthread = 2, nround = 2)
-  #print((model))
+  
   testDTM<-as(quanteda::as.dfm(dtm),"dgCMatrix")
   # returns vector of lenght of nrow(testDTM)
   predicted <- predict(model, testDTM) 
@@ -119,12 +119,18 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
-  feature_matrix<-xgb.importance(data = dimnames(trainingDTM)[[2]], model = model)
+####
+  feature_frame<-xgb.importance(data = dimnames(trainingDTM)[[2]], model = model)
+  
+  feature_matrix<-as.matrix(feature_frame$Gain)
   print(head(feature_matrix))
+  rownames(feature_matrix)<-feature_frame$Feature
+  feature_matrix<-t(feature_matrix)
+  
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
   #delete bias term from feature matrix
-  feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-  
+  #feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
+####  
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
