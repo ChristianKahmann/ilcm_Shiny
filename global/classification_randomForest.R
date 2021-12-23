@@ -263,12 +263,12 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
   feature_matrix <-as.data.frame(importance(model))
   feature_matrix<-feature_matrix[head(seq_len(ncol(feature_matrix)), -2)]
   feature_matrix<-t(feature_matrix)
-
+  #print(head(feature_matrix))
 #####
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
   # delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
- 
+
   # if only 2 categories were used, transform feature matrix
   if(nrow(feature_matrix)==1){
     feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))

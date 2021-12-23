@@ -56,7 +56,7 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   trainingLabels[trainingLabels == "2"] <- "1"
   trainingDTM <-as.matrix(dtm[selector_idx, ])
   trainingDTM <- as(trainingDTM, "dgCMatrix")
-  model <- xgboost(data = trainingDTM, label = trainingLabels, max.depth = 2, eta = 1, nthread = 2, nround = 2)
+  model <- xgboost(data = trainingDTM, label = trainingLabels, max.depth = 15, eta = 1, nthread = 5, nround = 15)
   
   testDTM<-as(quanteda::as.dfm(dtm),"dgCMatrix")
   # returns vector of lenght of nrow(testDTM)
@@ -80,8 +80,10 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
     count=count+1
     #print(paste0("C = ", cParameter))
     #if enough training data available use k=10, else min number of trainign samples
+### there is a xgboost way to do cross validation
     evalMeasures <- k_fold_cross_validation(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
     #print(evalMeasures$means)
+###
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
   }
@@ -120,16 +122,17 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
 ####
-  feature_frame<-xgb.importance(data = dimnames(trainingDTM)[[2]], model = model)
-  
+  feature_frame<-xgb.importance(feature_names = dimnames(trainingDTM)[[2]], model = model)
+  #feature_frame<-xgb.importance(model = model)
   feature_matrix<-as.matrix(feature_frame$Gain)
-  print(head(feature_matrix))
+  #print(length(feature_matrix))
   rownames(feature_matrix)<-feature_frame$Feature
   feature_matrix<-t(feature_matrix)
-  
+  #print(head(feature_matrix))
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
   #delete bias term from feature matrix
-  #feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
+  feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
+  print(head(feature_matrix))
 ####  
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
@@ -269,54 +272,57 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   features<-which(colSums(gold_dtm)>0)
   dtm<-dtm[,features]
   dtm<-dtm[,order(colnames(dtm))]
-  trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
+  #trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
   trainingLabels <- gold_table[idx,2]
   names(trainingLabels)<-gold_table[idx,1]
-  c_weights <- table(trainingLabels) / length(trainingLabels)
-  c_weights <- abs(c_weights - 1) 
-###
-  trainingLabels<-factor(trainingLabels)
-  #trainingLabels[trainingLabels == "1"] <- "0"
-  #trainingLabels[trainingLabels == "2"] <- "1"
-  trainingDTM <-as.matrix(dtm[selector_idx, ])
-  trainingDTM <- as(trainingDTM, "dgCMatrix")
-  #dtrain <- xgb.DMatrix(data = train$data, label=train$label)
-  model_ws <- xgboost(data = trainingDTM, label = as.numeric(trainingLabels), max.depth = 2, eta = 1, nthread = 2, nround = 2, "objective" = "multi:softprob",
-                   "eval_metric" = "mlogloss",
-                   "num_class" = length(unique(as.numeric(trainingLabels)))+1)
-  model_label <- xgboost(data = trainingDTM, label = as.numeric(trainingLabels), max.depth = 2, eta = 1, nthread = 2, nround = 2, "objective" = "multi:softmax",
-                      "eval_metric" = "mlogloss",
-                      "num_class" = length(unique(as.numeric(trainingLabels)))+1)
-  #feature_matrix<-xgb.importance(model = model)
-  feature_matrix <-xgb.importance( model = model_label, data = trainingDTM, label = trainingLabels)
-  print(head(model_label))
-###
-  #feature_matrix[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
-  # delete bias term from feature matrix
-  #feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-  # if only 2 categories were used, transform feature matrix
-  #if(nrow(feature_matrix)==1){
-  #  feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))
-  #  rownames(feature_matrix)<-setdiff(unique(gold_table[,2]),"NEG")
-  #}
-  word_counts<-colSums(dtm)  
-##  
-  testDTM<-as(quanteda::as.dfm(dtm),"dgCMatrix")
+  names<-as.factor(trainingLabels)
+  numbers<-as.numeric(names)
+  num_class <- length(unique(numbers))+1
+  df<-data.frame("label"= unique(names), "cor_num" = unique(numbers))
+  df<-df[order(df$cor_num),]
  
-  #dtest <- xgb.DMatrix(data = test$data, label=test$label)
-  predicted <- predict(model_label, testDTM) 
+  #print(df)
+  #print(unique(as.numeric(names)))
   
-##  
-  predictions<-levels(trainingLabels)[predicted]
+  trainingDTM <-  xgb.DMatrix(data = as.matrix(dtm[selector_idx, ]), label = as.numeric(factor(trainingLabels)))
+  #c_weights <- table(trainingLabels) / length(trainingLabels)
+  #c_weights <- abs(c_weights - 1) 
   
-  # add: document names to predict and classes that were selected
-  probabilities<- predict(model_ws, testDTM)
-  probabilities<-as.matrix(probabilities,nrow = 454, ncol = 7)
-  print(head(probabilities))
+  xgb_params <- list("objective" = "multi:softprob",
+                     "eval_metric" = "mlogloss",
+                     "num_class" = num_class)
+  model <- xgboost(params = xgb_params, data = trainingDTM, nrounds = 15, booster = "gblinear")
+  #feature_frame<-xgb.importance(feature_names = dimnames(trainingDTM)[[2]], model = model)
+  feature_frame<-as.data.frame(xgb.importance(model = model))
+  feature_matrix<-matrix(feature_frame$Weight, nrow = length(unique(feature_frame$Class)), ncol = length(feature_frame$Feature))
+  colnames(feature_matrix)<-feature_frame$Feature
+  rownames(feature_matrix)<- c(unique(trainingLabels),"NEG")
+  #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
+  # delete bias term from feature matrix
+  feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
+  
+  
+  # if only 2 categories were used, transform feature matrix
+  if(nrow(feature_matrix)==1){
+    feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))
+    rownames(feature_matrix)<-setdiff(unique(gold_table[,2]),"NEG")
+  }
+  word_counts<-colSums(dtm)  
+  
+  # check for labels 
+  testDTM<-xgb.DMatrix(data = as.matrix(dtm))
+  predicted <- predict(model, testDTM, reshape = TRUE)
+  predicted<- predicted[,-(num_class)]
+  colnames(predicted)<-df$label
+  
+  predictions<-colnames(predicted)[max.col(predicted, ties.method = "first")]
+
+  probabilities<-predicted
   names(predictions)<-rownames(dtm)
   rownames(probabilities)<-rownames(dtm)
   probabilities<-apply(probabilities,1,max)
   
+  ##
   keep<- intersect(which(probabilities>parameters$cl_positive_Threshold),which(predictions!="NEG"))
   log_to_file(message = paste0("&emsp;",length(keep)," predictions had a probability higher than the set threshold"),logfile)
   if(length(keep)<1){
@@ -342,19 +348,23 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
     original_text<-cbind(cbind(as.character(predictions),probabilities),orig)
   }
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
+  ## there ist a cross validation for xgbosst 
+  trainingDTM_og <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
+  trainingLabels_og <- gold_table[idx,2]
   cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
   result=NULL
   results_complete<-list()
   count=0
   for (cParameter in cParameterValues) {
     count=count+1
-    print(paste0("C = ", cParameter))
+    #print(paste0("C = ", cParameter))
     #if enough trainign data available use k=10, else min number of trainign samples
-    evalMeasures <- k_fold_cross_validation(trainingDTM, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM)[1]))
-    print(evalMeasures$means)
+    evalMeasures <- k_fold_cross_validation(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM)[1]))
+   #print(evalMeasures$means)
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
   }
+  ##
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
@@ -375,4 +385,3 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   save(info,file=paste0(path0,"info.RData"))
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
 }
-

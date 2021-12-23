@@ -114,11 +114,11 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
   #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
   colnames(feature_matrix)<-NULL
   feature_matrix<-t(feature_matrix)
-  print(head(feature_matrix))
+  #
 ####
   #delete bias term from feature matrix
-  #feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-  
+  feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
+  print(head(feature_matrix))
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
@@ -249,6 +249,8 @@ set_active_learning_whole_dT<-function(parameters, gold_table, dtm){
 ############################################
 #       Classify on entire collection      #
 ############################################
+#PROBLEM: rpart has strickt restriction when it comes to the growth of the decission tree
+## therefore multiclass classification is nearly impossible otherwise it will turn into a random forest
 classify_whole_collection_dT<-function(parameters, gold_table, dtm){
   #use neg examples in training classifier and remove examples tagged as neg afterwards
   #gold_table<-gold_table[which(gold_table[,2]!="NEG"),]
@@ -266,7 +268,7 @@ classify_whole_collection_dT<-function(parameters, gold_table, dtm){
   trainingDTM$class <-trainingLabels
   
   model <-rpart(class ~ .,data =trainingDTM, method = 'class',maxdepth = 5, 
-                minsplit = 2, 
+                minsplit = length(unique(trainingLabels))+1, 
                 minbucket = 1)
   feature_matrix<-as.data.frame(model$variable.importance)
   #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
@@ -278,22 +280,24 @@ classify_whole_collection_dT<-function(parameters, gold_table, dtm){
   # delete bias term from feature matrix
   #feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
   # if only 2 categories were used, transform feature matrix
-  if(nrow(feature_matrix)==1){
-    feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))
-    rownames(feature_matrix)<-setdiff(unique(gold_table[,2]),"NEG")
-  }
+ # if(nrow(feature_matrix)==1){
+ #   feature_matrix<-rbind(feature_matrix,(feature_matrix*-1))
+ #   rownames(feature_matrix)<-setdiff(unique(gold_table[,2]),"NEG")
+ # }
   word_counts<-colSums(dtm)  
 #### 
   testDTM<-data.frame(as.matrix(dtm))
   #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
   predicted <- predict(model, testDTM, type = "prob")
-###
-  predictions<-as.character(predicted)
+  
+### already has the correct format
+  predictions<-colnames(predicted)[max.col(predicted, ties.method = "first")]
+  print(head(predictions))
   probabilities<-predicted
   names(predictions)<-rownames(dtm)
   rownames(probabilities)<-rownames(dtm)
   probabilities<-apply(probabilities,1,max)
-  
+###
   keep<- intersect(which(probabilities>parameters$cl_positive_Threshold),which(predictions!="NEG"))
   log_to_file(message = paste0("&emsp;",length(keep)," predictions had a probability higher than the set threshold"),logfile)
   if(length(keep)<1){
@@ -326,10 +330,10 @@ classify_whole_collection_dT<-function(parameters, gold_table, dtm){
   for (cParameter in cParameterValues) {
     count=count+1
     trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
-    print(paste0("C = ", cParameter))
+    #print(paste0("C = ", cParameter))
     #if enough trainign data available use k=10, else min number of trainign samples
     evalMeasures <- k_fold_cross_validation(trainingDTM, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM)[1]))
-    print(evalMeasures$means)
+    #print(evalMeasures$means)
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
   }

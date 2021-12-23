@@ -280,8 +280,9 @@ error<-try(expr = {
       classify_whole_collection_xgb(parameters, gold_table, dtm)
     }
     if(parameters$CL_Method == "decissionTree"){
-      log_to_file(message = " <b style='color:green'>Decission Tree</b>",logfile)
-      classify_whole_collection_dT(parameters, gold_table, dtm)
+      log_to_file(message = " <b style='color:green'>Decission Tree (multiclass == random forest)</b>",logfile)
+      #classify_whole_collection_dT(parameters, gold_table, dtm)
+      classify_whole_collection_rF(parameters, gold_table, dtm)
     }
   }
   

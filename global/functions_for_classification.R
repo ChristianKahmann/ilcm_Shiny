@@ -499,9 +499,11 @@ classify_whole_collection_svm<-function(parameters, gold_table, dtm){
   word_counts<-colSums(dtm)  
   
   testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
+  
   predicted <- predict(model, testDTM,proba = T) 
   
   predictions<-as.character(predicted$predictions)
+  
   probabilities<-predicted$probabilities
   names(predictions)<-rownames(dtm)
   rownames(probabilities)<-rownames(dtm)
