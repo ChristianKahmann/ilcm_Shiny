@@ -315,7 +315,7 @@ output$Analysis_Parameter_CL<-renderUI({
     tags$h4("Classification parameters"),
     fluidRow(
       column(2,
-             selectizeInput(inputId = "CL_Context_Unit",label="Context Unit",choices=c("Document","Sentence"))%>%
+             selectizeInput(inputId = "CL_Context_Unit",label="Context Unit",choices=c("Sentence","Document"))%>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
                    bs_embed_popover(
@@ -353,7 +353,7 @@ output$Analysis_Parameter_CL<-renderUI({
                                       "Evaluate Training Set",
                                       "Classify on entire collection"))
       ),
-      conditionalPanel(condition='input.CL_Mode!="Evaluate Training Set"',
+      conditionalPanel(condition='input.CL_Mode!="Evaluate Training Set" && input.CL_Method == "SVM" ',
                        column(1,
                               numericInput(inputId = "CL_c",label = "c Parameter",value = 1,step = 0.1)%>%
                                 shinyInput_label_embed(

@@ -174,7 +174,9 @@ set_active_learning_whole_dT<-function(parameters, gold_table, dtm){
   trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
   trainingDTM$class <-trainingLabels
   
-  model <-rpart(class ~ .,data =trainingDTM, method = 'class')
+  model <-rpart(class ~ .,data =trainingDTM, method = 'class',maxdepth = 5, 
+                minsplit = 2, 
+                minbucket = 1)
   print(summary(model))
 ####
   #sample documents

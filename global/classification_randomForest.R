@@ -113,7 +113,7 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
 ####
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[-2,,drop=F]
-  print(head(feature_matrix))
+  #print(head(feature_matrix))
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
@@ -259,11 +259,11 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
   model <-randomForest(as.factor(class) ~ .,data =trainingDTM,importance=TRUE,
                        proximity=TRUE,type="classification")
   
-  #feature_matrix<-varImpPlot(model, scale = TRUE)
+ 
   feature_matrix <-as.data.frame(importance(model))
   feature_matrix<-feature_matrix[head(seq_len(ncol(feature_matrix)), -2)]
   feature_matrix<-t(feature_matrix)
-  #print(head(feature_matrix))
+ 
 #####
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
   # delete bias term from feature matrix
@@ -279,12 +279,12 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
 ####
   testDTM<-data.frame(as.matrix(dtm))
   #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
-  predicted <- predict(model, testDTM, type="prob")
+  predicted_doc <- predict(model, testDTM, type="prob")
  
 ####
-  test<-predict(model, testDTM, type="response")
-  predictions<-as.character(test)
-  probabilities<-predicted
+  predicted_class<-predict(model, testDTM, type="response")
+  predictions<-as.character(predicted_class)
+  probabilities<-predicted_doc
   names(predictions)<-rownames(dtm)
   rownames(probabilities)<-rownames(dtm)
   probabilities<-apply(probabilities,1,max)
@@ -313,13 +313,15 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
     original_text<-cbind(cbind(as.character(predictions),probabilities),orig)
   }
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
+  test_fold<-rfcv(trainingDTM, training$class, cv.fold = min(10,dim(trainingDTM)[1]))
+  print(head(test_fold))
   cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
   result=NULL
   results_complete<-list()
   count=0
   for (cParameter in cParameterValues) {
     count=count+1
-    print(paste0("C = ", cParameter))
+    #print(paste0("C = ", cParameter))
     trainingDTM_og <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
     trainingLabels <- gold_table[idx,2]
     #if enough trainign data available use k=10, else min number of trainign samples
