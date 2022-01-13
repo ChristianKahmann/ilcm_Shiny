@@ -239,7 +239,19 @@ error<-try(expr = {
     #           Training Set Evaluation        #
     ############################################
     log_to_file(message = "<b>Step 12/13: Evaluating Training Set</b>",file = logfile)
-    set_training_eval(parameters, gold_table, dtm)
+    if(parameters$CL_Method == "SVM"){
+      set_training_eval(parameters, gold_table, dtm)
+    }
+    if(parameters$CL_Method == "randomForest"){
+      set_training_eval_rF(parameters, gold_table, dtm)
+    }
+    if(parameters$CL_Method == "XGBoost"){
+      set_training_eval_xgb(parameters, gold_table, dtm)
+    }
+    if(parameters$CL_Method == "decissionTree"){
+      set_training_eval_rF(parameters, gold_table, dtm)
+    }
+    
   }
   
   if(parameters$cl_Mode=="Active learning on whole documents"){
@@ -258,7 +270,7 @@ error<-try(expr = {
       set_active_learning_whole_xgb(parameters, gold_table, dtm)
     }
     if(parameters$CL_Method == "decissionTree"){
-      set_active_learning_whole_dT(parameters, gold_table, dtm)
+      set_active_learning_whole_rF(parameters, gold_table, dtm)
     }
     
   }

@@ -415,10 +415,10 @@ set_active_learning_whole_svm<-function(parameters, gold_table, dtm){
   
   testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm[random_sample_sentences,]))
   labels <- predict(model, testDTM,proba = T) 
-  print(head(labels))
+  print(length(labels))
   names(labels$predictions)<-random_sample_sentences
   rownames(labels$probabilities)<-random_sample_sentences
-  
+  print(typeof(labels))
   #remove prediction of class "NEG"
   NEG_predictions<-which(labels$predictions=="NEG")
   if(length(NEG_predictions)>0){

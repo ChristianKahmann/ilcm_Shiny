@@ -246,7 +246,6 @@ k_fold_cross_validation <- function(labeledDTM, classesOfDocuments, k = 10, cost
   return(result)
 }
 
-
 #' optimize_C
 #' @param trainingDTM
 #' @param trainingLabels

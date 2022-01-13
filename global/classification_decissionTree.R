@@ -154,6 +154,8 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
 ############################################
 #           learning whole                 #
 ############################################
+# Problem: läuft nicht: da man immer nur 2 Klassen auf einmal betrachten kann
+## betrachtet man mehrere Klassen wird aus dem decission tree ein random forest
 set_active_learning_whole_dT<-function(parameters, gold_table, dtm){
   if(length(unique(gold_table[,2]))==1){
     gold_table <- rbind(gold_table, cbind(sample(setdiff(rownames(dtm),gold_table[,1]),dim(gold_table)[1],replace = F),"NEG","sampled negative examples",as.character(Sys.time())))
@@ -195,10 +197,12 @@ set_active_learning_whole_dT<-function(parameters, gold_table, dtm){
   #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
   labels <- predict(model, testDTM, type = "prob") 
   
-  print(head(labels))
+  
   
   #names(labels$predictions)<-random_sample_sentences
   rownames(labels)<-random_sample_sentences
+  
+  #print(head(labels))
 ###  
   #remove prediction of class "NEG"
   NEG_predictions<-which(labels=="NEG")
