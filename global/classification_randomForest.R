@@ -12,7 +12,7 @@ k_fold_cross_validation_rF <- function(labeledDTM, classesOfDocuments, k = 10, c
     
     my_trainingSet <- as.matrix(trainingSet)
     model <-randomForest(y = as.factor(trainingLabels),x =trainingSet,importance=TRUE,
-                         proximity=TRUE,type="classification")
+                         proximity=TRUE,type="classification",ntree=5)
     
     testSet <- labeledDTM[currentFold, ]
     testLabels <- classesOfDocuments[currentFold]
@@ -88,14 +88,20 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
   trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
   trainingDTM$class <-gold_table[idx,2]
  
-  set.seed(71)
+  start.time <- Sys.time()
   model <-randomForest(as.factor(class) ~ .,data =trainingDTM,importance=TRUE,
-                       proximity=TRUE,type="classification")
-  #print(head(model))
+                       proximity=TRUE,type="classification", ntree = 15)
+  end.time <- Sys.time()
+  time_model <- end.time - start.time
+  print("model time:")
+  print(time_model)
   testDTM<-data.frame(as.matrix(dtm),stringsAsFactors=False)
-  #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
+  start.time<- Sys.time()
   predicted <- predict(model, testDTM, type="prob") 
-  #print(head(predicted))
+  end.time <- Sys.time()
+  time_pred <- end.time - start.time
+  print("prediction time:")
+  print(time_pred)
 ###########
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
@@ -103,16 +109,16 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
   result=NULL
   results_complete<-list()
   count=0
-  #trainingDTM_og <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
-  #trainingDTM_og<-as.matrix(dtm[selector_idx, ])
-  trainingLabels <- gold_table[idx,2]
-  names(trainingLabels)<-gold_table[idx,1]
+  trainingDTM_og <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
+  trainingDTM_og<-as.matrix(dtm[selector_idx, ])
+  trainingLabels_og <- gold_table[idx,2]
+  names(trainingLabels_og)<-gold_table[idx,1]
   for (cParameter in cParameterValues) {
     count=count+1
     print(paste0("C = ", cParameter))
     #if enough training data available use k=10, else min number of trainign samples
-    evalMeasures <- k_fold_cross_validation_RF(trainingDTM, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM)[1]))
-    #print(evalMeasures$means)
+    evalMeasures <- k_fold_cross_validation_rF(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+    print(evalMeasures$means)
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
   }
@@ -200,34 +206,33 @@ set_training_eval_rF<-function(parameters, gold_table, dtm){
   features<-which(colSums(gold_dtm)>0)
   dtm<-dtm[,features]
   dtm<-dtm[,order(colnames(dtm))]
-  trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
-  trainingLabels <- gold_table[idx,2]
-  names(trainingLabels)<-gold_table[idx,1]
-####
-  trainingDTM_test <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
-  trainingDTM_test$class <-as.factor(gold_table[idx,2])
-####
+  
   cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
   result <- NULL
   results_complete<-list()
   count=0
 ####
-  trainingDTM_og <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
-  trainingDTM_og<-as.matrix(dtm[selector_idx, ])
-  trainingLabels_og <- gold_table[idx,2]
-  names(trainingLabels_og)<-gold_table[idx,1]
+  trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
+  trainingDTM<-as.matrix(dtm[selector_idx, ])
+  trainingLabels <- gold_table[idx,2]
+  names(trainingLabels)<-gold_table[idx,1]
 ####
+  start.time<- Sys.time()
   for (cParameter in cParameterValues) {
     count=count+1
     print(paste0("C = ", cParameter))
     #if enough training data available use k=10, else min number of trainign samples
 #####
-    evalMeasures <- k_fold_cross_validation_rF(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+    evalMeasures <- k_fold_cross_validation_rF(trainingDTM, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM)[1]))
 #####
     print(evalMeasures$means)
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
   }
+  end.time <- Sys.time()
+  time_vali <- end.time - start.time
+  print("validation time:")
+  print(time_vali)
   
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
@@ -264,9 +269,13 @@ set_active_learning_whole_rF<-function(parameters, gold_table, dtm){
   trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
   trainingDTM$class <-gold_table[idx,2]
   
-  set.seed(71)
+  start.time <- Sys.time()
   model <-randomForest(as.factor(class) ~ .,data =trainingDTM,importance=TRUE,
-                       proximity=TRUE,type="classification")
+                       proximity=TRUE,type="classification", ntree = 15)
+  end.time <- Sys.time()
+  time_model <- end.time - start.time
+  print("model time:")
+  print(time_model)
 ###
   #sample documents
   sentence_ids<-setdiff(rownames(dtm),gold_table[,1])
@@ -281,10 +290,13 @@ set_active_learning_whole_rF<-function(parameters, gold_table, dtm){
   random_sample_sentences<-setdiff(rownames(dtm),gold_table[,1])[which(stringr::str_replace(string = setdiff(rownames(dtm),gold_table[,1]),pattern = "_[0-9]+$",replacement = "")%in%random_sample)]
 ###
   testDTM<-data.frame(as.matrix(dtm[random_sample_sentences,]))
-
+  start.time <- Sys.time()
   labels_prob <- predict(model, testDTM, type="prob") 
   labels_pred <- predict(model, testDTM, type = "response")
-  
+  end.time <- Sys.time()
+  time_pred <- end.time - start.time
+  print("prediction time:")
+  print(time_pred)
   predictions<-as.character(labels_pred)
   names(predictions)<-random_sample_sentences
   
@@ -359,11 +371,14 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
   trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
   trainingDTM$class <-gold_table[idx,2]
   
-  set.seed(71)
+  start.time <- Sys.time()
   model <-randomForest(as.factor(class) ~ .,data =trainingDTM,importance=TRUE,
-                       proximity=TRUE,type="classification")
+                       proximity=TRUE,type="classification", ntree = 15)
   
- 
+  end.time <- Sys.time()
+  time_model <- end.time - start.time
+  print("model time:")
+  print(time_model)
   feature_matrix <-as.data.frame(importance(model))
   feature_matrix<-feature_matrix[head(seq_len(ncol(feature_matrix)), -2)]
   feature_matrix<-t(feature_matrix)
@@ -383,15 +398,19 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
 ####
   testDTM<-data.frame(as.matrix(dtm))
   #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
+  start.time <- Sys.time()
   predicted_doc <- predict(model, testDTM, type="prob")
- 
-####
   predicted_class<-predict(model, testDTM, type="response")
+  end.time <- Sys.time()
+  time_pred <- end.time - start.time
+  print("prediction time:")
+  print(time_pred)
   predictions<-as.character(predicted_class)
   probabilities<-predicted_doc
   names(predictions)<-rownames(dtm)
   rownames(probabilities)<-rownames(dtm)
   probabilities<-apply(probabilities,1,max)
+####
   keep<- intersect(which(probabilities>parameters$cl_positive_Threshold),which(predictions!="NEG"))
   log_to_file(message = paste0("&emsp;",length(keep)," predictions had a probability higher than the set threshold"),logfile)
   if(length(keep)<1){
@@ -418,18 +437,24 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
   }
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
   cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
+####
+  trainingDTM_og <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
+  trainingDTM_og<-as.matrix(dtm[selector_idx, ])
+  trainingLabels_og <- gold_table[idx,2]
+  names(trainingLabels_og)<-gold_table[idx,1]
+####
   result=NULL
   results_complete<-list()
   count=0
   for (cParameter in cParameterValues) {
     count=count+1
     print(paste0("C = ", cParameter))
-    trainingDTM_og<-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
-    trainingLabels <- gold_table[idx,2]
     
     #if enough trainign data available use k=10, else min number of trainign samples
-    evalMeasures <- k_fold_cross_validation_RF(trainingDTM_og, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+####
+    evalMeasures <- k_fold_cross_validation_rF(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
     print(evalMeasures$means)
+####
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
   }

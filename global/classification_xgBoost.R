@@ -6,39 +6,44 @@ library(caret)
 #        k-fold cross validation           #
 ############################################
 #' adapted cross validation for xgboost
+#' only works with the "ag_news" data set 
 k_fold_cross_validation_xgb <- function(labeledDTM, classesOfDocuments, params, k = 10, cost = 10, ...) {
   evaluationMeasures <- NULL
   complete_results<-list()
+  
+  names<-as.factor(classesOfDocuments)
+  numbers<-as.numeric(names)
+  num_class <- length(unique(numbers))+1
+  order_label<-data.frame("label"= unique(names), "cor_num" = unique(numbers))
+  order_label<-order_label[order(order_label$cor_num),]
+  
   for (j in 1:k) {
     currentFold <- get_k_fold_logical_indexes(j, k, nrow(labeledDTM))
     trainingSet <- labeledDTM[!currentFold, ]
     trainingLabels <- classesOfDocuments[!currentFold]
     
-#####
-    names<-as.factor(classesOfDocuments)
-    numbers<-as.numeric(names)
-    num_class <- length(unique(numbers))+1
-    order_label<-data.frame("label"= unique(names), "cor_num" = unique(numbers))
-    order_label<-order_label[order(order_label$cor_num),]
+####
     xgb_params <- list("objective" = "multi:softprob",
                        "eval_metric" = "mlogloss",
                        "num_class" = length(unique(as.numeric(as.factor(trainingLabels))))+1)
-    
-    my_trainingSet <- xgb.DMatrix(data = as.matrix(trainingSet), label = as.numeric(factor(trainingLabels)))
-    
-    model<- xgboost(params = xgb_params, data = my_trainingSet, nrounds = 1)
-    
+      my_trainingSet <- xgb.DMatrix(data = as.matrix(trainingSet), label = as.numeric(factor(trainingLabels)))
+      
+      model<- xgboost(params = xgb_params, data = my_trainingSet, nrounds = 1)
+      testSet <- labeledDTM[currentFold, ]
+      testLabels <- classesOfDocuments[currentFold]
+      my_testSet <- xgb.DMatrix(data = as.matrix(testSet))
+      predicted <- predict(model, my_testSet, reshape = TRUE)
+      
+      if(ncol(predicted)> nrow(order_label)){
+        predicted<- as.matrix(predicted[,-1])
+      }
+      
+      colnames(predicted)<-order_label$label
+      predictions<-colnames(predicted)[max.col(predicted, ties.method = "first")]
+      predictedLabels <- predictions
+      
 #####
-    testSet <- labeledDTM[currentFold, ]
-    testLabels <- classesOfDocuments[currentFold]
-    my_testSet <- xgb.DMatrix(data = as.matrix(testSet))
-    predicted <- predict(model, my_testSet, reshape = TRUE)
-    predicted<- predicted[,-1]
-    colnames(predicted)<-order_label$label
-    
-    predictions<-colnames(predicted)[max.col(predicted, ties.method = "first")]
-   # names(predictions)<-rownames(dtm[currentFold,])
-    predictedLabels <- predictions
+   
     
     # collect k evaluation results
     kthEvaluation <- F.measure(predictedLabels, testLabels )
@@ -62,6 +67,8 @@ k_fold_cross_validation_xgb <- function(labeledDTM, classesOfDocuments, params, 
 #           learning example               #
 ############################################
 #' adapted version to produce 50 learning examples with xgboost
+#' Problem: k_fold_cross_validation_xgb shows: Error in `colnames<-`(`*tmp*`, value = order_label$label) : 
+#' attempt to set 'colnames' on an object with less than two dimensions
 set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   if(parameters$use_dictionary==TRUE){
     log_to_file(message = "&emsp; Dictionary lookup",file = logfile)
@@ -112,11 +119,20 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   trainingLabels[trainingLabels == "2"] <- "1"
   trainingDTM <-as.matrix(dtm[selector_idx, ])
   trainingDTM <- as(trainingDTM, "dgCMatrix")
+  start.time <- Sys.time()
   model <- xgboost(data = trainingDTM, label = trainingLabels, max.depth = 15, eta = 1, nthread = 5, nround = 15)
-  
+  end.time <- Sys.time()
+  time_model <- end.time - start.time
+  print("model time:")
+  print(time_model)
   testDTM<-as(quanteda::as.dfm(dtm),"dgCMatrix")
   # returns vector of lenght of nrow(testDTM)
+  start.time <- Sys.time()
   predicted <- predict(model, testDTM) 
+  end.time <- Sys.time()
+  time_pred <- end.time - start.time
+  print("prediction time:")
+  print(time_pred)
   one_vec<-rep(1,length(predicted))
   NEG <- one_vec - predicted
   frame_pred<-data.frame(predicted,NEG)
@@ -240,6 +256,7 @@ set_training_eval_xgb<-function(parameters, gold_table, dtm){
   result <- NULL
   results_complete<-list()
   count=0
+  start.time <- Sys.time()
   for (cParameter in cParameterValues) {
     count=count+1
     print(paste0("C = ", cParameter))
@@ -250,7 +267,10 @@ set_training_eval_xgb<-function(parameters, gold_table, dtm){
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
   }
-  
+  end.time <- Sys.time()
+  time_vali <- end.time - start.time
+  print("validation time:")
+  print(time_vali)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
   
@@ -296,7 +316,12 @@ set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
                      "eval_metric" = "mlogloss",
                      "num_class" = num_class)
   trainingDTM <-  xgb.DMatrix(data = as.matrix(dtm[selector_idx, ]), label = as.numeric(factor(trainingLabels)))
+  start.time <- Sys.time()
   model<- xgboost(params = xgb_params, data = trainingDTM, nrounds = 5) 
+  end.time <- Sys.time()
+  time_model <- end.time - start.time
+  print("model time:")
+  print(time_model)
 ###
   #sample documents
   sentence_ids<-setdiff(rownames(dtm),gold_table[,1])
@@ -311,9 +336,13 @@ set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
   random_sample_sentences<-setdiff(rownames(dtm),gold_table[,1])[which(stringr::str_replace(string = setdiff(rownames(dtm),gold_table[,1]),pattern = "_[0-9]+$",replacement = "")%in%random_sample)]
 ###
   testDTM<-xgb.DMatrix(data = as.matrix(dtm))
-  
+  start.time <- Sys.time()
   predicted <- predict(model, testDTM, reshape = TRUE)
   predicted<- predicted[,-1]
+  end.time <- Sys.time()
+  time_pred <- end.time - start.time
+  print("predictiom time:")
+  print(time_pred)
   colnames(predicted)<-order_label$label
   
   predictions<-colnames(predicted)[max.col(predicted, ties.method = "first")]
@@ -402,8 +431,12 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   xgb_params <- list("objective" = "multi:softprob",
                      "eval_metric" = "mlogloss",
                      "num_class" = num_class)
+  start.time <- Sys.time()
   model <- xgboost(params = xgb_params, data = trainingDTM, nrounds = 5, booster = "gblinear")
-  
+  end.time <- Sys.time()
+  time_model <- end.time - start.time
+  print("model time:")
+  print(time_model)
   feature_frame<-as.data.frame(xgb.importance(model = model))
   feature_matrix<-matrix(feature_frame$Weight, nrow = length(unique(feature_frame$Class)), ncol = length(feature_frame$Feature))
   colnames(feature_matrix)<-feature_frame$Feature
@@ -422,11 +455,13 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   
   # check for labels 
   testDTM<-xgb.DMatrix(data = as.matrix(dtm))
+  start.time <- Sys.time()
   pre_model<- xgboost(params = xgb_params, data = trainingDTM, nrounds = 5) 
   predicted <- predict(pre_model, testDTM, reshape = TRUE)
-  
-  
-  
+  end.time <- Sys.time()
+  time_pred <- end.time - start.time
+  print("prediction time:")
+  print(time_pred)
   predicted<- predicted[,-1]
   colnames(predicted)<-order_label$label
   

@@ -245,11 +245,20 @@ set_learning_samples_svm<-function(parameters, gold_table, dtm){
   names(trainingLabels)<-gold_table[idx,1]
   c_weights <- table(trainingLabels) / length(trainingLabels)
   c_weights <- abs(c_weights - 1) 
+  start.time <- Sys.time()
   model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = parameters$cl_c,epsilon = 0.01,bias = 1)
   #print(head(model))
+  end.time <- Sys.time()
+  time_model <- end.time - start.time
+  print("model time:")
+  print(time_model)
   testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
+  start.time <- Sys.time()
   predicted <- predict(model, testDTM,proba = T) 
-  #print(head(predicted))
+  end.time <- Sys.time()
+  time_pred <- end.time - start.time
+  print("prediction time:")
+  print(time_pred)
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
@@ -270,7 +279,7 @@ set_learning_samples_svm<-function(parameters, gold_table, dtm){
   
   log_to_file(message = "&emsp; Choose active learning examples",file = logfile)
   if (parameters$cl_active_learning_strategy == "LC") {
-    print(head(predicted$probabilities))
+    
     boundary_distances <- abs(predicted$probabilities[,parameters$cl_Category] - 0.5)
     uncertain_decisions <- order(boundary_distances)
     unset_labels <- which(!rownames(dtm)%in%gold_table[which(!gold_table[,2]%in%c("dictionary lookup","sampled negative examples")),1])
@@ -301,11 +310,11 @@ set_learning_samples_svm<-function(parameters, gold_table, dtm){
   
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
   feature_matrix<-model$W
-  print(head(feature_matrix,10))
+ 
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-  print(head(feature_matrix,10))
+  
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
@@ -356,6 +365,7 @@ set_training_eval<-function(parameters, gold_table, dtm){
   result <- NULL
   results_complete<-list()
   count=0
+  start.time <- Sys.time()
   for (cParameter in cParameterValues) {
     count=count+1
     print(paste0("C = ", cParameter))
@@ -365,6 +375,10 @@ set_training_eval<-function(parameters, gold_table, dtm){
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
   }
+  end.time <- Sys.time()
+  time_vali <- end.time - start.time
+  print("k-fold validation time:")
+  print(time_vali)
   
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
@@ -399,8 +413,12 @@ set_active_learning_whole_svm<-function(parameters, gold_table, dtm){
   names(trainingLabels)<-gold_table[idx,1]
   c_weights <- table(trainingLabels) / length(trainingLabels)
   c_weights <- abs(c_weights - 1) 
+  start.time <- Sys.time()
   model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = parameters$cl_c,epsilon = 0.01,bias = 1)
-  
+  end.time <- Sys.time()
+  time_model <- end.time - start.time
+  print("model time:")
+  print(time_model)
   #sample documents
   sentence_ids<-setdiff(rownames(dtm),gold_table[,1])
   known_docs<-unique(stringr::str_extract(string = gold_table[,1],pattern = ".+?_[0-9]+"))
@@ -414,11 +432,15 @@ set_active_learning_whole_svm<-function(parameters, gold_table, dtm){
   random_sample_sentences<-setdiff(rownames(dtm),gold_table[,1])[which(stringr::str_replace(string = setdiff(rownames(dtm),gold_table[,1]),pattern = "_[0-9]+$",replacement = "")%in%random_sample)]
   
   testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm[random_sample_sentences,]))
+  start.time <- Sys.time()
   labels <- predict(model, testDTM,proba = T) 
-  print(length(labels))
+  end.time <- Sys.time()
+  time_pred <- end.time - start.time
+  print("prediction time:")
+  print(time_pred)
   names(labels$predictions)<-random_sample_sentences
   rownames(labels$probabilities)<-random_sample_sentences
-  print(typeof(labels))
+  
   #remove prediction of class "NEG"
   NEG_predictions<-which(labels$predictions=="NEG")
   if(length(NEG_predictions)>0){
@@ -484,7 +506,12 @@ classify_whole_collection_svm<-function(parameters, gold_table, dtm){
   names(trainingLabels)<-gold_table[idx,1]
   c_weights <- table(trainingLabels) / length(trainingLabels)
   c_weights <- abs(c_weights - 1) 
+  start.time <- Sys.time()
   model <- LiblineaR(trainingDTM, trainingLabels,wi=c_weights,cost = parameters$cl_c,epsilon = 0.01,bias = 1)
+  end.time <- Sys.time()
+  time_model <- end.time - start.time
+  print("model time:")
+  print(time_model)
   feature_matrix<-model$W
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
   # delete bias term from feature matrix
@@ -499,9 +526,12 @@ classify_whole_collection_svm<-function(parameters, gold_table, dtm){
   word_counts<-colSums(dtm)  
   
   testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
-  
+  start.time<- Sys.time()
   predicted <- predict(model, testDTM,proba = T) 
-  
+  end.time <- Sys.time()
+  time_pred <- end.time - start.time
+  print("prediction time:")
+  print(time_pred)
   predictions<-as.character(predicted$predictions)
   
   probabilities<-predicted$probabilities

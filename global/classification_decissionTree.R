@@ -48,16 +48,21 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
   ## effizienter
   trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
   trainingDTM$class <-trainingLabels
-  
+  start.time <- Sys.time()
   model <-rpart(class ~ .,data =trainingDTM, method = 'class',maxdepth = 5, 
                 minsplit = 2, 
                 minbucket = 1)
-  #print(head(model,10))
+  end.time <- Sys.time()
+  time_model <- end.time - start.time
+  print("model time:")
+  print(time_model)
   testDTM<-data.frame(as.matrix(dtm))
-  #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
+  start.time <-Sys.time()
   predicted <- predict(model, testDTM, type = "prob") 
-  #print(head(predicted))
-  #print(typeof(predicted))
+  end.time <- Sys.time()
+  time_pred <- end.time - start.time
+  print("prediction time:")
+  print(time_pred)
 ###########
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
@@ -66,14 +71,15 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
   results_complete<-list()
   count=0
   trainingDTM_og <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
-  trainingLabels <- gold_table[idx,2]
-  names(trainingLabels)<-gold_table[idx,1]
+  trainingDTM_og<-as.matrix(dtm[selector_idx, ])
+  trainingLabels_og <- gold_table[idx,2]
+  names(trainingLabels_og)<-gold_table[idx,1]
   for (cParameter in cParameterValues) {
     count=count+1
     print(paste0("C = ", cParameter))
     #if enough training data available use k=10, else min number of trainign samples
-    evalMeasures <- k_fold_cross_validation(trainingDTM_og, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
-    #print(evalMeasures$means)
+    evalMeasures <- k_fold_cross_validation_rF(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+    print(evalMeasures$means)
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
   }
@@ -118,7 +124,6 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
 ####
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
-  print(head(feature_matrix))
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
@@ -154,8 +159,8 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
 ############################################
 #           learning whole                 #
 ############################################
-# Problem: läuft nicht: da man immer nur 2 Klassen auf einmal betrachten kann
-## betrachtet man mehrere Klassen wird aus dem decission tree ein random forest
+#PROBLEM: rpart has strickt restriction when it comes to the growth of the decission tree
+## therefore multiclass classification is nearly impossible otherwise it will turn into a random forest
 set_active_learning_whole_dT<-function(parameters, gold_table, dtm){
   if(length(unique(gold_table[,2]))==1){
     gold_table <- rbind(gold_table, cbind(sample(setdiff(rownames(dtm),gold_table[,1]),dim(gold_table)[1],replace = F),"NEG","sampled negative examples",as.character(Sys.time())))
