@@ -513,14 +513,13 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
      count=count+1
      print(paste0("C = ", cParameter))
      #if enough trainign data available use k=10, else min number of trainign samples
-     evalMeasures <- evalMeasures <- k_fold_cross_validation_xgb(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+     evalMeasures  <- k_fold_cross_validation_xgb(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+     
      print(evalMeasures$means)
-     #result <- c(result, xgb_cv$evaluation_log)
-     result <- c(result, evalMeasures$means)
+     result <- c(result, evalMeasures$means["F"])
      results_complete[[count]]<-evalMeasures$complete
-  
    }
-  #results_complete<- xgb_cv
+  
   ##
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
