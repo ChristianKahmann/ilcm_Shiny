@@ -6,11 +6,21 @@ library(caret)
 #        k-fold cross validation           #
 ############################################
 #' adapted cross validation for xgboost
-#' only works with the "ag_news" data set 
+#' @param labledDTM
+#' @param classesOfDocuments
+#' @param k (number of folds)
+#' @param cost
+#' 
+#' @return result list depending of
+#' list:
+#'         evaluation measures
+#'         complete_results
+#'
+#' @export
+#' @example 
 k_fold_cross_validation_xgb <- function(labeledDTM, classesOfDocuments, params, k = 10, cost = 10, ...) {
   evaluationMeasures <- NULL
   complete_results<-list()
-  
   names<-as.factor(classesOfDocuments)
   numbers<-as.numeric(names)
   num_class <- length(unique(numbers))+1
@@ -21,7 +31,6 @@ k_fold_cross_validation_xgb <- function(labeledDTM, classesOfDocuments, params, 
     currentFold <- get_k_fold_logical_indexes(j, k, nrow(labeledDTM))
     trainingSet <- labeledDTM[!currentFold, ]
     trainingLabels <- classesOfDocuments[!currentFold]
-    
 ####
     xgb_params <- list("objective" = "multi:softprob",
                        "eval_metric" = "mlogloss",
@@ -41,10 +50,7 @@ k_fold_cross_validation_xgb <- function(labeledDTM, classesOfDocuments, params, 
       colnames(predicted)<-order_label$label
       predictions<-colnames(predicted)[max.col(predicted, ties.method = "first")]
       predictedLabels <- predictions
-      
 #####
-   
-    
     # collect k evaluation results
     kthEvaluation <- F.measure(predictedLabels, testLabels )
     #print(kthEvaluation)
@@ -66,9 +72,10 @@ k_fold_cross_validation_xgb <- function(labeledDTM, classesOfDocuments, params, 
 ############################################
 #           learning example               #
 ############################################
-#' adapted version to produce 50 learning examples with xgboost
-#' Problem: k_fold_cross_validation_xgb shows: Error in `colnames<-`(`*tmp*`, value = order_label$label) : 
-#' attempt to set 'colnames' on an object with less than two dimensions
+#' create 50 active learning sample for choosen class - xgboost mode
+#' @param parameters (list of set parameters from task scheduler)
+#' @param gold_table (assigns classes to already annotated documents)
+#' @param dtm (current document term matrix)
 set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   if(parameters$use_dictionary==TRUE){
     log_to_file(message = "&emsp; Dictionary lookup",file = logfile)
@@ -240,6 +247,10 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
 ############################################
 #           Training Set Evaluation        #
 ############################################
+#' evaluate the trainings set - xgboost mode
+#' @param parameters (list of set parameters from task scheduler)
+#' @param gold_table (assigns classes to already annotated documents)
+#' @param dtm (current document term matrix)
 set_training_eval_xgb<-function(parameters, gold_table, dtm){
   idx<-which(gold_table[,1]%in%rownames(dtm))
   selector_idx<-gold_table[idx,1]
@@ -288,6 +299,10 @@ set_training_eval_xgb<-function(parameters, gold_table, dtm){
 ############################################
 #           learning whole                 #
 ############################################
+#' active learning on whole document (when context unit "sentence" is selected) - xgboost mode
+#' @param parameters (list of set parameters from task scheduler)
+#' @param gold_table (assigns classes to already annotated documents)
+#' @param dtm (current document term matrix)
 set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
   if(length(unique(gold_table[,2]))==1){
     gold_table <- rbind(gold_table, cbind(sample(setdiff(rownames(dtm),gold_table[,1]),dim(gold_table)[1],replace = F),"NEG","sampled negative examples",as.character(Sys.time())))
@@ -408,6 +423,11 @@ set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
 ############################################
 #       Classify on entire collection      #
 ############################################
+#' classify on entire collection - xgboost mode
+#' @param parameters (list of set parameters from task scheduler)
+#' @param gold_table (assigns classes to already annotated documents)
+#' @param dtm (current document term matrix)
+#' WARNING: parameters$cl_positive_Threshold need to be small in order to see all predictions
 classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   #use neg examples in training classifier and remove examples tagged as neg afterwards
   #gold_table<-gold_table[which(gold_table[,2]!="NEG"),]

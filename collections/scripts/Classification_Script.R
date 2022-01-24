@@ -19,6 +19,7 @@ error<-try(expr = {
   require(LiblineaR)
   require(SparseM)
   require(xgboost)
+  library(rpart)
   #load parameters
   load("collections/tmp/tmp.RData")
   parameters_original<-parameters

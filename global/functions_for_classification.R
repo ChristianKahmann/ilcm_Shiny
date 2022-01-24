@@ -1,6 +1,6 @@
 ## functions for classification tasks
 
-#check for document/sentece level annotations
+#' check for document/sentece level annotations
 check_annotations<-function(parameters, annotations, classifications_approved){
   if(parameters$cooc_window=="Document"){
     annotations<-annotations[which(annotations$document_annotation=="TRUE"),]
@@ -13,7 +13,7 @@ check_annotations<-function(parameters, annotations, classifications_approved){
   return(list(annotations=annotations, classifications_approved = classifications_approved))
 }
 
-#annotations for documents in collection?
+#' annotations for documents in collection?
 annotation_in_collection<-function(anno_ids,db_data, parameters){
   if(length(anno_ids)==0){
     log_to_file(message = "&emsp;<b style='color:red'>&#10008; No annotations found for chosen project.</b>",logfile)
@@ -33,7 +33,7 @@ annotation_in_collection<-function(anno_ids,db_data, parameters){
   return(anno_ids_in_token)
 }
 
-#get original documents
+#' get original documents
 get_og_doc<-function(parameters, db_data){
   if(parameters$cooc_window=="Document"){
     doc_ids<-db_data$token[,2]
@@ -50,7 +50,7 @@ get_og_doc<-function(parameters, db_data){
   return(documents_original)
 }
 
-#formatting classification input as tibble (sentence)
+#' formatting classification input as tibble (sentence)
 formatting_sentence<-function(dtm, anno_pos, pos_ident, classifications_approved){
   for(i in 1:dim(anno_pos)[1]){
     id_ws<-paste(anno_pos[i,"from"]:anno_pos[i,"to"],collapse = ", ")
@@ -87,7 +87,7 @@ formatting_sentence<-function(dtm, anno_pos, pos_ident, classifications_approved
   return(list(dtm=dtm,ign = ign))
 }
 
-#formatting classification input as tibble (document)
+#' formatting classification input as tibble (document)
 formatting_document<-function(dtm, anno_pos, pos_ident, classifications_approved){
   for(i in 1:dim(anno_pos)[1]){
     identifier<-paste(anno_pos[i,"dataset"],anno_pos[i,"id"],sep="_")
@@ -124,7 +124,7 @@ formatting_document<-function(dtm, anno_pos, pos_ident, classifications_approved
   return(list(dtm=dtm,ign = ign))
 }
 
-#insert made annotations and approved classifications
+#' insert made annotations and approved classifications
 check_classification_sentence<-function(class_appr, gold_table){
   for(i in 1:dim(class_appr)[1]){
     identifier<-paste(tolower(class_appr[i,1]),class_appr[i,2],class_appr[i,3],sep="_")
@@ -153,7 +153,7 @@ check_classification_sentence<-function(class_appr, gold_table){
   }
   return(list(gold_table = gold_table, count = count))
 }
-#insert made annotations and approved classifications
+#'insert made annotations and approved classifications
 check_classification_document<-function(class_appr, gold_table, count){
   for(i in 1:dim(annotations)[1]){
     identifier<-paste(anno_pos[i,"dataset"],anno_pos[i,"id"],sep="_")
@@ -200,6 +200,10 @@ check_classification_document<-function(class_appr, gold_table, count){
 ############################################
 #           learning example               #
 ############################################
+#' create 50 active learning sample for choosen class
+#' @param parameters (list of set parameters from task scheduler)
+#' @param gold_table (assigns classes to already annotated documents)
+#' @param dtm (current document term matrix)
 set_learning_samples_svm<-function(parameters, gold_table, dtm){
   if(parameters$use_dictionary==TRUE){
     log_to_file(message = "&emsp; Dictionary lookup",file = logfile)
@@ -349,6 +353,10 @@ set_learning_samples_svm<-function(parameters, gold_table, dtm){
 ############################################
 #           Training Set Evaluation        #
 ############################################
+#' evaluate the trainings set
+#' @param parameters (list of set parameters from task scheduler)
+#' @param gold_table (assigns classes to already annotated documents)
+#' @param dtm (current document term matrix)
 set_training_eval<-function(parameters, gold_table, dtm){
   idx<-which(gold_table[,1]%in%rownames(dtm))
   selector_idx<-gold_table[idx,1]
@@ -397,6 +405,10 @@ set_training_eval<-function(parameters, gold_table, dtm){
 ############################################
 #           learning whole                 #
 ############################################
+#' active learning on whole document (when context unit "sentence" is selected)
+#' @param parameters (list of set parameters from task scheduler)
+#' @param gold_table (assigns classes to already annotated documents)
+#' @param dtm (current document term matrix)
 set_active_learning_whole_svm<-function(parameters, gold_table, dtm){
   if(length(unique(gold_table[,2]))==1){
     gold_table <- rbind(gold_table, cbind(sample(setdiff(rownames(dtm),gold_table[,1]),dim(gold_table)[1],replace = F),"NEG","sampled negative examples",as.character(Sys.time())))
@@ -492,6 +504,10 @@ set_active_learning_whole_svm<-function(parameters, gold_table, dtm){
 ############################################
 #       Classify on entire collection      #
 ############################################
+#' classify on entire collection
+#' @param parameters (list of set parameters from task scheduler)
+#' @param gold_table (assigns classes to already annotated documents)
+#' @param dtm (current document term matrix)
 classify_whole_collection_svm<-function(parameters, gold_table, dtm){
   #use neg examples in training classifier and remove examples tagged as neg afterwards
   #gold_table<-gold_table[which(gold_table[,2]!="NEG"),]

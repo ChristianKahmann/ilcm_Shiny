@@ -1,7 +1,19 @@
 ############################################
 #        k-fold cross validation           #
 ############################################
-###### k-fold cross-validation for randomForest
+#' k-fold cross-validation for randomForest
+#' @param labledDTM
+#' @param classesOfDocuments
+#' @param k (number of folds)
+#' @param cost
+#' 
+#' @return result list depending of
+#' list:
+#'         evaluation measures
+#'         complete_results
+#'
+#' @export
+#' @example 
 k_fold_cross_validation_rF <- function(labeledDTM, classesOfDocuments, k = 10, cost = 10, ...) {
   evaluationMeasures <- NULL
   complete_results<-list()
@@ -43,6 +55,10 @@ k_fold_cross_validation_rF <- function(labeledDTM, classesOfDocuments, k = 10, c
 ############################################
 #           learning example               #
 ############################################
+#' create 50 active learning sample for choosen class - randomForest mode
+#' @param parameters (list of set parameters from task scheduler)
+#' @param gold_table (assigns classes to already annotated documents)
+#' @param dtm (current document term matrix)
 set_learning_samples_rF<-function(parameters, gold_table, dtm){
   if(parameters$use_dictionary==TRUE){
     log_to_file(message = "&emsp; Dictionary lookup",file = logfile)
@@ -84,7 +100,6 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
   dtm<-dtm[,features]
   dtm<-dtm[,order(colnames(dtm))]
 ###########
-  ## effizienter
   trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
   trainingDTM$class <-gold_table[idx,2]
  
@@ -198,6 +213,10 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
 ############################################
 #           Training Set Evaluation        #
 ############################################
+#' evaluate the trainings set - randomForest mode
+#' @param parameters (list of set parameters from task scheduler)
+#' @param gold_table (assigns classes to already annotated documents)
+#' @param dtm (current document term matrix)
 set_training_eval_rF<-function(parameters, gold_table, dtm){
   idx<-which(gold_table[,1]%in%rownames(dtm))
   selector_idx<-gold_table[idx,1]
@@ -252,7 +271,10 @@ set_training_eval_rF<-function(parameters, gold_table, dtm){
 ############################################
 #           learning whole                 #
 ############################################
-# Problem: läuft nicht ganz - da beim erzeugen der label nicht alles rund läuft 
+#' active learning on whole document (when context unit "sentence" is selected) - randomForest mode
+#' @param parameters (list of set parameters from task scheduler)
+#' @param gold_table (assigns classes to already annotated documents)
+#' @param dtm (current document term matrix)
 set_active_learning_whole_rF<-function(parameters, gold_table, dtm){
   if(length(unique(gold_table[,2]))==1){
     gold_table <- rbind(gold_table, cbind(sample(setdiff(rownames(dtm),gold_table[,1]),dim(gold_table)[1],replace = F),"NEG","sampled negative examples",as.character(Sys.time())))
@@ -356,7 +378,11 @@ set_active_learning_whole_rF<-function(parameters, gold_table, dtm){
 ############################################
 #           classify whole                 #
 ############################################
-## ATTENTION: parameters$cl_positive_Threshold need to be small in order to see all predictions
+#' classify on entire collection
+#' @param parameters (list of set parameters from task scheduler)
+#' @param gold_table (assigns classes to already annotated documents)
+#' @param dtm (current document term matrix)
+#' WARNING: parameters$cl_positive_Threshold need to be small in order to see all predictions
 classify_whole_collection_rF<-function(parameters, gold_table, dtm){
   #use neg examples in training classifier and remove examples tagged as neg afterwards
   #gold_table<-gold_table[which(gold_table[,2]!="NEG"),]
