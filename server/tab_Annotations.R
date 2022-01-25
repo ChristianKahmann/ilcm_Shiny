@@ -14,7 +14,7 @@ output$annotations<-renderDataTable({
   RMariaDB::dbDisconnect(mydb)
   validate(
     need(length(data)>0,"no annotations found!")
-           )
+  )
   #filter annotations by project
   data<-data[which(data[,10]==paste0((input$project_selected))),]
   validate(
@@ -24,9 +24,9 @@ output$annotations<-renderDataTable({
   if(length(input$annotation_filter)>0){
     data<-data[which(data[,7]%in%input$annotation_filter),]
   }
- 
+  
   for(i in 1:dim(data)[1]){
-   data[i,8]<-paste0('<b style="background-color:',data[i,8],';">',data[i,8],'</b>')
+    data[i,8]<-paste0('<b style="background-color:',data[i,8],';">',data[i,8],'</b>')
   }
   colnames(data) = str_wrap(colnames(data),width = 8)
   
@@ -39,14 +39,22 @@ output$annotations<-renderDataTable({
     style="danger",
     icon=icon("delete")
   ))
+  #open details window buttons 
+  Open = shinyInput(
+    shinyBS::bsButton,
+    dim(data)[1],
+    'open_document_view_button_annotations_results_',
+    label = "",
+    size="extra-small",
+    style="info",
+    icon=icon("search"),
+    onclick = 'Shiny.onInputChange(\"open_document_view_button_annotations_results\",  this.id)'
+  )
+  data<-cbind(Open,data)
   
-  colnames(data)<-c("Anno ID","User","Dataset","ID","From","To","Category","Color","Date","Project","Collection","Global Doc ID","Text","Document Annotation","Delete")
+  colnames(data)<-c("Open","Anno ID","User","Dataset","ID","From","To","Category","Color","Date","Project","Collection","Global Doc ID","Text","Document Annotation","Delete")
   values$annotations_all<-data
-  dt<-datatable(data=data,rownames = F,escape = F,selection = "single",class = "row-border compact",options = list(columnDefs=list(list(className="no_select",targets=14))),
-  callback = JS('table.on("click", "td.no_select", function(e) {
-        e.stopPropagation()
-        });
-        '))
+  dt<-datatable(data=data,rownames = F,escape = F,selection = "none",class = "row-border compact")
   
 })
 
@@ -80,7 +88,7 @@ observeEvent(input$delete_annotation, {
     RMariaDB::dbDisconnect(mydb)
     shinyjs::useShinyjs()
     shinyjs::click(id = "update_annotations")
-    }
+  }
 })
 
 
@@ -104,66 +112,65 @@ observeEvent(input$delete_annotation, {
 #'   values$Anno_annotations_show: show annotations
 #'   values$Anno_Doc_reload: reload documents of annotation
 #'   values$Anno_annos: annotations
-observeEvent(input$annotations_rows_selected,{
-  s = input$annotations_rows_selected
+observeEvent(input$open_document_view_button_annotations_results,{
+  s = as.numeric(strsplit(input$open_document_view_button_annotations_results, "_")[[1]][7])
   if (length(s)) {
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
-    values$Anno_selected<-as.integer(values$annotations_all[s[length(s)],"ID"])
-    values$Anno_id_global<-as.integer(values$annotations_all[s[length(s)],"Global Doc ID"])
-    
-    values$Anno_dataset<-(values$annotations_all[s[length(s)],"Dataset"])
-    proxy = dataTableProxy('annotations')
-    
-    rs <- dbSendQuery(mydb, 'set character set "utf8"')
-    values$Anno_token<-RMariaDB::dbGetQuery(mydb, paste("select * from token where dataset='",isolate(values$annotations_all[s[length(s)],"Dataset"]),"' and id=",isolate(values$Anno_selected),";",sep=""))
-    ind<-RMariaDB::dbGetQuery(mydb, paste("select id_doc,dataset,title,date,language,token,id,mde1,mde2,mde3,mde4,mde5,mde6,mde7,mde8,mde9 from documents where id=",isolate(values$Anno_id_global)," limit 1;",sep=""))
-
-    values$Anno_Collection_chosen<-values$annotations_all[s[length(s)],"Collection"]
-    
-    #reduce to need metadata
-    ava<-dbGetQuery(mydb, paste0("SELECT * FROM ilcm.metadata_names where dataset in('",paste(unique(ind[,"dataset"]),collapse="','"),"');"))
-    RMariaDB::dbDisconnect(mydb)
-
-    empty_metadata<-names(which(apply(ava,MARGIN = 2,function(x){all(is.na(x))})))
-    if(length(empty_metadata)>0){
-      ind<-ind[,-which(colnames(ind)%in%empty_metadata)]
-    }
-    ind_new<-data.frame()
-    #split metadata for differing datasets/metadata names
-    for(d in ind$dataset){
-      ind_tmp<-ind[which(ind[,"dataset"]==d),] 
-      ind_tmp<-ind_tmp[,which(apply(ind_tmp,2,function(x){!all(is.na(x))}))]
-      if(dim(ind_tmp)[1]>0){
-        colnames(ind_tmp)<-c("id_doc","dataset","title","date","language","token","id",(ava)[which(ava[,1]==d),2:length(colnames(ava))][!is.na(ava[which(ava[,1]==d),-1])])
-        ind_new<-plyr::rbind.fill(ind_new,ind_tmp)
+    if(s>0){
+      isolate(shinyjs::runjs('Shiny.onInputChange(\"open_document_view_button_annotations_results\",  "open_document_view_button_annotations_results_0")'))
+      mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
+      values$Anno_selected<-as.integer(values$annotations_all[s[length(s)],"ID"])
+      values$Anno_id_global<-as.integer(values$annotations_all[s[length(s)],"Global Doc ID"])
+      
+      values$Anno_dataset<-(values$annotations_all[s[length(s)],"Dataset"])
+      rs <- dbSendQuery(mydb, 'set character set "utf8"')
+      values$Anno_token<-RMariaDB::dbGetQuery(mydb, paste("select * from token where dataset='",isolate(values$annotations_all[s[length(s)],"Dataset"]),"' and id=",isolate(values$Anno_selected),";",sep=""))
+      ind<-RMariaDB::dbGetQuery(mydb, paste("select id_doc,dataset,title,date,language,token,id,mde1,mde2,mde3,mde4,mde5,mde6,mde7,mde8,mde9 from documents where id=",isolate(values$Anno_id_global)," limit 1;",sep=""))
+      
+      values$Anno_Collection_chosen<-values$annotations_all[s[length(s)],"Collection"]
+      
+      #reduce to need metadata
+      ava<-dbGetQuery(mydb, paste0("SELECT * FROM ilcm.metadata_names where dataset in('",paste(unique(ind[,"dataset"]),collapse="','"),"');"))
+      RMariaDB::dbDisconnect(mydb)
+      
+      empty_metadata<-names(which(apply(ava,MARGIN = 2,function(x){all(is.na(x))})))
+      if(length(empty_metadata)>0){
+        ind<-ind[,-which(colnames(ind)%in%empty_metadata)]
       }
-    }
-    
-    meta<-colnames(ind_new)[which(!colnames(ind_new)%in%c("id_doc","dataset","title","date","language","token","id"))]
-    if(length(meta)>0){
-      ind_new<-ind_new[,c("id_doc","id","dataset","title","date","token","language",meta)]
-    }
-    ind_new$date<-substr(ind_new$date,1,10)
-    values$Anno_meta<-ind_new
-    
-    
-    
-    RMariaDB::dbDisconnect(mydb)
-    proxy %>% selectRows(NULL)
-    
-    #browser()
-    
-   #updateSelectizeInput(session = session,inputId = "Anno_anno_scheme_selected",selected = input$project_selected)
-    values$Anno_scheme_changed<-FALSE
-    values$set_Anno_anno_scheme<-input$project_selected
-    updateTabsetPanel(session = session,inputId = "category",selected = "Document View3")
-    shinyjs::useShinyjs()
-    shinyjs::runjs(" Shiny.onInputChange('Anno_anno_tag',null);
+      ind_new<-data.frame()
+      #split metadata for differing datasets/metadata names
+      for(d in ind$dataset){
+        ind_tmp<-ind[which(ind[,"dataset"]==d),] 
+        ind_tmp<-ind_tmp[,which(apply(ind_tmp,2,function(x){!all(is.na(x))}))]
+        if(dim(ind_tmp)[1]>0){
+          colnames(ind_tmp)<-c("id_doc","dataset","title","date","language","token","id",(ava)[which(ava[,1]==d),2:length(colnames(ava))][!is.na(ava[which(ava[,1]==d),-1])])
+          ind_new<-plyr::rbind.fill(ind_new,ind_tmp)
+        }
+      }
+      
+      meta<-colnames(ind_new)[which(!colnames(ind_new)%in%c("id_doc","dataset","title","date","language","token","id"))]
+      if(length(meta)>0){
+        ind_new<-ind_new[,c("id_doc","id","dataset","title","date","token","language",meta)]
+      }
+      ind_new$date<-substr(ind_new$date,1,10)
+      values$Anno_meta<-ind_new
+      
+      
+      
+      RMariaDB::dbDisconnect(mydb)
+      #browser()
+      
+      #updateSelectizeInput(session = session,inputId = "Anno_anno_scheme_selected",selected = input$project_selected)
+      values$Anno_scheme_changed<-FALSE
+      values$set_Anno_anno_scheme<-input$project_selected
+      updateTabsetPanel(session = session,inputId = "category",selected = "Document View3")
+      shinyjs::useShinyjs()
+      shinyjs::runjs(" Shiny.onInputChange('Anno_anno_tag',null);
                      Shiny.onInputChange('Anno_anno_start',null);
                      Shiny.onInputChange('Anno_anno_end',null);")
-    values$Anno_new<-NULL
-    values$Anno_annotations_show<-matrix(c(0),0,13)
-    values$Anno_Doc_reload<-runif(1,0,1)
-    values$Anno_annos<-NULL
+      values$Anno_new<-NULL
+      values$Anno_annotations_show<-matrix(c(0),0,13)
+      values$Anno_Doc_reload<-runif(1,0,1)
+      values$Anno_annos<-NULL
+    }
   }
 })

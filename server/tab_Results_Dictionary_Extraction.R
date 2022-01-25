@@ -102,21 +102,28 @@ output$DE_Results <- renderDataTable({
     icon=icon("info"),
     onclick = 'Shiny.onInputChange(\"more_details_de_results\",  this.id)'
   ))
-  
+  #open details window buttons 
+  Open = shinyInput(
+    shinyBS::bsButton,
+    dim(data_finished)[1],
+    'open_details_button_dictionary_results_',
+    label = "",
+    size="extra-small",
+    style="info",
+    icon=icon("search"),
+    onclick = 'Shiny.onInputChange(\"open_details_dictionary_results\",  this.id)'
+  )
   try({
     colnames(data_finished)<-c("Task id","Collection","Creation time","Dictionary","Regular expression mode","Context filter","Context unit","Delete","More Details")
   })
   colnames(data_finished) = str_wrap(colnames(data_finished),width = 8)
   data_finished<-replace_TRUE_FALSE(data_finished)
   values$results_de<-data_finished
+  data_finished<-cbind(Open,data_finished)
   DT = datatable(data_finished,
-                 selection = "single",
-                 options = list(dom = 'tp',ordering=F,
-                                columnDefs=list(list(className="no_select",targets=((dim(data_finished)[2]-1):(dim(data_finished)[2]-2)))))
-                 ,rownames = F,class = "row-border compact",escape = F,
-                 callback = JS('table.on("click", "td.no_select", function(e) {
-                                e.stopPropagation()
-                                });')
+                 selection = "none",
+                 options = list(dom = 'tp',ordering=F),
+                 rownames = F,class = "row-border compact",escape = F
   )
 })
 
@@ -127,17 +134,20 @@ output$DE_Results <- renderDataTable({
 #'   values$Details_Analysis: details from dictionary extraction analysis
 #'   values$Details_Data_DE: data details from dictionary extraction
 #'   values$DE_Results_Files: result files from dictionary extraction
-observe({
-  s = input$DE_Results_rows_selected
+observeEvent(input$open_details_dictionary_results, {
+  s <- as.numeric(strsplit(input$open_details_dictionary_results, "_")[[1]][6])
   if (length(s)) {
+    if(s>0){
     values$Details_Analysis <- "DE"
     isolate(values$parameters_finished <- FALSE)
     isolate(values$Details_Data_DE <-
               values$DE_Results_Files[s])
+    isolate(shinyjs::runjs('Shiny.onInputChange(\"open_details_dictionary_results\",  "open_details_button_dictionary_results_0")'))
     updateTabsetPanel(session = session,
                       inputId = "coll",
                       selected = "Details")
     return(NULL)
+    }
   }
 })
 

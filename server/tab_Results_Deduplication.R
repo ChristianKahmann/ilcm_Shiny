@@ -78,11 +78,11 @@ output$Deduplication_Results <- renderDataTable({
   data_finished<-data.frame(data_finished)
   values$tasks_deduplication<-data_finished
   
-
+  
   available_parameters<-intersect(c("task.id","collection","creation.time","DD_similarity_measure"),colnames(data_finished))
   data_finished<-data_finished[,available_parameters]
   
-
+  
   data_finished<-cbind(data_finished,Delete = shinyInput(
     shinyBS::bsButton,
     dim(data_finished)[1],
@@ -103,23 +103,31 @@ output$Deduplication_Results <- renderDataTable({
     icon=icon("info"),
     onclick = 'Shiny.onInputChange(\"more_details_deduplication_results\",  this.id)'
   ))
-  
+  #open details window buttons 
+  Open = shinyInput(
+    shinyBS::bsButton,
+    dim(data_finished)[1],
+    'open_details_button_deduplication_results_',
+    label = "",
+    size="extra-small",
+    style="info",
+    icon=icon("search"),
+    onclick = 'Shiny.onInputChange(\"open_details_deduplication_results\",  this.id)'
+  )
   try({
     colnames(data_finished)<-c("Task id","Collection","Creation time","Similarity measure","Delete","More details")
   })
   colnames(data_finished) = str_wrap(colnames(data_finished),width = 8)
   data_finished<-replace_TRUE_FALSE(data_finished)
   values$results_deduplication<-data_finished
+  data_finished<-cbind(Open,data_finished)
+  
   DT = datatable(data_finished,
-                 selection = "single",
-                 options = list(dom = 'tp',ordering=F,
-                                columnDefs=list(list(className="no_select",targets=((dim(data_finished)[2]-1):(dim(data_finished)[2]-2)))))
-                 ,rownames = F,class = "row-border compact",escape = F,
-                 callback = JS('table.on("click", "td.no_select", function(e) {
-                               e.stopPropagation()
-});')
+                 selection = "none",
+                 options = list(dom = 'tp',ordering=F),
+                 rownames = F,class = "row-border compact",escape = F
   )
-  })
+})
 
 
 #' check wheather a certain result was clicked and then switch with needed information to details tab
@@ -128,17 +136,20 @@ output$Deduplication_Results <- renderDataTable({
 #'   values$Details_Analysis: details on analysis
 #'   values$Details_Data_DD: details on data deduplication
 #'   values$Deduplication_Results_Files: deduplication result files
-observeEvent(ignoreInit = T,input$Deduplication_Results_rows_selected,{
-  s = input$Deduplication_Results_rows_selected
+observeEvent(input$open_details_deduplication_results, {
+  s <- as.numeric(strsplit(input$open_details_deduplication_results, "_")[[1]][6])
   if (length(s)) {
+    if(s>0){
     values$Details_Analysis <- "DD"
     isolate(values$parameters_finished <- FALSE)
     isolate(values$Details_Data_DD <-
               values$Deduplication_Results_Files[s])
+    isolate(shinyjs::runjs('Shiny.onInputChange(\"open_details_deduplication_results\",  "open_details_button_deduplication_results_0")'))
     updateTabsetPanel(session = session,
                       inputId = "coll",
                       selected = "Details")
     return(NULL)
+    }
   }
 })
 

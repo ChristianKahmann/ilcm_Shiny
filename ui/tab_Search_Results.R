@@ -8,7 +8,7 @@ tabPanel("Search Results",
                     ),
                     column(6,
                            column(1,offset=11,
-                                  shinyBS::bsButton(inputId = "Search_results_reset_delete",label=NULL,icon = icon("refresh"),style = "primary",size = "small")
+                                  shinyBS::bsButton(inputId = "Search_results_reset_delete",label=NULL,icon = icon("sync"),style = "primary",size = "small")
                            )
                     ),
                     DT::dataTableOutput(outputId = "search_results_datatable"),           

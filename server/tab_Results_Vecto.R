@@ -79,10 +79,10 @@ output$Vector_Results <- renderDataTable({
   colnames(data_finished)[1:3]<-c("task id","collection","creation time")
   data_finished<-data.frame(data_finished)
   values$tasks_vector<-data_finished
-
+  
   available_parameters<-intersect(c("task.id","collection","creation.time","class_model","w2v_vectors","w2v_threads","w2v_window","w2v_iterations","w2v_neg:samples"),colnames(data_finished))
   data_finished<-data_finished[,available_parameters]
-
+  
   #Delete buttons
   data_finished<-cbind(data_finished,Delete = shinyInput(
     shinyBS::bsButton,
@@ -105,6 +105,17 @@ output$Vector_Results <- renderDataTable({
     onclick = 'Shiny.onInputChange(\"more_details_vector_results\",  this.id)'
   ))
   
+  #open details window buttons 
+  Open = shinyInput(
+    shinyBS::bsButton,
+    dim(data_finished)[1],
+    'open_details_button_vector_results_',
+    label = "",
+    size="extra-small",
+    style="info",
+    icon=icon("search"),
+    onclick = 'Shiny.onInputChange(\"open_details_vector_results\",  this.id)'
+  )
   try({
     colnames(data_finished)<-c("Task id","Collection","Creation time","Existing model","Number of vectors",
                                "Threads","Window size","Iterations","Negative samples","Delete","More details")
@@ -112,14 +123,12 @@ output$Vector_Results <- renderDataTable({
   colnames(data_finished) = str_wrap(colnames(data_finished),width = 8)
   data_finished<-replace_TRUE_FALSE(data_finished)
   values$results_vector<-data_finished
+  data_finished<-cbind(Open,data_finished)
+  
   DT = datatable(data_finished,
-                 selection = "single",
-                 options = list(dom = 'tp',ordering=F,
-                                columnDefs=list(list(className="no_select",targets=((dim(data_finished)[2]-1):(dim(data_finished)[2]-2)))))
-                 ,rownames = F,class = "row-border compact",escape = F,
-                 callback = JS('table.on("click", "td.no_select", function(e) {
-                               e.stopPropagation()
-});')
+                 selection = "none",
+                 options = list(dom = 'tp',ordering=F),
+                 rownames = F,class = "row-border compact",escape = F
   )
 })
 
@@ -132,19 +141,22 @@ output$Vector_Results <- renderDataTable({
 #'   values$Vector_Results_Files: files of result vectors
 #'   values$vs_pca: visualize pca
 #'   values$vs_tsne: viualize tsne
-observe({
-  s = input$Vector_Results_rows_selected
+observeEvent(input$open_details_vector_results, {
+  s <- as.numeric(strsplit(input$open_details_vector_results, "_")[[1]][6])
   if (length(s)) {
-    values$Details_Analysis <- "VS"
-    isolate(values$parameters_finished <- FALSE)
-    isolate(values$Details_Data_VS <-
-              values$Vector_Results_Files[s])
-    isolate(values$vs_pca<-NULL)
-    isolate(values$vs_tsne<-NULL)
-    updateTabsetPanel(session = session,
-                      inputId = "coll",
-                      selected = "Details")
-    return(NULL)
+    if(s>0){
+      values$Details_Analysis <- "VS"
+      isolate(values$parameters_finished <- FALSE)
+      isolate(values$Details_Data_VS <-
+                values$Vector_Results_Files[s])
+      isolate(shinyjs::runjs('Shiny.onInputChange(\"open_details_vector_results\",  "open_details_button_vector_results_0")'))
+      isolate(values$vs_pca<-NULL)
+      isolate(values$vs_tsne<-NULL)
+      updateTabsetPanel(session = session,
+                        inputId = "coll",
+                        selected = "Details")
+      return(NULL)
+    }
   }
 })
 

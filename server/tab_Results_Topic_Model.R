@@ -12,7 +12,7 @@ output$Topic_Results <- renderDataTable({
   #reload table if a result was deleted
   values$reload_topic_result
   isolate(values$reload_topic_result<-FALSE)
- 
+  
   files <- list.files("collections/results/topic-model/")
   validate(
     need(length(files)>0,"no results found")
@@ -65,7 +65,7 @@ output$Topic_Results <- renderDataTable({
   }
   data_finished[,2]<-stringr::str_replace(string = data_finished[,2],pattern = ".RData",replacement = "")
   data_finished<-cbind(data_finished,parameters_all_tasks[,-1])
-
+  
   files<-files_for_date
   #just show the results for current selection if a collection is selected
   if(!is.null(values$collection_selected)){
@@ -84,10 +84,10 @@ output$Topic_Results <- renderDataTable({
   colnames(data_finished)[1:3]<-c("task id","collection","creation time")
   data_finished<-data.frame(data_finished)
   values$tasks_tm<-data_finished
-
+  
   available_parameters<-intersect(c("task.id","collection","creation.time","tm_method","tm_number_of_topics","baseform_reduction","remove_stopwords","termfreq_type","min_term","max_term","blacklist","whitelist"),colnames(data_finished))
   data_finished<-data_finished[,available_parameters]
-
+  
   #delete buttons
   data_finished<-cbind(data_finished,Delete = shinyInput(
     shinyBS::bsButton,
@@ -110,7 +110,17 @@ output$Topic_Results <- renderDataTable({
     icon=icon("info"),
     onclick = 'Shiny.onInputChange(\"more_details_topic_results\",  this.id)'
   ))
-  
+  #open details window buttons 
+  Open = shinyInput(
+    shinyBS::bsButton,
+    dim(data_finished)[1],
+    'open_details_button_topic_results_',
+    label = "",
+    size="extra-small",
+    style="info",
+    icon=icon("search"),
+    onclick = 'Shiny.onInputChange(\"open_details_topic_results\",  this.id)'
+  )
   try({
     colnames(data_finished)<-c("Task id","Collection","Creation time","Method","Number of topics","Baseform reduction",
                                "Remove Stopwords","Pruning term","min term","max term","Blacklist","Whitelist","Delete","More details")
@@ -119,16 +129,16 @@ output$Topic_Results <- renderDataTable({
   data_finished<-replace_TRUE_FALSE(data_finished)
   values$results_topic<-data_finished
   values$Details_Analysis <- NULL
+  
+
+  data_finished<-cbind(Open,data_finished)
+  
   DT = datatable(data_finished,
-                 selection = "single",
-                 options = list(dom = 'tp',ordering=F,
-                                columnDefs=list(list(className="no_select",targets=((dim(data_finished)[2]-1):(dim(data_finished)[2]-2)))))
-                 ,rownames = F,class = "row-border compact",escape = F,
-                 callback = JS('table.on("click", "td.no_select", function(e) {
-                                e.stopPropagation()
-                                });')
+                 selection = "none",
+                 options = list(dom = 'tp',ordering=F),
+                 rownames = F,class = "row-border compact",escape = F
   )
-})
+},server = F)
 
 
 #' check wheather a certain result was clicked and then switch with needed information to details tab
@@ -139,21 +149,38 @@ output$Topic_Results <- renderDataTable({
 #'   values$Topic_Results_Files: result files from topic model analysis
 #'   values$current_task_id: id of current task
 #'   values$results_topic: topic model results
-observe({
-  s = input$Topic_Results_rows_selected
+observeEvent(input$open_details_topic_results, {
+  s <- as.numeric(strsplit(input$open_details_topic_results, "_")[[1]][6])
   if (length(s)) {
-    values$Details_Analysis <- "TM"
-    isolate(values$parameters_finished <- FALSE)
-    isolate(values$Details_Data_TM <-
-              values$Topic_Results_Files[s])
-    
-    isolate(values$current_task_id<- values$results_topic[s,1])
-    updateTabsetPanel(session = session,
-                      inputId = "coll",
-                      selected = "Details")
-    return(NULL)
+    if(s>0){
+      values$Details_Analysis <- "TM"
+      isolate(values$parameters_finished <- FALSE)
+      isolate(values$Details_Data_TM <-
+                values$Topic_Results_Files[s])
+      isolate(shinyjs::runjs('Shiny.onInputChange(\"open_details_topic_results\",  "open_details_button_topic_results_0")'))
+      isolate(values$current_task_id<- values$results_topic[s,1])
+      updateTabsetPanel(session = session,
+                        inputId = "coll",
+                        selected = "Details")
+      return(NULL)
+    }
   }
 })
+# observeEvent({
+#   s = input$Topic_Results_rows_selected
+#   if (length(s)) {
+#     values$Details_Analysis <- "TM"
+#     isolate(values$parameters_finished <- FALSE)
+#     isolate(values$Details_Data_TM <-
+#               values$Topic_Results_Files[s])
+#     
+#     isolate(values$current_task_id<- values$results_topic[s,1])
+#     updateTabsetPanel(session = session,
+#                       inputId = "coll",
+#                       selected = "Details")
+#     return(NULL)
+#   }
+# })
 
 #' if delete topic model result is clicked delete files and db entry
 #' depends on:
@@ -184,8 +211,8 @@ observeEvent(input$more_details_topic_results,{
     isolate(shinyjs::runjs('Shiny.onInputChange(\"more_details_topic_results\",  "more_details_button_topic_results_0")'))
     showModal(
       modalDialog(easyClose = T,fade = T,
-      title=paste("Parameter information for task:",as.character(values$tasks_tm[selectedRow,"task id"])),
-       DT::dataTableOutput(outputId = "more_details_topic_table")
+                  title=paste("Parameter information for task:",as.character(values$tasks_tm[selectedRow,"task id"])),
+                  DT::dataTableOutput(outputId = "more_details_topic_table")
       )
     )
   }
@@ -199,7 +226,7 @@ output$more_details_topic_table<-DT::renderDataTable({
   validate(
     need(values$tm_selected_row>0,message=F)
   )
-
+  
   data<-isolate(values$tasks_tm[values$tm_selected_row,,drop=F])
   data<-t(data)
   nas<-which(is.na(data[,1]))
@@ -208,7 +235,7 @@ output$more_details_topic_table<-DT::renderDataTable({
   }
   colnames(data)<-paste("Task:",data[1,1])
   dataToUse <- data
-
+  
   # # get parameters from RData object using the first 3 columns being task id, collname and timestamp to get filepath and stored parameters.RData, this only works if in output$Topic_Results mtime is not used (removed there)
   # specificResultFolderName <- getSpecificResultFolderNameFromSelectedTopic(data)
   # parametersForSelectedTM <- getParametersFromRData(pathToResultsFolder = "collections/results/topic-model/", specificFolderName=specificResultFolderName)

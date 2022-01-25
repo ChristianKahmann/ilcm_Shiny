@@ -110,7 +110,17 @@ output$Dynamic_Topic_Results <- renderDataTable({
     icon=icon("info"),
     onclick = 'Shiny.onInputChange(\"more_details_dynamic_topic_results\",  this.id)'
   ))
-  
+  #open details window buttons 
+  Open = shinyInput(
+    shinyBS::bsButton,
+    dim(data_finished)[1],
+    'open_details_button_dynamic_topic_results_',
+    label = "",
+    size="extra-small",
+    style="info",
+    icon=icon("search"),
+    onclick = 'Shiny.onInputChange(\"open_details_dynamic_topic_results\",  this.id)'
+  )
   try({
     colnames(data_finished)<-c("Task id","Collection","Creation time","Method","Number of topics","Type of Date Split",
                                "Remove Stopwords","Pruning term","min term","max term","Blacklist","Whitelist","Delete","More details")
@@ -119,14 +129,11 @@ output$Dynamic_Topic_Results <- renderDataTable({
   data_finished<-replace_TRUE_FALSE(data_finished)
   values$results_dynamic_topic<-data_finished
   values$Details_Analysis <- NULL
+  data_finished<-cbind(Open,data_finished)
   DT = datatable(data_finished,
-                 selection = "single",
-                 options = list(dom = 'tp',ordering=F,
-                                columnDefs=list(list(className="no_select",targets=((dim(data_finished)[2]-1):(dim(data_finished)[2]-2)))))
-                 ,rownames = F,class = "row-border compact",escape = F,
-                 callback = JS('table.on("click", "td.no_select", function(e) {
-                                e.stopPropagation()
-                                });')
+                 selection = "none",
+                 options = list(dom = 'tp',ordering=F),
+                 rownames = F,class = "row-border compact",escape = F
   )
 })
 
@@ -139,19 +146,21 @@ output$Dynamic_Topic_Results <- renderDataTable({
 #'   values$Dynamic_Topic_Results_Files: result files from topic model analysis
 #'   values$current_task_id: id of current task
 #'   values$results_dynamic_topic: topic model results
-observe({
-  s = input$Dynamic_Topic_Results_rows_selected
+observeEvent(input$open_details_dynamic_topic_results,{
+  s <- as.numeric(strsplit(input$open_details_dynamic_topic_results, "_")[[1]][7])
   if (length(s)) {
+    if(s>0){
     values$Details_Analysis <- "DTM"
     values$parameters_finished<-FALSE
     isolate(values$Details_Data_DTM <-
               values$Dynamic_Topic_Results_Files[s])
-    
+    isolate(shinyjs::runjs('Shiny.onInputChange(\"open_details_dynamic_topic_results\",  "open_details_button_dynamic_topic_results_0")'))
     isolate(values$current_task_id<- values$results_dynamic_topic[s,1])
     updateTabsetPanel(session = session,
                       inputId = "coll",
                       selected = "Details")
     return(NULL)
+    }
   }
 })
 

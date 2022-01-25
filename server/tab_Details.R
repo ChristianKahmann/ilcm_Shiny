@@ -106,7 +106,7 @@ output$details_parameter<-renderUI({
       load(paste0(values$Details_Data_DTM,"/data_TM.RData"))
       load(paste0(values$Details_Data_DTM,"/meta_TM.RData"))
       load(paste0(values$Details_Data_DTM,"/dtm_TM.RData"))
-      task_id<-HTML(paste0("Task ID: <b>",as.character(values$tasks_dtm[input$Dynamic_Topic_Results_rows_selected,"task.id"]),"</b>"))
+      task_id<-HTML(paste0("Task ID: <b>",as.character(values$current_task_id),"</b>"))
       values$dtm_results<-results
       values$dtm_meta<-meta
       values$dtm_dtm<-dtm
@@ -533,7 +533,7 @@ output$details_parameter<-renderUI({
       #load tm resultset and make it available
       load(paste0(values$Details_Data_TM,"/data_TM.RData"))
       load(paste0(values$Details_Data_TM,"/meta_TM.RData"))
-      task_id<-HTML(paste0("Task ID: <b>",as.character(values$tasks_tm[input$Topic_Results_rows_selected,"task.id"]),"</b>"))
+      task_id<-HTML(paste0("Task ID: <b>",as.character(values$current_task_id),"</b>"))
       updateSelectizeInput(session = session,inputId = "Det_TM_ewf_word",server = T,choices = colnames(phi))
       values$TM_Coherence_show<-FALSE
       values$TM_Intrusion_show<-FALSE

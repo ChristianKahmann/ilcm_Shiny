@@ -109,7 +109,17 @@ output$Coocs_Results <- DT::renderDataTable({
     icon=icon("info"),
     onclick = 'Shiny.onInputChange(\"more_details_coocs_results\",  this.id)'
   ))
-  
+  #open details window buttons 
+  Open = shinyInput(
+    shinyBS::bsButton,
+    dim(data_finished)[1],
+    'open_details_button_coocs_results_',
+    label = "",
+    size="extra-small",
+    style="info",
+    icon=icon("search"),
+    onclick = 'Shiny.onInputChange(\"open_details_coocs_results\",  this.id)'
+  )
   try({
     colnames(data_finished)<-c("Task id","Collection","Creation time","Baseform reduction",
                                "Remove Stopwords","Minimal co-occurrence frequency","co-occurrence window","Pruning term","min term","max term","Blacklist","Whitelist","Delete","More details")
@@ -117,15 +127,12 @@ output$Coocs_Results <- DT::renderDataTable({
   colnames(data_finished) = str_wrap(colnames(data_finished),width = 8)
   data_finished<-replace_TRUE_FALSE(data_finished)
   values$results_coocs<-data_finished
-  DT = DT::datatable(data_finished,
-                     selection = "single",
-                     options = list(dom = 'tp',ordering=F,
-                                    columnDefs=list(list(className="no_select",targets=((dim(data_finished)[2]-1):(dim(data_finished)[2]-2)))))
-                     ,rownames = F,class = "row-border compact",escape = F,
-                     callback = JS('table.on("click", "td.no_select", function(e) {
-                                console.log("in der funktion drin");
-                                e.stopPropagation()
-                                });')
+  
+  data_finished<-cbind(Open,data_finished)
+  DT = datatable(data_finished,
+                 selection = "none",
+                 options = list(dom = 'tp',ordering=F),
+                 rownames = F,class = "row-border compact",escape = F
   )
 })
 
@@ -135,17 +142,20 @@ output$Coocs_Results <- DT::renderDataTable({
 #'   values$Details_Analysis: details of cooccurrence analysis 
 #'   values$Details_Data_CO: details of cooccurrence analysis data
 #'   values$Coocs_Results_Files: result files for cooccurrence analysis
-observe({
-  s = input$Coocs_Results_rows_selected
+observeEvent(input$open_details_coocs_results, {
+  s <- as.numeric(strsplit(input$open_details_coocs_results, "_")[[1]][6])
   if (length(s)) {
+    if(s>0){
     values$Details_Analysis <- "CO"
     isolate(values$parameters_finished <- FALSE)
     isolate(values$Details_Data_CO <-
               values$Coocs_Results_Files[s])
+    isolate(shinyjs::runjs('Shiny.onInputChange(\"open_details_coocs_results\",  "open_details_button_coocs_results_0")'))
     updateTabsetPanel(session = session,
                       inputId = "coll",
                       selected = "Details")
     return(NULL)
+    }
   }
 })
 

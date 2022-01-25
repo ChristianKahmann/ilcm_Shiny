@@ -3142,13 +3142,13 @@ observeEvent(input$Import_Wortschatz_Transfer_to_CSV,{
     sentences<-merge(x=sentences,y=sources,by.x="V1.y",by.y="V1")
     
     sentences<-sentences[,-2]
-    colnames(sentences)<-c("ID_Quelle","Satz","Quelle","Date")
+    colnames(sentences)<-c("ID_Source","Text","Source","Date")
     sentences<-data.frame(sentences,stringsAsFactors = F)
     
     if(input$Input_Wortschatz_recreate_documents==TRUE){
       incProgress(amount = 0.1,message = "Recreate Documents")
-      sentences<-cbind(aggregate(sentences$Satz,by = sentences['ID_Quelle'],paste,collapse=" "),aggregate(sentences$Quelle,by = sentences['ID_Quelle'],first)[,2],aggregate(sentences$Date,by = sentences['ID_Quelle'],first)[,2])
-      colnames(sentences)<-c("ID_Quelle","Satz","Quelle","Date")
+      sentences<-cbind(aggregate(sentences$Satz,by = sentences['ID_Source'],paste,collapse=" "),aggregate(sentences$Quelle,by = sentences['ID_Source'],first)[,2],aggregate(sentences$Date,by = sentences['ID_Source'],first)[,2])
+      colnames(sentences)<-c("ID_Source","Text","Source","Date")
       values$Import_Wortschatz_sentences<-sentences
       incProgress(amount = 0.1,message = "Finished")
     }

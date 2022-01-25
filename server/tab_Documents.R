@@ -182,23 +182,27 @@ output$collection_documents<-DT::renderDataTable({
   #make titles appear bold
   data$title<-paste0("<b>",data$title,"</b>")
   remove_existing_checkboxes(1:10)
+  #open details window buttons 
+  Open = shinyInput(
+    shinyBS::bsButton,
+    dim(data)[1],
+    'open_document_view_button_documents_results_',
+    label = "",
+    size="extra-small",
+    style="info",
+    icon=icon("search"),
+    onclick = 'Shiny.onInputChange(\"open_document_view_button_documents_results\",  this.id)'
+  )
+  data<-cbind(Open,data)
   tabledata<-data.frame(data,keep=shinyInput_checkbox_Doc(checkboxInput,dim(data)[1],"Doccbox_",values=!(data[,"id"]%in%isolate(values$Doc_delete_documents)),label=NULL))
   
   #set options for datatable, check if output is already sorted by solr
   if(values$Doc_custom==TRUE){
     data<-datatable(tabledata
-                    ,selection = "single",rownames = FALSE,escape = F,class = "row-border compact",options = list(
+                    ,selection = "none",rownames = FALSE,escape = F,class = "row-border compact",options = list(
                       preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
                       drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
-                      dom="t",
-                      columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=(0:(dim(data)[2]))))
-                    ),
-                    callback = JS(
-                      '
-                      table.on("click", "td.no_select", function(e) {
-                      e.stopPropagation()
-                      });
-                      '
+                      dom="t"
                     )
     )
   }
@@ -206,11 +210,10 @@ output$collection_documents<-DT::renderDataTable({
     if(!is.null(isolate(input$sort))){
       if(nchar(isolate(input$sort))>0){
         data<-datatable(tabledata
-                        ,selection = "single",rownames = FALSE,escape = F,class = "row-border compact", extensions =  "Buttons",options = list(
+                        ,selection = "none",rownames = FALSE,escape = F,class = "row-border compact", extensions =  "Buttons",options = list(
                           preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
                           drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
                           dom="Bt",buttons = I('colvis'),
-                          columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=c(4,7:(dim(data)[2])))),
                           order=list((which(colnames(data)==stringr::str_replace_all(string = stringr::str_replace_all(isolate(input$sort)," .+",""),pattern = "_[a-z]+$",replacement = ""))-1),str_split(isolate(input$sort),pattern = " ")[[1]][2])
                         ),
                         callback = JS(
@@ -304,22 +307,17 @@ output$collection_documents<-DT::renderDataTable({
                           }
                           Shiny.onInputChange("sort", name.concat(sort));
                           Shiny.onInputChange("control",Math.random());
-                          });
-                          table.on("click", "td.no_select", function(e) {
-                          e.stopPropagation()
-                          });
-                          '
+                          });'
                         )
         )
       }
     }
     else{
-      data<-datatable(tabledata,selection = "single",rownames = FALSE,class = "row-border compact",escape = F,extensions = "Buttons",options = list(
+      data<-datatable(tabledata,selection = "none",rownames = FALSE,class = "row-border compact",escape = F,extensions = "Buttons",options = list(
         preDrawCallback = JS('function() { Shiny.unbindAll(this.api().table().node()); }'),
         drawCallback = JS('function() { Shiny.bindAll(this.api().table().node()); } '),
         dom="Bt",buttons = I('colvis'),
-        order=list(3,"desc"),
-        columnDefs=list(list(className="no_select",targets=(dim(data)[2])),list(orderable=F,targets=c(4,7:(dim(data)[2]))))
+        order=list(3,"desc")
       ),
       callback = JS(
         '$(".sorting").on("click",function() {
@@ -386,12 +384,7 @@ output$collection_documents<-DT::renderDataTable({
         }
         Shiny.onInputChange("sort", name.concat(sort));
         Shiny.onInputChange("control",Math.random());
-        });
-        
-        table.on("click", "td.no_select", function(e) {
-        e.stopPropagation()
-        });
-        '
+        });'
       )
       )
     }
@@ -477,28 +470,31 @@ observeEvent(ignoreNULL = T,input$Documents_reupload_SolrTag,{
 #'   values$Doc_Doc_reload: reload document after deleted
 #'   values$Doc_annotations_show: show document annotations
 #'   values$Doc_annos: document annotations
-observe({
-  s = input$collection_documents_rows_selected
+observeEvent(input$open_document_view_button_documents_results,{
+  s = as.numeric(strsplit(input$open_document_view_button_documents_results, "_")[[1]][7])
   if (length(s)) {
-    values$Doc_selected<-as.integer(values$Documents_Results[s[length(s)],"id_doc"])
-    values$collection_dataset<-values$Documents_Results[s[length(s)],"dataset"]
-    proxy = dataTableProxy('collection_documents')
-    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
-    rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
-    values$Doc_token<-RMariaDB::dbGetQuery(mydb, paste("select * from token where dataset='",values$collection_dataset,"' and id=",isolate(values$Doc_selected),";",sep=""))
-    RMariaDB::dbDisconnect(mydb)
-    values$Doc_meta<-isolate(values$Documents_Results[s[length(s)],1:(dim(isolate(values$Documents_Results))[2]-1)])
-    proxy %>% selectRows(NULL)
-    
-    updateTabsetPanel(session = session,inputId = "coll",selected = "Document View2")
-    shinyjs::useShinyjs()
-    shinyjs::runjs(" Shiny.onInputChange('Doc_anno_tag',null);
+    if(s>0){
+      isolate(shinyjs::runjs('Shiny.onInputChange(\"open_document_view_button_documents_results\",  "open_document_view_button_documents_results_0")'))
+      values$Doc_selected<-as.integer(values$Documents_Results[s[length(s)],"id_doc"])
+      values$collection_dataset<-values$Documents_Results[s[length(s)],"dataset"]
+      proxy = dataTableProxy('collection_documents')
+      mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
+      rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+      values$Doc_token<-RMariaDB::dbGetQuery(mydb, paste("select * from token where dataset='",values$collection_dataset,"' and id=",isolate(values$Doc_selected),";",sep=""))
+      RMariaDB::dbDisconnect(mydb)
+      values$Doc_meta<-isolate(values$Documents_Results[s[length(s)],1:(dim(isolate(values$Documents_Results))[2]-1)])
+      proxy %>% selectRows(NULL)
+      
+      updateTabsetPanel(session = session,inputId = "coll",selected = "Document View2")
+      shinyjs::useShinyjs()
+      shinyjs::runjs(" Shiny.onInputChange('Doc_anno_tag',null);
                      Shiny.onInputChange('Doc_anno_start',null);
                      Shiny.onInputChange('Doc_anno_end',null);")
-    values$Doc_new<-NULL
-    values$Doc_Doc_reload<-runif(1,0,1)
-    values$Doc_annotations_show<-matrix(c(0),0,13)
-    values$Doc_annos<-NULL
+      values$Doc_new<-NULL
+      values$Doc_Doc_reload<-runif(1,0,1)
+      values$Doc_annotations_show<-matrix(c(0),0,13)
+      values$Doc_annos<-NULL
+    }
   }
 })
 
@@ -516,9 +512,9 @@ observe({
   )
   a<-do.call(rbind,a)
   docs_del<-isolate(values$Documents_Results[which(a==F),"id"])
-
+  
   isolate(values$Doc_delete_documents<-setdiff(values$Doc_delete_documents,values$Documents_Results[,"id"]))
-
+  
   isolate(values$Doc_delete_documents<-c(isolate(values$Doc_delete_documents),isolate(values$Documents_Results[which(a==F),"id"])))
   
 })

@@ -34,8 +34,9 @@ observeEvent(input$Det_VA_Update,{
     values$Det_VA_label<-un_dates
     p1<-plot_ly(source = as.character(input$Det_VA_Select_Word),x=values$Det_VA_label,y=( values$va_voldata[isolate({input$Det_VA_Select_Word}),]),type="scatter",mode="lines",name=paste0("volatility(",isolate(input$Det_VA_Select_Word),")"))
     p1<-add_trace(p=p1,y = (values$va_freq[isolate({input$Det_VA_Select_Word}),]), name = paste0("frequency(",isolate(input$Det_VA_Select_Word),")"), mode = 'lines',yaxis="y2")
-    layout(p1,margin=list(r=50,b=150),legend=list(orientation="h",yanchor="bottom",xanchor="center",x=0.5,y=1),yaxis2=list(rangemode="tozero",tickfont = list(color = "red"),overlaying = "y",side = "right",title = "Frequency"),paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',xaxis=list(autotick=T,showgrid=T,showgrid = TRUE,showline = FALSE,showticklabels = TRUE,tickcolor = 'rgb(127,127,127)', ticks = 'outside', zeroline = FALSE,side="bottom"),margin=list(b=80),yaxis=list(rangemode = "tozero",title="Context Volatility",type="linear",showgrid=T,showgrid = TRUE,showline = FALSE,showticklabels = TRUE,tickcolor = 'rgb(127,127,127)', ticks = 'outside', zeroline = T))
-  })
+    p1<-layout(p1,margin=list(r=50,b=150),legend=list(orientation="h",yanchor="bottom",xanchor="center",x=0.5,y=1),yaxis2=list(rangemode="tozero",tickfont = list(color = "red"),overlaying = "y",side = "right",title = "Frequency"),paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',xaxis=list(autotick=T,showgrid=T,showgrid = TRUE,showline = FALSE,showticklabels = TRUE,tickcolor = 'rgb(127,127,127)', ticks = 'outside', zeroline = FALSE,side="bottom"),margin=list(b=80),yaxis=list(rangemode = "tozero",title="Context Volatility",type="linear",showgrid=T,showgrid = TRUE,showline = FALSE,showticklabels = TRUE,tickcolor = 'rgb(127,127,127)', ticks = 'outside', zeroline = T))
+    return(p1)
+    })
   output$coocs<-renderDataTable({
     eventdata<-event_data("plotly_click",source = as.character(input$Det_VA_Select_Word))
     
@@ -117,9 +118,12 @@ observeEvent(input$Det_VA_Update,{
   output$wc2<-renderWordcloud2({
     eventdata<-event_data("plotly_click",source = as.character(input$Det_VA_Select_Word))
     validate(need(!is.null(eventdata), "click in the graph to see co-occurrences for the corresponding time"))
-    
+
     colfuncrb <- colorRampPalette(c("gold", "springgreen"))
     colfuncbb <- colorRampPalette(c("deeppink", "gold"))
+    # colfuncrb <- colorRampPalette(c("#f58442", "#0a8a28"))
+    # colfuncbb <- colorRampPalette(c("#f00800", "#f58442"))
+    
     
     validate(need(db1!=db2,"Please select 2 different points in time"))
     daten1<-values$va_cy[[db1]][input$Det_VA_Select_Word,]
@@ -158,6 +162,7 @@ observeEvent(input$Det_VA_Update,{
     d<-d[order(d[,2],decreasing = T),]
     d[,2]<-d[,2]/max(d[,2])  
     d[,2]<-d[,2]*20
+
     wordcloud2(d,size=0.4,color = colors,backgroundColor = "black",fontFamily = "Helvetica")
   }) 
   

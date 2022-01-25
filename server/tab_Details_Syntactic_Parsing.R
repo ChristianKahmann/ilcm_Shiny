@@ -238,6 +238,6 @@ output$Det_SP_tree<-renderVisNetwork({
 #' depends on:
 #'   values$Det_SP_data: detailed syntactic parsing data
 output$Det_SP_number_of_results<-renderUI({
-  text<-paste0(length(unique(values$Det_SP_data$sentence_id))," sentences could have been found matching the sepcified input!")
+  text<-paste0(length(unique(values$Det_SP_data$sentence_id))," sentences were found matching the sepcified input!")
   return(tags$b(text))
 })

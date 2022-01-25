@@ -79,10 +79,10 @@ output$Keyword_Extraction_Results <- renderDataTable({
   colnames(data_finished)[1:3]<-c("task id","collection","creation time")
   data_finished<-data.frame(data_finished)
   values$tasks_keyword<-data_finished
-
+  
   available_parameters<-intersect(c("task.id","collection","creation.time","KE_Mode","KE_no_ref_method","KE_no_ref_n_min","KE_no_ref_ngram_max","KE_filter","KE_phrase"),colnames(data_finished))
   data_finished<-data_finished[,available_parameters]
-
+  
   data_finished<-cbind(data_finished,Delete = shinyInput(
     shinyBS::bsButton,
     dim(data_finished)[1],
@@ -103,23 +103,31 @@ output$Keyword_Extraction_Results <- renderDataTable({
     icon=icon("info"),
     onclick = 'Shiny.onInputChange(\"more_details_keyword_results\",  this.id)'
   ))
-  
+  #open details window buttons 
+  Open = shinyInput(
+    shinyBS::bsButton,
+    dim(data_finished)[1],
+    'open_details_button_keyword_results_',
+    label = "",
+    size="extra-small",
+    style="info",
+    icon=icon("search"),
+    onclick = 'Shiny.onInputChange(\"open_details_keyword_results\",  this.id)'
+  )
   try({
     colnames(data_finished)<-c("Task id","Collection","Creation time","Mode","Method","n min","ngram max","Filter","Phrase","Delete","More details")
   })
   colnames(data_finished) = str_wrap(colnames(data_finished),width = 8)
   data_finished<-replace_TRUE_FALSE(data_finished)
   values$results_keyword<-data_finished
+  data_finished<-cbind(Open,data_finished)
+  
   DT = datatable(data_finished,
-                 selection = "single",
-                 options = list(dom = 'tp',ordering=F,
-                                columnDefs=list(list(className="no_select",targets=((dim(data_finished)[2]-1):(dim(data_finished)[2]-2)))))
-                 ,rownames = F,class = "row-border compact",escape = F,
-                 callback = JS('table.on("click", "td.no_select", function(e) {
-                               e.stopPropagation()
-});')
+                 selection = "none",
+                 options = list(dom = 'tp',ordering=F),
+                 rownames = F,class = "row-border compact",escape = F
   )
-  })
+})
 
 
 #' check wheather a certain result was clicked and then switch with needed information to details tab
@@ -128,17 +136,20 @@ output$Keyword_Extraction_Results <- renderDataTable({
 #'   values$Details_Analysis: keyword extraction analysis details
 #'   values$Details_Data_KE: data details from keyword extraction
 #'   values$Keyword_Results_Files: keyword extraction result files
-observeEvent(ignoreInit = T,input$Keyword_Extraction_Results_rows_selected,{
-  s = input$Keyword_Extraction_Results_rows_selected
+observeEvent(input$open_details_keyword_results, {
+  s <- as.numeric(strsplit(input$open_details_keyword_results, "_")[[1]][6])
   if (length(s)) {
-    values$Details_Analysis <- "KE"
-    isolate(values$parameters_finished <- FALSE)
-    isolate(values$Details_Data_KE <-
-              values$Keyword_Results_Files[s])
-    updateTabsetPanel(session = session,
-                      inputId = "coll",
-                      selected = "Details")
-    return(NULL)
+    if(s>0){
+      values$Details_Analysis <- "KE"
+      isolate(values$parameters_finished <- FALSE)
+      isolate(values$Details_Data_KE <-
+                values$Keyword_Results_Files[s])
+      isolate(shinyjs::runjs('Shiny.onInputChange(\"open_details_keyword_results\",  "open_details_button_keyword_results_0")'))
+      updateTabsetPanel(session = session,
+                        inputId = "coll",
+                        selected = "Details")
+      return(NULL)
+    }
   }
 })
 
