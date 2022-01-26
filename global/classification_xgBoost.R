@@ -18,7 +18,7 @@ library(caret)
 #'
 #' @export
 #' @example 
-k_fold_cross_validation_xgb <- function(labeledDTM, classesOfDocuments, params, k = 10, cost = 10, ...) {
+k_fold_cross_validation_xgb <- function(labeledDTM, classesOfDocuments, params, k = 10, ...) {
   evaluationMeasures <- NULL
   complete_results<-list()
   names<-as.factor(classesOfDocuments)
@@ -37,7 +37,7 @@ k_fold_cross_validation_xgb <- function(labeledDTM, classesOfDocuments, params, 
                        "num_class" = length(unique(as.numeric(as.factor(trainingLabels))))+1)
       my_trainingSet <- xgb.DMatrix(data = as.matrix(trainingSet), label = as.numeric(factor(trainingLabels)))
       
-      model<- xgboost(params = xgb_params, data = my_trainingSet, nrounds = 1)
+      model<- xgboost(params = xgb_params, data = my_trainingSet, nrounds = params$xgb_nrounds_vali)
       testSet <- labeledDTM[currentFold, ]
       testLabels <- classesOfDocuments[currentFold]
       my_testSet <- xgb.DMatrix(data = as.matrix(testSet))
@@ -127,7 +127,7 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   trainingDTM <-as.matrix(dtm[selector_idx, ])
   trainingDTM <- as(trainingDTM, "dgCMatrix")
   start.time <- Sys.time()
-  model <- xgboost(data = trainingDTM, label = trainingLabels, max.depth = 15, eta = 1, nthread = 5, nround = 15)
+  model <- xgboost(data = trainingDTM, label = trainingLabels, nround = 15)
   end.time <- Sys.time()
   time_model <- end.time - start.time
   print("model time:")
@@ -149,7 +149,7 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
-  cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
+  #cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
   result=NULL
   results_complete<-list()
   count=0
@@ -158,17 +158,17 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   trainingLabels_og <- gold_table[idx,2]
   names(trainingLabels_og)<-gold_table[idx,1]
 ####
-  for (cParameter in cParameterValues) {
-    count=count+1
-    print(paste0("C = ", cParameter))
+ # for (cParameter in cParameterValues) {
+  #  count=count+1
+  #  print(paste0("C = ", cParameter))
     #if enough training data available use k=10, else min number of trainign samples
 ### there is a xgboost way to do cross validation
-    evalMeasures <-k_fold_cross_validation_xgb(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+    evalMeasures <-k_fold_cross_validation_xgb(trainingDTM_og, trainingLabels_og,parameters, k = min(10,dim(trainingDTM_og)[1]))
     print(evalMeasures$means)
 ###
     result <- c(result, evalMeasures$means["F"])
-    results_complete[[count]]<-evalMeasures$complete
-  }
+    results_complete<-evalMeasures$complete
+ # }
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
   log_to_file(message = "&emsp; Choose active learning examples",file = logfile)
@@ -263,21 +263,21 @@ set_training_eval_xgb<-function(parameters, gold_table, dtm){
   trainingLabels<- gold_table[idx,2]
   names(trainingLabels)<-gold_table[idx,1]
   
-  cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
+  #cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
   result <- NULL
   results_complete<-list()
-  count=0
+  #count=0
   start.time <- Sys.time()
-  for (cParameter in cParameterValues) {
-    count=count+1
-    print(paste0("C = ", cParameter))
+  #for (cParameter in cParameterValues) {
+   # count=count+1
+   # print(paste0("C = ", cParameter))
     
     #if enough training data available use k=10, else min number of trainign samples
-    evalMeasures <- k_fold_cross_validation_xgb(trainingDTM, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM)[1]))
+    evalMeasures <- k_fold_cross_validation_xgb(trainingDTM, trainingLabels, parameters, k = min(10,dim(trainingDTM)[1]))
     print(evalMeasures$means)
     result <- c(result, evalMeasures$means["F"])
-    results_complete[[count]]<-evalMeasures$complete
-  }
+    results_complete<-evalMeasures$complete
+  #}
   end.time <- Sys.time()
   time_vali <- end.time - start.time
   print("validation time:")
@@ -332,7 +332,7 @@ set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
                      "num_class" = num_class)
   trainingDTM <-  xgb.DMatrix(data = as.matrix(dtm[selector_idx, ]), label = as.numeric(factor(trainingLabels)))
   start.time <- Sys.time()
-  model<- xgboost(params = xgb_params, data = trainingDTM, nrounds = 5) 
+  model<- xgboost(params = xgb_params, data = trainingDTM, nrounds = parameters$xgb_nrounds_model) 
   end.time <- Sys.time()
   time_model <- end.time - start.time
   print("model time:")
@@ -452,7 +452,7 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
                      "eval_metric" = "mlogloss",
                      "num_class" = num_class)
   start.time <- Sys.time()
-  model <- xgboost(params = xgb_params, data = trainingDTM, nrounds = 5, booster = "gblinear")
+  model <- xgboost(params = xgb_params, data = trainingDTM, nrounds =  parameters$xgb_nrounds_model, booster = "gblinear")
   end.time <- Sys.time()
   time_model <- end.time - start.time
   print("model time:")
@@ -476,7 +476,7 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   # check for labels 
   testDTM<-xgb.DMatrix(data = as.matrix(dtm))
   start.time <- Sys.time()
-  pre_model<- xgboost(params = xgb_params, data = trainingDTM, nrounds = 5) 
+  pre_model<- xgboost(params = xgb_params, data = trainingDTM, nrounds =  parameters$xgb_nrounds_model) 
   predicted <- predict(pre_model, testDTM, reshape = TRUE)
   end.time <- Sys.time()
   time_pred <- end.time - start.time
@@ -525,20 +525,20 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   trainingLabels_og <- gold_table[idx,2]
   names(trainingLabels_og)<-gold_table[idx,1]
 ###
-   cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
+  # cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
    result=NULL
    results_complete<-list()
    count=0
-   for (cParameter in cParameterValues) {
-     count=count+1
-     print(paste0("C = ", cParameter))
+  # for (cParameter in cParameterValues) {
+    # count=count+1
+   #  print(paste0("C = ", cParameter))
      #if enough trainign data available use k=10, else min number of trainign samples
-     evalMeasures  <- k_fold_cross_validation_xgb(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+     evalMeasures  <- k_fold_cross_validation_xgb(trainingDTM_og, trainingLabels_og,parameters, k = min(10,dim(trainingDTM_og)[1]))
      
      print(evalMeasures$means)
      result <- c(result, evalMeasures$means["F"])
-     results_complete[[count]]<-evalMeasures$complete
-   }
+     results_complete<-evalMeasures$complete
+  # }
   
   ##
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)

@@ -412,6 +412,97 @@ output$Analysis_Parameter_CL<-renderUI({
                                 )
              )
       ),
+      conditionalPanel(condition='input.CL_Mode!="Evaluate Training Set" && input.CL_Method == "XGBoost"',
+                       column(1,
+                              numericInput(inputId = "nrounds.model",label = "number of rounds for the model",value = 15,step = 1)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "The nrounds parameter decides how many iterations the model takes to classify the trainingsdata ",
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                )
+                       )
+      ),
+      conditionalPanel(condition='input.CL_Method == "XGBoost" && input.CL_Mode!="Active learning on whole documents" ',
+                       column(1,
+                              numericInput(inputId = "nrounds.vali",label = "number of rounds for the k-fold cross validation",value = 5,step = 1)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "The nrounds parameter decides how many iterations the model takes to classify the trainingsdata for the k-fold cross validation",
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                )
+                       )
+      ),
+      conditionalPanel(condition='input.CL_Mode!="Evaluate Training Set" && input.CL_Method == "randomForest"',
+                       column(1,
+                              numericInput(inputId = "ntree.model.rf",label = "number of trees for the model",value = 15,step = 1)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "The ntree parameter decides how many trees the model takes to classify the trainingsdata ",
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                )
+                       )
+      ),
+      conditionalPanel(condition='input.CL_Mode!="Active learning on whole documents" && input.CL_Method == "randomForest" || input.CL_Method == "decissionTree") ',
+                       column(1,
+                              numericInput(inputId = "ntrees.vali",label = "number of trees for the k-fold cross validation",value = 5,step = 1)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "The ntrees parameter decides how many trees the model takes to classify the trainingsdata for the k-fold cross validation",
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                )
+                       )
+      ),
+      conditionalPanel(condition='input.CL_Mode =="Produce 50 new active learning examples" && input.CL_Method == "decissionTree" ',
+                       column(1,
+                              numericInput(inputId = "minsplit",label = "minimum number of observations",value = 2,step = 1)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "The minimum number of observations that must exist in a node in order for a split to be attempted",
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                )
+                       )
+      ),
+      conditionalPanel(condition='input.CL_Mode =="Produce 50 new active learning examples" && input.CL_Method == "decissionTree" ',
+                       column(1,
+                              numericInput(inputId = "maxdepth",label = "maximum depth of decission tree",value = 5,step = 1)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "The minimum number of observations that must exist in a node in order for a split to be attempted",
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                )
+                       )
+      ),
+      conditionalPanel(condition='input.CL_Mode =="Produce 50 new active learning examples" && input.CL_Method == "decissionTree" ',
+                       column(1,
+                              numericInput(inputId = "minbucket",label = "Minimum number of observations in terminal leaf node",value = 2,step = 1)%>%
+                                shinyInput_label_embed(
+                                  shiny_iconlink() %>%
+                                    bs_embed_popover(
+                                      title = "The minimum number of observations in any terminal <leaf> node.",
+                                      placement = "right",
+                                      html="true"
+                                    )
+                                )
+                       )
+      ),
       column(7,
              uiOutput("CL_dict_ui")
       )
@@ -420,29 +511,52 @@ output$Analysis_Parameter_CL<-renderUI({
   )
 })
 
-#' start ckassification
+
+#' start classification
 #' depends on:
 #'   input$CL_Context_Unit: select context unit (e.g. sentence)
 #'   input$CL_Mode: select mode
-observeEvent(input$CL_Context_Unit,ignoreInit = T,{
+observeEvent(c(input$CL_Context_Unit,input$CL_Method) ,ignoreInit = T,{
   selected<-input$CL_Mode
   if(input$CL_Context_Unit=="Sentence"){
-    choices = c("Produce 50 new active learning examples","Active learning on whole documents","Evaluate Training Set","Classify on entire collection")
-    if(selected%in%choices){
-      updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices,selected=selected)
+    if(input$CL_Method == "decissionTree"){
+      choices = "Produce 50 new active learning examples"
+      if(selected == choices){
+        updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices,selected=selected)
+      }
+      else{
+        updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices)
+      }
+    }else{
+      choices = c("Produce 50 new active learning examples","Active learning on whole documents","Evaluate Training Set","Classify on entire collection")
+      if(selected%in%choices){
+        updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices,selected=selected)
+      }
+      else{
+        updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices)
+      }
     }
-    else{
-      updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices)
-    }
+    
   }
   else{
-    choices = c("Produce 50 new active learning examples","Evaluate Training Set","Classify on entire collection")
-    if(selected%in%choices){
-      updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices,selected=selected)
+    if(input$CL_Method == "decissionTree"){
+      choices = "Produce 50 new active learning examples"
+      if(selected == choices){
+        updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices,selected=selected)
+      }
+      else{
+        updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices)
+      }
+    }else{
+      choices = c("Produce 50 new active learning examples","Evaluate Training Set","Classify on entire collection")
+      if(selected%in%choices){
+        updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices,selected=selected)
+      }
+      else{
+        updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices)
+      }
     }
-    else{
-      updateSelectizeInput(session = session,inputId = "CL_Mode",choices=choices)
-    }
+    
   }
 })
 
@@ -617,6 +731,13 @@ observeEvent(ignoreNULL=T,input$CL_use_custom_blacklist,{
 #'   input$analysis_selected:  selected analysis type
 #'   input$use_custom_script  should a customed script be used?
 #'   input$custom_script_options: options for the custom script
+#'   input$nrounds.model: number of iteration for xgboost model
+#'   input$nrounds.vali: number of iteration for xgboost cross validation
+#'   input$ntree.model.rf: number of trees for random Forest model
+#'   input$ntree.vali : number of trees for random Forest cross validation
+#'   input$minsplit : minimum number of observations in a node in decission tree
+#'   input$maxdepth : maximum depth of decission tree
+#'   input$minbucket: minimum number of observation in any leaf node
 observeEvent(ignoreInit = T,input$CL_Submit_Script,{
   #check if input is correct
   continue=TRUE
@@ -729,7 +850,14 @@ observeEvent(ignoreInit = T,input$CL_Submit_Script,{
                        cl_c=input$CL_c,
                        use_fixed_vocab=input$CL_use_fixed_vocab,
                        fixed_vocab=input$CL_fixed_vocab,
-                       CL_Method = input$CL_Method
+                       CL_Method = input$CL_Method,
+                       xgb_nrounds_model = input$nrounds.model,
+                       xgb_nrounds_vali = input$nrounds.vali,
+                       rf_ntree_model =  input$ntree.model.rf,
+                       rf_ntree_vali =  input$ntrees.vali,
+                       dt_minsplit = input$minsplit,
+                       dt_maxdepth = input$maxdepth,
+                       dt_minbucket = input$minbucket
       )
       #create process ID
       ID<-get_task_id_counter()+1
@@ -922,6 +1050,7 @@ observeEvent(ignoreInit=T,input$CL_pruning_continue,{
                      use_fixed_vocab=input$CL_use_fixed_vocab,
                      fixed_vocab=input$CL_fixed_vocab,
                      CL_Method = input$CL_Method
+                     
     )
     #create process ID
     ID<-get_task_id_counter()+1

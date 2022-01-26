@@ -233,6 +233,7 @@ error<-try(expr = {
     }
     if(parameters$CL_Method == "decissionTree"){
       set_learning_samples_dT(parameters, gold_table, dtm)
+      print("DecissionTree selected")
     }
   }
   if(parameters$cl_Mode=="Evaluate Training Set"){

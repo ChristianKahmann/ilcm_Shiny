@@ -14,7 +14,7 @@
 #'
 #' @export
 #' @example 
-k_fold_cross_validation_rF <- function(labeledDTM, classesOfDocuments, k = 10, cost = 10, ...) {
+k_fold_cross_validation_rF <- function(labeledDTM, classesOfDocuments,param, k = 10, cost = 10, ...) {
   evaluationMeasures <- NULL
   complete_results<-list()
   for (j in 1:k) {
@@ -22,9 +22,9 @@ k_fold_cross_validation_rF <- function(labeledDTM, classesOfDocuments, k = 10, c
     trainingSet <- labeledDTM[!currentFold, ]
     trainingLabels <- classesOfDocuments[!currentFold]
     
-    my_trainingSet <- as.matrix(trainingSet)
+    #my_trainingSet <- as.matrix(trainingSet)
     model <-randomForest(y = as.factor(trainingLabels),x =trainingSet,importance=TRUE,
-                         proximity=TRUE,type="classification",ntree=5)
+                         proximity=TRUE,type="classification",ntree= param$rf_ntree_vali)
     
     testSet <- labeledDTM[currentFold, ]
     testLabels <- classesOfDocuments[currentFold]
@@ -105,7 +105,7 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
  
   start.time <- Sys.time()
   model <-randomForest(as.factor(class) ~ .,data =trainingDTM,importance=TRUE,
-                       proximity=TRUE,type="classification", ntree = 15)
+                       proximity=TRUE,type="classification", ntree = parameters$rf_ntree_model)
   end.time <- Sys.time()
   time_model <- end.time - start.time
   print("model time:")
@@ -132,7 +132,7 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
     count=count+1
     print(paste0("C = ", cParameter))
     #if enough training data available use k=10, else min number of trainign samples
-    evalMeasures <- k_fold_cross_validation_rF(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+    evalMeasures <- k_fold_cross_validation_rF(trainingDTM_og, trainingLabels_og,param = parameters, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
     print(evalMeasures$means)
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
@@ -242,7 +242,7 @@ set_training_eval_rF<-function(parameters, gold_table, dtm){
     print(paste0("C = ", cParameter))
     #if enough training data available use k=10, else min number of trainign samples
 #####
-    evalMeasures <- k_fold_cross_validation_rF(trainingDTM, trainingLabels, cost = cParameter,k = min(10,dim(trainingDTM)[1]))
+    evalMeasures <- k_fold_cross_validation_rF(trainingDTM, trainingLabels,param = parameters, cost = cParameter,k = min(10,dim(trainingDTM)[1]))
 #####
     print(evalMeasures$means)
     result <- c(result, evalMeasures$means["F"])
@@ -293,7 +293,7 @@ set_active_learning_whole_rF<-function(parameters, gold_table, dtm){
   
   start.time <- Sys.time()
   model <-randomForest(as.factor(class) ~ .,data =trainingDTM,importance=TRUE,
-                       proximity=TRUE,type="classification", ntree = 15)
+                       proximity=TRUE,type="classification", ntree = parameters$rf_ntree_model)
   end.time <- Sys.time()
   time_model <- end.time - start.time
   print("model time:")
@@ -399,7 +399,7 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
   
   start.time <- Sys.time()
   model <-randomForest(as.factor(class) ~ .,data =trainingDTM,importance=TRUE,
-                       proximity=TRUE,type="classification", ntree = 15)
+                       proximity=TRUE,type="classification", ntree = parameters$rf_ntree_model)
   
   end.time <- Sys.time()
   time_model <- end.time - start.time
@@ -478,7 +478,7 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
     
     #if enough trainign data available use k=10, else min number of trainign samples
 ####
-    evalMeasures <- k_fold_cross_validation_rF(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+    evalMeasures <- k_fold_cross_validation_rF(trainingDTM_og, trainingLabels_og,param = parameters, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
     print(evalMeasures$means)
 ####
     result <- c(result, evalMeasures$means["F"])

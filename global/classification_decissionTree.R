@@ -57,9 +57,9 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
   trainingDTM$class <-gold_table[idx,2]
   
   start.time <- Sys.time()
-  model <-rpart(class ~ .,data =trainingDTM, method = 'class',maxdepth = 5, 
-                minsplit = 2, 
-                minbucket = 1)
+  model <-rpart(class ~ .,data =trainingDTM, method = 'class',maxdepth = parameters$dt_maxdepth, 
+                minsplit = parameters$dt_minsplit, 
+                minbucket = parameters$dt_minbucket)
   end.time <- Sys.time()
   time_model <- end.time - start.time
   print("model time:")
@@ -86,7 +86,7 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
     count=count+1
     print(paste0("C = ", cParameter))
     #if enough training data available use k=10, else min number of trainign samples
-    evalMeasures <- k_fold_cross_validation_rF(trainingDTM_og, trainingLabels_og, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
+    evalMeasures <- k_fold_cross_validation_rF(trainingDTM_og, trainingLabels_og,param = parameters, cost = cParameter,k = min(10,dim(trainingDTM_og)[1]))
     print(evalMeasures$means)
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
@@ -124,7 +124,7 @@ set_learning_samples_dT<-function(parameters, gold_table, dtm){
   
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
 ####
-  printcp(model)
+  #printcp(model)
   feature_matrix<-as.data.frame(model$variable.importance)
   #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
   colnames(feature_matrix)<-NULL
