@@ -10,6 +10,7 @@ library(caret)
 #' @param classesOfDocuments
 #' @param k (number of folds)
 #' @param cost
+#' @param parameters from user interface (nrounds)
 #' 
 #' @return result list depending of
 #' list:
@@ -18,6 +19,7 @@ library(caret)
 #'
 #' @export
 #' @example 
+#' Note: choose nround parameter low to fasten up calculations
 k_fold_cross_validation_xgb <- function(labeledDTM, classesOfDocuments, params, k = 10, ...) {
   evaluationMeasures <- NULL
   complete_results<-list()
@@ -76,6 +78,7 @@ k_fold_cross_validation_xgb <- function(labeledDTM, classesOfDocuments, params, 
 #' @param parameters (list of set parameters from task scheduler)
 #' @param gold_table (assigns classes to already annotated documents)
 #' @param dtm (current document term matrix)
+#' Note: there need to be enough labeled samples in order to run without error
 set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   if(parameters$use_dictionary==TRUE){
     log_to_file(message = "&emsp; Dictionary lookup",file = logfile)
@@ -116,40 +119,43 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   features<-which(colSums(gold_dtm)>0)
   dtm<-dtm[,features]
   dtm<-dtm[,order(colnames(dtm))]
-  #trainingDTM <- as(quanteda::as.dfm(dtm[selector_idx, ]), "sparseMatrix")
+  
   trainingLabels <- as.numeric(factor(gold_table[idx,2]))
-  #names(trainingLabels)<-gold_table[idx,1]
+ 
   c_weights <- table(trainingLabels) / length(trainingLabels)
   c_weights <- abs(c_weights - 1) 
 #####
+  # xgboost uses numbers as labels (NEG and chosen class from user)
   trainingLabels[trainingLabels == "1"] <- "0"
   trainingLabels[trainingLabels == "2"] <- "1"
   trainingDTM <-as.matrix(dtm[selector_idx, ])
   trainingDTM <- as(trainingDTM, "dgCMatrix")
-  start.time <- Sys.time()
+  #start.time <- Sys.time()
   model <- xgboost(data = trainingDTM, label = trainingLabels, nround = 15)
-  end.time <- Sys.time()
-  time_model <- end.time - start.time
-  print("model time:")
-  print(time_model)
+  #end.time <- Sys.time()
+  #time_model <- end.time - start.time
+  #print("model time:")
+  #print(time_model)
   testDTM<-as(quanteda::as.dfm(dtm),"dgCMatrix")
-  # returns vector of lenght of nrow(testDTM)
-  start.time <- Sys.time()
+
+  #start.time <- Sys.time()
   predicted <- predict(model, testDTM) 
-  end.time <- Sys.time()
-  time_pred <- end.time - start.time
-  print("prediction time:")
-  print(time_pred)
+  #end.time <- Sys.time()
+  #time_pred <- end.time - start.time
+  #print("prediction time:")
+  #print(time_pred)
+  
+  # predictions only returns probability for selected class
+  # here we calculate the probability for choosing NEG
   one_vec<-rep(1,length(predicted))
   NEG <- one_vec - predicted
   frame_pred<-data.frame(predicted,NEG)
   names(frame_pred)<- parameters$cl_Category
- # print(head(frame_pred))
+ 
 #####
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
-  #cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
   result=NULL
   results_complete<-list()
   count=0
@@ -157,18 +163,13 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   trainingDTM_og <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
   trainingLabels_og <- gold_table[idx,2]
   names(trainingLabels_og)<-gold_table[idx,1]
-####
- # for (cParameter in cParameterValues) {
-  #  count=count+1
-  #  print(paste0("C = ", cParameter))
-    #if enough training data available use k=10, else min number of trainign samples
-### there is a xgboost way to do cross validation
+### remove for loop with different runs as the xgb doesn't change in different runs
     evalMeasures <-k_fold_cross_validation_xgb(trainingDTM_og, trainingLabels_og,parameters, k = min(10,dim(trainingDTM_og)[1]))
     print(evalMeasures$means)
 ###
     result <- c(result, evalMeasures$means["F"])
     results_complete<-evalMeasures$complete
- # }
+
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
   log_to_file(message = "&emsp; Choose active learning examples",file = logfile)
@@ -204,6 +205,9 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   
   log_to_file(message = "&emsp; Extraction of most distinctive features",file = logfile)
 ####
+  # to create a feature matrix use model.importance
+  # will give the name of feature as well as "gain", "cover" and "weight" of the feature in a model
+  # use gain (closest to importance of a feature) - there will be no negative values for features as this is an absolute representation
   feature_frame<-xgb.importance(feature_names = dimnames(trainingDTM)[[2]], model = model)
   feature_matrix<-as.matrix(feature_frame$Gain)
   rownames(feature_matrix)<-feature_frame$Feature
@@ -211,7 +215,6 @@ set_learning_samples_xgb<-function(parameters, gold_table, dtm){
   colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm)
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
- # print(head(feature_matrix))
 ####  
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
@@ -263,25 +266,21 @@ set_training_eval_xgb<-function(parameters, gold_table, dtm){
   trainingLabels<- gold_table[idx,2]
   names(trainingLabels)<-gold_table[idx,1]
   
-  #cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
+  # system will not run through different rounds like svm
   result <- NULL
   results_complete<-list()
-  #count=0
-  start.time <- Sys.time()
-  #for (cParameter in cParameterValues) {
-   # count=count+1
-   # print(paste0("C = ", cParameter))
-    
-    #if enough training data available use k=10, else min number of trainign samples
-    evalMeasures <- k_fold_cross_validation_xgb(trainingDTM, trainingLabels, parameters, k = min(10,dim(trainingDTM)[1]))
-    print(evalMeasures$means)
-    result <- c(result, evalMeasures$means["F"])
-    results_complete<-evalMeasures$complete
-  #}
-  end.time <- Sys.time()
-  time_vali <- end.time - start.time
-  print("validation time:")
-  print(time_vali)
+ 
+  #start.time <- Sys.time()
+
+  #if enough training data available use k=10, else min number of trainign samples
+  evalMeasures <- k_fold_cross_validation_xgb(trainingDTM, trainingLabels, parameters, k = min(10,dim(trainingDTM)[1]))
+  print(evalMeasures$means)
+  result <- c(result, evalMeasures$means["F"])
+  results_complete<-evalMeasures$complete
+  #end.time <- Sys.time()
+  #time_vali <- end.time - start.time
+  #print("validation time:")
+  #print(time_vali)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
   
@@ -314,12 +313,10 @@ set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
   features<-which(colSums(gold_dtm)>0)
   dtm<-dtm[,features]
   dtm<-dtm[,order(colnames(dtm))]
-  trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
-  trainingLabels <- gold_table[idx,2]
-  names(trainingLabels)<-gold_table[idx,1]
-  c_weights <- table(trainingLabels) / length(trainingLabels)
-  c_weights <- abs(c_weights - 1) 
+  
 ###
+  # the model will only take numbers as values
+  # to not lose the connection of name and corresponding number create the order label list
   trainingLabels <- gold_table[idx,2]
   names(trainingLabels)<-gold_table[idx,1]
   names<-as.factor(trainingLabels)
@@ -331,12 +328,12 @@ set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
                      "eval_metric" = "mlogloss",
                      "num_class" = num_class)
   trainingDTM <-  xgb.DMatrix(data = as.matrix(dtm[selector_idx, ]), label = as.numeric(factor(trainingLabels)))
-  start.time <- Sys.time()
+  #start.time <- Sys.time()
   model<- xgboost(params = xgb_params, data = trainingDTM, nrounds = parameters$xgb_nrounds_model) 
-  end.time <- Sys.time()
-  time_model <- end.time - start.time
-  print("model time:")
-  print(time_model)
+  #end.time <- Sys.time()
+  #time_model <- end.time - start.time
+  #print("model time:")
+  #print(time_model)
 ###
   #sample documents
   sentence_ids<-setdiff(rownames(dtm),gold_table[,1])
@@ -351,13 +348,15 @@ set_active_learning_whole_xgb<-function(parameters, gold_table, dtm){
   random_sample_sentences<-setdiff(rownames(dtm),gold_table[,1])[which(stringr::str_replace(string = setdiff(rownames(dtm),gold_table[,1]),pattern = "_[0-9]+$",replacement = "")%in%random_sample)]
 ###
   testDTM<-xgb.DMatrix(data = as.matrix(dtm))
-  start.time <- Sys.time()
+  #start.time <- Sys.time()
+  # need two different predictions to represent the chosen classes and the probabilities of these classes 
   predicted <- predict(model, testDTM, reshape = TRUE)
+  # remove the NEG class
   predicted<- predicted[,-1]
-  end.time <- Sys.time()
-  time_pred <- end.time - start.time
-  print("predictiom time:")
-  print(time_pred)
+  #end.time <- Sys.time()
+  #time_pred <- end.time - start.time
+  #print("predictiom time:")
+  #print(time_pred)
   colnames(predicted)<-order_label$label
   
   predictions<-colnames(predicted)[max.col(predicted, ties.method = "first")]
@@ -437,7 +436,7 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   features<-which(colSums(gold_dtm)>0)
   dtm<-dtm[,features]
   dtm<-dtm[,order(colnames(dtm))]
-  #trainingDTM <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
+  # xgboost only take numbers as labels to not lose connection between label name and number create list order_label
   trainingLabels <- gold_table[idx,2]
   names(trainingLabels)<-gold_table[idx,1]
   names<-as.factor(trainingLabels)
@@ -451,17 +450,17 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   xgb_params <- list("objective" = "multi:softprob",
                      "eval_metric" = "mlogloss",
                      "num_class" = num_class)
-  start.time <- Sys.time()
+  #start.time <- Sys.time()
   model <- xgboost(params = xgb_params, data = trainingDTM, nrounds =  parameters$xgb_nrounds_model, booster = "gblinear")
-  end.time <- Sys.time()
-  time_model <- end.time - start.time
-  print("model time:")
-  print(time_model)
+  #end.time <- Sys.time()
+  #time_model <- end.time - start.time
+  #print("model time:")
+  #print(time_model)
   feature_frame<-as.data.frame(xgb.importance(model = model))
   feature_matrix<-matrix(feature_frame$Weight, nrow = length(unique(feature_frame$Class)), ncol = length(feature_frame$Feature))
   colnames(feature_matrix)<-feature_frame$Feature
   rownames(feature_matrix)<- c(unique(trainingLabels),"NEG")
-  #colnames(feature_matrix)[1:(ncol(feature_matrix)-1)]<-colnames(dtm[selector_idx, ])
+  
   # delete bias term from feature matrix
   feature_matrix<-feature_matrix[,-ncol(feature_matrix),drop=F]
   
@@ -475,13 +474,15 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   
   # check for labels 
   testDTM<-xgb.DMatrix(data = as.matrix(dtm))
-  start.time <- Sys.time()
+  #start.time <- Sys.time()
+  # earlier model uses an other presentation of the results not compatible with this kind of prediction 
+  # therefore the pre_model exists
   pre_model<- xgboost(params = xgb_params, data = trainingDTM, nrounds =  parameters$xgb_nrounds_model) 
   predicted <- predict(pre_model, testDTM, reshape = TRUE)
-  end.time <- Sys.time()
-  time_pred <- end.time - start.time
-  print("prediction time:")
-  print(time_pred)
+  #end.time <- Sys.time()
+  #time_pred <- end.time - start.time
+  #print("prediction time:")
+  #print(time_pred)
   predicted<- predicted[,-1]
   colnames(predicted)<-order_label$label
   
@@ -525,20 +526,16 @@ classify_whole_collection_xgb<-function(parameters, gold_table, dtm){
   trainingLabels_og <- gold_table[idx,2]
   names(trainingLabels_og)<-gold_table[idx,1]
 ###
-  # cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
+ 
    result=NULL
    results_complete<-list()
    count=0
-  # for (cParameter in cParameterValues) {
-    # count=count+1
-   #  print(paste0("C = ", cParameter))
-     #if enough trainign data available use k=10, else min number of trainign samples
+  # no need to iterate between different parameters like in SVM
      evalMeasures  <- k_fold_cross_validation_xgb(trainingDTM_og, trainingLabels_og,parameters, k = min(10,dim(trainingDTM_og)[1]))
      
      print(evalMeasures$means)
      result <- c(result, evalMeasures$means["F"])
      results_complete<-evalMeasures$complete
-  # }
   
   ##
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)

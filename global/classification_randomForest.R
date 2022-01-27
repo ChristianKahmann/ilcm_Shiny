@@ -22,7 +22,7 @@ k_fold_cross_validation_rF <- function(labeledDTM, classesOfDocuments,param, k =
     trainingSet <- labeledDTM[!currentFold, ]
     trainingLabels <- classesOfDocuments[!currentFold]
     
-    #my_trainingSet <- as.matrix(trainingSet)
+    
     model <-randomForest(y = as.factor(trainingLabels),x =trainingSet,importance=TRUE,
                          proximity=TRUE,type="classification",ntree= param$rf_ntree_vali)
     
@@ -31,12 +31,12 @@ k_fold_cross_validation_rF <- function(labeledDTM, classesOfDocuments,param, k =
     labels_pred <- predict(model, testSet, type = "response")
     
     predictions<-as.character(labels_pred)
-    #names(predictions)<-rownames(dtm[currentFold,])
+    
     predictedLabels <- predictions
     
     # collect k evaluation results
     kthEvaluation <- F.measure(predictedLabels, testLabels )
-    #print(kthEvaluation)
+   
     if(length(kthEvaluation)==2){
       kthEvaluation_short<-kthEvaluation$micro
     }
@@ -100,26 +100,29 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
   dtm<-dtm[,features]
   dtm<-dtm[,order(colnames(dtm))]
 ###########
+  # model will take matrix or dataframe as input
+  # this has no significant effect on compilation time
   trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
   trainingDTM$class <-gold_table[idx,2]
  
-  start.time <- Sys.time()
+  #start.time <- Sys.time()
   model <-randomForest(as.factor(class) ~ .,data =trainingDTM,importance=TRUE,
                        proximity=TRUE,type="classification", ntree = parameters$rf_ntree_model)
-  end.time <- Sys.time()
-  time_model <- end.time - start.time
-  print("model time:")
-  print(time_model)
+  #end.time <- Sys.time()
+  #time_model <- end.time - start.time
+  #print("model time:")
+  #print(time_model)
   testDTM<-data.frame(as.matrix(dtm),stringsAsFactors=False)
-  start.time<- Sys.time()
+  #start.time<- Sys.time()
   predicted <- predict(model, testDTM, type="prob") 
-  end.time <- Sys.time()
-  time_pred <- end.time - start.time
-  print("prediction time:")
-  print(time_pred)
+  #end.time <- Sys.time()
+  #time_pred <- end.time - start.time
+  #print("prediction time:")
+  #print(time_pred)
 ###########
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
+  # even thought the cParameters wont be used it shows that per iteration the trees decide differently
   cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
   result=NULL
   results_complete<-list()
@@ -177,7 +180,7 @@ set_learning_samples_rF<-function(parameters, gold_table, dtm){
 ####
   #delete bias term from feature matrix
   feature_matrix<-feature_matrix[-2,,drop=F]
-  #print(head(feature_matrix))
+  
   word_counts<-colSums(dtm) 
   log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
   
@@ -236,7 +239,8 @@ set_training_eval_rF<-function(parameters, gold_table, dtm){
   trainingLabels <- gold_table[idx,2]
   names(trainingLabels)<-gold_table[idx,1]
 ####
-  start.time<- Sys.time()
+  #start.time<- Sys.time()
+  # even thought the value of the c parameters is irrelevant it shows that per iteration the trees decide slightly differntly
   for (cParameter in cParameterValues) {
     count=count+1
     print(paste0("C = ", cParameter))
@@ -248,10 +252,10 @@ set_training_eval_rF<-function(parameters, gold_table, dtm){
     result <- c(result, evalMeasures$means["F"])
     results_complete[[count]]<-evalMeasures$complete
   }
-  end.time <- Sys.time()
-  time_vali <- end.time - start.time
-  print("validation time:")
-  print(time_vali)
+ # end.time <- Sys.time()
+ ## time_vali <- end.time - start.time
+ # print("validation time:")
+ # print(time_vali)
   
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
@@ -288,16 +292,17 @@ set_active_learning_whole_rF<-function(parameters, gold_table, dtm){
   dtm<-dtm[,order(colnames(dtm))]
   
 ###
+  # models allows dataframe and matrix as input - makes no significant difference in compilation time
   trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
   trainingDTM$class <-gold_table[idx,2]
   
-  start.time <- Sys.time()
+  #start.time <- Sys.time()
   model <-randomForest(as.factor(class) ~ .,data =trainingDTM,importance=TRUE,
                        proximity=TRUE,type="classification", ntree = parameters$rf_ntree_model)
-  end.time <- Sys.time()
-  time_model <- end.time - start.time
-  print("model time:")
-  print(time_model)
+  #end.time <- Sys.time()
+  #time_model <- end.time - start.time
+  #print("model time:")
+ # print(time_model)
 ###
   #sample documents
   sentence_ids<-setdiff(rownames(dtm),gold_table[,1])
@@ -312,13 +317,13 @@ set_active_learning_whole_rF<-function(parameters, gold_table, dtm){
   random_sample_sentences<-setdiff(rownames(dtm),gold_table[,1])[which(stringr::str_replace(string = setdiff(rownames(dtm),gold_table[,1]),pattern = "_[0-9]+$",replacement = "")%in%random_sample)]
 ###
   testDTM<-data.frame(as.matrix(dtm[random_sample_sentences,]))
-  start.time <- Sys.time()
+  #start.time <- Sys.time()
   labels_prob <- predict(model, testDTM, type="prob") 
   labels_pred <- predict(model, testDTM, type = "response")
-  end.time <- Sys.time()
-  time_pred <- end.time - start.time
-  print("prediction time:")
-  print(time_pred)
+  #end.time <- Sys.time()
+  #time_pred <- end.time - start.time
+  #print("prediction time:")
+  #print(time_pred)
   predictions<-as.character(labels_pred)
   names(predictions)<-random_sample_sentences
   
@@ -394,17 +399,18 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
   dtm<-dtm[,order(colnames(dtm))]
 
 ####
+  # models takes dataframe and matrix as input - makes no difference in compilation time
   trainingDTM <-data.frame(as.matrix(dtm[selector_idx, ]),stringsAsFactors=False)
   trainingDTM$class <-gold_table[idx,2]
   
-  start.time <- Sys.time()
+  #start.time <- Sys.time()
   model <-randomForest(as.factor(class) ~ .,data =trainingDTM,importance=TRUE,
                        proximity=TRUE,type="classification", ntree = parameters$rf_ntree_model)
   
-  end.time <- Sys.time()
-  time_model <- end.time - start.time
-  print("model time:")
-  print(time_model)
+  #end.time <- Sys.time()
+  #time_model <- end.time - start.time
+  #print("model time:")
+  # print(time_model)
   feature_matrix <-as.data.frame(importance(model))
   feature_matrix<-feature_matrix[head(seq_len(ncol(feature_matrix)), -2)]
   feature_matrix<-t(feature_matrix)
@@ -424,13 +430,14 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
 ####
   testDTM<-data.frame(as.matrix(dtm))
   #testDTM<-convertMatrixToSparseM(quanteda::as.dfm(dtm))
-  start.time <- Sys.time()
+  #start.time <- Sys.time()
+  # two different predictions in order to get the chosen class per document as well as their probability
   predicted_doc <- predict(model, testDTM, type="prob")
   predicted_class<-predict(model, testDTM, type="response")
-  end.time <- Sys.time()
-  time_pred <- end.time - start.time
-  print("prediction time:")
-  print(time_pred)
+  #end.time <- Sys.time()
+  #time_pred <- end.time - start.time
+  #print("prediction time:")
+  #print(time_pred)
   predictions<-as.character(predicted_class)
   probabilities<-predicted_doc
   names(predictions)<-rownames(dtm)
@@ -462,6 +469,8 @@ classify_whole_collection_rF<-function(parameters, gold_table, dtm){
     original_text<-cbind(cbind(as.character(predictions),probabilities),orig)
   }
   log_to_file(message = "&emsp; Cross Validation",file = logfile)
+  # cParameters have no real effect on randomForest
+  # but different iterations result in different decissions of the forest
   cParameterValues <- c(0.003, 0.01, 0.03, 0.1, 0.3, 1, 3 , 10, 30, 100)
 ####
   trainingDTM_og <-convertMatrixToSparseM(quanteda::as.dfm(dtm[selector_idx, ]))
