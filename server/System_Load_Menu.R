@@ -47,7 +47,7 @@ output$dropdown_info<-renderMenu({
                       ),
                       notificationItem(
                         text =  paste("Version:",version),
-                        icon = icon("tachometer")
+                        icon = icon("tachometer-alt")
                       )
   )
   )
@@ -150,7 +150,7 @@ observeEvent(input$openOptionsModal, {
                                      ),
                                      column(4,
                                             withBusyIndicatorUI(
-                                              shinyBS::bsButton(inputId = "options_update_solr",label = "Re-index solr",icon = icon("refresh"),style = "default")
+                                              shinyBS::bsButton(inputId = "options_update_solr",label = "Re-index solr",icon = icon("sync"),style = "default")
                                             )
                                      )
                             ),

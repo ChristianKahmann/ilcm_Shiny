@@ -4,7 +4,7 @@ tabPanel(icon=icon("list"),
          column(10,
                 tags$div(
                   style = 'height:82vh; overflow-y:auto;',
-                  shinyBS::bsButton(inputId = "Results_Reset",label = "reload",style = "success",size = "extra-small",icon=icon("refresh")),
+                  shinyBS::bsButton(inputId = "Results_Reset",label = "reload",style = "success",size = "extra-small",icon=icon("sync")),
                   tags$div(style='overflow-x:auto;',
                            box(
                              title = "Topic Models",

@@ -569,7 +569,7 @@ tabPanel("Importer",
              shinyBS::bsButton(
                inputId = "Import_delete",
                label = "Delete",
-               icon = icon("remove"),
+               icon = icon("trash"),
                style = "danger"
              )
            ),

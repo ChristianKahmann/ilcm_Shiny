@@ -137,7 +137,7 @@ ui <- dashboardPage(
                   # button which open informations showing current app version and user
                   tags$li(dropdownMenuOutput(outputId = "dropdown_info"),class = "dropdown"),
                   # button which lets user log out and send him back to login page
-                  tags$li(shinyjs::hidden(actionLink(inputId = "Logout",label = "",icon = icon("sign-out"))),class = "dropdown")
+                  tags$li(shinyjs::hidden(actionLink(inputId = "Logout",label = "",icon = icon("sign-out-alt"))),class = "dropdown")
   ),
   # app sidebar
   dashboardSidebar(width="200px",

@@ -207,7 +207,7 @@ output$details_parameter<-renderUI({
         tagList(
           selectInput(inputId = "Det_DD_strategy",label = "Default strategy",choices = c("longest","shortest","latest","earliest","maximum node degree","random"),multiple = F),
           numericInput(inputId = "Det_DD_threshold",label="Threshold",value = 0.4,min=0,max=1,step = 0.05),
-          bsButton(inputId = "Det_DD_reset_user_input",label = "Reset user input",icon = icon("refresh"),style = "primary"),
+          bsButton(inputId = "Det_DD_reset_user_input",label = "Reset user input",icon = icon("sync"),style = "primary"),
           bsButton(inputId = "Det_DD_save_collection",label = "Save Collection",icon = icon("save"),style = "success"),
           conditionalPanel(condition = 'input.tabBox_deduplication=="Graph"',
                            checkboxInput(inputId = "Det_DD_use_igraph_layout",label = "use iGraph-layout?",value = T),

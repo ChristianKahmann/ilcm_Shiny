@@ -791,7 +791,7 @@ output$Class_eval_examples<-renderUI({
                  shinyWidgets::prettyRadioButtons(inputId = radio_id,label = "",choices = c("approve","deny","ignore"),selected = c("approve","deny","ignore")[which(values$Class_eval_data[x,3:5]==TRUE)],
                                                   status = "warning",shape = "square",animation = "rotate",bigger = T,inline = T),
                  conditionalPanel(condition = condition,
-                                  shinyWidgets::prettyRadioButtons(inputId = paste0(radio_id,"_deny"),label = "other category?",choices = c("NEG",setdiff(values$class_anno_names,values$class_anno_selected)),
+                                  shinyWidgets::prettyRadioButtons(inputId = paste0(radio_id,"_deny"),label = "other category?",choices = c("NEG",setdiff(values$class_anno_names,values$Class_eval_meta$category)),
                                                                    selected = selected,
                                                                    status = "primary",shape = "curve",animation = "jelly",bigger = T,inline = T,plain = T)
                  )
@@ -825,7 +825,7 @@ output$Class_eval_examples<-renderUI({
                  shinyWidgets::prettyRadioButtons(inputId = radio_id,label = "",choices = c("approve","deny","ignore"),selected = c("approve","deny","ignore")[which(values$Class_eval_data[x,3:5]==TRUE)],
                                                   status = "warning",shape = "square",animation = "rotate",bigger = T,inline = T),
                  conditionalPanel(condition = condition,
-                                  shinyWidgets::prettyRadioButtons(inputId = paste0(radio_id,"_deny"),label = "other category?",choices = c("NEG",setdiff(values$class_anno_names,values$class_anno_selected)),
+                                  shinyWidgets::prettyRadioButtons(inputId = paste0(radio_id,"_deny"),label = "other category?",choices = c("NEG",setdiff(values$class_anno_names,values$Class_eval_meta$category)),
                                                                    selected = selected,
                                                                    status = "primary",shape = "curve",animation = "jelly",bigger = T,inline = T,plain = T)
                  )
@@ -1248,6 +1248,7 @@ observe({
   x<-input$Class_eval_evaluated_show
   button_input<-str_split(string = x,pattern = "_",simplify = TRUE)[4:5]
   x<-isolate(values$Class_eval_class_distinct)[which(as.character(isolate(values$Class_eval_class_distinct[,2]))==button_input[2]),]
+  values$Class_eval_evaluated_chosen_category<-button_input[2]
   if(button_input[1]=="approve"){
     isolate(values$Class_eval2_data<-x[which(x[,5]==TRUE),])
   }
@@ -1260,6 +1261,7 @@ observe({
   if(values$Class_eval_context_unit=="Document"){
     showModal(modalDialog(title = "Evaluate machine classified examples",easyClose = T,size = "l",
                           navbarPage(title = "Evaluate Classification",id = "Eval2",
+                                     tags$h2(button_input[2]),
                                      tabPanel("Evaluate",
                                               withBusyIndicatorUI(
                                                 shinyBS::bsButton(inputId = "Class_eval2_save",label = "Save",style = "success",icon=icon("save"))
@@ -1317,7 +1319,7 @@ output$Class_eval2_examples<-renderUI({
                  shinyWidgets::prettyRadioButtons(inputId = radio_id,label = "",choices = c("approve","deny","ignore"),selected = c("approve","deny","ignore")[which(values$Class_eval2_data[x,5:7]==TRUE)],
                                                   status = "warning",shape = "square",animation = "rotate",bigger = T,inline = T),
                  conditionalPanel(condition = condition,
-                                  shinyWidgets::prettyRadioButtons(inputId = paste0(radio_id,"_deny"),label = "other category?",choices = c("NEG",setdiff(values$class_anno_names,values$class_anno_selected)),
+                                  shinyWidgets::prettyRadioButtons(inputId = paste0(radio_id,"_deny"),label = "other category?",choices = c("NEG",setdiff(values$class_anno_names,values$Class_eval_evaluated_chosen_category)),
                                                                    selected = values$Class_eval2_data[x,8],
                                                                    status = "primary",shape = "curve",animation = "jelly",bigger = T,inline = T,plain = T)
                  )
@@ -1343,7 +1345,7 @@ output$Class_eval2_examples<-renderUI({
                  shinyWidgets::prettyRadioButtons(inputId = radio_id,label = "",choices = c("approve","deny","ignore"),selected = c("approve","deny","ignore")[which(values$Class_eval2_data[x,5:7]==TRUE)],
                                                   status = "warning",shape = "square",animation = "rotate",bigger = T,inline = T),
                  conditionalPanel(condition = condition,
-                                  shinyWidgets::prettyRadioButtons(inputId = paste0(radio_id,"_deny"),label = "other category?",choices = c("NEG",setdiff(values$class_anno_names,values$class_anno_selected)),
+                                  shinyWidgets::prettyRadioButtons(inputId = paste0(radio_id,"_deny"),label = "other category?",choices = c("NEG",setdiff(values$class_anno_names,values$Class_eval_evaluated_chosen_category)),
                                                                    selected = values$Class_eval2_data[x,8],
                                                                    status = "primary",shape = "curve",animation = "jelly",bigger = T,inline = T,plain = T)
                  )

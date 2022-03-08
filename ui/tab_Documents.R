@@ -18,7 +18,7 @@ tabPanel("Documents",
                                     ),
                                     column(4,
                                            column(1,offset=9,
-                                                  shinyBS::bsButton(inputId = "Doc_Search_results_reset_delete",label=NULL,icon = icon("refresh"),style = "primary",size = "small")
+                                                  shinyBS::bsButton(inputId = "Doc_Search_results_reset_delete",label=NULL,icon = icon("sync"),style = "primary",size = "small")
                                            )
                                     ),
                                     tags$div(

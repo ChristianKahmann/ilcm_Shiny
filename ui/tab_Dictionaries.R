@@ -1,7 +1,7 @@
 #' panel to modify dictionaries 
 tabPanel(icon=icon("edit"),
          "Dictionaries",
-         shinyBS::bsButton(inputId = "Dict_create",label = "Create dictionary",icon = icon("add"),style = "info"),
+         shinyBS::bsButton(inputId = "Dict_create",label = "Create dictionary",icon = icon("plus"),style = "info"),
          shinyBS::bsButton(inputId = "Dict_change",label = "Change dictionary",icon = icon("edit"),style = "primary"),
          shinyBS::bsButton(inputId = "Dict_delete",label = "Delete dictionary",icon = icon("trash"),style = "warning"),
          uiOutput("dict_save_ui"),
