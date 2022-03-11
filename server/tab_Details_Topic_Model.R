@@ -6247,7 +6247,7 @@ output$TM_topic_labels_UI<-renderUI({
                ),
                column(4,
                       box(title = "Most relevant Words",width = 12,solidHeader = T,status = "primary",
-                          wordcloud2Output(outputId = paste0("Det_TM_topic_labels_wc_",x))
+                          DT::dataTableOutput(outputId = paste0("Det_TM_topic_labels_table_",x))
                       )
                ),
                column(5,
@@ -6309,7 +6309,7 @@ observe({
   
   for(x in 1:ncol(isolate(values$tm_theta))){
     local({
-      wc_id<-paste0("Det_TM_topic_labels_wc_",x)
+      wc_id<-paste0("Det_TM_topic_labels_table_",x)
       data<-data.frame(stringsAsFactors = F,Word=rownames(relevance),Relevance=as.numeric(relevance[,x]))
       data<-data[order(as.numeric(data[,2]),decreasing = T),]
       data<-data[1:min(100,nrow(data)),]
@@ -6317,10 +6317,10 @@ observe({
       data$Relevance<-data$Relevance/max(data$Relevance)
       data$Relevance<-round(data$Relevance,digits = 3)
       data<-data[order(as.numeric(data[,2]),decreasing = T),]
-      hoverFunction = htmlwidgets :: JS ( "function hover() {}" )
-      output[[wc_id]]<-renderWordcloud2({
-        wordcloud2(data = data,size=0.9,fontFamily = "Helvetica",color = "random-dark",minSize = 0.2,backgroundColor = "white",minRotation = -pi/2,maxRotation = -pi/2,hoverFunction = hoverFunction)
-      })
+      
+      output[[wc_id]]<-DT::renderDataTable({
+            datatable(data = data,rownames = F)
+            })
     })
     
   }  

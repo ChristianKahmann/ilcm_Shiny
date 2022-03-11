@@ -143,7 +143,6 @@ output$TS_plot<-renderPlotly({
       values$share_results<-results
 
       #create time series scatter plot
-      #//scattergl evtl besser für ältere Rechner
       p<-plot_ly(source="TI",x=(results[[1]][,1]),y=as.numeric(results[[1]][,2]),type = "scatter",mode="lines+markers",name=stringr::str_replace(string=isolate(values$TS_memory[[1]][[3]]),pattern = "\\* AND",""))
       if(length(results)>1){
         for(k in 2:length(results)){

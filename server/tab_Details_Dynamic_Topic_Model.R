@@ -40,7 +40,7 @@ output$Det_DTM_LDAvis<-LDAvis::renderVis({
     term.frequency<-current_result[[4]]
     dtm_orig <- values$dtm_dtm
     #####################
-
+    
     rel_idx<-which(values$dtm_results_additional$doc_belongings_to_time_slices==as.numeric(input$Det_DTM_LDAvis_n))
     #dtm<-tmca.util::make_binary(dtm)
     dtm<-dtm_orig[rel_idx,,drop=F]   
@@ -52,7 +52,7 @@ output$Det_DTM_LDAvis<-LDAvis::renderVis({
     #vocab<-paste0(vocab," (",as.numeric(term.frequency),")")
     # browser()
     tm<-create_LDA_JSON(phi=phi,theta = theta,doc.length = doc.length,vocab = vocab,term.frequency = term.frequency, 
-                           reorder.topics = F)#mds.method = svd_tsne )
+                        reorder.topics = F)#mds.method = svd_tsne )
     return(tm)
   }
 })
@@ -69,25 +69,53 @@ output$Det_DTM_dynamic_table<-DT::renderDataTable({
   validate(
     need(!is.null(input$Det_DTM_topic_dynamic_topic),message=F)
   )
-    top_relevant_words_per_time_stamp<-lapply(X = 1:length(values$dtm_results),FUN = function(i){
-      x<-values$dtm_results[[i]]
-      phi<-x[[2]]
-      theta = x[[1]]
-      doc.length<-x[[3]]
-      dtm<-values$dtm_dtm
-      rel_idx<-which(values$dtm_results_additional$doc_belongings_to_time_slices==i)
-      theta<-theta[rel_idx,,drop=F]
-      doc.length<-rowSums(dtm[rel_idx,,drop=F])
-      
-      relevance <- calculate_topic_relevance(lambda = input$Det_DTM_topic_dynamic_lambda,phi = phi,theta = theta,doc.length = doc.length)[,input$Det_DTM_topic_dynamic_topic]
-      names(relevance)<-values$dtm_results[[i]][[5]]
-      names(sort(relevance,decreasing = T))[1:input$Det_DTM_topic_dynamic_number_of_words]
-      
-    })
+  top_relevant_words_per_time_stamp<-lapply(X = 1:length(values$dtm_results),FUN = function(i){
+    x<-values$dtm_results[[i]]
+    phi<-x[[2]]
+    theta = x[[1]]
+    doc.length<-x[[3]]
+    dtm<-values$dtm_dtm
+    rel_idx<-which(values$dtm_results_additional$doc_belongings_to_time_slices==i)
+    theta<-theta[rel_idx,,drop=F]
+    doc.length<-rowSums(dtm[rel_idx,,drop=F])
+    
+    relevance <- calculate_topic_relevance(lambda = input$Det_DTM_topic_dynamic_lambda,phi = phi,theta = theta,doc.length = doc.length)[,input$Det_DTM_topic_dynamic_topic]
+    names(relevance)<-values$dtm_results[[i]][[5]]
+    #names(sort(relevance,decreasing = T))[1:input$Det_DTM_topic_dynamic_number_of_words]
+    names(sort(relevance,decreasing = T))
+  })
+  #browser()
   data<-do.call(cbind,top_relevant_words_per_time_stamp)
+  
+  vocab<-data[,1]
+  data_ranks<-apply(X = data,MARGIN = 2,FUN = function(x){
+    match(vocab,x)
+  })
+  gicon <- function(x) as.character(icon(x, lib = "glyphicon"))
+  data_ranks_change<-matrix(c(0),nrow(data_ranks),((ncol(data_ranks)-1)))
+  data_ranks_change_arrow<-matrix(c(0),nrow(data_ranks),((ncol(data_ranks)-1)))
+  for(i in 2:ncol(data_ranks)){
+    data_ranks_change[,(i-1)]<-data_ranks[,(i-1)]-data_ranks[,i]
+    data_ranks_change_arrow[which(data_ranks_change[,(i-1)]>0),(i-1)]<-'<i class="fas fa-arrow-up" style="color:green"></i>'
+    data_ranks_change_arrow[which(data_ranks_change[,(i-1)]<0),(i-1)]<-'<i class="fas fa-arrow-down" style="color:red"></i>'
+    data_ranks_change_arrow[which(data_ranks_change[,(i-1)]==0),(i-1)]<-'<i class="fas fa-equals" style="color=grey"></i>'
+  }
+  
   colnames(data)<-values$dtm_results_additional$time_slice_names
   rownames(data)<-1:nrow(data)
-  datatable(data,class = "row-border cell-border stripe",selection="none")
+  data_combined<-data
+  for(i in 2:ncol(data_ranks)){
+    data_combined[,i]<-paste0(data_combined[,i],
+                              "&nbsp;&nbsp;&nbsp;&nbsp;",
+                              data_ranks_change[match(data_combined[,i],vocab),(i-1)],
+                              "&nbsp;&nbsp;&nbsp;&nbsp;",
+                              data_ranks_change_arrow[match(data_combined[,i],vocab),(i-1)])
+  }
+  data_combined<-data_combined[1:input$Det_DTM_topic_dynamic_number_of_words,]
+  
+  datatable(data_combined,class = "row-border cell-border stripe",selection="none",escape = F,
+            options=list(paging=T,
+                         pageLength=input$Det_DTM_topic_dynamic_number_of_words))
 })
 
 
@@ -326,7 +354,8 @@ output$DTM_validation_UI<-renderUI({
                       tags$br(),
                       plotly::plotlyOutput("Det_DTM_validation_document_topic_pie"),
                       tags$h4("Most relevant words for chosen topic"),
-                      wordcloud2Output(outputId = "Det_DTM_validation_wordcloud")
+                      wordcloud2Output(outputId = "Det_DTM_validation_wordcloud"),
+                      div(style = "display: none;", icon("refresh"))
                ),
                column(8,
                       tags$br(),
@@ -594,3 +623,319 @@ output$Det_DTM_download_relevant_documents <- downloadHandler(
     write.csv2(data,file=file)
   }
 )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###########################################################
+#   stability
+##########################################################
+# 
+# output$Det_DTM_word_stability_UI<-renderUI({
+#   validate(
+#     need(
+#       !is.null(values$dtm_results),message=F
+#     )
+#   )
+#   values$dtm_results->results
+#   values$dtm_meta->meta
+#   values$dtm_dtm->dtm
+#   values$dtm_results_additional->results_additional
+#   vocab<-values$dtm_results[[as.numeric(input$Det_DTM_validation_time)]][[5]]
+#   
+#   # relevance_scores<-lapply(X = 1:length(results),FUN = function(x){
+#   #   calculate_topic_relevance(theta = results[[x]][[1]],
+#   #                             phi = results[[x]][[2]],
+#   #                             lambda = input$Det_DTM_stability_lambda,
+#   #                             doc.length = results[[x]][[3]])
+#   #   
+#   # })
+#   # values$Det_DTM_stability_relevance_scores<-relevance_scores
+#   
+#   if("overall"%in%input$Det_DTM_stability_topic){
+#     topics<-1:dim(results[[1]][[1]])[2]
+#   }
+#   else{
+#     topics<-as.numeric(input$Det_DTM_stability_topic)
+#   }
+#   
+#   if("0"%in%input$Det_DTM_stability_time){
+#     time<-1:length(results)
+#   }
+#   else{
+#     time<-as.numeric(input$Det_DTM_stability_time)
+#   }
+#   
+#   validate(
+#     need(
+#       length(time)>1,message="Specify at least 2 time periods!"
+#     ),
+#     need(length(topics)>0,"Specify at least one topic!")
+#   )
+#   changes<-list()
+#   count=0
+#   mean_values<-list()
+#   for(t in 1:length(time)){
+#     count=count+1
+#     mean_values[[count]]<-colMeans(results[[time[t]]][[2]][topics,,drop=F])
+#   }
+#   
+#   overall_mean<-Reduce(`+`,mean_values)/length(mean_values)
+#   
+#   count=0
+#   for(t in 1:(length(time)-1)){
+#     count=count+1
+#     changes[[count]]<-colMeans(results[[time[t]]][[2]][topics,,drop=F])-colMeans(results[[time[(t+1)]]][[2]][topics,,drop=F])
+#   }
+#   
+# 
+#   if(length(changes)>1){
+#     changes_sum <- rep(0,length(changes[[1]]))
+#     for(i in 1:max(1,(length(changes)-1))){
+#       changes_sum<-changes_sum+abs(changes[[i]]-changes[[i+1]])
+#     }
+#     names(changes_sum)<-vocab
+#     changes_sum_normalized<-changes_sum/overall_mean
+#     values$Det_DTM_stability_changes_sum<-changes_sum
+#     values$Det_DTM_stability_changes_sum_normalized<-changes_sum_normalized
+#   }
+#   else{
+#     changes_normalized<-changes[[1]]/overall_mean
+#     names(changes_normalized)<-vocab
+#     values$Det_DTM_stability_changes_normalized<-changes_normalized
+#     changes<-changes[[1]]
+#     names(changes)<-vocab
+#     values$Det_DTM_stability_changes<-changes
+#   }
+#   
+#   
+#   
+# 
+#   if(length(time)>2){
+#     return(
+#       tagList(
+#         fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
+#                  tags$br(),
+#                  column(6,
+#                         box(title = "most stable",solidHeader = T,status = "success",width = 12,
+#                             DT::dataTableOutput(outputId = "Det_DTM_stability_more_stable_words_table")
+#                         )
+#                  ),
+#                  column(6,
+#                         box(title = "most changes",solidHeader = T,status = "warning",width = 12,
+#                             DT::dataTableOutput(outputId = "Det_DTM_stability_more_most_changes_words_table")
+#                         )
+#                  )
+#         )
+#       ))
+#   }
+#   else{
+#     return(
+#       tagList(
+#         fluidRow(style="margin-left:0px;margin-right:0px;padding-right:0px;",
+#                  tags$br(),
+#                  column(4,
+#                         box(title = "most stable",solidHeader = T,status = "success",width = 12,
+#                             DT::dataTableOutput(outputId = "Det_DTM_stability_stable_words_table")
+#                         )
+#                  ),
+#                  column(4,
+#                         box(title = "more important",solidHeader = T,status = "warning",width = 12,
+#                             DT::dataTableOutput(outputId = "Det_DTM_stability_more_important_words_table")
+#                         )
+#                  ),  
+#                  column(4,
+#                         box(title = "less important",solidHeader = T,status = "danger",width = 12,
+#                             DT::dataTableOutput(outputId = "Det_DTM_stability_less_important_words_table")
+#                         )
+#                  )
+#         )
+#       ))
+#   }
+# })
+# 
+# 
+# 
+# output$Det_DTM_stability_more_important_words_table<-DT::renderDataTable({
+#   validate(
+#     need(
+#       !is.null(values$Det_DTM_stability_changes),message=F
+#     )
+#   )
+#   if(input$Det_DTM_stability_use_variance_coefficient==TRUE){
+#     data<-values$Det_DTM_stability_changes_normalized
+#   }
+#   else{
+#     data<-values$Det_DTM_stability_changes
+#   }
+#   data<-data.frame(names=names(data),value=data,stringsAsFactors = F)
+#   data<-data[order(data$value,decreasing = T),]
+#   data$value<-round(data$value,digits = 12)
+#   datatable(data=data,rownames = F) 
+#   
+# })
+# 
+# 
+# 
+# output$Det_DTM_stability_less_important_words_table<-DT::renderDataTable({
+#   validate(
+#     need(
+#       !is.null(values$Det_DTM_stability_changes),message=F
+#     )
+#   )
+#   if(input$Det_DTM_stability_use_variance_coefficient==TRUE){
+#     data<-values$Det_DTM_stability_changes_normalized
+#   }
+#   else{
+#     data<-values$Det_DTM_stability_changes
+#   }
+# 
+#   data<-data.frame(names=names(data),value=data,stringsAsFactors = F)
+#   data<-data[order(data$value,decreasing = F),]
+#   data$value<-round(data$value,digits = 12)
+#   datatable(data=data,rownames = F) 
+#   
+# })
+# 
+# 
+# 
+# output$Det_DTM_stability_stable_words_table<-DT::renderDataTable({
+#   validate(
+#     need(
+#       !is.null(values$Det_DTM_stability_changes),message=F
+#     )
+#   )
+#   if(input$Det_DTM_stability_use_variance_coefficient==TRUE){
+#     data<-values$Det_DTM_stability_changes_normalized
+#   }
+#   else{
+#     data<-values$Det_DTM_stability_changes
+#   }
+#   data<-abs(data)
+#   
+#   data<-data.frame(names=names(data),value=data,stringsAsFactors = F)
+#   data<-data[order(data$value,decreasing = F),]
+#   data$value<-round(data$value,digits = 12)
+#   datatable(data=data,rownames = F) 
+#   
+# })
+# 
+# 
+# 
+# output$Det_DTM_stability_more_stable_words_table<-DT::renderDataTable({
+#   validate(
+#     need(
+#       !is.null(values$Det_DTM_stability_changes_sum_normalized),message=F
+#     )
+#   )
+#   
+#   if(input$Det_DTM_stability_use_variance_coefficient==TRUE){
+#     data<-values$Det_DTM_stability_changes_sum_normalized
+#   }
+#   else{
+#     data<-values$Det_DTM_stability_changes_sum
+#   }
+#   
+#   data<-data.frame(names=names(data),value=data,stringsAsFactors = F)
+#   data<-data[order(data$value,decreasing = F),]
+#   data$value<-round(data$value,digits = 12)
+#   datatable(data=data,rownames = F) 
+# })
+# 
+# 
+# 
+# output$Det_DTM_stability_more_most_changes_words_table<-DT::renderDataTable({
+#   validate(
+#     need(
+#       !is.null(values$Det_DTM_stability_changes_sum_normalized),message=F
+#     )
+#   )
+#   
+#   if(input$Det_DTM_stability_use_variance_coefficient==TRUE){
+#     data<-values$Det_DTM_stability_changes_sum_normalized
+#   }
+#   else{
+#     data<-values$Det_DTM_stability_changes_sum
+#   }
+#   
+#   data<-data.frame(names=names(data),value=data,stringsAsFactors = F)
+#   data<-data[order(data$value,decreasing = T),]
+#   data$value<-round(data$value,digits = 12)
+#   datatable(data=data,rownames = F) 
+# })
+
+
+output$Det_DTM_word_stability_UI<-renderUI({
+  validate(
+    need(
+      !is.null(values$dtm_results),message=F
+    )
+  )
+  return(tagList(
+    DT::dataTableOutput(outputId = "Det_DTM_stability_table")
+  ))
+})
+
+
+output$Det_DTM_stability_table<-DT::renderDataTable({
+  validate(
+    need(!is.null(input$Det_DTM_stability_topic),message=F),
+    need(length(input$Det_DTM_stability_time)>1,"Plsease specify at least 2 timeperiods/dates")
+  )
+  time_input<-as.numeric(input$Det_DTM_stability_time)
+  time_input <- time_input[order(time_input)]
+  top_relevant_words_per_time_stamp<-lapply(X = time_input,FUN = function(i){
+    x<-values$dtm_results[[i]]
+    phi<-x[[2]]
+    theta = x[[1]]
+    doc.length<-x[[3]]
+    dtm<-values$dtm_dtm
+    rel_idx<-which(values$dtm_results_additional$doc_belongings_to_time_slices==i)
+    theta<-theta[rel_idx,,drop=F]
+    doc.length<-rowSums(dtm[rel_idx,,drop=F])
+    
+    relevance <- calculate_topic_relevance(lambda = input$Det_DTM_stability_lambda,phi = phi,theta = theta,doc.length = doc.length)[,input$Det_DTM_stability_topic]
+    names(relevance)<-values$dtm_results[[i]][[5]]
+    #names(sort(relevance,decreasing = T))[1:input$Det_DTM_topic_dynamic_number_of_words]
+    names(sort(relevance,decreasing = T))
+  })
+  data<-do.call(cbind,top_relevant_words_per_time_stamp)
+  
+  vocab<-data[,1]
+  data_ranks<-apply(X = data,MARGIN = 2,FUN = function(x){
+    match(vocab,x)
+  })
+  rownames(data_ranks)<-vocab
+  reduced_vocab<-names(which(apply(X = data_ranks,MARGIN = 1,min)<=input$Det_DTM_stability_min_rank))
+  variances<-apply(X = data_ranks[reduced_vocab,],1,FUN = sd)
+  variance_coefficients <- apply(X = data_ranks[reduced_vocab,],1,FUN = function(x){
+    sd(x)/mean(x)
+  }
+  )
+  
+  actual_values <- apply(X = data_ranks[reduced_vocab,],1,FUN = function(x){
+    paste0("(",paste(x, collapse=", "),")")
+  }
+  )
+  
+  means <-apply(X = data_ranks[reduced_vocab,],1,FUN = mean)
+  data <- cbind(variances,variance_coefficients,means,actual_values )
+  rownames(data)<-names(variances)
+  colnames(data)<-c("Variance","Varaincecoefficient","Mean","Actual Values")
+  data[,1:3]<-round(as.numeric(data[,1:3]),digits = 3)
+  data<- data[order(data[,1]),]
+  return(
+    datatable(data = data)  
+  )
+})
+

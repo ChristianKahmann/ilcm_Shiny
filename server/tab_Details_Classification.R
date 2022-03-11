@@ -284,10 +284,10 @@ output$Det_CL_validation<-renderUI({
     features<-tolower(token[,"word"])  
   }
   if(parameters$baseform_reduction=="lemma"){
-    features<-tolowertoken[,"lemma"]  
+    features<-tolower(token[,"lemma"])   
   }
   if(parameters$baseform_reduction=="stemming"){
-    features<-tolower(quanteda::tokens_wordstem(quanteda::tokens(paste(token[,"word"],collapse=" ")),lang)$text1)
+    features<-tolower(quanteda::tokens_wordstem(quanteda::tokens(paste(token[,"word"],collapse=" ")),lang)[[1]])
   }
   token<-cbind(token,features)
   token<-cbind(1:dim(token)[1],token)
