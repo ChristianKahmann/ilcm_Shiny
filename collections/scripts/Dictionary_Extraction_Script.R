@@ -58,6 +58,13 @@ error<-try(expr = {
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
+  #get metadata
+  log_to_file(message = "<b>Step 6/13: Getting metadata for detailed metadata analysis from database</b>",file = logfile)
+  meta_data<-get_meta_data_for_detailed_topic_analysis(host = host,port = db_port,ids = info[[3]],datasets = unique(info[[2]]),token = db_data$token)
+  meta<-meta_data$meta
+  meta_names<-meta_data$meta_names
+  log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
+  
   #preparing token object
   log_to_file(message = "<b>Step 5/9: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
@@ -70,7 +77,7 @@ error<-try(expr = {
   db_data$meta<-db_data$meta[which(db_data$meta[,1]%in%rownames(dtm)),]
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
   
-
+  
   #parse dictionaries  
   log_to_file(message = "<b>Step 7/9: Parsing dictionary</b>",file = logfile)
   if(isFALSE(parameters$de_use_reg_exp)){
@@ -86,8 +93,8 @@ error<-try(expr = {
       stop("empty dictionary")
     }
     else{
-    conceptnames<-parameters$de_reg_exp
-    dicts<-quanteda::dictionary(x = list(conceptnames=dict))
+      conceptnames<-parameters$de_reg_exp
+      dicts<-quanteda::dictionary(x = list(conceptnames=dict))
     }
   }
   bin_dtm<-tmca.util::make_binary(dtm = dtm)
@@ -99,10 +106,20 @@ error<-try(expr = {
   })
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished parsing the dictionary",file = logfile)
   
-
+  ###################################
+  dict_present <- matrix(c(0),nrow(dtm),length(dicts_available))
+  rownames(dict_present)<-rownames(dtm)
+  for(i in 1:length(dicts_available)){
+    dict_present[,1] <- rowSums(dtm[,dicts_available[[i]]])
+  }
+  colnames(dict_present)<-names(dict)
+  
+  
+  ###################################
   # parse dictionaries  
   log_to_file(message = "<b>Step 8/9: Calculate frequencies</b>",file = logfile)
   frequencies<-calculate_dictioanry_frequencies(meta =db_data$meta,dtm = dtm,dict_terms = dict_terms,conceptnames = conceptnames,dicts_available = dicts_available,bin_dtm = bin_dtm )
+  
   doc_freqs_year_dict<-frequencies$doc_freqs_year_dict
   doc_freqs_month_dict<-frequencies$doc_freqs_month_dict
   doc_freqs_week_dict<-frequencies$doc_freqs_week_dict
@@ -123,7 +140,7 @@ error<-try(expr = {
   vocab<-unlist(conceptnames)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating frequencies",file = logfile)
   
-
+  
   
   
   #Saving results
@@ -140,6 +157,9 @@ error<-try(expr = {
   save(dtm,dicts,file=paste0(path0,"extra_information.RData"))
   save(vocab,file=paste0(path0,"vocab.RData"))
   save(info,file=paste0(path0,"info.RData"))
+  save(meta,file=paste0(path0,"meta.RData"))
+  save(dict_present,file=paste0(path0,"dict_present.RData"))
+  dict_present
   parameters<-parameters_original
   save(parameters,file=paste0(path0,"parameters.RData"))
   log_to_file(message = "   <b style='color:green'> ✔ </b> Finished saving results",logfile)

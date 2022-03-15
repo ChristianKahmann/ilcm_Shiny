@@ -200,10 +200,10 @@ tabPanel("Importer",
                                                                                                        tags$br(),
                                                                                                        tags$br(),
                                                                                                        fluidRow(style="margin-left:0px; margin-right:0px;",
-                                                                                                                column(1,
+                                                                                                                column(3,
                                                                                                                        selectInput(inputId = "Import_csv_language",label = "Language",choices = stringr::str_split(
                                                                                                                          stringr::str_replace_all(
-                                                                                                                           stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Models           ",replacement = ""),
+                                                                                                                           stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = ""),
                                                                                                                            pattern=" ",replacement=""),
                                                                                                                          pattern=",",simplify = T)[1,],multiple = F,selected = character(0))
                                                                                                                 ),
@@ -213,7 +213,7 @@ tabPanel("Importer",
                                                                                                                 column(1,  
                                                                                                                        selectizeInput(inputId = "Import_csv_date_format",label = "date format",choices = c("%Y-%m-%d","%d-%m-%Y"),multiple=F,options=list(create=T))
                                                                                                                 ),
-                                                                                                                column(9,
+                                                                                                                column(7,
                                                                                                                        uiOutput("Import_csv_metadata_names_warning")
                                                                                                                 )
                                                                                                        )
@@ -468,10 +468,10 @@ tabPanel("Importer",
                                                                                                        tags$br(),
                                                                                                        tags$br(),
                                                                                                        fluidRow(style="margin-left:0px; margin-right:0px;",
-                                                                                                                column(1,
+                                                                                                                column(3,
                                                                                                                        selectInput(inputId = "Import_mtf_language",label = "Language",choices =stringr::str_split(
                                                                                                                          stringr::str_replace_all(
-                                                                                                                           stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Models           ",replacement = ""),
+                                                                                                                           stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = ""),
                                                                                                                            pattern=" ",replacement=""),
                                                                                                                          pattern=",",simplify = T)[1,],multiple = F,selected = character(0))
                                                                                                                 ),
@@ -481,7 +481,7 @@ tabPanel("Importer",
                                                                                                                 column(1,
                                                                                                                        selectizeInput(inputId = "Import_mtf_date_format",label = "date format",choices = c("%Y-%m-%d","%d-%m-%Y"),multiple=F,options=list(create=T))
                                                                                                                 ),
-                                                                                                                column(9,
+                                                                                                                column(7,
                                                                                                                        uiOutput("Import_mtf_metadata_names_warning")
                                                                                                                 )
                                                                                                                 
