@@ -222,7 +222,7 @@ observeEvent(input$openOptionsModal, {
 output$options_spacy_installed<-renderUI({
   values$reload_options_modal
   return(tags$em(paste(stringr::str_remove_all(string = stringr::str_split(
-    stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Models           ",replacement = "")
+    stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = "")
     ,pattern = ", ",simplify = T),pattern = " "),collapse = ", "))
   )
 })
@@ -232,9 +232,11 @@ output$options_spacy_installed<-renderUI({
 #'   values$reload_options_modal: reload modal options
 output$options_add_model_select_UI<-renderUI({
   values$reload_options_modal
-  return(selectizeInput(inputId = "options_add_model_select",label = "Available models to be added",options=list(create=T),choices=setdiff(c("en","de","es","fr","it","nl","pt","el","xx"),stringr::str_remove_all(string=stringr::str_split(
-    stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Models           ",replacement = "")
-    ,pattern = ", ",simplify = T),pattern = " ")))
+  avail_models <- stringr::str_remove_all(string=stringr::str_split(
+    stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = "")
+    ,pattern = ", ",simplify = T),pattern = " ")
+  avail_models<-stringr::str_extract_all(string = avail_models,pattern = "^[a-z]{2,3}(?=_)",simplify = T)
+  return(selectizeInput(inputId = "options_add_model_select",label = "Available models to be added",options=list(create=T),choices=setdiff(c("en","de","es","fr","it","nl","pt","el","xx"),avail_models))
   )
 })
 
