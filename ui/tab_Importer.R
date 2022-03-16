@@ -201,7 +201,7 @@ tabPanel("Importer",
                                                                                                        tags$br(),
                                                                                                        fluidRow(style="margin-left:0px; margin-right:0px;",
                                                                                                                 column(3,
-                                                                                                                       selectInput(inputId = "Import_csv_language",label = "Language",choices = stringr::str_split(
+                                                                                                                       selectInput(inputId = "Import_csv_language",label = "Model",choices = stringr::str_split(
                                                                                                                          stringr::str_replace_all(
                                                                                                                            stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = ""),
                                                                                                                            pattern=" ",replacement=""),
@@ -469,7 +469,7 @@ tabPanel("Importer",
                                                                                                        tags$br(),
                                                                                                        fluidRow(style="margin-left:0px; margin-right:0px;",
                                                                                                                 column(3,
-                                                                                                                       selectInput(inputId = "Import_mtf_language",label = "Language",choices =stringr::str_split(
+                                                                                                                       selectInput(inputId = "Import_mtf_language",label = "Model",choices =stringr::str_split(
                                                                                                                          stringr::str_replace_all(
                                                                                                                            stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = ""),
                                                                                                                            pattern=" ",replacement=""),

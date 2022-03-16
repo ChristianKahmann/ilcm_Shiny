@@ -23,6 +23,8 @@ error<-try(expr = {
   date_format<-parameters[[4]]
   meta_metadata<-parameters[[5]]
   slow_mode<-F
+  metadata$language<-stringr::str_extract_all(string = metadata$language, pattern = "^[a-z]{2,3}(?=(_|$))")
+  
   try({
     slow_mode<-parameters[[6]]
   })
@@ -34,8 +36,22 @@ error<-try(expr = {
     metadata<-metadata[,c("dataset","id_doc","title","body","date","token","language",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],sep=""))]
   }
   
+  if(language%in%c("en","de","es","fr","it","nl","pt","el","xx")){
+    avail_models <-  stringr::str_remove_all(string=stringr::str_split(
+      stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = "")
+      ,pattern = ", ",simplify = T),pattern = " ")
+    
+    fitting_model <- avail_models[grepl(pattern = language,x = substr(avail_models,1,3))]
+    if(length(fitting_model)>0){
+      language=fitting_model[1]
+    }
+    else{
+      stop("No model for specified language found")
+    }
+  }
+  spacy_initialize(model = stringr::str_remove_all(string = language, pattern = "\\(.+\\)"),python_executable = reticulate_python_path)
   
-  spacy_initialize(model = language)
+  
   log_to_file(message = "spacy initialized",logfile)
   # write import csv for meta and token information
   preprocess_data(text = metadata[,"body"],metadata = metadata,process_id = process_info[[1]],offset = (min(as.numeric(metadata[,"id_doc"]))-1),logfile = logfile,date_format = date_format,slow_mode=slow_mode)

@@ -243,7 +243,6 @@ import_function <- function(){
   source("global/log_to_file.R")
   source("global/preprocess_data.R")
   source("config_file.R")
-  
   #process
   error<-try(expr = {
     load("collections/tmp/tmp.RData")
@@ -266,8 +265,22 @@ import_function <- function(){
       metadata<-metadata[,c("dataset","id_doc","title","body","date","token","language",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],sep=""))]
     }
     
+    if(language%in%c("en","de","es","fr","it","nl","pt","el","xx")){
+      avail_models <-  stringr::str_remove_all(string=stringr::str_split(
+        stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = "")
+        ,pattern = ", ",simplify = T),pattern = " ")
+      fitting_model <- avail_models[grepl(pattern = language,x = substr(avail_models,1,3))]
+      if(length(fitting_model>0)){
+        langauge=fitting_model[1]
+      }
+      else{
+        stop("No model for specified language found")
+      }
+    }
     
-    spacy_initialize(model = language)
+    
+
+    spacy_initialize(model = stringr::str_remove_all(string = language, pattern = "\\(.+\\)"))
     log_to_file(message = "spacy initialized",logfile)
     
     #write import csv for meta and token information

@@ -509,7 +509,7 @@ observeEvent(ignoreInit = T,input$options_add_model,{
   withBusyIndicatorServer("options_add_model", {
     query<-paste0("python -m spacy download ",input$options_add_model_select)
     ret<-system(query,intern = T)
-    if(any(grepl("You can now load the model",ret))){
+    if(any(grepl("You can now load the",ret))){
       values$reload_options_modal<-runif(1,0,1)
       shinyWidgets::sendSweetAlert(session=session,title = "Successfully installed new spaCy model",
                                    text = paste0("Model: ",input$options_add_model_select," was added and is used if specified language is '",input$options_add_model_select,"'"),
