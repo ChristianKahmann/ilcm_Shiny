@@ -111,7 +111,7 @@ output$Det_Class_pie<-plotly::renderPlotly({
   load(paste0(values$Details_Data_CL,"/result.RData"))
   counts<-as.data.frame(table(predictions))
   
-  p <- plot_ly(counts, labels = ~predictions, values = ~Freq, textposition = 'inside',
+  p <- plot_ly(counts, labels = ~predictions, values = ~Freq, textposition = 'inside',sort=F,
                textinfo = 'label+percent') %>%
     plotly::add_pie(hole = 0.6) %>%
     plotly::layout(title = paste('Distribution of found classifications'),legend=T,
