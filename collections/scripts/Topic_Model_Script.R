@@ -143,54 +143,82 @@ error<-try(expr = {
     info_orig<-info
     load(paste0("collections/results/topic-model/",parameters_original$tm_precalculated_topic_model,"/data_TM.RData"))
     info<-info_orig
+    phi_pre<-phi
     rm(info_orig)
     #infer new documents using old topic model
     log_to_file(message = "&emsp;Infering new documents...",file = logfile)
     
-    result<-t$infer_topics(dtm = dtm)
+    result<-NULL
+    for(d in 1:nrow(dtm)){
+      print(d)
+      result<-rbind(result,t$infer_topics(dtm = dtm[d,,drop=F]))
+    }
+
     t$.__enclos_env__$private$theta<-result
     
     
     log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating topic model",file = logfile)
-    
-    log_to_file(message = "<b>Step 12/13: Create Variables for Visulization</b>",file = logfile)
-    model<-t$get_model()
-    theta<-result
-    phi<-model$phi
-    #set column names and row names for theta and phi
-    
-    if(is.null(colnames(theta))){colnames(theta) <- 1:ncol(theta)} # topic names
-    if(is.null(rownames(theta))){rownames(theta) <- dtm@Dimnames$docs} # doc names
-    
-    if(is.null(colnames(phi))){colnames(phi) <- dtm@Dimnames$features} # vocab
-    if(is.null(rownames(phi))){rownames(phi) <- 1:nrow(phi)} # topic names
-    
-    doc.length<-Matrix::rowSums(dtm)
-    vocab<-colnames(phi)
-    #append unknown vocab to dtm
-    unknown_vocab<-Matrix(c(0),nrow(dtm),length(setdiff(vocab,colnames(dtm))))
-    colnames(unknown_vocab)<-setdiff(vocab,colnames(dtm))
-    dtm<-cbind(dtm,unknown_vocab)
-    term.frequency<-Matrix::colSums((dtm[,vocab]))
-    topic.frequency <- colSums(theta * doc.length)
-    topic.proportion <- topic.frequency/sum(topic.frequency)
-    o <- order(topic.proportion, decreasing = TRUE)
-    phi <- phi[o, ]
-    theta <- theta[, o]
-    topic.frequency <- topic.frequency[o]
-    topic.proportion <- topic.proportion[o]
-    json <- LDAvis::createJSON(
-      phi = phi, 
-      theta = theta, 
-      doc.length = doc.length, 
-      vocab = vocab, 
-      term.frequency = term.frequency,
-      reorder.topics=FALSE
-    )
-    log_to_file(message = "  <b style='color:green'> ✔ </b>  ",file = logfile)
-    
-    
-  }
+    {
+      log_to_file(message = "&emsp;Use of a predefinded topic model",file = logfile)
+      info_orig<-info
+      load(paste0("collections/results/topic-model/",parameters_original$tm_precalculated_topic_model,"/data_TM.RData"))
+      info<-info_orig
+      phi_pre<-phi
+      rm(info_orig)
+      #infer new documents using old topic model
+      log_to_file(message = "&emsp;Infering new documents...",file = logfile)
+      
+      result<-NULL
+      for(d in 1:nrow(dtm)){
+        print(d)
+        result<-rbind(result,t$infer_topics(dtm = dtm[d,,drop=F]))
+      }
+      
+      t$.__enclos_env__$private$theta<-result
+      
+      
+      log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished calculating topic model",file = logfile)
+      
+      log_to_file(message = "<b>Step 12/13: Create Variables for Visulization</b>",file = logfile)
+      model<-t$get_model()
+      theta<-result
+      phi<-model$phi
+      phi<-phi[rownames(phi_pre),]
+      #set column names and row names for theta and phi
+      
+      if(is.null(colnames(theta))){colnames(theta) <- 1:ncol(theta)} # topic names
+      if(is.null(rownames(theta))){rownames(theta) <- dtm@Dimnames$docs} # doc names
+      
+      if(is.null(colnames(phi))){colnames(phi) <- dtm@Dimnames$features} # vocab
+      if(is.null(rownames(phi))){rownames(phi) <- 1:nrow(phi)} # topic names
+      
+      theta<-theta[,rownames(phi_pre)]
+      doc.length<-Matrix::rowSums(dtm)
+      vocab<-colnames(phi)
+      #append unknown vocab to dtm
+      unknown_vocab<-Matrix(c(0),nrow(dtm),length(setdiff(vocab,colnames(dtm))))
+      colnames(unknown_vocab)<-setdiff(vocab,colnames(dtm))
+      dtm<-cbind(dtm,unknown_vocab)
+      term.frequency<-Matrix::colSums((dtm[,vocab]))
+      topic.frequency <- colSums(theta * doc.length)
+      topic.proportion <- topic.frequency/sum(topic.frequency)
+      o <- order(topic.proportion, decreasing = TRUE)
+      # phi <- phi[o, ]
+      # theta <- theta[, o]
+      # topic.frequency <- topic.frequency[o]
+      # topic.proportion <- topic.proportion[o]
+      json <- LDAvis::createJSON(
+        phi = phi, 
+        theta = theta, 
+        doc.length = doc.length, 
+        vocab = vocab, 
+        term.frequency = term.frequency,
+        reorder.topics=FALSE
+      )
+      log_to_file(message = "  <b style='color:green'> ✔ </b>  ",file = logfile)
+      
+      
+    }
   else{
     #delete columns from dtm if they dont occur
     empty<-which(colSums(dtm)==0)

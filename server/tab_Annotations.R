@@ -84,7 +84,7 @@ observeEvent(input$delete_annotation, {
     mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
     shinyjs::useShinyjs()
     isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_annotation\",  "delete_button_annotation_0")'))
-    write_to_MariaDB(mydb = mydb,query =paste0('Delete from Annotations where anno_id="',isolate(values$annotations_all[selectedRow,1]),'";') )
+    write_to_MariaDB(mydb = mydb,query =paste0('Delete from Annotations where anno_id="',isolate(values$annotations_all[selectedRow,2]),'";') )
     RMariaDB::dbDisconnect(mydb)
     shinyjs::useShinyjs()
     shinyjs::click(id = "update_annotations")

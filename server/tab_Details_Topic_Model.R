@@ -6296,7 +6296,7 @@ output$TM_topic_labels_UI<-renderUI({
 
 
 
-#update wordclouds
+#update tables
 observe({
   validate(
     need(
@@ -6451,7 +6451,7 @@ output$Det_TM_topic_labels_topics_labeled<-renderUI({
     if(labels[x]!=""){
       return(
         tagList(
-          tags$b(paste0("Topic ",x,": ")),
+          tags$b(paste0("Topic ", x, ": ")),
           tags$i(
             class = "fa fa-check-square", 
             style = paste0("color: ",colors[x])
