@@ -520,7 +520,7 @@ observeEvent(ignoreNULL=T,input$CL_use_custom_whitelist,{
 #' show blacklists stored in collections/blacklists
 output$CL_blacklist_UI<-renderUI({
   if(length(list.files("collections/blacklists/"))==0){
-    return(HTML("No blacklists available. You can create whitelist in the Scripts-Blacklist Tab"))
+    return(HTML("No blacklists available. You can create blacklists in the Scripts-Blacklist Tab"))
   }
   else{
     return(shinyjs::hidden(
