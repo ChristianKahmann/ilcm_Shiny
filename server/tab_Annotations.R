@@ -174,3 +174,105 @@ observeEvent(input$open_document_view_button_annotations_results,{
     }
   }
 })
+
+
+
+
+
+#########################################
+# Active Learning Annotations           #
+#########################################
+
+
+output$annotations_active_learning <- DT::renderDataTable({
+  input$update_annotations_active_learning
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
+  rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+  data<-RMariaDB::dbGetQuery(mydb, paste("select * from annotations_classification",sep=""))
+  RMariaDB::dbDisconnect(mydb)
+  validate(
+    need(length(data)>0,"no annotations found!")
+  )
+  #filter annotations by project
+  data<-data[which(data[,"project"]==paste0((input$project_selected))),]
+  validate(
+    need(dim(data)[1]>0,"no annotations for this project found!")
+  )
+  #filer annotations by category
+  if(length(input$annotation_filter)>0){
+    data<-data[which(data[,"category"]%in%input$annotation_filter),]
+  }
+  
+  validate(
+    need(dim(data)[1]>0,"no annotations for this category found!")
+  )
+  # load annmotation scheme to get colour informations
+  load(paste0("collections/annotation_schemes/",data$project[1],".RData"))
+  names_overall<-names(unlist(anno))
+  anno<-unlist(anno)
+  name_tag<-names_overall[which(grepl(pattern = paste0(NULL,".name"),x = names_overall))]
+  names<-anno[name_tag]
+  color_tag<-names_overall[which(grepl(pattern = paste0(NULL,".color"),x = names_overall))]
+  colors<-anno[color_tag]
+  names(colors)<-names
+  colors <- colors[match(data$category,names(colors))]
+  for(i in 1:dim(data)[1]){
+    data[i,"category"]<-paste0('<b style="background-color:',colors[i],';">',data[i,"category"],'</b>')
+  }
+  colnames(data) = str_wrap(colnames(data),width = 8)
+  
+  data<-data.frame(data, Delete = shinyInput(
+    shinyBS::bsButton,
+    dim(data)[1],
+    'delete_button_annotation_active_learning_',
+    label = "Delete",
+    onclick = 'Shiny.onInputChange(\"delete_annotation_active_learning\",  this.id)',
+    style="danger",
+    icon=icon("delete")
+  ))
+  #open details window buttons 
+  # Open = shinyInput(
+  #   shinyBS::bsButton,
+  #   dim(data)[1],
+  #   'open_document_view_button_annotations_results_',
+  #   label = "",
+  #   size="extra-small",
+  #   style="info",
+  #   icon=icon("search"),
+  #   onclick = 'Shiny.onInputChange(\"open_document_view_button_annotations_results\",  this.id)'
+  # )
+  #data<-cbind(Open,data)
+  
+  colnames(data)<-c("Dataset","Document ID","Sentence ID","Project","Category","Status","Timestamp","Document Annotation","Delete")
+  values$annotations_all_active_learning<-data
+  dt<-datatable(data=data,rownames = F,escape = F,selection = "none",class = "row-border compact")
+  
+})
+
+
+#' if delete annotation is clicked delete db entry
+#' depends on:
+#'   input$delete_annotation: delete annotation
+#'   values$host: selected host
+#'   values$db_port: selected data base port
+#'   values$annotations_all: all annotations
+observeEvent(input$delete_annotation_active_learning, {
+  selectedRow <-
+    as.numeric(strsplit(input$delete_annotation_active_learning, "_")[[1]][6])
+  if(selectedRow>0){
+    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=values$db_port)
+    shinyjs::useShinyjs()
+    isolate(shinyjs::runjs('Shiny.onInputChange(\"delete_annotation_active_learning\",  "delete_button_annotation_active_learning_0")'))
+    #browser()
+    write_to_MariaDB(mydb = mydb,query =paste0('Delete from annotations_classification where dataset="',isolate(values$annotations_all_active_learning[selectedRow, "Dataset"]),
+                                               '" and doc_id=',isolate(values$annotations_all_active_learning[selectedRow, "Document ID"]),
+                                               " and project='",isolate(values$annotations_all_active_learning[selectedRow, "Project"]),
+                                               "' and sid=",isolate(values$annotations_all_active_learning[selectedRow, "Sentence ID"]),
+                                               " and category='",stringr::str_extract(string = isolate(values$annotations_all_active_learning[selectedRow, "Category"]),
+                                                                                      pattern = "(?<=>).+(?=</b>)"),
+                                               "';") )
+    RMariaDB::dbDisconnect(mydb)
+    shinyjs::useShinyjs()
+    shinyjs::click(id = "update_annotations_active_learning")
+  }
+})

@@ -1260,7 +1260,7 @@ observe({
   }
   if(values$Class_eval_context_unit=="Document"){
     showModal(modalDialog(title = "Evaluate machine classified examples",easyClose = T,size = "l",
-                          navbarPage(title = "Evaluate Classification",id = "Eval2",
+                          navbarPage(title = "Evaluate Classification",id = "Eval2",selected = "Evaluate",
                                      tags$h2(button_input[2]),
                                      tabPanel("Evaluate",
                                               withBusyIndicatorUI(
@@ -1456,7 +1456,7 @@ observeEvent(input$Class_eval2_save,{
       i<-as.character(i)
       subset<-data_joint_class[which(data_joint_class[,9]==i),]
       load(i)
-      data[which(data[,1]%in%subset[,3]),3:6]<-subset[,5:8]
+      data[match(subset[,3],data[,1]),3:6]<-subset[,5:8]
       save(data,learning_meta,result,file=i)
     }  
     if(is.null(learning_meta$context_unit)){
