@@ -555,6 +555,14 @@ observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde1",label = paste0("Map ",input$UI_Import_name_mde1))
 })
 
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_csv_mde1,{
+  if(input$UI_Import_name_mde1=="mde1" & input$Import_csv_mde1!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde1",value = input$Import_csv_mde1)
+  }
+})
+
+
 #' import csv mde2
 #' depends on:
 #'   values$header_csv: header of the csv
@@ -569,6 +577,13 @@ output$UI_Import_csv_mde2<-renderUI({
 #'   input$UI_Import_name_mde2: name of the selected column from csv for mde2
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde2",label = paste0("Map ",input$UI_Import_name_mde2))
+})
+
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_csv_mde2,{
+  if(input$UI_Import_name_mde2=="mde2" & input$Import_csv_mde2!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde2",value = input$Import_csv_mde2)
+  }
 })
 
 #' import csv mde3
@@ -586,6 +601,13 @@ observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde3",label = paste0("Map ",input$UI_Import_name_mde3))
 })
 
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_csv_mde3,{
+  if(input$UI_Import_name_mde3=="mde3" & input$Import_csv_mde3!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde3",value = input$Import_csv_mde3)
+  }
+})
+
 #' import csv mde4
 #' depends on:
 #'   values$header_csv: header of the csv
@@ -601,6 +623,12 @@ output$UI_Import_csv_mde4<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde4",label = paste0("Map ",input$UI_Import_name_mde4))
 })
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_csv_mde4,{
+  if(input$UI_Import_name_mde4=="mde4" & input$Import_csv_mde4!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde4",value = input$Import_csv_mde4)
+  }
+})
 
 #' import csv mde5
 #' depends on:
@@ -615,6 +643,12 @@ output$UI_Import_csv_mde5<-renderUI({
 #'   input$UI_Import_name_mde5: name of the selected column from csv for mde5
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde5",label = paste0("Map ",input$UI_Import_name_mde5))
+})
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_csv_mde5,{
+  if(input$UI_Import_name_mde5=="mde5" & input$Import_csv_mde5!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde5",value = input$Import_csv_mde5)
+  }
 })
 
 #' import csv mde6
@@ -633,6 +667,13 @@ observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde6",label = paste0("Map ",input$UI_Import_name_mde6))
 })
 
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_csv_mde6,{
+  if(input$UI_Import_name_mde6=="mde6" & input$Import_csv_mde6!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde6",value = input$Import_csv_mde6)
+  }
+})
+
 #' import csv mde7
 #' depends on:
 #'   values$header_csv: header of the csv
@@ -648,6 +689,13 @@ output$UI_Import_csv_mde7<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde7",label = paste0("Map ",input$UI_Import_name_mde7))
 })
+
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_csv_mde7,{
+  if(input$UI_Import_name_mde7=="mde7" & input$Import_csv_mde7!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde7",value = input$Import_csv_mde7)
+  }
+})
 #' import csv mde8
 #' depends on:
 #'   values$header_csv: header of the csv
@@ -662,6 +710,14 @@ output$UI_Import_csv_mde8<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde8",label = paste0("Map ",input$UI_Import_name_mde8))
 })
+
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_csv_mde8,{
+  if(input$UI_Import_name_mde8=="mde8" & input$Import_csv_mde8!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde8",value = input$Import_csv_mde8)
+  }
+})
+
 #' import csv mde9
 #' depends on:
 #'   values$header_csv: header of the csv
@@ -676,7 +732,12 @@ output$UI_Import_csv_mde9<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde9",label = paste0("Map ",input$UI_Import_name_mde9))
 })
-
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_csv_mde9,{
+  if(input$UI_Import_name_mde9=="mde9" & input$Import_csv_mde9!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde9",value = input$Import_csv_mde9)
+  }
+})
 
 #' title
 script_events("title", "csv", 1)
@@ -1710,6 +1771,14 @@ output$UI_Import_mtf_mde1<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde1",label = paste0("Map ",input$UI_Import_name_mde1_mtf))
 })
+
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_mtf_mde1,{
+  if(input$UI_Import_name_mde1_mtf=="mde1" & input$Import_mtf_mde1!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde1_mtf",value = input$Import_mtf_mde1)
+  }
+})
+
 #' import mdf 2
 output$UI_Import_mtf_mde2<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde2",label = "Map mde2",
@@ -1720,6 +1789,13 @@ output$UI_Import_mtf_mde2<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde2",label = paste0("Map ",input$UI_Import_name_mde2_mtf))
 })
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_mtf_mde2,{
+  if(input$UI_Import_name_mde2_mtf=="mde2" & input$Import_mtf_mde2!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde2_mtf",value = input$Import_mtf_mde2)
+  }
+})
+
 #' import mdf 3
 output$UI_Import_mtf_mde3<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde3",label = "Map mde3",
@@ -1729,6 +1805,12 @@ output$UI_Import_mtf_mde3<-renderUI({
 
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde3",label = paste0("Map ",input$UI_Import_name_mde3_mtf))
+})
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_mtf_mde3,{
+  if(input$UI_Import_name_mde3_mtf=="mde3" & input$Import_mtf_mde3!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde3_mtf",value = input$Import_mtf_mde3)
+  }
 })
 #' import mdf 4
 output$UI_Import_mtf_mde4<-renderUI({
@@ -1740,6 +1822,13 @@ output$UI_Import_mtf_mde4<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde4",label = paste0("Map ",input$UI_Import_name_mde4_mtf))
 })
+
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_mtf_mde4,{
+  if(input$UI_Import_name_mde4_mtf=="mde4" & input$Import_mtf_mde4!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde4_mtf",value = input$Import_mtf_mde4)
+  }
+})
 #' import mdf 5
 output$UI_Import_mtf_mde5<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde5",label ="Map mde5",
@@ -1749,6 +1838,13 @@ output$UI_Import_mtf_mde5<-renderUI({
 
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde5",label = paste0("Map ",input$UI_Import_name_mde5_mtf))
+})
+
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_mtf_mde5,{
+  if(input$UI_Import_name_mde5_mtf=="mde5" & input$Import_mtf_mde5!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde5_mtf",value = input$Import_mtf_mde5)
+  }
 })
 #' import mdf 6
 output$UI_Import_mtf_mde6<-renderUI({
@@ -1760,6 +1856,14 @@ output$UI_Import_mtf_mde6<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde6",label = paste0("Map ",input$UI_Import_name_mde6_mtf))
 })
+
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_mtf_mde6,{
+  if(input$UI_Import_name_mde6_mtf=="mde6" & input$Import_mtf_mde6!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde6_mtf",value = input$Import_mtf_mde6)
+  }
+})
+
 #' import mdf 7
 output$UI_Import_mtf_mde7<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde7",label ="Map mde7",
@@ -1770,6 +1874,14 @@ output$UI_Import_mtf_mde7<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde7",label = paste0("Map ",input$UI_Import_name_mde7_mtf))
 })
+
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_mtf_mde7,{
+  if(input$UI_Import_name_mde7_mtf=="mde7" & input$Import_mtf_mde7!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde7_mtf",value = input$Import_mtf_mde7)
+  }
+})
+
 #' import mdf 8
 output$UI_Import_mtf_mde8<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde8",label = "Map mde8",
@@ -1780,6 +1892,14 @@ output$UI_Import_mtf_mde8<-renderUI({
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde8",label = paste0("Map ",input$UI_Import_name_mde8_mtf))
 })
+
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_mtf_mde8,{
+  if(input$UI_Import_name_mde8_mtf=="mde8" & input$Import_mtf_mde8!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde8_mtf",value = input$Import_mtf_mde8)
+  }
+})
+
 #' import mdf 9
 output$UI_Import_mtf_mde9<-renderUI({
   shinyWidgets::prettyRadioButtons(inputId = "Import_mtf_mde9",label = "Map mde9",
@@ -1789,6 +1909,13 @@ output$UI_Import_mtf_mde9<-renderUI({
 
 observe({
   shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_mtf_mde9",label = paste0("Map ",input$UI_Import_name_mde9_mtf))
+})
+
+# automatically set name of mde to chosen radio button of corresponding column in csv
+observeEvent(input$Import_mtf_mde9,{
+  if(input$UI_Import_name_mde9_mtf=="mde9" & input$Import_mtf_mde9!="not required"){
+    updateTextInput(session = session, inputId = "UI_Import_name_mde9_mtf",value = input$Import_mtf_mde9)
+  }
 })
 
 #' title
