@@ -140,6 +140,9 @@ observeEvent(input$add_annotation_tagset,{
 #'   values$anno: annotation
 #'   input$project_selected: selected project
 observeEvent(input$save_annotation_tagset,{
+  validate(
+    need(!is.null(values$anno_creation),message = "Nothing to save here. Create a new annotation set or change a existing one.")
+  )
   if(values$anno_creation=="change"){
     isolate(values$anno<-NULL)
     path<-paste0("collections/annotation_schemes/",input$project_selected,".RData")
@@ -155,7 +158,7 @@ observeEvent(input$save_annotation_tagset,{
           inputId = "Save_Tagset_name",
           label = "Specify a name"
         ),
-        actionButton(inputId = "Save_Tagset_confirm",label = "Save")
+        actionButton(inputId = "Save_Tagset_confirm",label = "Save",styleclass = "success")
       )
     )
   }

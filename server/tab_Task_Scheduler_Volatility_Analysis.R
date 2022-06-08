@@ -567,7 +567,8 @@ With the window based approaches, the dispersion of the available values within 
 #'   input$VA_whitelist_expand: expand the whitelist
 #'   input$VA_whitelist_only_results: Volatility calculation for whitelist terms only
 observeEvent(input$VA_Submit_Script,{
-  valid<-check_pruning_parameters(min_t_c = input$VA_min_termfreq_c,max_t_c = input$VA_max_termfreq_c,min_t_p =input$VA_min_termfreq_p,max_t_p =  input$VA_max_termfreq_p
+  valid<-check_pruning_parameters(mode_t=input$VA_termfreq_type, mode_d=input$VA_docfreq_type,
+                                  min_t_c = input$VA_min_termfreq_c,max_t_c = input$VA_max_termfreq_c,min_t_p =input$VA_min_termfreq_p,max_t_p =  input$VA_max_termfreq_p
                                   ,min_t_r =input$VA_min_termfreq_r,max_t_r = input$VA_max_termfreq_r,min_t_q = input$VA_min_termfreq_q, max_t_q = input$VA_max_termfreq_q
                                   ,min_d_c = input$VA_min_docfreq_c,max_d_c = input$VA_max_docfreq_c,min_d_p = input$VA_min_docfreq_p,max_d_p = input$VA_max_docfreq_p
                                   ,min_d_r = input$VA_min_docfreq_r,max_d_r = input$VA_max_docfreq_r,min_d_q = input$VA_min_docfreq_q,max_d_q = input$VA_max_docfreq_q)

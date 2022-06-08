@@ -506,7 +506,8 @@ observeEvent(ignoreNULL = T,input$DE_use_custom_blacklist,{
 #'   input$collection_selected: selected collection to work with
 #'   
 observeEvent(input$DE_Submit_Script,{
-  valid<-check_pruning_parameters(min_t_c = input$DE_min_termfreq_c,max_t_c = input$DE_max_termfreq_c,min_t_p =input$DE_min_termfreq_p,max_t_p =  input$DE_max_termfreq_p
+  valid<-check_pruning_parameters(mode_t=input$DE_termfreq_type, mode_d=input$DE_docfreq_type,
+                                  min_t_c = input$DE_min_termfreq_c,max_t_c = input$DE_max_termfreq_c,min_t_p =input$DE_min_termfreq_p,max_t_p =  input$DE_max_termfreq_p
                                   ,min_t_r =input$DE_min_termfreq_r,max_t_r = input$DE_max_termfreq_r,min_t_q = input$DE_min_termfreq_q, max_t_q = input$DE_max_termfreq_q
                                   ,min_d_c = input$DE_min_docfreq_c,max_d_c = input$DE_max_docfreq_c,min_d_p = input$DE_min_docfreq_p,max_d_p = input$DE_max_docfreq_p
                                   ,min_d_r = input$DE_min_docfreq_r,max_d_r = input$DE_max_docfreq_r,min_d_q = input$DE_min_docfreq_q,max_d_q = input$DE_max_docfreq_q)

@@ -184,7 +184,7 @@ getTagListStanddardParameters <- function(){
                      )
                  )
              )
-             ),
+      ),
       column(2,
              tags$br(),
              conditionalPanel(condition = 'input.param_termfreq_type=="count"',
@@ -218,7 +218,7 @@ getTagListStanddardParameters <- function(){
                      )
                  )
              )
-             ),
+      ),
       column(2,
              tags$br(),
              conditionalPanel(condition = 'input.param_docfreq_type=="count"',
@@ -239,7 +239,7 @@ getTagListStanddardParameters <- function(){
              )
       )
       
-             )  # end Pruning  
+    )  # end Pruning  
     #,
     # tags$hr(),
     # tags$h4("POS & NER"),
@@ -359,7 +359,8 @@ standard_blacklist_UI<-renderUI({
 #' @examples
 standardProcessingAfterSubmittingTask <- function(input, functionToSetParametersIndependentOnUIinput, functionToAppendAdditionalParameters, filepathForScript, folderpathForCustomScripts){
   
-  valid<-check_pruning_parameters(min_t_c = input$param_min_termfreq_c,max_t_c = input$param_max_termfreq_c,min_t_p =input$param_min_termfreq_p,max_t_p =  input$param_max_termfreq_p
+  valid<-check_pruning_parameters(mode_t=input$param_termfreq_type, mode_d=input$param_docfreq_type,
+                                  min_t_c = input$param_min_termfreq_c,max_t_c = input$param_max_termfreq_c,min_t_p =input$param_min_termfreq_p,max_t_p =  input$param_max_termfreq_p
                                   ,min_t_r =input$param_min_termfreq_r,max_t_r = input$param_max_termfreq_r,min_t_q = input$param_min_termfreq_q, max_t_q = input$param_max_termfreq_q
                                   ,min_d_c = input$param_min_docfreq_c,max_d_c = input$param_max_docfreq_c,min_d_p = input$param_min_docfreq_p,max_d_p = input$param_max_docfreq_p
                                   ,min_d_r = input$param_min_docfreq_r,max_d_r = input$param_max_docfreq_r,min_d_q = input$param_min_docfreq_q,max_d_q = input$param_max_docfreq_q)
@@ -440,7 +441,7 @@ standardProcessingAfterSubmittingTask <- function(input, functionToSetParameters
                      # param_method=input$param_method,
                      param_detailed_meta=input$param_detailed_meta_dist
     )
-
+    
     if(!is.null(functionToSetParametersIndependentOnUIinput)){
       # set specific parameters
       parameters <- functionToSetParametersIndependentOnUIinput(parameters)
@@ -477,6 +478,6 @@ standardProcessingAfterSubmittingTask <- function(input, functionToSetParameters
         "The process was succesfully started. Check details in 'My Tasks'."
       ))
     }
-  
+    
   }
 }

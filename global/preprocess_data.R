@@ -146,7 +146,7 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
   }
   metadata[,"date"] <- formatted_dates
   
-  log_to_file(message = "extracting entities disabled",logfile)
+  log_to_file(message = "extracting entities...",logfile)
   metadata<-cbind(metadata,rep(0,dim(metadata)[1]))
   count=0
   for(j in unique(token[,2])){
@@ -162,7 +162,7 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
   for(i in 1:ncol(metadata)){
     metadata[,i]<-stringr::str_replace_all(string = metadata[,i],pattern = '"',replacement = "'")
   }
-  log_to_file(message = "Writing data",logfile)
+  log_to_file(message = "Writing data...",logfile)
   write.table(x = metadata,file = paste("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_id,".csv",sep=""),row.names = F,col.names = F,sep = ",",fileEncoding = "UTF-8",quote = TRUE)
   write.table(x = token,file = paste("data_import/processed_data/token_",metadata[1,"dataset"],"_",process_id,".csv",sep=""),row.names = F,col.names = F,sep = ",",fileEncoding = "UTF-8")
   log_to_file(message = "Finished writing data",logfile)

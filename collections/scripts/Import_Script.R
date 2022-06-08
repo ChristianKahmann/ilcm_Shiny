@@ -62,7 +62,7 @@ error<-try(expr = {
     mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
     rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
     
-    log_to_file(message = "Sending data to db",logfile)
+    log_to_file(message = "Sending data to Database...",logfile)
     a<-readr::read_csv(file = paste0("data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv"),col_names = FALSE)[1,c(1,2)]
     b<-dbGetQuery(mydb,paste0("Select title from documents where id_doc=",a[1,2]," and dataset='",a[1,1],"' limit 1;"))
     if(dim(b)[1]==0){
@@ -199,7 +199,7 @@ error<-try(expr = {
       
       log_to_file(message = "Finished sending data to db",logfile)
       
-      log_to_file(message = "Importing data from Database to solr",logfile)
+      log_to_file(message = "Importing data from Database to solr...",logfile)
       url<-stringr::str_replace(string = url,pattern = "select/",replacement = "")
       z<-RCurl::getURL(
         paste0(url,"dataimport?command=delta-import"),followlocation=TRUE
