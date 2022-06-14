@@ -1,9 +1,10 @@
 #' render export of results
 #' depends on:
 #'   input$export_results_analysis: export results of analysis
-#'   
+
 output$export_results_resultset_ui<-renderUI({
-  return(tagList(
+    input$export_refresh
+    return(tagList(
     conditionalPanel(condition = "input.export_results_analysis=='classification'",
                      selectInput(inputId = "export_results_resultset_class",label = "Result sets",choices = setNames(nm = list.files("collections/results/classification/classifyCollection/"),object =list.files("collections/results/classification/classifyCollection/",full.names = T) ),width="25%"
                      )

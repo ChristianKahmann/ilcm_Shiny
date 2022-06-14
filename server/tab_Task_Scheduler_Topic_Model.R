@@ -1,6 +1,23 @@
+invalidate_slow <-reactiveTimer(5000)
+
+observe({
+  validate(
+    need(
+      !is.null(values$TM_number_of_precalculated_topic_models),message = F
+    )
+  )
+  invalidate_slow()
+  number_of_topic_models <- length(list.files("collections/results/topic-model/",full.names = F))
+  if(number_of_topic_models!=values$TM_number_of_precalculated_topic_models){
+    updateSelectInput(session = session, inputId = "TM_precalculated_topic_model",choices = list.files("collections/results/topic-model/",full.names = F))
+  }
+})
+
+
 
 #' render the parameter set for topic modeling
 output$Analysis_Parameter_TM<-renderUI({
+  values$TM_number_of_precalculated_topic_models <- length(list.files("collections/results/topic-model/",full.names = F))
   tagList(
     tags$hr(),
     #standard parameters
