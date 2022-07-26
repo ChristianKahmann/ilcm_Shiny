@@ -39,7 +39,8 @@ tabPanel("Exporter",
                                                                                                                   "sentiment analysis"="sentiment_analysis",
                                                                                                                   "topic model"="topic-model",
                                                                                                                   "vector space representation"="vector-space-representation",
-                                                                                                                  "volatility analysis"="volatility-analysis"
+                                                                                                                  "volatility analysis"="volatility-analysis",
+                                                                                                                  "dynamic topic model"="dynamic-topic-model" 
                              ),checkIcon = list(
                                yes = tags$i(class = "fa fa-check-square", 
                                             style = "color: steelblue"),

@@ -289,7 +289,15 @@ observeEvent(input$Export_Prepare_Documents,{
   d<-data.frame(id=info[[3]])
   ids<-paste(d[,1],collapse = ", ")
   meta<-rbind(meta,RMariaDB::dbGetQuery(mydb, paste("select * from documents where id in (",ids,");",sep="")))
+  meta_names <- RMariaDB::dbGetQuery(mydb, paste0("Select * from metadata_names where dataset = '",meta$dataset[1],"';"))
+  for(i in 2:length(meta_names)){
+    colnames(meta)<-stringr::str_replace_all(string = colnames(meta),
+                                             pattern = names(meta_names)[i],
+                                             replacement = as.character(meta_names[i]))
+  }
   RMariaDB::dbDisconnect(mydb)
+  
+  
   values$export_token_tmp<-token
   not_all_na<-which(!sapply(meta, function(x)all(is.na(x))))
   values$export_meta_tmp<-meta[,not_all_na]
@@ -323,7 +331,7 @@ observe({
           unique_ids<-unique(values$export_token_tmp$id)
           export_data<-values$export_token_tmp[which(values$export_token_tmp$id%in%unique_ids[((floor((dim(values$export_meta_tmp)[1]/values$export_number_of_buttons)*(i-1))+1):floor((dim(values$export_meta_tmp)[1]/values$export_number_of_buttons)*(i)))]),]
           export_data<-apply(X = export_data,MARGIN = 2,FUN = function(x){stringr::str_replace_all(string = x,pattern = '"',replacement = "'")})
-          write.table(export_data, con,col.names = F,row.names = F,sep=",",quote = T)   
+          write.table(export_data, con, col.names = T, row.names = F, sep=",", quote = T)   
         }
       }
     )

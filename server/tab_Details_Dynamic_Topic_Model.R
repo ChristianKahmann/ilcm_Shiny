@@ -104,6 +104,7 @@ output$Det_DTM_dynamic_table<-DT::renderDataTable({
   colnames(data)<-values$dtm_results_additional$time_slice_names
   rownames(data)<-1:nrow(data)
   data_combined<-data
+  values$Det_DTM_dynamic_table<-data
   for(i in 2:ncol(data_ranks)){
     data_combined[,i]<-paste0(data_combined[,i],
                               "&nbsp;&nbsp;&nbsp;&nbsp;",
@@ -117,6 +118,18 @@ output$Det_DTM_dynamic_table<-DT::renderDataTable({
             options=list(paging=T,
                          pageLength=input$Det_DTM_topic_dynamic_number_of_words))
 })
+
+output$Det_DTM_topic_dynamic_download_table <- downloadHandler(
+  filename = function(){
+    paste0("Task_",as.character(values$tasks_dtm[input$Dynamic_Topic_Results_rows_selected,"task.id"]),"_topic_dynamics_table_for_topic_",isolate(input$Det_DTM_topic_dynamic_topic),".csv")
+  },
+  content = function(file){
+    data<-values$Det_DTM_dynamic_table
+    write.csv2(data,file=file)
+  }
+)
+
+
 
 
 #' render detailed document term matrix with importance plot
@@ -939,3 +952,62 @@ output$Det_DTM_stability_table<-DT::renderDataTable({
   )
 })
 
+
+
+#############################################
+#              Topic Comparison             #
+#############################################
+
+
+output$Det_DTM_topic_comparison_UI<-renderUI({
+  results <- values$dtm_results[[as.numeric(input$Det_DTM_topic_comparison_time)]]
+  # topic_relevances <- calculate_topic_relevance(lambda = input$Det_DTM_topic_comparison_lambda,
+  #                                               phi = results[[2]],
+  #                                               theta = results[[1]],
+  #                                               doc.length = results[[3]]  
+  # )
+  # rownames(topic_relevances)<-values$dtm_results[[as.numeric(input$Det_DTM_topic_comparison_time)]][[5]]
+  # topic_relevances <- topic_relevances[, as.numeric(c(input$Det_DTM_topic_comparison_topic_1,input$Det_DTM_topic_comparison_topic_2))]
+  topic_relevances<-t(results[[2]][as.numeric(c(input$Det_DTM_topic_comparison_topic_1,input$Det_DTM_topic_comparison_topic_2)),])
+  rownames(topic_relevances)<-results[[5]]
+  values$Det_DTM_topic_comparison_topic_relevances <- topic_relevances
+
+  return(tagList(
+    tags$br(),
+    box(width = 6, title = paste0("More important in Topic ",isolate(input$Det_DTM_topic_comparison_topic_1)), status = "primary",solidHeader = T,
+           DT::dataTableOutput("Det_DTM_topic_comparison_table1")
+    ),
+    box(width = 6, title = paste0("More important in Topic ",isolate(input$Det_DTM_topic_comparison_topic_2)), status = "info",solidHeader = T,
+           DT::dataTableOutput("Det_DTM_topic_comparison_table2")
+    )
+  ))
+})
+
+
+output$Det_DTM_topic_comparison_table1 <- DT::renderDataTable({
+  data <- values$Det_DTM_topic_comparison_topic_relevances
+  data <- data[,1] - data[,2]
+  data<-sort(data,decreasing = T)
+  data <- round(x = data, digits = 3)
+  data <- data.frame(Word=paste0("<b>",names(data),"</b>"), 'Difference' = data)
+  datatable(data = data, rownames = F,escape = F, options = list(columnDefs = list(list(className = 'dt-center', targets = 0))))%>%
+    formatStyle('Difference',
+                background = styleColorBar(data$Difference, 'lightblue'),
+                backgroundSize = '98% 88%',
+                backgroundRepeat = 'no-repeat',
+                backgroundPosition = 'center')
+})
+
+output$Det_DTM_topic_comparison_table2 <- DT::renderDataTable({
+  data <- values$Det_DTM_topic_comparison_topic_relevances
+  data <- data[,2] - data[,1]
+  data<-sort(data,decreasing = T)
+  data <- round(x = data, digits = 3)
+  data <- data.frame(Word=paste0("<b>",names(data),"</b>"), 'Difference' = data)
+  datatable(data = data, rownames = F,escape = F, options = list(columnDefs = list(list(className = 'dt-center', targets = 0))))%>%
+    formatStyle('Difference',
+                background = styleColorBar(data$Difference, 'lightblue'),
+                backgroundSize = '98% 88%',
+                backgroundRepeat = 'no-repeat',
+                backgroundPosition = 'center')
+})

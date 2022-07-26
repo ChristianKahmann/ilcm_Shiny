@@ -106,7 +106,7 @@ output$details_parameter<-renderUI({
       load(paste0(values$Details_Data_DTM,"/data_TM.RData"))
       load(paste0(values$Details_Data_DTM,"/meta_TM.RData"))
       load(paste0(values$Details_Data_DTM,"/dtm_TM.RData"))
-      task_id<-HTML(paste0("Task ID: <b>",as.character(values$tasks_dtm[input$Dynamic_Topic_Results_rows_selected,"task.id"]),"</b>"))
+      task_id<-HTML(paste0("Task ID: <b>",as.character(values$current_task_id),"</b>"))
       values$dtm_results<-results
       values$dtm_meta<-meta
       values$dtm_dtm<-dtm
@@ -125,7 +125,8 @@ output$details_parameter<-renderUI({
           conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Topic Dynamics over Time'",
                            sliderInput(inputId = "Det_DTM_topic_dynamic_lambda",label = "Lambda:",min=0,max=1,value=0.3,step=0.1),
                            sliderInput(inputId = "Det_DTM_topic_dynamic_topic",label = "Topic:",min=1,max=nrow(results[[1]][[2]]),step=1,value=1),
-                           numericInput(inputId = "Det_DTM_topic_dynamic_number_of_words",label = "Number of words:",min=1,max=length(results[[1]][[5]]),value=25,step=1)
+                           numericInput(inputId = "Det_DTM_topic_dynamic_number_of_words",label = "Number of words:",min=1,max=length(results[[1]][[5]]),value=25,step=1),
+                           downloadButton(outputId = "Det_DTM_topic_dynamic_download_table",label = "Download Table")
           ),
           conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Word Importance'",
                            selectizeInput(inputId = "Det_DTM_word_importance_Words",label="Words:",choices=NULL,multiple=T),
@@ -177,7 +178,14 @@ output$details_parameter<-renderUI({
                            numericInput(inputId = "Det_DTM_stability_min_rank","minimal rank to include word into analysis:",min=1,max=500,value=100)
                            
                            
-          )
+          ),
+          conditionalPanel(condition = "input.tabBox_dynamic_topic_model=='Topic Comparison'",
+                           selectInput(inputId = "Det_DTM_topic_comparison_time",label = "Select Time Stamp to analyze",choices=setNames(nm = results_additional$time_slice_names,
+                                                                                                                            object = 1:length(results))),
+                          # sliderInput(inputId = "Det_DTM_topic_comparison_lambda",label = "Lambda:",min=0,max=1,value=0.3,step=0.1),
+                           selectInput(inputId = "Det_DTM_topic_comparison_topic_1", label ="First Topic:",choices = 1:n_topics,selected=1),
+                           selectInput(inputId = "Det_DTM_topic_comparison_topic_2", label ="Second Topic:",choices = 1:n_topics,selected=2)
+                           )
         )
       )
     }
@@ -1695,6 +1703,9 @@ output$details_visu<-renderUI({
                  ),
                  tabPanel("Word Stability",
                           uiOutput("Det_DTM_word_stability_UI")
+                 ),
+                 tabPanel("Topic Comparison",
+                          uiOutput("Det_DTM_topic_comparison_UI")
                  )
                  
           )
