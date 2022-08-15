@@ -300,7 +300,7 @@ output$Analysis_Parameter_DTM<-renderUI({
                      fluidRow(
                        column(1,
                               selectInput(inputId = "DTM_POS_TYPES_exclude",label = "Exclude POS-Types",
-                                          choices =c("NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X"), selected=character(0),multiple = T)%>%
+                                          choices =c("all","NOUN","VERB","ADJ","PUNCT","SYM","ADP","PART","ADV","INTJ","X"), selected=character(0),multiple = T)%>%
                                 shinyInput_label_embed(
                                   shiny_iconlink() %>%
                                     bs_embed_popover(
@@ -311,7 +311,7 @@ output$Analysis_Parameter_DTM<-renderUI({
                        ),
                        column(1,
                               selectInput(inputId = "DTM_ENTITY_TYPES_exclude",label = "Exclude NER-Tags",
-                                          choices =c("PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
+                                          choices =c("all","PER","ORG","GPE","PRODUCT","NORP","FACILITY","LOC","EVENT","WORK_OF_ART","LAW",
                                                      "LANGUAGE","DATE","TIME","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL") ,selected = character(0),multiple=T)%>%
                                 shinyInput_label_embed(
                                   shiny_iconlink() %>%

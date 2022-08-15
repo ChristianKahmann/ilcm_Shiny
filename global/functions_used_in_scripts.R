@@ -328,7 +328,6 @@ prepare_token_object<-function(token,parameters){
   try({
     if(parameters$consolidate_entities==T){
       log_to_file(message = "&emsp; Consolidating...",file = logfile)
-      spacyr::spacy_initialize()
       token<-spacyr::entity_consolidate(token)
       log_to_file(message = "&emsp; Finished consolidating entities",file = logfile)
     }
@@ -364,7 +363,6 @@ prepare_token_object<-function(token,parameters){
     if(!is.element(el = "all",set = parameters$reduce_NER)){
       if(parameters$consolidate_entities==F){
         log_to_file(message = "&emsp; Consolidating...due to NER Filter settings",file = logfile)
-        spacyr::spacy_initialize()
         token<-spacyr::entity_consolidate(token)
         log_to_file(message = "&emsp; Finished consolidating entities",file = logfile)
       }
@@ -391,23 +389,32 @@ prepare_token_object<-function(token,parameters){
     if(!is.null(parameters$reduce_NER_exclude)){
       if(parameters$consolidate_entities==F){
         log_to_file(message = "&emsp; Consolidating...due to NER Filter settings",file = logfile)
-        spacyr::spacy_initialize()
         token<-spacyr::entity_consolidate(token)
         log_to_file(message = "&emsp; Finished consolidating entities",file = logfile)
       }
       safe<-setdiff(which(token[,4]%in%unique(unlist(stringr::str_split(string = parameters$keep_custom,pattern = ",")))),which(token[,4]==""))
       # Spacy uses Tags PER and PERSON for person named entities --> check for both options
-      reduce<-which(token[,7]%in%parameters$reduce_NER_exclude)
-      reduce<-c(reduce,which(token[,7]%in%stringr::str_replace_all(parameters$reduce_NER_exclude,
-                                                                   pattern = "PER","PERSON"))
-      )
+      if(parameters$reduce_NER_exclude=="all"){
+        ner_pattern <- setdiff(unique(token[,7]),"")
+        if(length(ner_pattern)>0){
+          reduce<-which(token[,7]%in%ner_pattern)
+        }
+      }
+      else{
+        ner_pattern <- parameters$reduce_NER_exclude
+        if("PER"%in%parameters$reduce_NER_exclude){
+          ner_pattern <- c(ner_pattern,"PERSON")
+        }
+        reduce<-which(token[,7]%in%ner_pattern)
+      }
+      
       remove<-unique(setdiff(reduce,safe))
       if(length(remove)>0){
         token<-token[-remove,]
       }
-      log_to_file(message = "&emsp; Finished filtering NER-Tags to exclude",file = logfile)
+      log_to_file(message = paste0("&emsp; Finished filtering NER-Tags to exclude by ",length(remove)," NER Tags in Sum" ),file = logfile)
     }
-  })
+  },silent = F)
   return(token)
 }
 
@@ -509,7 +516,7 @@ calculate_dtm<-function(token,parameters,tibble=F,lang){
     if(i %in% loghelper){
       if(length(split)>10){
         log_to_file(message = paste0("&emsp; ",names(which(loghelper==i)),"% of documents processed (",splitsize*i,")"),logfile)
-        }
+      }
       else{
         log_to_file(message = paste0("&emsp; ",names(which(loghelper==i)),"% of documents processed"),logfile)
       }
@@ -1019,7 +1026,7 @@ calculate_diachron_frequencies<-function(dtm,meta){
   )
 }
 
-  
+
 
 
 
@@ -1560,7 +1567,7 @@ getAvailableValues <- function(dataToUse, columnName, columnContainsMultipleValu
 getAvailableValuesForGivenColumns <- function(dataToUse, columnNames, columnNamesContainingMultiValues, separatorsToUseForColumnsWithMultivalues){
   result <- vector("list", length(columnNames))
   names(result) <- columnNames
-
+  
   for(columnName in columnNames){
     isMultiValue <- (columnName %in% columnNamesContainingMultiValues)
     multiValueSeparator <- NULL
@@ -1609,14 +1616,14 @@ calcStats <- function(inputData, columnNamesOfColumnsToUse, dataWithColumnNamesA
         # separate each line and add up occurence of each value in statsForColumn
         indexOfSeparator <- which(columnsWithMultiValues == columnName)[[1]]
         separatorForMultiValuesForGivenColumn <- separatorsForMultiValues[indexOfSeparator]
- 
+        
         for(i in 1:dim(inputData)[1]){
           entry <- inputData[[columnName]][i]
           if(is.na(entry) | entry ==""){ # NA and empty values will be treated separately later
             next
           }
           splittedValues <- strsplit(entry,separatorForMultiValuesForGivenColumn)[[1]]
-
+          
           for(splittedValue in splittedValues){
             if(!splittedValue %in% statsForColumn$metaDataName){
               warning("Warning: For column \"",columnName ,"\" the following value appeared in the data but wasn't given via dataWithColumnNamesAndAvailableValues: \"", splittedValue, "\". It will be ignored. It is assumed that you don't want this value regarded by not providing it. If this is not thje case, provide all values via dataWithColumnNamesAndAvailableValues")
@@ -1939,21 +1946,21 @@ calcStatsPerMapPoint <- function(geocodingResultReducedToPointData,
 #' 
 #' @return subplot of final plots for distribution data
 createPlotsForDistributionData <- function(statsDistributionData, sortByValueDesc){
-    
-    finalPlots <- list()
-    statsToPlot <- statsDistributionData
-    distributionAspects <- names(statsToPlot)
-    for(aspectName in distributionAspects){
-      dataToPlot <- statsToPlot[[aspectName]]
-      dataToPlot <- dataToPlot[order(-dataToPlot$numberOfEntries,dataToPlot$metaDataName),]
-      if(sortByValueDesc & dim(dataToPlot)[1]>1){
-        dataToPlot$metaDataName <- factor(dataToPlot$metaDataName, levels = unique(dataToPlot$metaDataName)[order(dataToPlot$numberOfEntries, decreasing = TRUE)])
-      }
-      dataAsPlotly <- plot_ly(x = dataToPlot$metaDataName, y = dataToPlot$numberOfEntries, name = aspectName, type = "bar")
-      
-      finalPlots[[aspectName]] <-dataAsPlotly
+  
+  finalPlots <- list()
+  statsToPlot <- statsDistributionData
+  distributionAspects <- names(statsToPlot)
+  for(aspectName in distributionAspects){
+    dataToPlot <- statsToPlot[[aspectName]]
+    dataToPlot <- dataToPlot[order(-dataToPlot$numberOfEntries,dataToPlot$metaDataName),]
+    if(sortByValueDesc & dim(dataToPlot)[1]>1){
+      dataToPlot$metaDataName <- factor(dataToPlot$metaDataName, levels = unique(dataToPlot$metaDataName)[order(dataToPlot$numberOfEntries, decreasing = TRUE)])
     }
-    return(subplot(finalPlots))
+    dataAsPlotly <- plot_ly(x = dataToPlot$metaDataName, y = dataToPlot$numberOfEntries, name = aspectName, type = "bar")
+    
+    finalPlots[[aspectName]] <-dataAsPlotly
+  }
+  return(subplot(finalPlots))
   
 }
 
