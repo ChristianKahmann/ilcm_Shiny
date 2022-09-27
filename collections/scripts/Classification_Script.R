@@ -81,6 +81,7 @@ error<-try(expr = {
     else{
       log_to_file(message = paste0("&emsp; ✔ ",length(anno_ids)," Annotations or approved classifications found that belong to project: ",parameters$Project),logfile)
     }
+
     anno_ids_in_token<-intersect(anno_ids,unique(db_data$token$id))
     if(length(anno_ids_in_token)==0){
       log_to_file(message = "&emsp;<b style='color:red'>&#10008; No annotations belong to chosen collection</b>",logfile)
@@ -419,6 +420,14 @@ error<-try(expr = {
         training_dict<-training_dict[-already_known,]
       }
       gold_table<-rbind(gold_table,training_dict)
+      #any NA Document entry
+      if(length(which(is.na(gold_table[,1])))>0){
+        gold_table<-gold_table[-which(is.na(gold_table[,1])),]
+      }
+      if(length(which(gold_table[,2]==parameters$cl_Category))==0){
+        message = paste0("No Documents found containing any of the entries in the Dictionary for the chosen Category: <b>",parameters$cl_Category,"</b>")
+        stop(message)
+      }
       log_to_file(message = "  &emsp; ✔ Finished ",file = logfile)
     }
     log_to_file(message = "&emsp; Training Classifier",file = logfile)

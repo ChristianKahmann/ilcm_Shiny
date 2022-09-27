@@ -5,20 +5,26 @@
 #'   values$dict_data: dictionary data
 observeEvent(input$Dict_create,{
   values$dict_name<-""
-  values$dict_data<-data.frame(example=c("lorem","ipsum"))
+  values$dict_data<-data.frame('A'=c("lorem","ipsum","",""))
 })
 
 #' change a dictionary
 #' depends on:
 #'    input$Dict_change: initiate to change a dictionary
 observeEvent(input$Dict_change,{
-  showModal(modalDialog(easyClose = F,
-                        title = "Which Dictionary would like to change?",
-                        shinyWidgets::prettyRadioButtons(inputId = "dict_change_dict",label = "Dictionaries",
-                                                         choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
-                                                         fill=T,animation = "tada",selected = NULL),
-                        shinyBS::bsButton(inputId = "dict_change_accept",label = "confirm")
-  ))
+  number_of_dicts <- length(list.files(path = "collections/dictionaries/"))
+  if(number_of_dicts>0){
+    showModal(modalDialog(easyClose = F,
+                          title = "Which Dictionary would like to change?",
+                          shinyWidgets::prettyRadioButtons(inputId = "dict_change_dict",label = "Dictionaries",
+                                                           choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
+                                                           fill=T,animation = "tada",selected = NULL),
+                          shinyBS::bsButton(inputId = "dict_change_accept",label = "confirm")
+    ))
+  }
+  else{
+    shinyWidgets::sendSweetAlert(session = session,title = "No Dictionaries found",text = "Use the 'Create-Button' to start a new dictionary",type = "warning",closeOnClickOutside = T)
+  }
 })
 
 #' accept changes on dictionary
@@ -43,13 +49,19 @@ observeEvent(input$dict_change_accept,{
 #' depends on:
 #'   input$Dict_delete: initiate deleting a dictionary
 observeEvent(input$Dict_delete,{
-  showModal(modalDialog(easyClose = F,
-                        title = "Which Dictionary would like to delete?",
-                        shinyWidgets::prettyRadioButtons(inputId = "dict_delete_dict",label = "Dictionaries",
-                                                         choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
-                                                         fill=T,animation = "tada",selected = NULL),
-                        shinyBS::bsButton(inputId = "dict_delete","Delete selected dictionary")
-  ))
+  number_of_dicts <- length(list.files(path = "collections/dictionaries/"))
+  if(number_of_dicts>0){
+    showModal(modalDialog(easyClose = F,
+                          title = "Which Dictionary would like to delete?",
+                          shinyWidgets::prettyRadioButtons(inputId = "dict_delete_dict",label = "Dictionaries",
+                                                           choices = stringr::str_replace_all(string = list.files("collections/dictionaries/"),pattern = ".RData",replacement = ""),
+                                                           fill=T,animation = "tada",selected = NULL),
+                          shinyBS::bsButton(inputId = "dict_delete","Delete selected dictionary")
+    ))
+  }
+  else{
+    shinyWidgets::sendSweetAlert(session = session,title = "No Dictionaries found",text = "Nothing to delete!",type = "warning",closeOnClickOutside = T)
+  }
 })
 
 #' observe if selected dictionary should be deleted
@@ -84,7 +96,16 @@ output$Dict_table_ui<-renderRHandsontable({
     )
   )
   data<-values$dict_data
-  rhandsontable(data = data,useTypes = F)
+  if(colnames(data)=="A"){
+    return(
+      rhandsontable(data = data,useTypes = F,colHeaders = c("A","B","C","D","E","F","G","H","I","J"))
+    )
+  }
+  else{
+    return(
+      rhandsontable(data = data,useTypes = F,colHeaders = colnames(data))
+    )
+  }
 })
 
 #' save dictionary
@@ -118,6 +139,10 @@ observeEvent(input$dict_save,{
   showModal(modalDialog(easyClose = F,
                         title = "Save dictionary",
                         textInput(inputId = "dict_name",label = "Dictionary name",value = values$dict_name),
+                        tags$div(icon("info"))%>%
+                          bs_embed_popover(
+                            title ="If you would like to use the Dictionary for a Classification Initialization, please make sure that the category names of the Dictionary match those of the classification scheme.", placement = "right"
+                          ),
                         tags$hr(),
                         header_inputs,
                         shinyBS::bsButton(inputId = "dict_save_really","Save")
