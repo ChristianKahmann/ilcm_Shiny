@@ -1184,31 +1184,31 @@ observeEvent(input$Import_csv_start_preprocess,{
               meta_metadata<-data.frame(t(c(input$Import_csv_dataset,input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,
                                             input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
               colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
-              if(input$Import_csv_mde1=="not required"){
+              if(input$Import_csv_mde1=="not required" && all(data[,"mde1"]=="")){
                 meta_metadata[,"mde1"]<-NULL
               }
-              if(input$Import_csv_mde2=="not required"){
+              if(input$Import_csv_mde2=="not required" && all(data[,"mde2"]=="")){
                 meta_metadata[,"mde2"]<-NULL
               }
-              if(input$Import_csv_mde3=="not required"){
+              if(input$Import_csv_mde3=="not required" && all(data[,"mde3"]=="")){
                 meta_metadata[,"mde3"]<-NULL
               }
-              if(input$Import_csv_mde4=="not required"){
+              if(input$Import_csv_mde4=="not required" && all(data[,"mde4"]=="")){
                 meta_metadata[,"mde4"]<-NULL
               }
-              if(input$Import_csv_mde5=="not required"){
+              if(input$Import_csv_mde5=="not required" && all(data[,"mde5"]=="")){
                 meta_metadata[,"mde5"]<-NULL
               }
-              if(input$Import_csv_mde6=="not required"){
+              if(input$Import_csv_mde6=="not required" && all(data[,"mde6"]=="")){
                 meta_metadata[,"mde6"]<-NULL
               }
-              if(input$Import_csv_mde7=="not required"){
+              if(input$Import_csv_mde7=="not required" && all(data[,"mde7"]=="")){
                 meta_metadata[,"mde7"]<-NULL
               }
-              if(input$Import_csv_mde8=="not required"){
+              if(input$Import_csv_mde8=="not required" && all(data[,"mde8"]=="")){
                 meta_metadata[,"mde8"]<-NULL
               }
-              if(input$Import_csv_mde9=="not required"){
+              if(input$Import_csv_mde9=="not required" && all(data[,"mde9"]=="")){
                 meta_metadata[,"mde9"]<-NULL
               }
               #save needed parameters
@@ -1259,31 +1259,31 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_csv_no_db,{
     meta_metadata<-data.frame(t(c(input$Import_csv_dataset,input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,
                                   input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
     colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
-    if(input$Import_csv_mde1=="not required"){
+    if(input$Import_csv_mde1=="not required" && all(data[,"mde1"]=="")){
       meta_metadata[,"mde1"]<-NULL
     }
-    if(input$Import_csv_mde2=="not required"){
+    if(input$Import_csv_mde2=="not required" && all(data[,"mde2"]=="")){
       meta_metadata[,"mde2"]<-NULL
     }
-    if(input$Import_csv_mde3=="not required"){
+    if(input$Import_csv_mde3=="not required" && all(data[,"mde3"]=="")){
       meta_metadata[,"mde3"]<-NULL
     }
-    if(input$Import_csv_mde4=="not required"){
+    if(input$Import_csv_mde4=="not required" && all(data[,"mde4"]=="")){
       meta_metadata[,"mde4"]<-NULL
     }
-    if(input$Import_csv_mde5=="not required"){
+    if(input$Import_csv_mde5=="not required" && all(data[,"mde5"]=="")){
       meta_metadata[,"mde5"]<-NULL
     }
-    if(input$Import_csv_mde6=="not required"){
+    if(input$Import_csv_mde6=="not required" && all(data[,"mde6"]=="")){
       meta_metadata[,"mde6"]<-NULL
     }
-    if(input$Import_csv_mde7=="not required"){
+    if(input$Import_csv_mde7=="not required" && all(data[,"mde7"]=="")){
       meta_metadata[,"mde7"]<-NULL
     }
-    if(input$Import_csv_mde8=="not required"){
+    if(input$Import_csv_mde8=="not required" && all(data[,"mde8"]=="")){
       meta_metadata[,"mde8"]<-NULL
     }
-    if(input$Import_csv_mde9=="not required"){
+    if(input$Import_csv_mde9=="not required" && all(data[,"mde9"]=="")){
       meta_metadata[,"mde9"]<-NULL
     }
     #save needed parameters
@@ -1364,31 +1364,31 @@ observeEvent(input$Import_csv_start_preprocess_and_write,{
               meta_metadata<-data.frame(t(c(input$Import_csv_dataset,input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,
                                             input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
               colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
-              if(input$Import_csv_mde1=="not required"){
+              if(input$Import_csv_mde1=="not required" && all(data[,"mde1"]=="")){
                 meta_metadata[,"mde1"]<-NULL
               }
-              if(input$Import_csv_mde2=="not required"){
+              if(input$Import_csv_mde2=="not required" && all(data[,"mde2"]=="")){
                 meta_metadata[,"mde2"]<-NULL
               }
-              if(input$Import_csv_mde3=="not required"){
+              if(input$Import_csv_mde3=="not required" && all(data[,"mde3"]=="")){
                 meta_metadata[,"mde3"]<-NULL
               }
-              if(input$Import_csv_mde4=="not required"){
+              if(input$Import_csv_mde4=="not required" && all(data[,"mde4"]=="")){
                 meta_metadata[,"mde4"]<-NULL
               }
-              if(input$Import_csv_mde5=="not required"){
+              if(input$Import_csv_mde5=="not required" && all(data[,"mde5"]=="")){
                 meta_metadata[,"mde5"]<-NULL
               }
-              if(input$Import_csv_mde6=="not required"){
+              if(input$Import_csv_mde6=="not required" && all(data[,"mde6"]=="")){
                 meta_metadata[,"mde6"]<-NULL
               }
-              if(input$Import_csv_mde7=="not required"){
+              if(input$Import_csv_mde7=="not required" && all(data[,"mde7"]=="")){
                 meta_metadata[,"mde7"]<-NULL
               }
-              if(input$Import_csv_mde8=="not required"){
+              if(input$Import_csv_mde8=="not required" && all(data[,"mde8"]=="")){
                 meta_metadata[,"mde8"]<-NULL
               }
-              if(input$Import_csv_mde9=="not required"){
+              if(input$Import_csv_mde9=="not required" && all(data[,"mde9"]=="")){
                 meta_metadata[,"mde9"]<-NULL
               }
               #save needed parameters
@@ -1439,31 +1439,31 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_csv_db,{
     meta_metadata<-data.frame(t(c(input$Import_csv_dataset,input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,
                                   input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
     colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
-    if(input$Import_csv_mde1=="not required"){
+    if(input$Import_csv_mde1=="not required" && all(data[,"mde1"]=="")){
       meta_metadata[,"mde1"]<-NULL
     }
-    if(input$Import_csv_mde2=="not required"){
+    if(input$Import_csv_mde2=="not required" && all(data[,"mde2"]=="")){
       meta_metadata[,"mde2"]<-NULL
     }
-    if(input$Import_csv_mde3=="not required"){
+    if(input$Import_csv_mde3=="not required" && all(data[,"mde3"]=="")){
       meta_metadata[,"mde3"]<-NULL
     }
-    if(input$Import_csv_mde4=="not required"){
+    if(input$Import_csv_mde4=="not required" && all(data[,"mde4"]=="")){
       meta_metadata[,"mde4"]<-NULL
     }
-    if(input$Import_csv_mde5=="not required"){
+    if(input$Import_csv_mde5=="not required" && all(data[,"mde5"]=="")){
       meta_metadata[,"mde5"]<-NULL
     }
-    if(input$Import_csv_mde6=="not required"){
+    if(input$Import_csv_mde6=="not required" && all(data[,"mde6"]=="")){
       meta_metadata[,"mde6"]<-NULL
     }
-    if(input$Import_csv_mde7=="not required"){
+    if(input$Import_csv_mde7=="not required" && all(data[,"mde7"]=="")){
       meta_metadata[,"mde7"]<-NULL
     }
-    if(input$Import_csv_mde8=="not required"){
+    if(input$Import_csv_mde8=="not required" && all(data[,"mde8"]=="")){
       meta_metadata[,"mde8"]<-NULL
     }
-    if(input$Import_csv_mde9=="not required"){
+    if(input$Import_csv_mde9=="not required" && all(data[,"mde9"]=="")){
       meta_metadata[,"mde9"]<-NULL
     }
     #save needed parameters
@@ -2335,31 +2335,31 @@ observeEvent(input$Import_mtf_start_preprocess,{
                 meta_metadata<-data.frame(t(c(input$Import_mtf_dataset,input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,
                                               input$UI_Import_name_mde6_mtf,input$UI_Import_name_mde7_mtf,input$UI_Import_name_mde8_mtf,input$UI_Import_name_mde9_mtf)))
                 colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
-                if(input$Import_mtf_mde1=="not required"){
+                if(input$Import_mtf_mde1=="not required" && all(data[,"mde1"]=="")){
                   meta_metadata[,"mde1"]<-NULL
                 }
-                if(input$Import_mtf_mde2=="not required"){
+                if(input$Import_mtf_mde2=="not required" && all(data[,"mde2"]=="")){
                   meta_metadata[,"mde2"]<-NULL
                 }
-                if(input$Import_mtf_mde3=="not required"){
+                if(input$Import_mtf_mde3=="not required" && all(data[,"mde3"]=="")){
                   meta_metadata[,"mde3"]<-NULL
                 }
-                if(input$Import_mtf_mde4=="not required"){
+                if(input$Import_mtf_mde4=="not required" && all(data[,"mde4"]=="")){
                   meta_metadata[,"mde4"]<-NULL
                 }
-                if(input$Import_mtf_mde5=="not required"){
+                if(input$Import_mtf_mde5=="not required" && all(data[,"mde5"]=="")){
                   meta_metadata[,"mde5"]<-NULL
                 }
-                if(input$Import_mtf_mde6=="not required"){
+                if(input$Import_mtf_mde6=="not required" && all(data[,"mde6"]=="")){
                   meta_metadata[,"mde6"]<-NULL
                 }
-                if(input$Import_mtf_mde7=="not required"){
+                if(input$Import_mtf_mde7=="not required" && all(data[,"mde7"]=="")){
                   meta_metadata[,"mde7"]<-NULL
                 }
-                if(input$Import_mtf_mde8=="not required"){
+                if(input$Import_mtf_mde8=="not required" && all(data[,"mde8"]=="")){
                   meta_metadata[,"mde8"]<-NULL
                 }
-                if(input$Import_mtf_mde9=="not required"){
+                if(input$Import_mtf_mde9=="not required" && all(data[,"mde9"]=="")){
                   meta_metadata[,"mde9"]<-NULL
                 }
                 #save needed parameters
@@ -2522,31 +2522,31 @@ observeEvent(input$Import_mtf_start_preprocess_and_write,{
                 meta_metadata<-data.frame(t(c(input$Import_mtf_dataset,input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,
                                               input$UI_Import_name_mde6_mtf,input$UI_Import_name_mde7_mtf,input$UI_Import_name_mde8_mtf,input$UI_Import_name_mde9_mtf)))
                 colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
-                if(input$Import_mtf_mde1=="not required"){
+                if(input$Import_mtf_mde1=="not required" && all(data[,"mde1"]=="")){
                   meta_metadata[,"mde1"]<-NULL
                 }
-                if(input$Import_mtf_mde2=="not required"){
+                if(input$Import_mtf_mde2=="not required" && all(data[,"mde2"]=="")){
                   meta_metadata[,"mde2"]<-NULL
                 }
-                if(input$Import_mtf_mde3=="not required"){
+                if(input$Import_mtf_mde3=="not required" && all(data[,"mde3"]=="")){
                   meta_metadata[,"mde3"]<-NULL
                 }
-                if(input$Import_mtf_mde4=="not required"){
+                if(input$Import_mtf_mde4=="not required" && all(data[,"mde4"]=="")){
                   meta_metadata[,"mde4"]<-NULL
                 }
-                if(input$Import_mtf_mde5=="not required"){
+                if(input$Import_mtf_mde5=="not required" && all(data[,"mde5"]=="")){
                   meta_metadata[,"mde5"]<-NULL
                 }
-                if(input$Import_mtf_mde6=="not required"){
+                if(input$Import_mtf_mde6=="not required" && all(data[,"mde6"]=="")){
                   meta_metadata[,"mde6"]<-NULL
                 }
-                if(input$Import_mtf_mde7=="not required"){
+                if(input$Import_mtf_mde7=="not required" && all(data[,"mde7"]=="")){
                   meta_metadata[,"mde7"]<-NULL
                 }
-                if(input$Import_mtf_mde8=="not required"){
+                if(input$Import_mtf_mde8=="not required" && all(data[,"mde8"]=="")){
                   meta_metadata[,"mde8"]<-NULL
                 }
-                if(input$Import_mtf_mde9=="not required"){
+                if(input$Import_mtf_mde9=="not required" && all(data[,"mde9"]=="")){
                   meta_metadata[,"mde9"]<-NULL
                 }
                 #save needed parameters
@@ -2599,31 +2599,31 @@ observeEvent(ignoreNULL = T,input$confirm_empty_body_mtf_db,{
     meta_metadata<-data.frame(t(c(input$Import_mtf_dataset,input$UI_Import_name_mde1_mtf,input$UI_Import_name_mde2_mtf,input$UI_Import_name_mde3_mtf,input$UI_Import_name_mde4_mtf,input$UI_Import_name_mde5_mtf,
                                   input$UI_Import_name_mde6_mtf,input$UI_Import_name_mde7_mtf,input$UI_Import_name_mde8_mtf,input$UI_Import_name_mde9_mtf)))
     colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
-    if(input$Import_mtf_mde1=="not required"){
+    if(input$Import_mtf_mde1=="not required" && all(data[,"mde1"]=="")){
       meta_metadata[,"mde1"]<-NULL
     }
-    if(input$Import_mtf_mde2=="not required"){
+    if(input$Import_mtf_mde2=="not required" && all(data[,"mde2"]=="")){
       meta_metadata[,"mde2"]<-NULL
     }
-    if(input$Import_mtf_mde3=="not required"){
+    if(input$Import_mtf_mde3=="not required" && all(data[,"mde3"]=="")){
       meta_metadata[,"mde3"]<-NULL
     }
-    if(input$Import_mtf_mde4=="not required"){
+    if(input$Import_mtf_mde4=="not required" && all(data[,"mde4"]=="")){
       meta_metadata[,"mde4"]<-NULL
     }
-    if(input$Import_mtf_mde5=="not required"){
+    if(input$Import_mtf_mde5=="not required" && all(data[,"mde5"]=="")){
       meta_metadata[,"mde5"]<-NULL
     }
-    if(input$Import_mtf_mde6=="not required"){
+    if(input$Import_mtf_mde6=="not required" && all(data[,"mde6"]=="")){
       meta_metadata[,"mde6"]<-NULL
     }
-    if(input$Import_mtf_mde7=="not required"){
+    if(input$Import_mtf_mde7=="not required" && all(data[,"mde7"]=="")){
       meta_metadata[,"mde7"]<-NULL
     }
-    if(input$Import_mtf_mde8=="not required"){
+    if(input$Import_mtf_mde8=="not required" && all(data[,"mde8"]=="")){
       meta_metadata[,"mde8"]<-NULL
     }
-    if(input$Import_mtf_mde9=="not required"){
+    if(input$Import_mtf_mde9=="not required" && all(data[,"mde9"]=="")){
       meta_metadata[,"mde9"]<-NULL
     }
     #save needed parameters
@@ -3274,7 +3274,7 @@ observeEvent(input$Import_Wortschatz_Transfer_to_CSV,{
     
     if(input$Input_Wortschatz_recreate_documents==TRUE){
       incProgress(amount = 0.1,message = "Recreate Documents")
-      sentences<-cbind(aggregate(sentences$Satz,by = sentences['ID_Source'],paste,collapse=" "),aggregate(sentences$Quelle,by = sentences['ID_Source'],first)[,2],aggregate(sentences$Date,by = sentences['ID_Source'],first)[,2])
+      sentences<-cbind(aggregate(sentences$Text,by = sentences['ID_Source'],paste,collapse=" "),aggregate(sentences$Source,by = sentences['ID_Source'],first)[,2],aggregate(sentences$Date,by = sentences['ID_Source'],first)[,2])
       colnames(sentences)<-c("ID_Source","Text","Source","Date")
       values$Import_Wortschatz_sentences<-sentences
       incProgress(amount = 0.1,message = "Finished")
