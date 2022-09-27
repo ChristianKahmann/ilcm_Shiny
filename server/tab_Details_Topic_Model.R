@@ -4167,13 +4167,73 @@ output$TM_validation_UI<-renderUI({
                ),
                column(8,
                       tags$br(),
-                      uiOutput("Det_TM_validation_Document")
+                      uiOutput("Det_TM_validation_Document")%>%withSpinner(),
+                      uiOutput("Det_TM_validation_pager_UI")
                )
       )
       
     ) 
   )
 })
+
+
+output$Det_TM_validation_pager_UI <- renderUI({
+  validate(
+    need(
+      !is.null(input$Det_TM_validation_document),message=FALSE
+    ),
+    need(
+      input$Det_TM_validation_document!="",message="please choose a document"
+    )
+  )
+  text<-values$tm_meta$body[which(values$tm_meta$id_doc==input$Det_TM_validation_document)]
+  identifier<-stringr::str_split(string = input$Det_TM_validation_document,pattern = "_",simplify = T)
+  dataset<-identifier[1]
+  doc_id<-identifier[2]
+  text<-values$tm_meta$body[which(values$tm_meta$id_doc==input$Det_TM_validation_document)]
+  if(length(str_extract_all(string = input$Det_TM_validation_document,pattern = "_",simplify = T))>1){
+    #when using splits 
+    if(nchar(text)>1000000){
+      token <- NULL
+      for(i in 1:ceiling(nchar(text)/1000000)){
+        text_split <- substr(text,(((i-1)*1000000)+1),(i*1000000))
+        token_split <-spacyr::spacy_parse(iconv(paste(text_split,collapse="\n"), "UTF-8", "UTF-8",sub=''),pos = T,tag = F,lemma = T,entity = F,dependency = F)
+        token <- rbind(token,token_split)
+      }
+    }
+    else{
+      token<-spacyr::spacy_parse(iconv(paste(text,collapse="\n"), "UTF-8", "UTF-8",sub=''),pos = T,tag = F,lemma = T,entity = F,dependency = F)
+    }
+    token<-cbind(rep("unknown",nrow(token)),token)
+    colnames(token)[5]<-"word"
+    colnames(token)[1]<-"dataset"
+    colnames(token)[2]<-"id"
+    colnames(token)[3]<-"sid"
+    colnames(token)[4]<-"tid"
+    # remove idx column from token
+    #token<-token[,-ncol(token)]
+  }
+  else{
+    #when using whole documents
+    token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
+    token<-token[,-ncol(token)]
+  }
+  values$Det_validation_token <- token
+  split_size=5000
+  values$Det_validation_split_size=split_size
+  number_of_pages = ceiling(nrow(token)/split_size)
+  return(pageruiInput("Det_validation_pager",page_current=1,pages_total=number_of_pages))
+  
+})
+
+
+# Scroll back to top of page if a page button was clicked
+observeEvent(input$Det_validation_pager,ignoreInit = T,{
+  runjs('
+      document.getElementById("Det_TM_validation_document_topic_pie").scrollIntoView({behavior: "smooth"});
+    ')
+})
+
 #' output to validate the found topics on specific documents
 #' depends on:
 #'   input$Det_TM_validation_document: selected document for validation
@@ -4198,14 +4258,24 @@ output$Det_TM_validation_Document<-renderUI({
     ),
     need(
       input$Det_TM_validation_document!="",message="please choose a document"
-    )
+    ),
+    need(!is.null(input$Det_validation_pager),message=F)
   )
+  
+  token <-values$Det_validation_token
+  # use pager
+  page = as.numeric(input$Det_validation_pager)
+  split_size = as.numeric(values$Det_validation_split_size)
+  token <- token[(((page-1)*split_size)+1):min((page*split_size),nrow(token)),]
+  
+  validate(
+    need(nrow(token)>1,message=F)
+  )
+  #################################################regular#########################################################
   identifier<-stringr::str_split(string = input$Det_TM_validation_document,pattern = "_",simplify = T)
   dataset<-identifier[1]
   doc_id<-identifier[2]
-  token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
-  # remove idx column from token
-  token<-token[,-ncol(token)]
+  text<-values$tm_meta$body[which(values$tm_meta$id_doc==input$Det_TM_validation_document)]
   
   load(paste0(values$Details_Data_TM,"/parameters.RData"))
   space_ids<-which(token[,"pos"]=="SPACE")
@@ -4250,10 +4320,6 @@ output$Det_TM_validation_Document<-renderUI({
   }
   if(input$Det_TM_validation_relevance_measure=="relevance score"){
     relevance<-calculate_topic_relevance(lambda=input$Det_TM_validation_lambda,phi=values$tm_phi,theta=values$tm_theta,doc.length=values$tm_doc.length)
-    #normalize relevance
-    #relevance<-relevance-apply(relevance,1, FUN=min)
-    #relevance<-t(t(as.matrix(relevance))/rowSums(relevance))
-    #relevance<-relevance/max(relevance)
     data<-relevance[,as.numeric(chosen_topic)]
     data<-data.frame(features=names(data),weight=data)
     if(input$Det_TM_validation_minmax_gobal=="over all topics"){
@@ -4285,8 +4351,6 @@ output$Det_TM_validation_Document<-renderUI({
       min<-min(data[intersect(unique(features),rownames(data)),"weight"])
     }
   }
-  
-  
   m<-merge(x = token,y=data,by="features",all.x=TRUE)
   m<-m[order(m[,2]),]
   getPalette = colorRampPalette(brewer.pal(12, "Paired"))
@@ -4303,23 +4367,16 @@ output$Det_TM_validation_Document<-renderUI({
   if(length(intersect(which(!is.na(m$weight)),which(m$weight!=0)))>0){
     m[intersect(which(!is.na(m$weight)),which(m$weight!=0)),12]<-  rbPal_pos(100)[as.numeric(cut(c(max,min,m$weight[intersect(which(!is.na(m$weight)),which(m$weight!=0))]),breaks = 100))[-c(1,2)]] #Alternative#seq(0,to = max(data$weight),length.out = 100) #original m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))]
   }
-  
-  strings<-apply(m,MARGIN = 1,FUN = function(x){
-    if(is.na(x[11])){
-      return(x[7])
-    }
-    else{
-      return( paste0('<font style="background-color:',x[12],';"','title="feature: ',x[1],' with weight: ',round(as.numeric(x[11]),digits = 5),'">',x[7],'</font>'))
-    }
-  })
-  
-  document<-list()
-  for(i in 1:dim(m)[1]){
-    document[[i]]<-paste0("<span span_nr='",i,"'>",strings[i],"</span>")
-  }
-  document<-do.call(rbind,document)
-  document<-HTML(document)
-  tags$p(document)
+  count=0
+
+  feature_yes<-which(!is.na(m[,10]))
+  feature_no<-setdiff(1:nrow(m),feature_yes)
+  strings<-rep("",nrow(m))
+  strings[feature_yes]<-paste0('<font style="background-color:',m[feature_yes,12],'">',m[feature_yes,7],'</font>')
+  strings[feature_no]<-m[feature_no,7]
+
+  document<-HTML(strings)
+  tags$div(document)
 })
 
 
