@@ -2782,7 +2782,7 @@ observeEvent(input$Upload_Data,{
         #update meta tables in database
         #data<-data.frame(readtext::readtext(file =paste0("data_import/processed_data/meta_",input$Import_Files,".csv") ),stringsAsFactors = F)
         data<-data.frame(readr::read_delim(file = paste0("data_import/processed_data/meta_",input$Import_Files,".csv"), delim=',',
-                                           escape_double=FALSE, escape_backslash=TRUE, quote='"',col_names = F),
+                                           escape_double=FALSE, escape_backslash=TRUE, quote='"',col_names = F,na=character()),
                          stringsAsFactors = F)
         data<-cbind(rep(paste0("data_import/processed_data/meta_",input$Import_Files,".csv"),nrow(data)),data)%>%
           mutate_all(as.character)
