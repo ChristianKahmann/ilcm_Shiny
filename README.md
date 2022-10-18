@@ -18,3 +18,7 @@ Per default the 3 services are available on this ports:
 * **shiny-server**: http://localhost:3838 
 * **rstudio-server**: http://localhost:8787 
 * **solr-dashboard**: http://localhost:8983 
+
+# Acknowledgments
+
+This Software is funded by the German Research Foundation (DFG). FKZ/project number: 21210494
