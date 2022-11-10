@@ -4191,6 +4191,22 @@ output$Det_TM_validation_pager_UI <- renderUI({
   dataset<-identifier[1]
   doc_id<-identifier[2]
   text<-values$tm_meta$body[which(values$tm_meta$id_doc==input$Det_TM_validation_document)]
+  # find matching spacy model
+  avail_models <- stringr::str_remove_all(string = stringr::str_split(
+    stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = "")
+    ,pattern = ", ",simplify = T),pattern = " ")
+  
+  detected_lang <- cld2::detect_language(text = text)
+  avail_models <- avail_models[grepl(pattern = detected_lang,x = avail_models)]
+  avail_models <- avail_models[grepl(pattern = "sm|md",x = avail_models)]
+  if(length(avail_models==0)){
+    model = "en_core_web_sm"
+  }
+  else{
+    model = avail_models[1]
+    model = stringr::str_remove(string = model,pattern = "\\(.+\\)")
+  }
+  spacyr::spacy_initialize(model = model)
   if(length(str_extract_all(string = input$Det_TM_validation_document,pattern = "_",simplify = T))>1){
     #when using splits 
     if(nchar(text)>1000000){
@@ -4223,7 +4239,6 @@ output$Det_TM_validation_pager_UI <- renderUI({
   values$Det_validation_split_size=split_size
   number_of_pages = ceiling(nrow(token)/split_size)
   return(pageruiInput("Det_validation_pager",page_current=1,pages_total=number_of_pages))
-  
 })
 
 
@@ -4368,13 +4383,13 @@ output$Det_TM_validation_Document<-renderUI({
     m[intersect(which(!is.na(m$weight)),which(m$weight!=0)),12]<-  rbPal_pos(100)[as.numeric(cut(c(max,min,m$weight[intersect(which(!is.na(m$weight)),which(m$weight!=0))]),breaks = 100))[-c(1,2)]] #Alternative#seq(0,to = max(data$weight),length.out = 100) #original m$weight[intersect(which(!is.na(m$weight)),which(m$weight>0))]
   }
   count=0
-
+  
   feature_yes<-which(!is.na(m[,10]))
   feature_no<-setdiff(1:nrow(m),feature_yes)
   strings<-rep("",nrow(m))
   strings[feature_yes]<-paste0('<font style="background-color:',m[feature_yes,12],'">',m[feature_yes,7],'</font>')
   strings[feature_no]<-m[feature_no,7]
-
+  
   document<-HTML(strings)
   tags$div(document)
 })
@@ -6376,8 +6391,8 @@ observe({
       data<-data[order(as.numeric(data[,2]),decreasing = T),]
       
       output[[wc_id]]<-DT::renderDataTable({
-            datatable(data = data,rownames = F)
-            })
+        datatable(data = data,rownames = F)
+      })
     })
     
   }  

@@ -61,6 +61,8 @@ error<-try(expr = {
     if(length(relevant)>0){
       stats <- keywords_rake(x = token, term = term, group = "sentence_id", ngram_max = parameters$KE_no_ref_ngram_max,n_min = parameters$KE_no_ref_n_min,
                              relevant =token$upos %in% parameters$KE_filter,sep = parameters$KE_seperator)
+      correct_number_of_words <- unlist(lapply(stringr::str_split(string = stats$keyword, pattern = "_",simplify = F),FUN = length))
+      stats$ngram <- correct_number_of_words 
     }
     else{
       log_to_file(message = "&emsp;<b style='color:red'>&#10008; No relevant words were selected to be used in RAKE. Check your settings.</b>",logfile)

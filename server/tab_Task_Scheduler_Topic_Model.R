@@ -545,6 +545,17 @@ output$Analysis_Parameter_TM<-renderUI({
                        
                        
                        
+                     ),
+                     fluidRow(
+                       column(2,
+                              checkboxInput(inputId = "TM_chunk_documents",label ="Split Documents in smaller chunks?",value=F)
+                              ),
+                       column(2,
+                              conditionalPanel(condition = 'input.TM_chunk_documents==true',
+                                               numericInput(inputId="TM_chunk_documents_n",label = "Maximum number of words per chunk:",value=2500,step=500,min=2)
+                                               )
+                              )
+                       
                      )
     ),
     
@@ -762,7 +773,9 @@ observeEvent(input$TM_Submit_Script,{
                      use_fixed_vocab=input$TM_use_fixed_vocab,
                      fixed_vocab=input$TM_fixed_vocab,
                      tm_use_precalculated_topic_model=input$TM_use_precalculated_topic_model,
-                     tm_precalculated_topic_model=input$TM_precalculated_topic_model
+                     tm_precalculated_topic_model=input$TM_precalculated_topic_model,
+                     tm_chunk_documents=input$TM_chunk_documents,
+                     tm_chunk_documents_n=input$TM_chunk_documents_n
     )
     
     if(input$TM_method == "stm"){
@@ -955,7 +968,9 @@ observeEvent(input$TM_pruning_continue,ignoreInit = T,{
                    use_fixed_vocab=input$TM_use_fixed_vocab,
                    fixed_vocab=input$TM_fixed_vocab,
                    tm_use_precalculated_topic_model=input$TM_use_precalculated_topic_model,
-                   tm_precalculated_topic_model=input$TM_precalculated_topic_model
+                   tm_precalculated_topic_model=input$TM_precalculated_topic_model,
+                   tm_chunk_documents=input$TM_chunk_documents,
+                   tm_chunk_documents_n=input$TM_chunk_documents_n
   )
   
   if(input$TM_method == "stm"){

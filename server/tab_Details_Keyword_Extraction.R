@@ -42,8 +42,8 @@ observe({
 #'   values$Det_KE_data: detailed keyword extraction data
 output$Det_KE_table<-DT::renderDataTable({
   datatable(data = values$Det_KE_data,rownames = F,selection="none",extensions = c('Buttons','Responsive'),class = "row-border compact",options=list(dom='Bfrtip',
-                                                                                                       buttons = c('copy', 'csv', 'excel', 'print'),
-                                                                                                       pageLength=15
+                                                                                                                                                     buttons = c('copy', 'csv', 'excel', 'print'),
+                                                                                                                                                     pageLength=15
   )
   )
 },server=F)
@@ -60,14 +60,16 @@ output$Det_KE_plot<-plotly::renderPlotly({
       !is.null(values$Det_KE_data),message=F
     )
   )
-  p<-plotly::plot_ly(height = (0.68*as.numeric(input$dimension[2])),width=(0.65*as.numeric(input$dimension[1])),
-                     y=factor(values$Det_KE_data$keyword[1:input$Det_KE_n],levels = values$Det_KE_data$keyword[1:input$Det_KE_n]),
+  #height = (0.68*as.numeric(input$dimension[2])),width=(0.65*as.numeric(input$dimension[1]))
+  margin_left = min((max(nchar(values$Det_KE_data$keyword[1:input$Det_KE_n])) *  3),350)
+  p<-plotly::plot_ly(y=factor(values$Det_KE_data$keyword[1:input$Det_KE_n],levels = values$Det_KE_data$keyword[1:input$Det_KE_n]),
                      x=values$Det_KE_data[1:input$Det_KE_n,ncol(values$Det_KE_data)],orientation="h",type="bar")
-  p<-layout(p=p,autosize = F, yaxis=list( 
-                              title="Keywords",
-                             automargin = TRUE
-                             ),
+  p<-layout(p=p,autosize = F,margin = list(l=margin_left) ,
+            yaxis=list( 
+              title="Keywords"
+            ),
             xaxis=list(title=colnames(values$Det_KE_data)[ncol(values$Det_KE_data)])
-            )
+  )
   
+  p
 })

@@ -73,18 +73,71 @@ error<-try(expr = {
   
   
   
-  # #remove locations for transnorms project
-  #  db_data$token<-remove_locations(token=db_data$token)
-  
-  
-  
   #preparing token object
   log_to_file(message = "<b>Step 7/13: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
+  
+  
+  
+  
+  #split documents
+  if(parameters$tm_chunk_documents==TRUE){
+    log_to_file(message = paste0("&emsp;Splitting documents..."),file = logfile)
+    tsplit<-parameters$tm_chunk_documents_n
+    log_to_file(message = paste0("&emsp;Using a Splitsize of max. ",tsplit," word per chunk"),file = logfile)
+    token_old<-db_data$token
+    token_new<-NULL
+    documents<-unique(token_old$doc_id)
+    number_of_documents<-length(documents)
+    if(number_of_documents>10){
+      log_levels =  round(seq(1, number_of_documents, length.out = 11), digits = 0)[-1]
+    }
+    else{
+      log_levels = 1:number_of_documents
+    }
+    for(i in 1:number_of_documents){
+      current_token<-token_old[which(token_old$doc_id==documents[i]),]
+      if(nrow(current_token)>tsplit){
+        meta_row_rel<-which(meta$id_doc==documents[i])
+        meta_current<-meta[meta_row_rel,,drop=F]
+        doc_id_orig<-meta_current[1,3]
+        title_orig<-meta_current[1,4]
+        number_of_splits <- ceiling(nrow(current_token)/tsplit)
+        split_length <- ceiling(nrow(current_token)/number_of_splits)
+        split_boundaries <- 1
+        for( k in 1:(number_of_splits-1)){
+          split_boundaries<-c(split_boundaries,
+                              k * split_length,
+                              (k * split_length + 1))
+        }
+        split_boundaries <- c(split_boundaries, nrow(current_token))
+        
+        for(j in 1:(length(split_boundaries)/2)){
+          split_start<-split_boundaries[(2*(j-1)+1)]
+          split_end <-split_boundaries[(2*j)]
+          
+          current_token[split_start:split_end,1] <- paste0(documents[i],"_",j)
+          meta_current[1,3]<-paste0(doc_id_orig,"_",j)
+          meta_current[1,4]<-paste0(title_orig,"_",j)
+          text<-paste0(current_token[split_start:split_end,4],collapse = " ")
+          meta_current$body<-text
+          meta<-rbind(meta,meta_current)
+        }
+        meta<-meta[-meta_row_rel,]
+        token_new<-rbind(token_new,current_token)
+      }
+      else{
+        token_new<-rbind(token_new,current_token)
+      }
+      if(i%in%log_levels){
+        percentage =  10*which(log_levels==i)
+        log_to_file(message = paste0("&emsp;",percentage,"% finished splitting"),file = logfile)
+      }
+    }
+    db_data$token<-token_new
+    meta<-meta[order(meta$id_doc,decreasing = F),]
+  }
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
-  
-  
-  
   
   #calculating dtm
   log_to_file(message = "<b>Step 8/13: Calculating DTM</b>",file = logfile)

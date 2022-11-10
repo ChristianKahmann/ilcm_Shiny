@@ -413,6 +413,17 @@ output$Analysis_Parameter_DTM<-renderUI({
       
       
     ),
+    fluidRow(
+      column(2,
+             checkboxInput(inputId = "DTM_chunk_documents",label ="Split Documents in smaller chunks?",value=F)
+      ),
+      column(2,
+             conditionalPanel(condition = 'input.DTM_chunk_documents==true',
+                              numericInput(inputId="DTM_chunk_documents_n",label = "Maximum number of words per chunk:",value=2500,step=500,min=2)
+             )
+      )
+      
+    ),
     bsButton(inputId = "DTM_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
 })
@@ -612,7 +623,9 @@ observeEvent(input$DTM_Submit_Script,{
                      dtm_split_how=input$DTM_Date_Split_How,
                      dtm_chunksize=input$DTM_Chunksize,
                      dtm_Date_Type=input$DTM_ByDate_Type,
-                     dtm_Date_n=input$DTM_ByDate_n
+                     dtm_Date_n=input$DTM_ByDate_n,
+                     dtm_chunk_documents=input$DTM_chunk_documents,
+                     dtm_chunk_documents_n=input$DTM_chunk_documents_n
     )
     #create process ID
     ID<-get_task_id_counter()+1
@@ -773,7 +786,9 @@ observeEvent(input$DTM_pruning_continue,ignoreInit = T,{
                    dtm_split_how=input$DTM_Date_Split_How,
                    dtm_chunksize=input$DTM_Chunksize,
                    dtm_Date_Type=input$DTM_ByDate_Type,
-                   dtm_Date_n=input$DTM_ByDate_n
+                   dtm_Date_n=input$DTM_ByDate_n,
+                   dtm_chunk_documents=input$DTM_chunk_documents,
+                   dtm_chunk_documents_n=input$DTM_chunk_documents_n
   )
   #create process ID
   ID<-get_task_id_counter()+1

@@ -403,7 +403,9 @@ observeEvent(input$parameter_preset_save,{
       DTM_Date_Split_How=input$DTM_Date_Split_How,
       DTM_Chunksize=input$DTM_Chunksize,
       DTM_ByDate_Type=input$DTM_ByDate_Type,
-      DTM_ByDate_n=input$DTM_ByDate_n
+      DTM_ByDate_n=input$DTM_ByDate_n,
+      DTM_chunk_documents_n=input$DTM_chunk_documents_n,
+      DTM_chunk_documents=input$DTM_chunk_documents
     )
   }  
   if(input$analysis_selected=="Volatility_Analysis"){
@@ -557,7 +559,9 @@ observeEvent(input$parameter_preset_save,{
       stm_interactions=input$stm_interactions,
       stm_gamma_prior=input$stm_gamma_prior,
       stm_sigma_prior=input$stm_sigma_prior,
-      stm_kappa_prior=input$stm_kappa_prior
+      stm_kappa_prior=input$stm_kappa_prior,
+      TM_chunk_documents_n=input$TM_chunk_documents_n,
+      TM_chunk_documents=input$TM_chunk_documents
     )
   }
   # show modal view where user can specify the name of the preset

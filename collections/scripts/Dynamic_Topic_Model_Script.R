@@ -41,6 +41,16 @@ error<-try(expr = {
     log_to_file(message = "&emsp;<b style='color:red'>&#10008; No documents were found in the database for the specified collection.</b>",logfile)
     stop("Token empty")
   }
+  
+  #at least two points in time
+  log_to_file(message = "&emsp; more than one point in time?",logfile)
+  if(length(unique(info[[6]][,1]))>1){
+    log_to_file(message = "&emsp; ✔",logfile)
+  }
+  else{
+    log_to_file(message = "&emsp;<b style='color:red'>&#10008; Just a single point in time found. Dynamic Topic Modeling needs at least two points in time.</b>",logfile)
+    stop("Just one point in time")
+  }
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished sanity checks",file = logfile)
   
   
@@ -81,6 +91,63 @@ error<-try(expr = {
   #preparing token object
   log_to_file(message = "<b>Step 7/13: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
+  #split documents
+  if(parameters$dtm_chunk_documents==TRUE){
+    log_to_file(message = paste0("&emsp;Splitting documents..."),file = logfile)
+    tsplit<-parameters$dtm_chunk_documents_n
+    log_to_file(message = paste0("&emsp;Using a Splitsize of max. ",tsplit," word per chunk"),file = logfile)
+    token_old<-db_data$token
+    token_new<-NULL
+    documents<-unique(token_old$doc_id)
+    number_of_documents<-length(documents)
+    if(number_of_documents>10){
+      log_levels =  round(seq(1, number_of_documents, length.out = 11), digits = 0)[-1]
+    }
+    else{
+      log_levels = 1:number_of_documents
+    }
+    for(i in 1:number_of_documents){
+      current_token<-token_old[which(token_old$doc_id==documents[i]),]
+      if(nrow(current_token)>tsplit){
+        meta_row_rel<-which(meta$id_doc==documents[i])
+        meta_current<-meta[meta_row_rel,,drop=F]
+        doc_id_orig<-meta_current[1,3]
+        title_orig<-meta_current[1,4]
+        number_of_splits <- ceiling(nrow(current_token)/tsplit)
+        split_length <- ceiling(nrow(current_token)/number_of_splits)
+        split_boundaries <- 1
+        for( k in 1:(number_of_splits-1)){
+          split_boundaries<-c(split_boundaries,
+                              k * split_length,
+                              (k * split_length + 1))
+        }
+        split_boundaries <- c(split_boundaries, nrow(current_token))
+        
+        for(j in 1:(length(split_boundaries)/2)){
+          split_start<-split_boundaries[(2*(j-1)+1)]
+          split_end <-split_boundaries[(2*j)]
+          
+          current_token[split_start:split_end,1] <- paste0(documents[i],"_",j)
+          meta_current[1,3]<-paste0(doc_id_orig,"_",j)
+          meta_current[1,4]<-paste0(title_orig,"_",j)
+          text<-paste0(current_token[split_start:split_end,4],collapse = " ")
+          meta_current$body<-text
+          meta<-rbind(meta,meta_current)
+        }
+        meta<-meta[-meta_row_rel,]
+        token_new<-rbind(token_new,current_token)
+      }
+      else{
+        token_new<-rbind(token_new,current_token)
+      }
+      if(i%in%log_levels){
+        percentage =  10*which(log_levels==i)
+        log_to_file(message = paste0("&emsp;",percentage,"% finished splitting"),file = logfile)
+      }
+    }
+    db_data$token<-token_new
+    meta<-meta[order(meta$id_doc,decreasing = F),]
+  }
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
   
   
