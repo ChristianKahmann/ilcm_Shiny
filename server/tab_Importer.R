@@ -395,9 +395,13 @@ observeEvent(input$Import_csv_new,ignoreInit = T,{
 #'   values$Import_csv_split_scripts: import csv scripts to split
 observeEvent(input$Import_load_csv,{
   withBusyIndicatorServer("Import_load_csv", {
+    delim = input$import_load_csv_seperator
+    if(delim == "\\t"){
+      delim = "\t"
+    }
     if(grepl(pattern = ".csv$",x = input$Import_csv_files)){
       values$data_csv<-readr::read_delim(file = paste0("data_import/unprocessed_data/",input$Import_csv_files),col_names = input$Import_load_csv_header,
-                                         delim = input$import_load_csv_seperator,na = character() )
+                                         delim = delim, na = character() )
     }
     if(grepl(pattern = ".xlsx$",x = input$Import_csv_files)){
       values$data_csv<-readxl::read_excel(path = paste0("data_import/unprocessed_data/",input$Import_csv_files), col_names = input$Import_load_csv_header)
@@ -516,43 +520,64 @@ output$UI_Import_csv_column_name <- renderUI({
 #' depends on:
 #'   values$header_csv: header of csv
 output$UI_Import_csv_title<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_title",label = "Map title",
-                                   choices = c("automatic",values$header_csv),
-                                   fill=T,animation = "pulse",selected = "automatic")
+  radioButtons(inputId = "Import_csv_title",label = "Map title",
+               choiceNames = 
+                 lapply(X = c("automatic",values$header_csv),FUN = function(x){
+                   shorten_long_choices_for_radio_buttons(x,16)
+                 }),
+               choiceValues = c("automatic",values$header_csv),
+               selected ="automatic"
+  )
 })
+
 
 #' get csv date format automatically
 #'  depends on:
 #'    values$header_csv: csv header
 output$UI_Import_csv_date<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_date",label = "Map date",
-                                   choices = c("automatic",values$header_csv),
-                                   fill=T,animation = "pulse",selected = "automatic")
+  radioButtons(inputId = "Import_csv_date",label = "Map date",
+                                   choiceNames = 
+                                     lapply(X = c("automatic",values$header_csv),FUN = function(x){
+                                       shorten_long_choices_for_radio_buttons(x,16)
+                                     }),
+                                   choiceValues = c("automatic",values$header_csv),
+                                   selected ="automatic"
+  )
 })
 
 #' import the csv body 
 #' depends on:
 #'   values$header_csv: header of csv
 output$UI_Import_csv_body<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_body",label = "Map body",
-                                   choices = values$header_csv,
-                                   fill=T,animation = "pulse")
+  radioButtons(inputId = "Import_csv_body",label = "Map body",
+                                   choiceNames = 
+                                     lapply(X = c("automatic",values$header_csv),FUN = function(x){
+                                       shorten_long_choices_for_radio_buttons(x,16)
+                                     }),
+                                   choiceValues = c("automatic",values$header_csv),
+                                   selected ="automatic"
+  )
 })
 
 #' import csv mde1 
 #' depends on:
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde1<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde1", label = "Map mde1",
-                                   choices = c("not required",values$header_csv),
-                                   fill=T,animation = "pulse",selected = "not required")
+  radioButtons(inputId = "Import_csv_mde1", label = "Map meta 1",
+                                   choiceNames = 
+                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
+                                       shorten_long_choices_for_radio_buttons(x,16)
+                                     }),
+                                   choiceValues = c("not required",values$header_csv),
+                                   selected ="not required"
+  )
 })
 
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
 #' depends on:
 #'   input$UI_Import_name_mde1: name of the selected column from csv for mde1
 observe({
-  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde1",label = paste0("Map ",input$UI_Import_name_mde1))
+  updateRadioButtons(session = session,inputId = "Import_csv_mde1",label = paste0("Map ",input$UI_Import_name_mde1))
 })
 
 # automatically set name of mde to chosen radio button of corresponding column in csv
@@ -567,16 +592,21 @@ observeEvent(input$Import_csv_mde1,{
 #' depends on:
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde2<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde2",label = "Map mde2",
-                                   choices = c("not required",values$header_csv),
-                                   fill=T,animation = "pulse",selected = "not required")
+  radioButtons(inputId = "Import_csv_mde2",label = "Map mde2",
+                                   choiceNames = 
+                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
+                                       shorten_long_choices_for_radio_buttons(x,16)
+                                     }),
+                                   choiceValues = c("not required",values$header_csv),
+                                   selected ="not required"
+  )
 })
 
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
 #' depends on:
 #'   input$UI_Import_name_mde2: name of the selected column from csv for mde2
 observe({
-  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde2",label = paste0("Map ",input$UI_Import_name_mde2))
+  updateRadioButtons(session = session,inputId = "Import_csv_mde2",label = paste0("Map ",input$UI_Import_name_mde2))
 })
 
 # automatically set name of mde to chosen radio button of corresponding column in csv
@@ -590,15 +620,20 @@ observeEvent(input$Import_csv_mde2,{
 #' depends on:
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde3<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde3", label = "Map mde3",
-                                   choices = c("not required",values$header_csv),
-                                   fill=T,animation = "pulse",selected = "not required")
+  radioButtons(inputId = "Import_csv_mde3", label = "Map mde3",
+                                   choiceNames = 
+                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
+                                       shorten_long_choices_for_radio_buttons(x,16)
+                                     }),
+                                   choiceValues = c("not required",values$header_csv),
+                                   selected ="not required"
+  )
 })
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
 #' depends on:
 #'   input$UI_Import_name_mde3: name of the selected column from csv for mde3
 observe({
-  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde3",label = paste0("Map ",input$UI_Import_name_mde3))
+  updateRadioButtons(session = session,inputId = "Import_csv_mde3",label = paste0("Map ",input$UI_Import_name_mde3))
 })
 
 # automatically set name of mde to chosen radio button of corresponding column in csv
@@ -612,16 +647,21 @@ observeEvent(input$Import_csv_mde3,{
 #' depends on:
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde4<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde4", label = "Map mde4",
-                                   choices = c("not required",values$header_csv),
-                                   fill=T,animation = "pulse",selected = "not required")
+  radioButtons(inputId = "Import_csv_mde4", label = "Map mde4",
+                                   choiceNames = 
+                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
+                                       shorten_long_choices_for_radio_buttons(x,16)
+                                     }),
+                                   choiceValues = c("not required",values$header_csv),
+                                   selected ="not required"
+  )
 })
 
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
 #' depends on:
 #'   input$UI_Import_name_mde4: name of the selected column from csv for mde4
 observe({
-  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde4",label = paste0("Map ",input$UI_Import_name_mde4))
+  updateRadioButtons(session = session,inputId = "Import_csv_mde4",label = paste0("Map ",input$UI_Import_name_mde4))
 })
 # automatically set name of mde to chosen radio button of corresponding column in csv
 observeEvent(input$Import_csv_mde4,{
@@ -634,15 +674,20 @@ observeEvent(input$Import_csv_mde4,{
 #' depends on:
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde5<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde5",label = "Map mde5",
-                                   choices = c("not required",values$header_csv),
-                                   fill=T,animation = "pulse",selected = "not required")
+  radioButtons(inputId = "Import_csv_mde5",label = "Map mde5",
+                                   choiceNames = 
+                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
+                                       shorten_long_choices_for_radio_buttons(x,16)
+                                     }),
+                                   choiceValues = c("not required",values$header_csv),
+                                   selected ="not required"
+  )
 })
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
 #' depends on:
 #'   input$UI_Import_name_mde5: name of the selected column from csv for mde5
 observe({
-  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde5",label = paste0("Map ",input$UI_Import_name_mde5))
+  updateRadioButtons(session = session,inputId = "Import_csv_mde5",label = paste0("Map ",input$UI_Import_name_mde5))
 })
 # automatically set name of mde to chosen radio button of corresponding column in csv
 observeEvent(input$Import_csv_mde5,{
@@ -655,16 +700,21 @@ observeEvent(input$Import_csv_mde5,{
 #' depends on:
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde6<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde6",label = "Map mde6",
-                                   choices = c("not required",values$header_csv),
-                                   fill=T,animation = "pulse",selected = "not required")
+  radioButtons(inputId = "Import_csv_mde6",label = "Map mde6",
+                                   choiceNames = 
+                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
+                                       shorten_long_choices_for_radio_buttons(x,16)
+                                     }),
+                                   choiceValues = c("not required",values$header_csv),
+                                   selected ="not required"
+  )
 })
 
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
 #' depends on:
 #'   input$UI_Import_name_mde6: name of the selected column from csv for mde6
 observe({
-  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde6",label = paste0("Map ",input$UI_Import_name_mde6))
+  updateRadioButtons(session = session,inputId = "Import_csv_mde6",label = paste0("Map ",input$UI_Import_name_mde6))
 })
 
 # automatically set name of mde to chosen radio button of corresponding column in csv
@@ -678,16 +728,21 @@ observeEvent(input$Import_csv_mde6,{
 #' depends on:
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde7<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde7", label = "Map mde7",
-                                   choices = c("not required",values$header_csv),
-                                   fill=T,animation = "pulse",selected = "not required")
+  radioButtons(inputId = "Import_csv_mde7", label = "Map mde7",
+                                   choiceNames = 
+                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
+                                       shorten_long_choices_for_radio_buttons(x,16)
+                                     }),
+                                   choiceValues = c("not required",values$header_csv),
+                                   selected ="not required"
+  )
 })
 
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
 #' depends on:
 #'   input$UI_Import_name_mde7: name of the selected column from csv for mde7
 observe({
-  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde7",label = paste0("Map ",input$UI_Import_name_mde7))
+  updateRadioButtons(session = session,inputId = "Import_csv_mde7",label = paste0("Map ",input$UI_Import_name_mde7))
 })
 
 # automatically set name of mde to chosen radio button of corresponding column in csv
@@ -700,15 +755,20 @@ observeEvent(input$Import_csv_mde7,{
 #' depends on:
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde8<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde8", label = "Map mde8",
-                                   choices = c("not required",values$header_csv),
-                                   fill=T,animation = "pulse",selected = "not required")
+  radioButtons(inputId = "Import_csv_mde8", label = "Map mde8",
+                                   choiceNames = 
+                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
+                                       shorten_long_choices_for_radio_buttons(x,16)
+                                     }),
+                                   choiceValues = c("not required",values$header_csv),
+                                   selected ="not required"
+  )
 })
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
 #' depends on:
 #'   input$UI_Import_name_mde8: name of the selected column from csv for mde8
 observe({
-  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde8",label = paste0("Map ",input$UI_Import_name_mde8))
+  updateRadioButtons(session = session,inputId = "Import_csv_mde8",label = paste0("Map ",input$UI_Import_name_mde8))
 })
 
 # automatically set name of mde to chosen radio button of corresponding column in csv
@@ -722,15 +782,20 @@ observeEvent(input$Import_csv_mde8,{
 #' depends on:
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde9<-renderUI({
-  shinyWidgets::prettyRadioButtons(inputId = "Import_csv_mde9", label = "Map mde9",
-                                   choices = c("not required",values$header_csv),
-                                   fill=T,animation = "pulse",selected = "not required")
+  radioButtons(inputId = "Import_csv_mde9", label = "Map mde9",
+                                   choiceNames = 
+                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
+                                       shorten_long_choices_for_radio_buttons(x,16)
+                                     }),
+                                   choiceValues = c("not required",values$header_csv),
+                                   selected ="not required"
+  )
 })
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
 #' depends on:
 #'   input$UI_Import_name_mde9: name of the selected column from csv for mde9
 observe({
-  shinyWidgets::updatePrettyRadioButtons(session = session,inputId = "Import_csv_mde9",label = paste0("Map ",input$UI_Import_name_mde9))
+  updateRadioButtons(session = session,inputId = "Import_csv_mde9",label = paste0("Map ",input$UI_Import_name_mde9))
 })
 # automatically set name of mde to chosen radio button of corresponding column in csv
 observeEvent(input$Import_csv_mde9,{
@@ -3209,7 +3274,7 @@ observeEvent(input$Import_Wortschatz_Dataset_ready_csv_save,{
     write.csv(x = data,file = paste0("data_import/unprocessed_data/",input$Import_Wortschatz_Dataset_ready_csv_name,".csv"),row.names = F)
     values$invalidate_csv_files<-runif(1,0,1)
     shinyWidgets::sendSweetAlert(session=session,title = "New CSV File created",text = HTML(paste0("Please go to CSV Input Mode, select the created File:<b>",
-                                 stringr::str_replace(string = input$Import_Wortschatz_new$name,pattern = ".tar.gz",replacement = "")," </b> and follow the regular input steps.")),type = "success",html = T)
+                                                                                                   stringr::str_replace(string = input$Import_Wortschatz_new$name,pattern = ".tar.gz",replacement = "")," </b> and follow the regular input steps.")),type = "success",html = T)
     
   }
   else{
@@ -3240,7 +3305,7 @@ observeEvent(input$Import_Wortschatz_Transfer_to_CSV,{
   withProgress(value = 0,message = "Unzipping Wortschatz Dataset" ,expr = {
     path<-values$Wortschatz_current_path
     untar(tarfile = path,exdir = "collections/tmp/Wortschatz")
-
+    
     incProgress(amount = 0.1,message = "Finished Unzipping")
     file_name<-stringr::str_replace(string = input$Import_Wortschatz_new$name,pattern = ".tar.gz",replacement = "")
     all_files<-list.files(path = "collections/tmp/Wortschatz",full.names = T,recursive = T)
