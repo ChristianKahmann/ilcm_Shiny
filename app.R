@@ -133,7 +133,7 @@ options(scipen=999)
 # definition of App UI; use of a dashboard layout with header, sidebar and body
 ui <- dashboardPage(
   # app header
-  dashboardHeader(title = "🅸🅻🅲🅼",titleWidth="200px",
+  dashboardHeader(title = "🅸🅻🅲🅼 OH.D",titleWidth="200px",
                   # button which opens options modal
                   tags$li(actionLink("openOptionsModal", label = "", icon = icon("cog")),class = "dropdown"),
                   # button which open informations showing current app version and user

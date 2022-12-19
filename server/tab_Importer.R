@@ -536,12 +536,12 @@ output$UI_Import_csv_title<-renderUI({
 #'    values$header_csv: csv header
 output$UI_Import_csv_date<-renderUI({
   radioButtons(inputId = "Import_csv_date",label = "Map date",
-                                   choiceNames = 
-                                     lapply(X = c("automatic",values$header_csv),FUN = function(x){
-                                       shorten_long_choices_for_radio_buttons(x,16)
-                                     }),
-                                   choiceValues = c("automatic",values$header_csv),
-                                   selected ="automatic"
+               choiceNames = 
+                 lapply(X = c("automatic",values$header_csv),FUN = function(x){
+                   shorten_long_choices_for_radio_buttons(x,16)
+                 }),
+               choiceValues = c("automatic",values$header_csv),
+               selected ="automatic"
   )
 })
 
@@ -550,12 +550,12 @@ output$UI_Import_csv_date<-renderUI({
 #'   values$header_csv: header of csv
 output$UI_Import_csv_body<-renderUI({
   radioButtons(inputId = "Import_csv_body",label = "Map body",
-                                   choiceNames = 
-                                     lapply(X = c("automatic",values$header_csv),FUN = function(x){
-                                       shorten_long_choices_for_radio_buttons(x,16)
-                                     }),
-                                   choiceValues = c("automatic",values$header_csv),
-                                   selected ="automatic"
+               choiceNames = 
+                 lapply(X = c("automatic",values$header_csv),FUN = function(x){
+                   shorten_long_choices_for_radio_buttons(x,16)
+                 }),
+               choiceValues = c("automatic",values$header_csv),
+               selected ="automatic"
   )
 })
 
@@ -564,12 +564,12 @@ output$UI_Import_csv_body<-renderUI({
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde1<-renderUI({
   radioButtons(inputId = "Import_csv_mde1", label = "Map meta 1",
-                                   choiceNames = 
-                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
-                                       shorten_long_choices_for_radio_buttons(x,16)
-                                     }),
-                                   choiceValues = c("not required",values$header_csv),
-                                   selected ="not required"
+               choiceNames = 
+                 lapply(X = c("not required",values$header_csv),FUN = function(x){
+                   shorten_long_choices_for_radio_buttons(x,16)
+                 }),
+               choiceValues = c("not required",values$header_csv),
+               selected ="not required"
   )
 })
 
@@ -593,12 +593,12 @@ observeEvent(input$Import_csv_mde1,{
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde2<-renderUI({
   radioButtons(inputId = "Import_csv_mde2",label = "Map mde2",
-                                   choiceNames = 
-                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
-                                       shorten_long_choices_for_radio_buttons(x,16)
-                                     }),
-                                   choiceValues = c("not required",values$header_csv),
-                                   selected ="not required"
+               choiceNames = 
+                 lapply(X = c("not required",values$header_csv),FUN = function(x){
+                   shorten_long_choices_for_radio_buttons(x,16)
+                 }),
+               choiceValues = c("not required",values$header_csv),
+               selected ="not required"
   )
 })
 
@@ -621,12 +621,12 @@ observeEvent(input$Import_csv_mde2,{
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde3<-renderUI({
   radioButtons(inputId = "Import_csv_mde3", label = "Map mde3",
-                                   choiceNames = 
-                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
-                                       shorten_long_choices_for_radio_buttons(x,16)
-                                     }),
-                                   choiceValues = c("not required",values$header_csv),
-                                   selected ="not required"
+               choiceNames = 
+                 lapply(X = c("not required",values$header_csv),FUN = function(x){
+                   shorten_long_choices_for_radio_buttons(x,16)
+                 }),
+               choiceValues = c("not required",values$header_csv),
+               selected ="not required"
   )
 })
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
@@ -648,12 +648,12 @@ observeEvent(input$Import_csv_mde3,{
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde4<-renderUI({
   radioButtons(inputId = "Import_csv_mde4", label = "Map mde4",
-                                   choiceNames = 
-                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
-                                       shorten_long_choices_for_radio_buttons(x,16)
-                                     }),
-                                   choiceValues = c("not required",values$header_csv),
-                                   selected ="not required"
+               choiceNames = 
+                 lapply(X = c("not required",values$header_csv),FUN = function(x){
+                   shorten_long_choices_for_radio_buttons(x,16)
+                 }),
+               choiceValues = c("not required",values$header_csv),
+               selected ="not required"
   )
 })
 
@@ -675,12 +675,12 @@ observeEvent(input$Import_csv_mde4,{
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde5<-renderUI({
   radioButtons(inputId = "Import_csv_mde5",label = "Map mde5",
-                                   choiceNames = 
-                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
-                                       shorten_long_choices_for_radio_buttons(x,16)
-                                     }),
-                                   choiceValues = c("not required",values$header_csv),
-                                   selected ="not required"
+               choiceNames = 
+                 lapply(X = c("not required",values$header_csv),FUN = function(x){
+                   shorten_long_choices_for_radio_buttons(x,16)
+                 }),
+               choiceValues = c("not required",values$header_csv),
+               selected ="not required"
   )
 })
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
@@ -701,12 +701,12 @@ observeEvent(input$Import_csv_mde5,{
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde6<-renderUI({
   radioButtons(inputId = "Import_csv_mde6",label = "Map mde6",
-                                   choiceNames = 
-                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
-                                       shorten_long_choices_for_radio_buttons(x,16)
-                                     }),
-                                   choiceValues = c("not required",values$header_csv),
-                                   selected ="not required"
+               choiceNames = 
+                 lapply(X = c("not required",values$header_csv),FUN = function(x){
+                   shorten_long_choices_for_radio_buttons(x,16)
+                 }),
+               choiceValues = c("not required",values$header_csv),
+               selected ="not required"
   )
 })
 
@@ -729,12 +729,12 @@ observeEvent(input$Import_csv_mde6,{
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde7<-renderUI({
   radioButtons(inputId = "Import_csv_mde7", label = "Map mde7",
-                                   choiceNames = 
-                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
-                                       shorten_long_choices_for_radio_buttons(x,16)
-                                     }),
-                                   choiceValues = c("not required",values$header_csv),
-                                   selected ="not required"
+               choiceNames = 
+                 lapply(X = c("not required",values$header_csv),FUN = function(x){
+                   shorten_long_choices_for_radio_buttons(x,16)
+                 }),
+               choiceValues = c("not required",values$header_csv),
+               selected ="not required"
   )
 })
 
@@ -756,12 +756,12 @@ observeEvent(input$Import_csv_mde7,{
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde8<-renderUI({
   radioButtons(inputId = "Import_csv_mde8", label = "Map mde8",
-                                   choiceNames = 
-                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
-                                       shorten_long_choices_for_radio_buttons(x,16)
-                                     }),
-                                   choiceValues = c("not required",values$header_csv),
-                                   selected ="not required"
+               choiceNames = 
+                 lapply(X = c("not required",values$header_csv),FUN = function(x){
+                   shorten_long_choices_for_radio_buttons(x,16)
+                 }),
+               choiceValues = c("not required",values$header_csv),
+               selected ="not required"
   )
 })
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
@@ -783,12 +783,12 @@ observeEvent(input$Import_csv_mde8,{
 #'   values$header_csv: header of the csv
 output$UI_Import_csv_mde9<-renderUI({
   radioButtons(inputId = "Import_csv_mde9", label = "Map mde9",
-                                   choiceNames = 
-                                     lapply(X = c("not required",values$header_csv),FUN = function(x){
-                                       shorten_long_choices_for_radio_buttons(x,16)
-                                     }),
-                                   choiceValues = c("not required",values$header_csv),
-                                   selected ="not required"
+               choiceNames = 
+                 lapply(X = c("not required",values$header_csv),FUN = function(x){
+                   shorten_long_choices_for_radio_buttons(x,16)
+                 }),
+               choiceValues = c("not required",values$header_csv),
+               selected ="not required"
   )
 })
 #' check which radio-button was selected to determine the current mde with a matching column from the csv
@@ -3179,6 +3179,17 @@ observeEvent(input$confirm_delete_import,{
 
 
 
+
+
+
+
+
+
+
+
+#######################################################################################
+# wortschatz Import  #
+#######################################################################################
 output$UI_Import_Wortschatz<-renderUI({
   return(tagList(
     tags$div(icon("info"))%>%
@@ -3362,4 +3373,189 @@ output$Import_Wortschatz_Dataset_Information<-renderUI({
           tags$div(input$Import_Wortschatz_new$name),
           tags$h4("Filesize:"),
           tags$div(paste0(as.numeric(input$Import_Wortschatz_new$size/1000000)," MB")))
+})
+
+
+
+
+
+
+########################################################################
+# OHD Import #
+########################################################################
+
+output$UI_Import_OHD<-renderUI({
+  return(tagList(
+    uiOutput(outputId = "Import_ohd_avail_files"),
+    fileInput(inputId = "Import_ohd_new",label = "Upload new OHD datasets",multiple = F,accept = "csv",width = "50%"),
+    tags$hr(),
+    conditionalPanel(condition='input.Import_ohd_files!= null',
+                     withBusyIndicatorUI(
+                       shinyBS::bsButton(inputId = "Import_load_ohd",label = "use selected CSV/JSON",icon = icon("upload"),style = "info")
+                     ),            
+                     conditionalPanel(condition='output.data_load_ohd_success==true',
+                                      fluidRow(style="margin-left:0px;margin-right:0px",
+                                               shinyBS::bsButton(inputId = "Import_check_ohd",label = "check imported data",icon = icon("search"),style = "primary"),
+                                               shinyBS::bsButton(inputId = "Import_start_ohd_mapping",label = "Apply Standard OHD Mapping",icon = icon("play"),style="info")
+                                      ),
+                                      fluidRow(style="margin-left:0px;margin-right:0px",
+                                               checkboxInput(inputId="Import_ohd_import_as_interview",label = "Import as Interview data",T),
+                                               checkboxInput(inputId="Import_ohd_single_interview",label = "Single Interview?",value=T),
+                                               conditionalPanel(condition = 'input.Import_ohd_single_interview==true',
+                                                                uiOutput(outputId = "input_ohd_single_interview_id_UI")
+                                               )
+                                      ),
+                                      fluidRow(style="margin-left:0px;margin-right:0px",
+                                               
+                                      ),
+                                      box(title = tags$h3("Resulting Import File",style="color:white;"),solidHeader = T,width=12,status = "primary",collapsible = T,
+                                          tags$div(style = 'overflow-x: auto',
+                                                   DT::dataTableOutput(outputId = "Import_ohd_metadata")
+                                          ),
+                                          tags$hr()
+                                      ),
+                     )
+    )
+    
+    
+  )
+  
+  )
+})
+
+output$input_ohd_single_interview_id_UI<-renderUI({
+  validate(
+    need(!is.null(input$Import_ohd_files),message=F)
+  )
+  file_name = substr(input$Import_ohd_files,1,7)
+  textInput(inputId="input_ohd_single_interview_id",label = "Interview ID",file_name,width="30%")
+})
+
+
+
+#' show import of csv files
+#' depends on:
+#'   values$invalidate_csv_files: check if csv-file is invalide
+output$Import_ohd_avail_files<-renderUI({
+  values$invalidate_ohd_files
+  validate(
+    need(length(list.files("data_import/ohd/",pattern = ".csv|.json"))>0,message="No CSV/JSON-Files found in directory: data_import/ohd")
+  )
+  return(
+    tagList(
+      shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_files",label = "Available OHD Files",
+                                       choices = stringr::str_replace_all(string = list.files("data_import/ohd/",pattern = ".csv|.json"),pattern = ".txt",replacement = ""),
+                                       fill=T,animation = "pulse",selected = character(0))
+    )
+  )
+})
+
+#' oberve event of importing a new csv-file
+#' depends on:
+#'   input$Import_ohd_new: new csv-file import
+observeEvent(input$Import_ohd_new,ignoreInit = T,{
+  validate(
+    need(
+      !is.null(input$Import_ohd_new),message=F
+    )
+  )
+  print(input$Import_ohd_new)
+  if(file.exists(paste0("data_import/ohd/",input$Import_ohd_new$name))){
+    shinyWidgets::sendSweetAlert(session=session,title = "Filename already used",text = "Please rename your file and then try to upload it again.",type = "warning")
+  }
+  else{
+    file.copy(from = input$Import_ohd_new$datapath,to = paste0("data_import/ohd/",input$Import_ohd_new$name))
+    values$invalidate_ohd_files<-runif(1,0,1)
+    shinyWidgets::sendSweetAlert(session=session,title = "File added",text = "You can now select it in the list of files above",type = "success")
+  }
+})
+
+
+#' observe loading a new csv-file
+#' deoends on:
+#'   input$Import_load_ohd: load csv-file
+#'   values$header_ohd: extracted csv header
+#'   values$data_ohd: all csv data
+observeEvent(input$Import_load_ohd,{
+  withBusyIndicatorServer("Import_load_ohd", {
+    if(grepl(pattern = ".csv$",x = input$Import_ohd_files)){
+      values$data_ohd<-readr::read_delim(file = paste0("data_import/ohd/",input$Import_ohd_files),
+                                         delim = "\t", na = character() )
+    }
+    if(grepl(pattern = ".json$",x = input$Import_ohd_files)){
+      # TODO
+    }
+    
+    colnames(values$data_ohd)<-stringr::str_replace_all(string = colnames(values$data_ohd),pattern = "\\.",replacement = " ")
+    if(dim(values$data_ohd)[1]<2 | dim(values$data_ohd)[2]<2){
+      text<-paste0("The resulting input dimesions are: ",dim(values$data_ohd)[1]," x ",dim(values$data_ohd)[2],". Something went wrong during the input. Make sure to specify the csv input parameters correct.")
+      shinyWidgets::sendSweetAlert(session=session,title = "Input failed!",text = text,type = "error")
+    }
+    else{
+      values$header_ohd<-c(colnames(values$data_ohd))
+      values$data_load_ohd_success<-TRUE
+    }
+  })
+})
+
+
+
+
+#' return data if loading the ohd data was successful
+#' depends on:
+#'   values$data_load_ohd_success: communicate wether the loading process was succesfull
+output$data_load_ohd_success<-reactive({
+  print("update ohd success")
+  values$data_load_ohd_success
+})
+outputOptions(output, "data_load_ohd_success", suspendWhenHidden = FALSE)
+
+#' check csv-file 
+#' depends on:
+#'   input$Import_check_csv: variable to confirm that a csv-file needs to be checked
+observeEvent(input$Import_check_ohd,{
+  showModal(
+    modalDialog(
+      size = "l",
+      title = "Imported OHD Data",easyClose = T,
+      tags$div(style="overflow-x:auto; height:70vh;",
+               dataTableOutput(outputId = "Import_head_ohd")
+      ) 
+    )
+  )
+})
+
+
+#' render data table to show csv file with header of csv
+#' depends on:
+#'   values$data_csv: values from csv data
+output$Import_head_ohd<-DT::renderDataTable({
+  data<-values$data_ohd
+  data<-data[1:min(5,dim(data)[1]),]
+  data<-t(apply(data,1,FUN=function(i){apply(as.matrix(i),MARGIN = 1,FUN = function(x){if(is.na(x)){return(x)}else{if(nchar(x)>100){return(substr(x,1,100))}else{return(x)}}})}))
+  datatable(data = data,options = list(lengthChange = FALSE,dom="t"),width = "100%")
+})
+
+
+
+
+observeEvent(input$Import_start_ohd_mapping,{
+  validate(
+    need(!is.null(values$data_ohd),message=F)
+  )
+  data_orig <- values$data_ohd
+  
+  values$import_ohd_data_after_mapping <- data_orig
+}
+)
+
+
+output$Import_ohd_metadata<-DT::renderDataTable({
+  validate(
+    need(
+      !is.null(values$import_ohd_data_after_mapping),message=F
+    )
+  )
+  data = values$import_ohd_data_after_mapping[1:5,]
+  datatable(data)
 })
