@@ -3385,51 +3385,78 @@ output$Import_Wortschatz_Dataset_Information<-renderUI({
 ########################################################################
 
 output$UI_Import_OHD<-renderUI({
-  return(tagList(
-    uiOutput(outputId = "Import_ohd_avail_files"),
-    fileInput(inputId = "Import_ohd_new",label = "Upload new OHD datasets",multiple = F,accept = "csv",width = "50%"),
-    tags$hr(),
-    conditionalPanel(condition='input.Import_ohd_files!= null',
-                     withBusyIndicatorUI(
-                       shinyBS::bsButton(inputId = "Import_load_ohd",label = "use selected CSV/JSON",icon = icon("upload"),style = "info")
-                     ),            
-                     conditionalPanel(condition='output.data_load_ohd_success==true',
-                                      fluidRow(style="margin-left:0px;margin-right:0px",
-                                               shinyBS::bsButton(inputId = "Import_check_ohd",label = "check imported data",icon = icon("search"),style = "primary"),
-                                               shinyBS::bsButton(inputId = "Import_start_ohd_mapping",label = "Apply Standard OHD Mapping",icon = icon("play"),style="info")
-                                      ),
-                                      fluidRow(style="margin-left:0px;margin-right:0px",
-                                               checkboxInput(inputId="Import_ohd_import_as_interview",label = "Import as Interview data",T),
-                                               checkboxInput(inputId="Import_ohd_single_interview",label = "Single Interview?",value=T),
-                                               conditionalPanel(condition = 'input.Import_ohd_single_interview==true',
-                                                                uiOutput(outputId = "input_ohd_single_interview_id_UI")
-                                               )
-                                      ),
-                                      fluidRow(style="margin-left:0px;margin-right:0px",
-                                               
-                                      ),
-                                      box(title = tags$h3("Resulting Import File",style="color:white;"),solidHeader = T,width=12,status = "primary",collapsible = T,
-                                          tags$div(style = 'overflow-x: auto',
-                                                   DT::dataTableOutput(outputId = "Import_ohd_metadata")
-                                          ),
-                                          tags$hr()
-                                      ),
-                     )
-    )
-    
-    
+  return(tagList(tags$div(style="height:79vh; overflow-y:auto;",
+                          fluidRow(style="margin-left:0px;margin-right:0px",
+                                   uiOutput(outputId = "Import_ohd_avail_files")
+                          ),
+                          fluidRow(style="margin-left:0px;margin-right:0px",
+                                   column(4,
+                                          fileInput(inputId = "Import_ohd_new",label = "Upload new OHD datasets",multiple = F,accept = "csv|zip")
+                                   ),
+                                   column(4,offset = 3,
+                                          fileInput(inputId = "Import_ohd_new_meta",label = "Upload new OHD Metadata",multiple = F,accept = "csv")
+                                   )
+                          ),
+                          tags$hr(),
+                          conditionalPanel(condition='input.Import_ohd_files!= null | input.Import_ohd_files_multiple!= null',
+                                           withBusyIndicatorUI(
+                                             shinyBS::bsButton(inputId = "Import_load_ohd",label = "use selected CSV/JSON",icon = icon("upload"),style = "info")
+                                           ),            
+                                           conditionalPanel(condition='output.data_load_ohd_success==true',
+                                                            fluidRow(style="margin-left:0px;margin-right:0px",
+                                                                     column(1,
+                                                                            shinyBS::bsButton(inputId = "Import_check_ohd",label = "Check imported data",icon = icon("search"),style = "primary")
+                                                                     ),
+                                                                     column(1,
+                                                                            textInput(inputId="Import_ohd_corpus_name","Dataset Abbreviation")
+                                                                     ),
+                                                                     column(1,
+                                                                            switchInput(inputId = "Import_ohd_add_meta_to_data",label = "Add Metadata",value = F,onStatus = "success",offStatus = "primary")
+                                                                     ),
+                                                                     column(9,
+                                                                            conditionalPanel(condition='input.Import_ohd_add_meta_to_data==true',
+                                                                                             uiOutput(outputId = "Import_ohd_meta_columns_UI")
+                                                                            )
+                                                                     ),
+                                                            ),
+                                                            fluidRow(style="margin-left:0px;margin-right:0px",
+                                                                     shinyBS::bsButton(inputId = "Import_start_ohd_mapping",label = "Apply Standard OHD Mapping",icon = icon("play"),style="info")
+                                                                     
+                                                            ),
+                                                            tabsetPanel(id = "Resulting Mappings",
+                                                                        tabPanel(title = "iLCM Document Format",
+                                                                                 tags$div(style = 'overflow-x: auto',
+                                                                                          DT::dataTableOutput(outputId = "Import_ohd_data_documents_table")
+                                                                                 )
+                                                                        ),
+                                                                        tabPanel(title="Interview Data format",
+                                                                                 tags$div(style = 'overflow-x: auto',
+                                                                                          DT::dataTableOutput(outputId = "Import_ohd_data_interview_table")
+                                                                                 )
+                                                                        )
+                                                            )
+                                           )
+                          )
+                          
+                          
   )
-  
+  )
   )
 })
 
-output$input_ohd_single_interview_id_UI<-renderUI({
+
+output$Import_ohd_meta_columns_UI<-renderUI({
   validate(
-    need(!is.null(input$Import_ohd_files),message=F)
+    need(input$Import_ohd_meta_file!="",message="Please specify a Meta File")
   )
-  file_name = substr(input$Import_ohd_files,1,7)
-  textInput(inputId="input_ohd_single_interview_id",label = "Interview ID",file_name,width="30%")
+  meta <- readr::read_delim(file = paste0("data_import/ohd_meta_files/",input$Import_ohd_meta_file),
+                            delim = "\t", na = character() )
+  values$import_ohd_meta <- meta
+  checkboxGroupButtons(inputId = "Import_ohd_meta_columns",label = "Which meta fields to import?",selected = "",
+                       choices = setdiff(colnames(meta),"Interview-ID"),direction = "horizontal",checkIcon = list(yes=icon("check")),individual = T)
 })
+
+
 
 
 
@@ -3439,16 +3466,54 @@ output$input_ohd_single_interview_id_UI<-renderUI({
 output$Import_ohd_avail_files<-renderUI({
   values$invalidate_ohd_files
   validate(
-    need(length(list.files("data_import/ohd/",pattern = ".csv|.json"))>0,message="No CSV/JSON-Files found in directory: data_import/ohd")
+    need(length(list.files("data_import/ohd/",pattern = ".csv|.json"))>0,message="No CSV/Zip-Files found in directory: data_import/ohd")
   )
   return(
     tagList(
-      shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_files",label = "Available OHD Files",
-                                       choices = stringr::str_replace_all(string = list.files("data_import/ohd/",pattern = ".csv|.json"),pattern = ".txt",replacement = ""),
-                                       fill=T,animation = "pulse",selected = character(0))
+      column(3,
+             shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_files",label = "Available OHD Single Files",
+                                              choices = stringr::str_replace_all(string = list.files("data_import/ohd/",pattern = ".csv|.json"),pattern = ".txt",replacement = ""),
+                                              fill=F,animation = "pulse",selected = "")
+      ),
+      column(3,
+             shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_files_multiple",label = "Available OHD Multiple Files",
+                                              choices = setdiff(list.dirs("data_import/ohd/",full.names = F),""),
+                                              fill=F,animation = "pulse",selected = "")     
+      ),
+      column(offset = 1,2,
+             shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_meta_file",label = "Available OHD Metadata Files",
+                                              choices = stringr::str_replace_all(string = list.files("data_import/ohd_meta_files/",pattern = ".csv"),pattern = ".txt",replacement = ""),
+                                              fill=F,animation = "pulse")  
+      ),
+      column(2,
+             conditionalPanel(condition='input.Import_ohd_meta_file!=""',
+                              bsButton(inputId = "Import_ohd_meta_show_details",label = "Check Meta Table",icon = icon("search"),style = "primary")
+             )
+      )
     )
   )
 })
+
+observeEvent(input$Import_ohd_meta_show_details,{
+  validate(
+    need(input$Import_ohd_meta_file!="",message=F)
+  )
+  values$import_ohd_data_meta_show <- readr::read_delim(file = paste0("data_import/ohd_meta_files/",input$Import_ohd_meta_file),
+                                                        delim = "\t", na = character() )
+  showModal(
+    modalDialog(title = "Metadata Details",size = "l",
+                tags$div(style="overflow-x: auto;",
+                         DT::dataTableOutput(outputId = "Import_ohd_meta_details_table")
+                )
+    )
+  )
+})
+
+output$Import_ohd_meta_details_table<-DT::renderDataTable({
+  data <- values$import_ohd_data_meta_show
+  datatable(data, options=list(pageLength=5,lengthMenu = c(5,10,25)))
+})
+
 
 #' oberve event of importing a new csv-file
 #' depends on:
@@ -3464,10 +3529,39 @@ observeEvent(input$Import_ohd_new,ignoreInit = T,{
     shinyWidgets::sendSweetAlert(session=session,title = "Filename already used",text = "Please rename your file and then try to upload it again.",type = "warning")
   }
   else{
-    file.copy(from = input$Import_ohd_new$datapath,to = paste0("data_import/ohd/",input$Import_ohd_new$name))
-    values$invalidate_ohd_files<-runif(1,0,1)
-    shinyWidgets::sendSweetAlert(session=session,title = "File added",text = "You can now select it in the list of files above",type = "success")
+    if(grepl(x = input$Import_ohd_new$name,pattern = ".zip$")){
+      if(dir.exists(stringr::str_remove(paste0("data_import/ohd/",input$Import_ohd_new$name),".zip"))){
+        shinyWidgets::sendSweetAlert(session=session,title = "Zip Name already present",text = "Please rename your Zip File before Uploading",type = "warning")
+      }else{
+        unzip(zipfile = input$Import_ohd_new$datapath,exdir = stringr::str_remove(paste0("data_import/ohd/",input$Import_ohd_new$name),".zip"))
+        values$invalidate_ohd_files<-runif(1,0,1)        
+        shinyWidgets::sendSweetAlert(session=session,title = "Files added",text = "The Zip File was unpacked. You can now select the directory in the multiple files tab.",type = "success")
+      }
+    }
+    else{
+      file.copy(from = input$Import_ohd_new$datapath,to = paste0("data_import/ohd/",input$Import_ohd_new$name))
+      values$invalidate_ohd_files<-runif(1,0,1)
+      shinyWidgets::sendSweetAlert(session=session,title = "File added",text = "You can now select it in the list of files above",type = "success")
+    }
   }
+})
+
+
+observeEvent(input$Import_ohd_new_meta,ignoreInit = T,{
+  validate(
+    need(
+      !is.null(input$Import_ohd_new_meta),message=F
+    )
+  )
+  if(file.exists(paste0("data_import/ohd_meta_files/",input$Import_ohd_new_meta$name))){
+    shinyWidgets::sendSweetAlert(session=session,title = "Filename already used",text = "Please rename your file and then try to upload it again.",type = "warning")
+  }
+  else{
+    file.copy(from = input$Import_ohd_new_meta$datapath,to = paste0("data_import/ohd_meta_files/",input$Import_ohd_new_meta$name))
+    values$invalidate_ohd_files<-runif(1,0,1)
+    shinyWidgets::sendSweetAlert(session=session,title = "Meta File added",text = "You can now select it in the list of files above",type = "success")
+  }
+  
 })
 
 
@@ -3477,25 +3571,45 @@ observeEvent(input$Import_ohd_new,ignoreInit = T,{
 #'   values$header_ohd: extracted csv header
 #'   values$data_ohd: all csv data
 observeEvent(input$Import_load_ohd,{
-  withBusyIndicatorServer("Import_load_ohd", {
-    if(grepl(pattern = ".csv$",x = input$Import_ohd_files)){
-      values$data_ohd<-readr::read_delim(file = paste0("data_import/ohd/",input$Import_ohd_files),
-                                         delim = "\t", na = character() )
-    }
-    if(grepl(pattern = ".json$",x = input$Import_ohd_files)){
-      # TODO
-    }
-    
-    colnames(values$data_ohd)<-stringr::str_replace_all(string = colnames(values$data_ohd),pattern = "\\.",replacement = " ")
-    if(dim(values$data_ohd)[1]<2 | dim(values$data_ohd)[2]<2){
-      text<-paste0("The resulting input dimesions are: ",dim(values$data_ohd)[1]," x ",dim(values$data_ohd)[2],". Something went wrong during the input. Make sure to specify the csv input parameters correct.")
-      shinyWidgets::sendSweetAlert(session=session,title = "Input failed!",text = text,type = "error")
-    }
-    else{
+  if(is.null(input$Import_ohd_files)){
+    withBusyIndicatorServer("Import_load_ohd", {
+      files = list.files(paste0("data_import/ohd/",input$Import_ohd_files_multiple),full.names = T)
+      data=NULL
+      for(i in 1:length(files)){
+        data_i <- readr::read_delim(file = files[i],
+                                    delim = "\t", na = character() )
+        file_names <- rep(list.files(paste0("data_import/ohd/",input$Import_ohd_files_multiple),full.names = F)[i],nrow(data_i))
+        data_i <- cbind(file_names,data_i)
+        data <- rbind(data,data_i)
+      }
+      values$data_ohd <- data
       values$header_ohd<-c(colnames(values$data_ohd))
       values$data_load_ohd_success<-TRUE
-    }
-  })
+    })
+  }
+  else{
+    withBusyIndicatorServer("Import_load_ohd", {
+      if(grepl(pattern = ".csv$",x = input$Import_ohd_files)){
+        data_i <- readr::read_delim(file = paste0("data_import/ohd/",input$Import_ohd_files),
+                                    delim = "\t", na = character() )
+        file_names <- rep(input$Import_ohd_files,nrow(data_i))
+        data_i <- cbind(file_names,data_i)
+        values$data_ohd<-data_i
+      }
+      if(grepl(pattern = ".json$",x = input$Import_ohd_files)){
+        # TODO
+      }
+      colnames(values$data_ohd)<-stringr::str_replace_all(string = colnames(values$data_ohd),pattern = "\\.",replacement = " ")
+      if(dim(values$data_ohd)[1]<2 | dim(values$data_ohd)[2]<2){
+        text<-paste0("The resulting input dimesions are: ",dim(values$data_ohd)[1]," x ",dim(values$data_ohd)[2],". Something went wrong during the input. Make sure to specify the csv input parameters correct.")
+        shinyWidgets::sendSweetAlert(session=session,title = "Input failed!",text = text,type = "error")
+      }
+      else{
+        values$header_ohd<-c(colnames(values$data_ohd))
+        values$data_load_ohd_success<-TRUE
+      }
+    })
+  }
 })
 
 
@@ -3543,19 +3657,83 @@ observeEvent(input$Import_start_ohd_mapping,{
   validate(
     need(!is.null(values$data_ohd),message=F)
   )
-  data_orig <- values$data_ohd
+  data_interview <- values$data_ohd
+  data_documents <- data_interview[,c("file_names","Transkript")]
+  data_documents <- aggregate(data=data_documents,Transkript ~ file_names, paste0, collapse="_-_-_-_-_-_-_-_-_")
   
-  values$import_ohd_data_after_mapping <- data_orig
+  if(input$Import_ohd_add_meta_to_data==TRUE){
+    if(length(input$Import_ohd_meta_file)!=1){
+      shinyWidgets::sendSweetAlert(session=session,title = "No Metadata found",text = "Please choose a Metadata file or upload a new one.",type = "warning")
+    }
+    else{
+      meta <- readr::read_delim(file = paste0("data_import/ohd_meta_files/",input$Import_ohd_meta_file),
+                                delim = "\t", na = character() )
+      ids <- substr(data_documents$file_names,1,7)
+      data_documents<-cbind(ids,data_documents)
+      #merge
+      data_documents <- merge(x = data_documents,y = meta,by.x = "ids",by.y = "Interview-ID",all.x=T)
+      # metadata to use
+      data_documents <- data_documents[,c("ids","file_names","Transkript",      input$Import_ohd_meta_columns)]
+      data_documents <- cbind(rep(input$Import_ohd_corpus_name,nrow(data_documents)),data_documents)
+      colnames(data_documents)[1] <- "Dataset"
+      is_interview <- rep(1,nrow(data_documents))
+      data_documents <- cbind(data_documents,is_interview)
+      values$import_ohd_documents_after_mapping <- data_documents
+    }
+  }
+  else{
+    values$import_ohd_documents_after_mapping <- data_documents
+  }
+  data_interview <- cbind(rep(input$Import_ohd_corpus_name,nrow(data_interview)),data_interview)
+  colnames(data_interview)[1] <- "Dataset"
+  values$import_ohd_interview_after_mapping <- data_interview
 }
 )
 
 
-output$Import_ohd_metadata<-DT::renderDataTable({
+output$Import_ohd_data_interview_table<-DT::renderDataTable({
   validate(
     need(
-      !is.null(values$import_ohd_data_after_mapping),message=F
+      !is.null(values$import_ohd_interview_after_mapping),message=F
     )
   )
-  data = values$import_ohd_data_after_mapping[1:5,]
+  data = values$import_ohd_interview_after_mapping[1:5,]
   datatable(data)
+})
+
+
+output$Import_ohd_data_documents_table <- DT::renderDataTable({
+  validate(
+    need(
+      !is.null(values$import_ohd_documents_after_mapping),message=F
+    )
+  )
+  data = values$import_ohd_documents_after_mapping[1:min(5,nrow(values$import_ohd_documents_after_mapping)),]
+  data$Transkript<-paste0(substr(data$Transkript,1,50),"...")
+  datatable(data)
+})
+
+#ensure not more than 9 metadata fields are selected
+observe({
+  if(length(input$Import_ohd_meta_columns) > 9){
+    print("update selected")
+    shinyWidgets::updateCheckboxGroupButtons(session, "Import_ohd_meta_columns", selected= tail(input$Import_ohd_meta_columns,9))
+  }
+})
+
+
+
+observeEvent(input$Import_ohd_files_multiple,{
+  if(length(input$Import_ohd_files_multiple)>0){
+    updatePrettyRadioButtons(session = session,inputId = "Import_ohd_files",selected = "",
+                             choices = stringr::str_replace_all(string = list.files("data_import/ohd/",pattern = ".csv|.json"),pattern = ".txt",replacement = ""),
+                             prettyOptions = list(fill=F,animation="pulse",shape="round")) 
+  }
+})
+observeEvent(input$Import_ohd_files,{
+  if(length(input$Import_ohd_files)>0){
+    updatePrettyRadioButtons(session = session,inputId = "Import_ohd_files_multiple",selected = "",
+                             choices = setdiff(list.dirs("data_import/ohd/",full.names = F),""),
+                             prettyOptions = list(fill=F,animation="pulse",shape="round")) 
+  }
 })

@@ -324,6 +324,8 @@ server <- function(input, output, session) {
   source(file.path("server","tab_Refi_Export.R"),local=T)$value 
   # server part for REFI imports
   source(file.path("server","tab_Refi_Import.R"),local=T)$value
+  # server part for Enrichment of Transcripts
+  source(file.path("server","tab_Enrichment.R"),local=T)$value
   # allow reconnect to app if connection got disturbed
   session$allowReconnect(TRUE)
 }

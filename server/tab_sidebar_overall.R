@@ -15,6 +15,8 @@ output$sidebarpanel_UI<-renderUI({
                            menuItem(text = "Scripts",tabName = "Scripts",icon = icon("terminal")),
                            # menu for import/export
                            menuItem(text=  "Import/Export",tabName= "Importer",icon=icon("upload")),
+                           # menu for transcript enrichment with topic information
+                           menuItem(text=  "Transcript Enrichment",tabName= "Enrichment",icon=icon("comments")),
                            tags$br(),
                            tags$br(),
                            # button to take screenshots of the iLCM

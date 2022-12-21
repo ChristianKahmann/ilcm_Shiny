@@ -113,6 +113,12 @@ output$body_UI<-renderUI({
                               source(file.path("ui","tab_Exporter.R"),local = T)$value
                    )
             )
+    ),
+    # fifth tab: Importer/Exporter
+    tabItem(tabName="Enrichment",
+            column(12,style = 'height: 92vh; overflow-y: hidden; overflow-x:hidden; padding-right:0px;',
+                   source(file.path("ui","tab_Enrichment.R"),local = T)$value
+            )
     )
   )
   #if no user is logged in return loginpage, else show body with specified tabs

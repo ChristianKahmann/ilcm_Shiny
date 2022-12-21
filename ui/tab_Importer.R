@@ -7,7 +7,7 @@ tabPanel("Importer",
              "Preprocess Data",
              tags$div(style="height:79vh; overflow-y:auto;",
                       shinyWidgets::prettyRadioButtons(inputId = "Import_Type",label = "Which type of Import?",
-                                                       choices = c("CSV/XLSX","multiple text files","Wortschatz","OH.D"),
+                                                       choices = c("CSV/XLSX","multiple text files","Wortschatz"),
                                                        fill=F,animation = "pulse",selected = character(0)),
                       conditionalPanel(condition='input.Import_Type=="CSV/XLSX"',
                                        uiOutput(outputId = "UI_Import_csv_file"),
@@ -537,9 +537,6 @@ tabPanel("Importer",
                       ),
                       conditionalPanel(condition='input.Import_Type=="Wortschatz"',
                                        uiOutput(outputId = "UI_Import_Wortschatz")
-                      ),
-                      conditionalPanel(condition='input.Import_Type=="OH.D"',
-                                       uiOutput(outputId = "UI_Import_OHD")
                       )
              )
            ),
@@ -633,6 +630,9 @@ tabPanel("Importer",
                  )
                )
              )
+           ),
+           tabPanel("OHD Import",
+                    uiOutput(outputId = "UI_Import_OHD")
            )
          )
 )
