@@ -1245,7 +1245,7 @@ observeEvent(input$Import_csv_start_preprocess,{
               )
             }
             else{
-              #create meta metadata vector
+              # create meta metadata vector
               meta_metadata<-data.frame(t(c(input$Import_csv_dataset,input$UI_Import_name_mde1,input$UI_Import_name_mde2,input$UI_Import_name_mde3,input$UI_Import_name_mde4,input$UI_Import_name_mde5,
                                             input$UI_Import_name_mde6,input$UI_Import_name_mde7,input$UI_Import_name_mde8,input$UI_Import_name_mde9)))
               colnames(meta_metadata)<-c("dataset","mde1","mde2","mde3","mde4","mde5","mde6","mde7","mde8","mde9")
@@ -3404,7 +3404,7 @@ output$UI_Import_OHD<-renderUI({
                                            ),            
                                            conditionalPanel(condition='output.data_load_ohd_success==true',
                                                             fluidRow(style="margin-left:0px;margin-right:0px",
-                                                                     column(1,
+                                                                     column(2,
                                                                             shinyBS::bsButton(inputId = "Import_check_ohd",label = "Check imported data",icon = icon("search"),style = "primary")
                                                                      ),
                                                                      column(1,
@@ -3413,7 +3413,7 @@ output$UI_Import_OHD<-renderUI({
                                                                      column(1,
                                                                             switchInput(inputId = "Import_ohd_add_meta_to_data",label = "Add Metadata",value = F,onStatus = "success",offStatus = "primary")
                                                                      ),
-                                                                     column(9,
+                                                                     column(8,
                                                                             conditionalPanel(condition='input.Import_ohd_add_meta_to_data==true',
                                                                                              uiOutput(outputId = "Import_ohd_meta_columns_UI")
                                                                             )
@@ -3434,7 +3434,9 @@ output$UI_Import_OHD<-renderUI({
                                                                                           DT::dataTableOutput(outputId = "Import_ohd_data_interview_table")
                                                                                  )
                                                                         )
-                                                            )
+                                                            ),
+                                                            tags$hr(),
+                                                            uiOutput("Import_ohd_start_import_UI")
                                            )
                           )
                           
@@ -3443,6 +3445,55 @@ output$UI_Import_OHD<-renderUI({
   )
   )
 })
+
+
+output$Import_ohd_start_import_UI<-renderUI({
+  validate(
+    need(!is.null( values$import_ohd_documents_after_mapping),message=F)
+  )
+  shinyBS::bsButton(inputId = "Import_ohd_start_import",label = "Start Import to iLCM",icon = icon("run"),style = "success")
+})
+
+
+observeEvent(input$Import_ohd_start_import,{
+  data_documents <- values$import_ohd_documents_after_mapping
+  data_interviews <- values$import_ohd_interview_after_mapping
+  meta_metadata <- values$import_ohd_meta_meta_after_mapping
+  # do something
+  if(data_documents$dataset[1]==""){
+    shinyWidgets::sendSweetAlert(session=session,title = "No Dataset Abbreviation",text = "Please use an existing Dataset you want to add these interviews to or specify a new one.",type = "warning")
+  }
+  else{
+    if(stringr::str_detect(as.character(data_documents$dataset[1]),pattern = "_")){
+      shinyWidgets::sendSweetAlert(session=session,title = "'_' not allowed",text = "Please specify a abbreviation without using '_'",type = "error")
+    }
+    else{
+      slow_mode<-F
+      parameters<-list(data=data_documents,db=TRUE,lang="de","%Y-%m-%d",meta_metadata,slow_mode=slow_mode,data_interviews,is_interview=T)
+      #create process ID
+      ID<-get_task_id_counter()+1
+      set_task_id_counter(ID)
+      #save metadata for process
+      process_info<-list(ID,paste("New Data - ",data_documents$dataset[1],sep=""),"Create import interview files",as.character(Sys.time()))
+      #save logfile path
+      logfile<-paste("collections/logs/running/",process_info[[1]],".txt",sep="")
+      #create logfile
+      write(paste(paste0("Task ID: <b>",process_info[[1]],"</b>"), paste0("Collection: <b> ",process_info[[2]],"</b>"),paste0("Task: <b>",process_info[[3]],"</b>"),paste0("Started at: <b>",process_info[[4]],"</b>"),"","",sep = "\n"),file = logfile)
+      #save data needed in script execution 
+      save(process_info,logfile,parameters,file="collections/tmp/tmp.RData")
+      #start script
+      system(paste('Rscript collections/scripts/Import_Script.R','&'))
+      #show modal when process is started
+      shinyWidgets::sendSweetAlert(session=session,title = "Started Import Script",type = "success")
+      
+      
+    }
+  }
+  
+})
+
+
+
 
 
 output$Import_ohd_meta_columns_UI<-renderUI({
@@ -3584,6 +3635,9 @@ observeEvent(input$Import_load_ohd,{
       }
       values$data_ohd <- data
       values$header_ohd<-c(colnames(values$data_ohd))
+      values$import_ohd_documents_after_mapping <- NULL
+      values$import_ohd_interview_after_mapping <- NULL
+      values$import_ohd_meta_meta_after_mapping <- NULL
       values$data_load_ohd_success<-TRUE
     })
   }
@@ -3664,28 +3718,134 @@ observeEvent(input$Import_start_ohd_mapping,{
   if(input$Import_ohd_add_meta_to_data==TRUE){
     if(length(input$Import_ohd_meta_file)!=1){
       shinyWidgets::sendSweetAlert(session=session,title = "No Metadata found",text = "Please choose a Metadata file or upload a new one.",type = "warning")
+      return(NULL)
+    }
+    if(length(input$Import_ohd_meta_columns)<1){
+      shinyWidgets::sendSweetAlert(session=session,title = "No Metadata Columns selected",text = "Please add at least one Metadata Column you want to import.",type = "warning")
+      return(NULL)
     }
     else{
       meta <- readr::read_delim(file = paste0("data_import/ohd_meta_files/",input$Import_ohd_meta_file),
                                 delim = "\t", na = character() )
-      ids <- substr(data_documents$file_names,1,7)
-      data_documents<-cbind(ids,data_documents)
+      interview_id <- substr(data_documents$file_names,1,7)
+      data_documents<-cbind(interview_id,data_documents)
       #merge
-      data_documents <- merge(x = data_documents,y = meta,by.x = "ids",by.y = "Interview-ID",all.x=T)
+      data_documents <- merge(x = data_documents,y = meta,by.x = "interview_id",by.y = "Interview-ID",all.x=T)
       # metadata to use
-      data_documents <- data_documents[,c("ids","file_names","Transkript",      input$Import_ohd_meta_columns)]
+      data_documents <- data_documents[,c("interview_id","file_names","Transkript",      input$Import_ohd_meta_columns)]
+      # id doc
+      offset=NA
+      if(input$Import_ohd_corpus_name!=""){
+        mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
+        #print(paste0("SELECT MAX(id_doc) FROM ilcm.documents where dataset=",input$Import_mtf_dataset,";"))
+        offset<-RMariaDB::dbGetQuery(mydb,paste0("SELECT MAX(id_doc) FROM ilcm.documents where dataset='",input$Import_ohd_corpus_name,"';"))[1,1]
+      }
+      if(is.na(offset)){
+        offset=0
+      }
+      id_doc<-(offset+1):(offset+dim(data_documents)[1])
+      data_documents<-cbind(id_doc,data_documents)
+      # dataset
       data_documents <- cbind(rep(input$Import_ohd_corpus_name,nrow(data_documents)),data_documents)
-      colnames(data_documents)[1] <- "Dataset"
+      colnames(data_documents)[1] <- "dataset"
       is_interview <- rep(1,nrow(data_documents))
       data_documents <- cbind(data_documents,is_interview)
-      values$import_ohd_documents_after_mapping <- data_documents
+      ###############################
+      # create standard data format #
+      ###############################
+      data_clean <- data_documents[,1:3]
+      data_clean <- data.frame(data_clean, title = paste0("Interview: ",substr(data_documents$file_names,1,7)),
+                               body = data_documents$Transkript,
+                               date = as.cahracter(Sys.Date()),
+                               token = unlist(lapply(X = data_documents$Transkript,FUN = function(x){
+                                 length(stringr::str_split(string = x,pattern = " ",simplify = T))}
+                               )),
+                               language = "de_core_news_sm(3.2.0)",
+                               mde1 = "",
+                               mde2 = "",
+                               mde3 = "",
+                               mde4 = "",
+                               mde5 = "",
+                               mde6 = "",
+                               mde7 = "",
+                               mde8 = "",
+                               mde9 = "",
+                               is_interview = 1)
+      data_clean[,9:(8+length(input$Import_ohd_meta_columns))] <- data_documents[,6:(ncol(data_documents)-1)]
+      #colnames(data_clean)[9:(8+length(input$Import_ohd_meta_columns))]<-colnames(data_documents[,6:(ncol(data_documents)-1)])
+      data_meta_meta <- data.frame(dataset=input$Import_ohd_corpus_name)
+      a = lapply(1:length(input$Import_ohd_meta_columns),function(x){
+        y = data.frame(input$Import_ohd_meta_columns[x])
+        colnames(y) = paste0("mde",x)
+        return(y)
+      })
+      data_meta_meta <- data.frame(data_meta_meta, t(data.frame(unlist(a))))
+      rownames(data_meta_meta) <- NULL
+      values$import_ohd_meta_meta_after_mapping <- data_meta_meta
+      data_clean$language <- "de_core_news_sm(3.2.0)"
+      values$import_ohd_documents_after_mapping <- data_clean
     }
   }
   else{
-    values$import_ohd_documents_after_mapping <- data_documents
+    # id doc
+    offset=NA
+    if(input$Import_ohd_corpus_name!=""){
+      mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=values$host,port=isolate(values$db_port))
+      #print(paste0("SELECT MAX(id_doc) FROM ilcm.documents where dataset=",input$Import_mtf_dataset,";"))
+      offset<-RMariaDB::dbGetQuery(mydb,paste0("SELECT MAX(id_doc) FROM ilcm.documents where dataset='",input$Import_ohd_corpus_name,"';"))[1,1]
+    }
+    if(is.na(offset)){
+      offset=0
+    }
+    # interview id
+    interview_id <- substr(data_documents$file_names,1,7)
+    data_documents<-cbind(interview_id,data_documents)
+    # id doc
+    id_doc<-(offset+1):(offset+dim(data_documents)[1])
+    data_documents<-cbind(id_doc,data_documents)
+    # dataset
+    data_documents <- cbind(rep(input$Import_ohd_corpus_name,nrow(data_documents)),data_documents)
+    colnames(data_documents)[1] <- "dataset"
+    is_interview <- rep(1,nrow(data_documents))
+    data_documents <- cbind(data_documents,is_interview)
+    ###############################
+    # create standard data format #
+    ###############################
+    data_clean <- data_documents[,1:3]
+    data_clean <- data.frame(data_clean, title = paste0("Interview: ",substr(data_documents$file_names,1,7)),
+                             body = data_documents$Transkript,
+                             date = as.cahracter(Sys.Date()),
+                             token = unlist(lapply(X = data_documents$Transkript,FUN = function(x){
+                               length(stringr::str_split(string = x,pattern = " ",simplify = T))}
+                             )),
+                             language = "de_core_news_sm(3.2.0)",
+                             mde1 = "",
+                             mde2 = "",
+                             mde3 = "",
+                             mde4 = "",
+                             mde5 = "",
+                             mde6 = "",
+                             mde7 = "",
+                             mde8 = "",
+                             mde9 = "",
+                             is_interview = 1)
+    data_clean$language <- "de_core_news_sm(3.2.0)"
+    values$import_ohd_documents_after_mapping <- data_clean
+    data_meta_meta <- data.frame(dataset=input$Import_ohd_corpus_name)
+    values$import_ohd_meta_meta_after_mapping <- data_meta_meta
   }
+  # add interview ids and counter for row per interview
+  interview_id <- substr(data_interview$file_names,1,7)
+  data_interview <- cbind(interview_id, data_interview)
+  interview_row_id <- NULL
+  for(i in 1:length(unique(data_interview$interview_id))){
+    interview_row_id <- c(interview_row_id, 1:length(which(data_interview$interview_id==unique(data_interview$interview_id)[i])))
+  }
+  data_interview <- cbind(interview_row_id, data_interview)
   data_interview <- cbind(rep(input$Import_ohd_corpus_name,nrow(data_interview)),data_interview)
-  colnames(data_interview)[1] <- "Dataset"
+  colnames(data_interview)[1] <- "dataset"
+  id_doc_merge_table <- unique(data_documents[,c("file_names","id_doc")])
+  data_interview <- merge(x=data_interview,y=id_doc_merge_table,by="file_names",all.x =T)
   values$import_ohd_interview_after_mapping <- data_interview
 }
 )
@@ -3709,7 +3869,7 @@ output$Import_ohd_data_documents_table <- DT::renderDataTable({
     )
   )
   data = values$import_ohd_documents_after_mapping[1:min(5,nrow(values$import_ohd_documents_after_mapping)),]
-  data$Transkript<-paste0(substr(data$Transkript,1,50),"...")
+  data$body<-paste0(substr(data$body,1,50),"...")
   datatable(data)
 })
 

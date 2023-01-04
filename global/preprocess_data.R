@@ -10,7 +10,7 @@
 #' @return 
 #' @export
 #' @example 
-preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,slow_mode=F){
+preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,slow_mode=F,interview_mode=F){
   metadata$body<-stringr::str_replace_all(string = metadata$body,pattern = '"',"'")
   metadata$body<-stringr::str_replace_all(string = metadata$body,pattern = '\\\\0'," ")
   text<-stringr::str_replace_all(string = text,pattern = '"',"'")
