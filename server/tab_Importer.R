@@ -3756,7 +3756,7 @@ observeEvent(input$Import_start_ohd_mapping,{
       data_clean <- data_documents[,1:3]
       data_clean <- data.frame(data_clean, title = paste0("Interview: ",substr(data_documents$file_names,1,7)),
                                body = data_documents$Transkript,
-                               date = as.cahracter(Sys.Date()),
+                               date = as.character(Sys.Date()),
                                token = unlist(lapply(X = data_documents$Transkript,FUN = function(x){
                                  length(stringr::str_split(string = x,pattern = " ",simplify = T))}
                                )),
