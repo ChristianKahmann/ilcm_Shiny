@@ -31,20 +31,24 @@ error<-try(expr = {
   try({
     slow_mode<-parameters[[6]]
   })
-  
+  data_interview=NULL
   if(interview_mode==TRUE){
     data_interview <- parameters[[7]]
+    metadata_interview <- metadata
   }
 
-  browser()
-  
-  #reduce metadata object to the metadata columns the user specified
   if(dim(meta_metadata)[2]==1){
     metadata<-metadata[,c("dataset","id_doc","title","body","date","token","language")]
   }
   else{
     metadata<-metadata[,c("dataset","id_doc","title","body","date","token","language",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],sep=""))]
   }
+
+  if(interview_mode==TRUE){
+    metadata$id_interview <- metadata_interview$id_interview
+    metadata$is_interview <- metadata_interview$is_interview
+  }
+
   
   if(language%in%c("en","de","es","fr","it","nl","pt","el","xx")){
     avail_models <-  stringr::str_remove_all(string=stringr::str_split(
@@ -64,7 +68,15 @@ error<-try(expr = {
   
   log_to_file(message = "spacy initialized",logfile)
   # write import csv for meta and token information
-  preprocess_data(text = metadata[,"body"],metadata = metadata,process_id = process_info[[1]],offset = (min(as.numeric(metadata[,"id_doc"]))-1),logfile = logfile,date_format = date_format,slow_mode=slow_mode,interview_mode=interview_mode)
+  preprocess_data(text = metadata[,"body"],
+                  metadata = metadata,
+                  process_id = process_info[[1]],
+                  offset = (min(as.numeric(metadata[,"id_doc"]))-1),
+                  logfile = logfile,
+                  date_format = date_format,
+                  slow_mode=slow_mode,
+                  interview_mode=interview_mode,
+                  data_interview=data_interview)
   # write meta metadata csv
   write.csv(x = parameters[[5]],file=paste0("data_import/processed_data/metameta_",metadata[1,"dataset"],"_",process_info[[1]],".csv"),row.names = F)
   log_to_file(message = "finished writing results metadata to database",logfile)
@@ -206,6 +218,15 @@ error<-try(expr = {
         }
       })
       rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+      if(interview_mode==TRUE){
+        try({
+          query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/interview_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.interview_info CHARACTER SET utf8mb4  FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","';")
+          rs<-RMariaDB::dbSendStatement(mydb, query)
+          
+        })
+      }
+      
+      
       
       log_to_file(message = "Finished sending data to db",logfile)
       

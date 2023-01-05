@@ -3713,7 +3713,7 @@ observeEvent(input$Import_start_ohd_mapping,{
   )
   data_interview <- values$data_ohd
   data_documents <- data_interview[,c("file_names","Transkript")]
-  data_documents <- aggregate(data=data_documents,Transkript ~ file_names, paste0, collapse="_-_-_-_-_-_-_-_-_")
+  data_documents <- aggregate(data=data_documents,Transkript ~ file_names, paste0, collapse="\n\n")
   
   if(input$Import_ohd_add_meta_to_data==TRUE){
     if(length(input$Import_ohd_meta_file)!=1){
