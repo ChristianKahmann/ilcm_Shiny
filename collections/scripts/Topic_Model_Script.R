@@ -228,10 +228,10 @@ error<-try(expr = {
   
   log_to_file(message = "<b>Step 9/13: Clean vocabulary from non asci2 characters</b>",file = logfile)
   #just keep alpha
-  # remove<-which(!grepl("[[:alpha:]]", colnames(dtm)) & !grepl("[[:digit:]]", colnames(dtm)))
-  # if(length(remove)>0){
-  #   dtm<-dtm[,-remove]
-  # }
+  remove<-which(!grepl("[[:alpha:]]", colnames(dtm)) & !grepl("[[:digit:]]", colnames(dtm)))
+  if(length(remove)>0){
+    dtm<-dtm[,-remove]
+  }
   # #remove all that contains non asci2
   meta<-meta[order(match(meta$id_doc,rownames(dtm))),]
   documents<-documents[order(match(documents$doc_id,rownames(dtm))),]

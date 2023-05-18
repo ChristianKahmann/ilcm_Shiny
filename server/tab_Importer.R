@@ -3518,32 +3518,50 @@ output$Import_ohd_meta_columns_UI<-renderUI({
 output$Import_ohd_avail_files<-renderUI({
   values$invalidate_ohd_files
   validate(
-    need(length(list.files("data_import/ohd/",pattern = ".csv|.json"))>0,message="No CSV/Zip-Files found in directory: data_import/ohd")
+    need(length(list.files("data_import/ohd/",pattern = ".csv|.json",recursive = T))>0,message="No CSV/Zip-Files found in directory: data_import/ohd")
   )
-  return(
-    tagList(
-      column(3,
-             shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_files",label = "Available OHD Single Files",
-                                              choices = stringr::str_replace_all(string = list.files("data_import/ohd/",pattern = ".csv|.json"),pattern = ".txt",replacement = ""),
-                                              fill=F,animation = "pulse",selected = "")
-      ),
-      column(3,
-             shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_files_multiple",label = "Available OHD Multiple Files",
-                                              choices = setdiff(list.dirs("data_import/ohd/",full.names = F),""),
-                                              fill=F,animation = "pulse",selected = "")     
-      ),
-      column(offset = 1,2,
-             shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_meta_file",label = "Available OHD Metadata Files",
-                                              choices = stringr::str_replace_all(string = list.files("data_import/ohd_meta_files/",pattern = ".csv"),pattern = ".txt",replacement = ""),
-                                              fill=F,animation = "pulse")  
-      ),
-      column(2,
-             conditionalPanel(condition='input.Import_ohd_meta_file!=""',
-                              bsButton(inputId = "Import_ohd_meta_show_details",label = "Check Meta Table",icon = icon("search"),style = "primary")
-             )
+  if(length(stringr::str_replace_all(string = list.files("data_import/ohd_meta_files/",pattern = ".csv"),pattern = ".txt",replacement = ""))>0){
+    return(
+      tagList(
+        column(3,
+               shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_files",label = "Available OHD Single Files",
+                                                choices = stringr::str_replace_all(string = list.files("data_import/ohd/",pattern = ".csv|.json"),pattern = ".txt",replacement = ""),
+                                                fill=F,animation = "pulse",selected = "")
+        ),
+        column(3,
+               shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_files_multiple",label = "Available OHD Multiple Files",
+                                                choices = setdiff(list.dirs("data_import/ohd/",full.names = F),""),
+                                                fill=F,animation = "pulse",selected = "")     
+        ),
+        column(offset = 1,2,
+               shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_meta_file",label = "Available OHD Metadata Files",
+                                                choices = stringr::str_replace_all(string = list.files("data_import/ohd_meta_files/",pattern = ".csv"),pattern = ".txt",replacement = ""),
+                                                fill=F,animation = "pulse")  
+        ),
+        column(2,
+               conditionalPanel(condition='input.Import_ohd_meta_file!=""',
+                                bsButton(inputId = "Import_ohd_meta_show_details",label = "Check Meta Table",icon = icon("search"),style = "primary")
+               )
+        )
       )
     )
-  )
+  }
+  else{
+    return(
+      tagList(
+        column(3,
+               shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_files",label = "Available OHD Single Files",
+                                                choices = stringr::str_replace_all(string = list.files("data_import/ohd/",pattern = ".csv|.json"),pattern = ".txt",replacement = ""),
+                                                fill=F,animation = "pulse",selected = "")
+        ),
+        column(3,
+               shinyWidgets::prettyRadioButtons(inputId = "Import_ohd_files_multiple",label = "Available OHD Multiple Files",
+                                                choices = setdiff(list.dirs("data_import/ohd/",full.names = F),""),
+                                                fill=F,animation = "pulse",selected = "")     
+        )
+      )
+    )
+  }
 })
 
 observeEvent(input$Import_ohd_meta_show_details,{
@@ -3863,8 +3881,15 @@ output$Import_ohd_data_interview_table<-DT::renderDataTable({
       !is.null(values$import_ohd_interview_after_mapping),message=F
     )
   )
+  
   data = values$import_ohd_interview_after_mapping[1:5,]
-  datatable(data)
+  id_doc_idx = which(colnames(data)=="id_doc")
+  if(length(id_doc_idx)>0){
+    data <- data[,-id_doc_idx]
+  }
+  DT::datatable(data = data, width = "100%",rownames = F,
+                selection = "none",escape=F,class = 'cell-border stripe hover',
+                options = list(scrollX=T, scrollY="62vh"))
 })
 
 
@@ -3880,7 +3905,9 @@ output$Import_ohd_data_documents_table <- DT::renderDataTable({
     colnames(data)[9:((9+length(values$ohd_meta_names)-1))] <-values$ohd_meta_names
   }
   data$body<-paste0(substr(data$body,1,50),"...")
-  datatable(data)
+  DT::datatable(data = data, width = "100%",rownames = F,
+                selection = "none",escape=F,class = 'cell-border stripe hover',
+                options = list(scrollX=T, scrollY="62vh"))
 })
 
 #ensure not more than 9 metadata fields are selected

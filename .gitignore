@@ -67,6 +67,7 @@ packrat/lib*/
 !/collections/results/geocoding/.gitkeep
 /collections/tmp/*
 !/collections/tmp/refi/.gitkeep
+!/collections/tmp/ohd_enrichment/.gitkeep
 !/collections/tmp/.gitkeep
 /collections/ecpmf_resources/*
 !/collections/ecpmf_resources/.gitkeep

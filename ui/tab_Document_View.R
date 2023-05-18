@@ -4,6 +4,7 @@
 tabPanel("Document View",type="tabs",
          div(style = 'height: 80vh; overflow-y: auto;',
              box(width=2,
+                 checkboxInput(inputId = "Doc_View_interview_style",label = "use interview style?",value = T),
                  tabsetPanel(type = "pills",
                              #tags$h3(tags$b("Metadata")),
                              tabPanel("Metadata",
@@ -19,8 +20,7 @@ tabPanel("Document View",type="tabs",
                                       uiOutput("DV_Entity")
                              )
                  ),
-                 checkboxInput(inputId = "Doc_View_paragraph",label = "show paragraphs?",value = T),
-                 checkboxInput(inputId = "Doc_View_interview_style",label = "use interview style?",value = F),
+                 checkboxInput(inputId = "Doc_View_paragraph",label = "show paragraphs?",value = T)
              )
              ,
              box(width=10,

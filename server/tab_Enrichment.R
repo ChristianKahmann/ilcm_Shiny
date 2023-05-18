@@ -381,6 +381,11 @@ observeEvent(input$enrichment_start_enrichment,{
 })
 
 
+output$enrichment_topic_UI <- renderUI({
+  input$enrichment_reload_avail_topics
+  selectInput(inputId="enrichment_topic","Choose Topic Model:",choices = rev(list.files(path = "collections/results/topic-model/")))
+})
+
 # parameters for enrichment output plot
 output$enrichment_output_plot_parameters_UI<-renderUI({
   validate(
@@ -686,7 +691,7 @@ output$enrichment_export_zip <- downloadHandler(
     for(i in 1:length(interviews)){
       data_interview <- data[which(data$Interview_Id==interviews[i]),]
       #remove interview id
-      data_interview <- data_interview[-1,]
+      data_interview <- data_interview[,-1]
       readr::write_tsv(data_interview,path=paste0("collections/tmp/ohd_enrichment/",interviews[i],".csv"))
       fs=c(fs,paste0("collections/tmp/ohd_enrichment/",interviews[i],".csv"))
     }

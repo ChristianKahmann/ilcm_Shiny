@@ -22,7 +22,8 @@ tagList(column(width=12,style = 'height: 92vh; overflow-y: auto; overflow-x:auto
                column(6,
                       tags$h3("Topic Model Selection:"),
                       column(6,
-                             selectInput(inputId="enrichment_topic","Choose Topic Model:",choices = rev(list.files(path = "collections/results/topic-model/")))
+                             shinyBS::bsButton(inputId = "enrichment_reload_avail_topics",label = "reload",style = "success",size = "extra-small",icon=icon("sync")),
+                             uiOutput("enrichment_topic_UI")
                       ),
                       column(3,
                              withBusyIndicatorUI(

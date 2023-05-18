@@ -177,12 +177,7 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
     texts<-stringr::str_replace_all(string = texts,pattern = '\\\\0'," ")
     # create token object
     token <- NULL
-    ###allnew####
     # process bigger chunks of data and add correct row information afterwards 
-    
-    
-    ###allnew####
-    
     ###new###
     data_interview_grouped <- list()
     count=0
@@ -195,7 +190,6 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
       data=x
       token_grouped=NULL
       for(i in 1:nrow(data)){
-        print(i)
         row<-iconv(data$Transkript[i], "UTF-8", "UTF-8",sub='')
         if(nchar(row)>0){
           max_sen_id=0
@@ -211,7 +205,6 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
           toks$id_interview_row <- data$interview_row_id[i]
           token_grouped <- rbind(token_grouped,toks)
         }
-        log_sequence<-round(seq(from=1,to=length(texts),length.out=101))[2:101]
       }
       log_to_file(paste("Interview  ",data$interview_id[1]," finished"),logfile)
       return(token_grouped)
