@@ -192,11 +192,41 @@ output$document<-renderUI({
   else{
     values$mark_space<-NULL
   }
+  if(input$Doc_View_interview_style==T){
+    values$mark_interview<-NULL
+    try({
+      row_info <- values$token$id_interview_row
+      row_changes <- which(unlist(lapply(1:(length(row_info)-1),FUN = function(x){
+        row_info[x]<row_info[x+1]
+      })))+1
+      row_changes <- c(1,row_changes)
+      row_ids <- row_info[row_changes]
+      #get speaker information
+      mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+      rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+      interview_info<-RMariaDB::dbGetQuery(mydb, paste("select * from interview_info where id_doc='",(values$token)[1,2],"'",
+                                                    " and trim(dataset)='",(values$token)[1,1],"';",sep = ""))
+      
+      mark_speaker = NULL
+      try({
+        mark_speaker <- interview_info$sprecher[which(interview_info$id_interview_row%in%row_ids)]
+      })
+      values$mark_interview<-row_changes
+    })
+
+  }
+  else{
+    values$mark_interview<-NULL
+  }
   
   counter <- 1
   text<-lapply(isolate(values$show), function(x) {
     strings <- stringr::str_split(x, pattern = "\\s")[[1]]
-    strings<-add_tags(strings,isolate(values$annos)[which(isolate(values$annos[,5])==input$anno_scheme_selected),,drop=F],isolate(values$mark_pos),isolate(values$mark_ner),isolate(values$mark_space),values$highlight_annos)
+    strings<-add_tags(strings,
+                      isolate(values$annos)[which(isolate(values$annos[,5])==input$anno_scheme_selected),,drop=F],
+                      isolate(values$mark_pos),isolate(values$mark_ner),
+                      isolate(values$mark_space),values$highlight_annos,
+                      isolate(values$mark_interview),mark_speaker)
     a<-list()
     for(i in 1:length(strings)){
       a[[i]]<-paste0("<span span_nr='",i,"'>",strings[i],"</span>")

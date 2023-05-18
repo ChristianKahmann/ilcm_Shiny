@@ -3,6 +3,9 @@ tabPanel("Importer",
          tabBox(
            id = "tabBox_Import",
            width = 12,
+           tabPanel("OHD Import",
+                    uiOutput(outputId = "UI_Import_OHD")
+           ),
            tabPanel(
              "Preprocess Data",
              tags$div(style="height:79vh; overflow-y:auto;",
@@ -630,9 +633,6 @@ tabPanel("Importer",
                  )
                )
              )
-           ),
-           tabPanel("OHD Import",
-                    uiOutput(outputId = "UI_Import_OHD")
            )
          )
 )

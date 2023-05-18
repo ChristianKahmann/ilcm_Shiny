@@ -278,6 +278,25 @@ output$Analysis_Parameter_VA<-renderUI({
                        )
                      )
     ),
+    # Interview specific Parameters
+    tags$hr(),
+    tags$h4("Interview-specific Parameters"),
+    fluidRow(
+      column(1,
+             checkboxInput(inputId = "VA_interview_use_speaker_info",label="Restrict via speaker?",value=F),
+      ),
+      column(2,
+             conditionalPanel(condition = "input.VA_interview_use_speaker_info==true",
+                              selectizeInput(inputId="VA_interview_speaker_info", label= "Speaker Filter:",choices = c("INT_*","IP_*"),multiple=T,options=list(create=T))
+             )
+      ),
+      column(2,
+             conditionalPanel(condition = "input.VA_interview_use_speaker_info==true",
+                              bsButton(inputId = "VA_interview_show_speakers",label = "Show Speakers in chosen Collection",icon = icon("search"),style = "primary")
+             )
+      ),
+      
+    ),
     #specific parameters
     tags$hr(),
     tags$h4("Volatility Analysis parameters"),
@@ -505,6 +524,39 @@ With the window based approaches, the dispersion of the available values within 
 
 
 
+# show available speakers inside collection
+observeEvent(input$VA_interview_show_speakers,{
+  load(paste("collections/collections/",input$collection_selected,".RData",sep=""))
+  dataset = info[[2]][1,1]
+  id_docs = info[[1]][,1]
+  id_docs = paste0(id_docs,collapse=" ")
+  id_docs<-stringr::str_replace_all(string = as.character(id_docs),pattern = " ",",")
+  
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+  sprecher<-RMariaDB::dbGetQuery(mydb, paste("select sprecher from interview_info where id_doc in (",id_docs,")",
+                                             " and trim(dataset)='",dataset,"';",sep = ""))
+  if(nrow(sprecher)==0){
+    shinyWidgets::sendSweetAlert(session = session,title = "No Speaker Data found",text = "Maybe you have not specified a collection containing interview type data?!",type = "warning")
+  }
+  else{
+    values$VA_interview_speaker_info <- sprecher
+    showModal(
+      modalDialog(title = HTML(paste0("Speaker Distribution inside Collection: <b>", input$collection_selected,"</b>")),
+                  DT::dataTableOutput(outputId = "VA_interview_speaker_info_dist")
+      )
+    )
+  }
+}
+)
+
+output$VA_interview_speaker_info_dist<-DT::renderDataTable({
+  data = values$VA_interview_speaker_info
+  data<-as.data.frame(table(data))
+  data <- data[order(data[,2],decreasing = T),]
+  datatable(data=data)
+})
+
 
 
 #' start volatility analysis script, if submit button is clicked
@@ -665,7 +717,9 @@ observeEvent(input$VA_Submit_Script,{
                      whitelist_expand=input$VA_whitelist_expand,
                      whitelist_only_results=input$VA_whitelist_only_results,
                      use_fixed_vocab=input$VA_use_fixed_vocab,
-                     fixed_vocab=input$VA_fixed_vocab
+                     fixed_vocab=input$VA_fixed_vocab,
+                     va_interview_use_speaker=input$VA_interview_use_speaker_info,
+                     va_interview_speaker_filter=input$VA_interview_speaker_info
     )
     #create process ID
     ID<-get_task_id_counter()+1
@@ -896,7 +950,9 @@ observeEvent(input$VA_pruning_continue,ignoreInit = T,{
                    whitelist_expand=input$VA_whitelist_expand,
                    whitelist_only_results=input$VA_whitelist_only_results,
                    use_fixed_vocab=input$VA_use_fixed_vocab,
-                   fixed_vocab=input$VA_fixed_vocab
+                   fixed_vocab=input$VA_fixed_vocab,
+                   va_interview_use_speaker=input$VA_interview_use_speaker_info,
+                   va_interview_speaker_filter=input$VA_interview_speaker_info
   )
   #create process ID
   ID<-get_task_id_counter()+1

@@ -949,7 +949,47 @@ observe({
   dataset<-stringr::str_split(string = document_identifier,pattern = "_",simplify = T)[1]
   doc_id<-stringr::str_split(string = document_identifier,pattern = "_",simplify = T)[2]
   
-  token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
+  #token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
+  text<-values$tm_meta$body[which(values$tm_meta$id_doc==paste0(dataset,"_",doc_id))]
+  # find matching spacy model
+  avail_models <- stringr::str_remove_all(string = stringr::str_split(
+    stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = "")
+    ,pattern = ", ",simplify = T),pattern = " ")
+  
+  detected_lang <- cld2::detect_language(text = text)
+  avail_models <- avail_models[grepl(pattern = detected_lang,x = avail_models)]
+  avail_models <- avail_models[grepl(pattern = "sm|md",x = avail_models)]
+  if(length(avail_models==0)){
+    model = "en_core_web_sm"
+  }
+  else{
+    model = avail_models[1]
+    model = stringr::str_remove(string = model,pattern = "\\(.+\\)")
+  }
+  spacyr::spacy_initialize(model = model)
+  #when using splits 
+  if(nchar(text)>1000000){
+    token <- NULL
+    for(i in 1:ceiling(nchar(text)/1000000)){
+      text_split <- substr(text,(((i-1)*1000000)+1),(i*1000000))
+      token_split <-spacyr::spacy_parse(iconv(paste(text_split,collapse="\n"), "UTF-8", "UTF-8",sub=''),pos = T,tag = F,lemma = T,entity = F,dependency = F)
+      token <- rbind(token,token_split)
+    }
+  }
+  else{
+    token<-spacyr::spacy_parse(iconv(paste(text,collapse="\n"), "UTF-8", "UTF-8",sub=''),pos = T,tag = F,lemma = T,entity = F,dependency = F)
+  }
+  token<-cbind(rep("unknown",nrow(token)),token)
+  colnames(token)[5]<-"word"
+  colnames(token)[1]<-"dataset"
+  colnames(token)[2]<-"id"
+  colnames(token)[3]<-"sid"
+  colnames(token)[4]<-"tid"
+  # remove idx column from token
+  #token<-token[,-ncol(token)]
+  
+  
+  
   
   document<-paste(token[,"word"],collapse=" ")
   
@@ -4190,7 +4230,6 @@ output$Det_TM_validation_pager_UI <- renderUI({
   identifier<-stringr::str_split(string = input$Det_TM_validation_document,pattern = "_",simplify = T)
   dataset<-identifier[1]
   doc_id<-identifier[2]
-  text<-values$tm_meta$body[which(values$tm_meta$id_doc==input$Det_TM_validation_document)]
   # find matching spacy model
   avail_models <- stringr::str_remove_all(string = stringr::str_split(
     stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = "")
@@ -4207,7 +4246,8 @@ output$Det_TM_validation_pager_UI <- renderUI({
     model = stringr::str_remove(string = model,pattern = "\\(.+\\)")
   }
   spacyr::spacy_initialize(model = model)
-  if(length(str_extract_all(string = input$Det_TM_validation_document,pattern = "_",simplify = T))>1){
+  #always appyl spacy again
+  if(length(str_extract_all(string = input$Det_TM_validation_document,pattern = "_",simplify = T))>0){
     #when using splits 
     if(nchar(text)>1000000){
       token <- NULL
@@ -6217,7 +6257,47 @@ output$Det_TM_word_occurrences_document_UI<-renderUI({
   identifier<-stringr::str_split(string = input$Det_TM_word_frequencies_document,pattern = "_",simplify = T)
   dataset<-identifier[1]
   doc_id<-identifier[2]
-  token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
+  #token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,sentence_ids = NULL,host=values$host,port=values$port)
+  ######################
+  text<-values$tm_meta$body[which(values$tm_meta$id_doc==paste0(dataset,"_",doc_id))]
+  # find matching spacy model
+  avail_models <- stringr::str_remove_all(string = stringr::str_split(
+    stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = "")
+    ,pattern = ", ",simplify = T),pattern = " ")
+  
+  detected_lang <- cld2::detect_language(text = text)
+  avail_models <- avail_models[grepl(pattern = detected_lang,x = avail_models)]
+  avail_models <- avail_models[grepl(pattern = "sm|md",x = avail_models)]
+  if(length(avail_models==0)){
+    model = "en_core_web_sm"
+  }
+  else{
+    model = avail_models[1]
+    model = stringr::str_remove(string = model,pattern = "\\(.+\\)")
+  }
+  spacyr::spacy_initialize(model = model)
+    #when using splits 
+    if(nchar(text)>1000000){
+      token <- NULL
+      for(i in 1:ceiling(nchar(text)/1000000)){
+        text_split <- substr(text,(((i-1)*1000000)+1),(i*1000000))
+        token_split <-spacyr::spacy_parse(iconv(paste(text_split,collapse="\n"), "UTF-8", "UTF-8",sub=''),pos = T,tag = F,lemma = T,entity = F,dependency = F)
+        token <- rbind(token,token_split)
+      }
+    }
+    else{
+      token<-spacyr::spacy_parse(iconv(paste(text,collapse="\n"), "UTF-8", "UTF-8",sub=''),pos = T,tag = F,lemma = T,entity = F,dependency = F)
+    }
+    token<-cbind(rep("unknown",nrow(token)),token)
+    colnames(token)[5]<-"word"
+    colnames(token)[1]<-"dataset"
+    colnames(token)[2]<-"id"
+    colnames(token)[3]<-"sid"
+    colnames(token)[4]<-"tid"
+    # remove idx column from token
+    #token<-token[,-ncol(token)]
+  
+  #####################
   
   load(paste0(values$Details_Data_TM,"/parameters.RData"))
   space_ids<-which(token[,"pos"]=="SPACE")

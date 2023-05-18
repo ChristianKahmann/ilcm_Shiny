@@ -238,6 +238,25 @@ output$Analysis_Parameter_DE<-renderUI({
       )
       
     ),
+    # Interview specific Parameters
+    tags$hr(),
+    tags$h4("Interview-specific Parameters"),
+    fluidRow(
+      column(1,
+             checkboxInput(inputId = "DE_interview_use_speaker_info",label="Restrict via speaker?",value=F),
+      ),
+      column(2,
+             conditionalPanel(condition = "input.DE_interview_use_speaker_info==true",
+                              selectizeInput(inputId="DE_interview_speaker_info", label= "Speaker Filter:",choices = c("INT_*","IP_*"),multiple=T,options=list(create=T))
+             )
+      ),
+      column(2,
+             conditionalPanel(condition = "input.DE_interview_use_speaker_info==true",
+                              bsButton(inputId = "DE_interview_show_speakers",label = "Show Speakers in chosen Collection",icon = icon("search"),style = "primary")
+             )
+      ),
+      
+    ),
     #specific parameters
     tags$hr(),
     tags$h4("Dictionary Extraction parameters"),
@@ -369,6 +388,42 @@ output$Analysis_Parameter_DE<-renderUI({
     bsButton(inputId = "DE_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
 })
+
+# show available speakers inside collection
+observeEvent(input$DE_interview_show_speakers,{
+  load(paste("collections/collections/",input$collection_selected,".RData",sep=""))
+  dataset = info[[2]][1,1]
+  id_docs = info[[1]][,1]
+  id_docs = paste0(id_docs,collapse=" ")
+  id_docs<-stringr::str_replace_all(string = as.character(id_docs),pattern = " ",",")
+  
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+  sprecher<-RMariaDB::dbGetQuery(mydb, paste("select sprecher from interview_info where id_doc in (",id_docs,")",
+                                             " and trim(dataset)='",dataset,"';",sep = ""))
+  if(nrow(sprecher)==0){
+    shinyWidgets::sendSweetAlert(session = session,title = "No Speaker Data found",text = "Maybe you have not specified a collection containing interview type data?!",type = "warning")
+  }
+  else{
+    values$DE_interview_speaker_info <- sprecher
+    showModal(
+      modalDialog(title = HTML(paste0("Speaker Distribution inside Collection: <b>", input$collection_selected,"</b>")),
+                  DT::dataTableOutput(outputId = "DE_interview_speaker_info_dist")
+      )
+    )
+  }
+}
+)
+
+output$DE_interview_speaker_info_dist<-DT::renderDataTable({
+  data = values$DE_interview_speaker_info
+  data<-as.data.frame(table(data))
+  data <- data[order(data[,2],decreasing = T),]
+  datatable(data=data)
+})
+
+
+
 
 #' radio Buttons for dictionaries found in /collections/dictionaries
 output$DE_dict_ui<-renderUI({
@@ -590,7 +645,9 @@ observeEvent(input$DE_Submit_Script,{
                      de_use_context_filter=input$DE_use_context_filter,
                      de_use_reg_exp=input$DE_use_reg_exp,
                      de_reg_exp=input$DE_regexp_input,
-                     Dictionary=input$DE_dict
+                     Dictionary=input$DE_dict,
+                     de_interview_use_speaker=input$DE_interview_use_speaker_info,
+                     de_interview_speaker_filter=input$DE_interview_speaker_info
     )
     #create process ID
     ID<-get_task_id_counter()+1
@@ -752,7 +809,9 @@ observeEvent(input$DE_pruning_continue,ignoreInit = T,{
                    de_use_context_filter=input$DE_use_context_filter,
                    de_use_reg_exp=input$DE_use_reg_exp,
                    de_reg_exp=input$DE_regexp_input,
-                   Dictionary=input$DE_dict
+                   Dictionary=input$DE_dict,
+                   de_interview_use_speaker=input$DE_interview_use_speaker_info,
+                   de_interview_speaker_filter=input$DE_interview_speaker_info
   )
   #create process ID
   ID<-get_task_id_counter()+1

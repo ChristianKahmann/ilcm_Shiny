@@ -177,30 +177,77 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
     texts<-stringr::str_replace_all(string = texts,pattern = '\\\\0'," ")
     # create token object
     token <- NULL
-    for(i in 1:nrow(data_interview)){
-      print(i)
-      row<-iconv(texts[i], "UTF-8", "UTF-8",sub='')
-      if(nchar(row)>0){
-        max_sen_id=0
-        try({
-          if(length(which(token$id_interview==data_interview$interview_id[i]))>0){
-            max_sen_id <- max(token$sentence_id[which(token$id_interview==data_interview$interview_id[i])]) 
-          }
-        })
-        toks<-spacyr::spacy_parse(row,pos = T,tag = F,lemma = T,entity = T,dependency = F,additional_attributes = "idx")
-        toks$sentence_id <- toks$sentence_id + max_sen_id
-        toks$doc_id <- data_interview$id_doc[i]
-        toks$id_interview <- data_interview$interview_id[i]
-        toks$id_interview_row <- data_interview$interview_row_id[i]
-        token <- rbind(token,toks)
-      }
-      log_sequence<-round(seq(from=1,to=length(texts),length.out=101))[2:101]
-      if(i%in%log_sequence){
-        log_to_file(paste(which(log_sequence==i),"% finished (",i," rows)"),logfile)
-      }
+    ###allnew####
+    # process bigger chunks of data and add correct row information afterwards 
+    
+    
+    ###allnew####
+    
+    ###new###
+    data_interview_grouped <- list()
+    count=0
+    for(interview in unique(data_interview$interview_id)){
+      count=count+1
+      data_interview_grouped[[count]] <- data_interview[which(data_interview$interview_id==interview),]
+      data_interview_grouped[[count]]$Transkript<-texts[which(data_interview$interview_id==interview)]
     }
+    token_list<-parallel::mclapply(mc.cleanup = T, mc.cores = min(c(10,length(data_interview_grouped),( parallel::detectCores()-1))),data_interview_grouped,FUN = function(x){
+      data=x
+      token_grouped=NULL
+      for(i in 1:nrow(data)){
+        print(i)
+        row<-iconv(data$Transkript[i], "UTF-8", "UTF-8",sub='')
+        if(nchar(row)>0){
+          max_sen_id=0
+          try({
+            if(length(which(token_grouped$id_interview==data$interview_id[i]))>0){
+              max_sen_id <- max(token_grouped$sentence_id[which(token_grouped$id_interview==data$interview_id[i])]) 
+            }
+          })
+          toks<-spacyr::spacy_parse(row,pos = T,tag = F,lemma = T,entity = T,dependency = F,additional_attributes = "idx")
+          toks$sentence_id <- toks$sentence_id + max_sen_id
+          toks$doc_id <- data$id_doc[i]
+          toks$id_interview <- data$interview_id[i]
+          toks$id_interview_row <- data$interview_row_id[i]
+          token_grouped <- rbind(token_grouped,toks)
+        }
+        log_sequence<-round(seq(from=1,to=length(texts),length.out=101))[2:101]
+      }
+      log_to_file(paste("Interview  ",data$interview_id[1]," finished"),logfile)
+      return(token_grouped)
+    }
+    )
+    token <- data.table::rbindlist(token_list)
+    ###new####
+    ###old####
+    # for(i in 1:nrow(data_interview)){
+    #   print(i)
+    #   row<-iconv(texts[i], "UTF-8", "UTF-8",sub='')
+    #   if(nchar(row)>0){
+    #     max_sen_id=0
+    #     try({
+    #       if(length(which(token$id_interview==data_interview$interview_id[i]))>0){
+    #         max_sen_id <- max(token$sentence_id[which(token$id_interview==data_interview$interview_id[i])]) 
+    #       }
+    #     })
+    #     toks<-spacyr::spacy_parse(row,pos = T,tag = F,lemma = T,entity = T,dependency = F,additional_attributes = "idx")
+    #     toks$sentence_id <- toks$sentence_id + max_sen_id
+    #     toks$doc_id <- data_interview$id_doc[i]
+    #     toks$id_interview <- data_interview$interview_id[i]
+    #     toks$id_interview_row <- data_interview$interview_row_id[i]
+    #     token <- rbind(token,toks)
+    #   }
+    #   log_sequence<-round(seq(from=1,to=length(texts),length.out=101))[2:101]
+    #   if(i%in%log_sequence){
+    #     log_to_file(paste(which(log_sequence==i),"% finished (",i," rows)"),logfile)
+    #   }
+    # }
+    ###old####
     token<-token[,c("doc_id","sentence_id","token_id","token","lemma","pos","entity","idx","id_interview","id_interview_row")]
-    token[which(token[,6]=="SPACE"),4:5]<-""
+    spaces <- which(token[,6]=="SPACE")
+    if(length(spaces)>0){
+      token[spaces,c(4,5)]<-""
+    }
     token<-cbind(rep(metadata[1,"dataset"],dim(token)[1]),token)
     colnames(token)[1]<-"dataset"
     log_to_file(message = "data preprocessed",logfile)
@@ -218,7 +265,8 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
     count=0
     for(j in unique(token[,2])){
       count=count+1
-      toks<-token[which(token[,2]==j),c("doc_id"  ,    "sentence_id", "token_id"  ,  "token"    ,   "lemma"     ,  "pos"    ,     "entity",  "idx")]
+      idx <- which(token[,2]==j)
+      toks<-token[idx,c("doc_id"  ,    "sentence_id", "token_id"  ,  "token"    ,   "lemma"     ,  "pos"    ,     "entity",  "idx")]
       class(toks)<-c("spacyr_parsed","data.frame")
       entities<-unique(spacyr::entity_extract(toks,type = "named")[,3])
       entities<-stringr::str_replace_all(string = entities,pattern = " ",replacement = "_")

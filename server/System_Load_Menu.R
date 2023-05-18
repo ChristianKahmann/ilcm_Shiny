@@ -348,6 +348,14 @@ observeEvent(ignoreNULL = T,input$options_delete_dataset_action_confirm,{
       RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.annotations_classification where dataset='",input$Options_delete_dataset_select,"';"))
     })
   }
+  try({
+    n=1
+    withProgress(message = paste0('Removing Interview Information with corpus:',input$Options_delete_dataset_select), value = 0, {
+      incProgress(1/n, detail = "Deleting user interview rows")
+      RMariaDB::dbSendStatement(mydb,paste0("delete FROM ilcm.interview_info where dataset='",input$Options_delete_dataset_select,"';"))
+    })
+    
+  })
   RMariaDB::dbCommit(mydb)
   RMariaDB::dbDisconnect(mydb)
   values$update_datasets_avaiable<-runif(1,0,1)

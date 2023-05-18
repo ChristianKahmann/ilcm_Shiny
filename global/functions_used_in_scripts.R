@@ -828,7 +828,9 @@ get_meta_data_for_detailed_topic_analysis<-function(host,port,ids,datasets,token
   # if(length(unique(info[[2]]))>1){
   #   #meta[,"id_doc"]<-as.numeric(factor(paste(db_data$token[,1],db_data$token[,2],sep="_")))
   # }
-  meta[,"id_doc"]<-unique(token[,2])
+  if(!grepl(pattern = "_",x = meta[1,"id_doc"])){
+    meta[,"id_doc"]<-paste0(meta$dataset,"_",meta$id_doc)
+  }
   RMariaDB::dbDisconnect(mydb)
   return(list(
     meta=meta,

@@ -425,7 +425,47 @@ observeEvent(input$coocs_kwic_document,{
   )
   dataset<- stringr::str_split(string=values$coocs_examples_document_ids[selected_row],pattern = "_",simplify = T)[1,1]
   doc_id<- stringr::str_split(string=values$coocs_examples_document_ids[selected_row],pattern = "_",simplify = T)[1,2]
-  token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,host=values$host,port=values$port)
+  ######################
+  text<-values$co_meta$body[which(values$co_meta$id_doc==paste0(dataset,"_",doc_id))]
+  # find matching spacy model
+  avail_models <- stringr::str_remove_all(string = stringr::str_split(
+    stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = "")
+    ,pattern = ", ",simplify = T),pattern = " ")
+  
+  detected_lang <- cld2::detect_language(text = text)
+  avail_models <- avail_models[grepl(pattern = detected_lang,x = avail_models)]
+  avail_models <- avail_models[grepl(pattern = "sm|md",x = avail_models)]
+  if(length(avail_models==0)){
+    model = "en_core_web_sm"
+  }
+  else{
+    model = avail_models[1]
+    model = stringr::str_remove(string = model,pattern = "\\(.+\\)")
+  }
+  spacyr::spacy_initialize(model = model)
+  #when using splits 
+  if(nchar(text)>1000000){
+    token <- NULL
+    for(i in 1:ceiling(nchar(text)/1000000)){
+      text_split <- substr(text,(((i-1)*1000000)+1),(i*1000000))
+      token_split <-spacyr::spacy_parse(iconv(paste(text_split,collapse="\n"), "UTF-8", "UTF-8",sub=''),pos = T,tag = F,lemma = T,entity = F,dependency = F)
+      token <- rbind(token,token_split)
+    }
+  }
+  else{
+    token<-spacyr::spacy_parse(iconv(paste(text,collapse="\n"), "UTF-8", "UTF-8",sub=''),pos = T,tag = F,lemma = T,entity = F,dependency = F)
+  }
+  token<-cbind(rep("unknown",nrow(token)),token)
+  colnames(token)[5]<-"word"
+  colnames(token)[1]<-"dataset"
+  colnames(token)[2]<-"id"
+  colnames(token)[3]<-"sid"
+  colnames(token)[4]<-"tid"
+  # remove idx column from token
+  #token<-token[,-ncol(token)]
+  #####################
+  
+  #token<-get_token_from_db(dataset = dataset,doc_ids = doc_id,host=values$host,port=values$port)
   id_targets<-union(which(tolower(token[,"word"])%in%input$coocs_examples_words),which(tolower(token[,"lemma"])%in%input$coocs_examples_words))
   
   token[id_targets,"word"]<-paste0(' <b style="color:',"black",'">',token[id_targets,"word"],'</b> ')

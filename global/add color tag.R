@@ -90,7 +90,7 @@ add_Entitytag_alt<-function(text,tag){
 #' @param anno_highlight
 #' 
 #' @return x (visualization of annotations)
-add_tags<-function(x,annos,pos,ner,space,anno_highlight){
+add_tags<-function(x,annos,pos,ner,space,anno_highlight,mark_interview=NULL,mark_speaker=NULL){
   count=0
   if(dim(annos)[1]>0){
     for(i in as.numeric(annos[,1])){
@@ -108,10 +108,15 @@ add_tags<-function(x,annos,pos,ner,space,anno_highlight){
   for(i in space){
     x[i]<-paste0(x[i],'<br>')
   }
+  if(!is.null(mark_interview)){
+    for ( i in 1:length(mark_interview)){
+      index = mark_interview[i]
+      x[index]<-paste0('<br>',"<b>",mark_speaker[i],":&nbsp;&nbsp;&nbsp;&nbsp;</b>",x[index])
+    }
+  }
   for(i in 1:length(anno_highlight[,1])){
     x[as.numeric(anno_highlight[i,1])]<-paste0('<font style="background-color:',anno_highlight[i,2],';">',x[as.numeric(anno_highlight[i,1])],'</font>')
   }
   return(x)
-  
 }
 

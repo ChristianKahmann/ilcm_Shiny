@@ -269,6 +269,25 @@ output$Analysis_Parameter_FE<-renderUI({
                        )
                      )
     ),
+    # Interview specific Parameters
+    tags$hr(),
+    tags$h4("Interview-specific Parameters"),
+    fluidRow(
+      column(1,
+             checkboxInput(inputId = "FE_interview_use_speaker_info",label="Restrict via speaker?",value=F),
+      ),
+      column(2,
+             conditionalPanel(condition = "input.FE_interview_use_speaker_info==true",
+                              selectizeInput(inputId="FE_interview_speaker_info", label= "Speaker Filter:",choices = c("INT_*","IP_*"),multiple=T,options=list(create=T))
+             )
+      ),
+      column(2,
+             conditionalPanel(condition = "input.FE_interview_use_speaker_info==true",
+                              bsButton(inputId = "FE_interview_show_speakers",label = "Show Speakers in chosen Collection",icon = icon("search"),style = "primary")
+             )
+      ),
+      
+    ),
     #specific parameters
     tags$hr(),
     tags$h4("Frequency Extraction parameters"),
@@ -327,6 +346,40 @@ output$Analysis_Parameter_FE<-renderUI({
     bsButton(inputId = "FE_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
 })
+
+# show available speakers inside collection
+observeEvent(input$FE_interview_show_speakers,{
+  load(paste("collections/collections/",input$collection_selected,".RData",sep=""))
+  dataset = info[[2]][1,1]
+  id_docs = info[[1]][,1]
+  id_docs = paste0(id_docs,collapse=" ")
+  id_docs<-stringr::str_replace_all(string = as.character(id_docs),pattern = " ",",")
+  
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+  sprecher<-RMariaDB::dbGetQuery(mydb, paste("select sprecher from interview_info where id_doc in (",id_docs,")",
+                                             " and trim(dataset)='",dataset,"';",sep = ""))
+  if(nrow(sprecher)==0){
+    shinyWidgets::sendSweetAlert(session = session,title = "No Speaker Data found",text = "Maybe you have not specified a collection containing interview type data?!",type = "warning")
+  }
+  else{
+    values$FE_interview_speaker_info <- sprecher
+    showModal(
+      modalDialog(title = HTML(paste0("Speaker Distribution inside Collection: <b>", input$collection_selected,"</b>")),
+                  DT::dataTableOutput(outputId = "FE_interview_speaker_info_dist")
+      )
+    )
+  }
+}
+)
+
+output$FE_interview_speaker_info_dist<-DT::renderDataTable({
+  data = values$FE_interview_speaker_info
+  data<-as.data.frame(table(data))
+  data <- data[order(data[,2],decreasing = T),]
+  datatable(data=data)
+})
+
 
 #' show whitelists stored in collections/whitelists
 output$FE_whitelist_UI<-renderUI({
@@ -514,7 +567,9 @@ observeEvent(input$FE_Submit_Script,{
                      whitelist_expand=input$FE_whitelist_expand,
                      whitelist_only=input$FE_whitelist_only,
                      use_fixed_vocab=input$FE_use_fixed_vocab,
-                     fixed_vocab=input$FE_fixed_vocab
+                     fixed_vocab=input$FE_fixed_vocab,
+                     fe_interview_use_speaker=input$FE_interview_use_speaker_info,
+                     fe_interview_speaker_filter=input$FE_interview_speaker_info
     )
     #create process ID
     ID<-get_task_id_counter()+1
@@ -668,7 +723,9 @@ observeEvent(input$FE_pruning_continue,ignoreInit = T,{
                    whitelist_expand=input$FE_whitelist_expand,
                    whitelist_only=input$FE_whitelist_only,
                    use_fixed_vocab=input$FE_use_fixed_vocab,
-                   fixed_vocab=input$FE_fixed_vocab
+                   fixed_vocab=input$FE_fixed_vocab,
+                   fe_interview_use_speaker=input$FE_interview_use_speaker_info,
+                   fe_interview_speaker_filter=input$FE_interview_speaker_info
   )
   #create process ID
   ID<-get_task_id_counter()+1

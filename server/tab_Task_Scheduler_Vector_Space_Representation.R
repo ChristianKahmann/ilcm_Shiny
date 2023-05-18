@@ -64,6 +64,26 @@ output$Analysis_Parameter_VS<-renderUI({
                        )
                       ),
                      tags$hr(),
+                     
+                     # Interview specific Parameters
+                     tags$hr(),
+                     tags$h4("Interview-specific Parameters"),
+                     fluidRow(
+                       column(1,
+                              checkboxInput(inputId = "VS_interview_use_speaker_info",label="Restrict via speaker?",value=F),
+                       ),
+                       column(2,
+                              conditionalPanel(condition = "input.VS_interview_use_speaker_info==true",
+                                               selectizeInput(inputId="VS_interview_speaker_info", label= "Speaker Filter:",choices = c("INT_*","IP_*"),multiple=T,options=list(create=T))
+                              )
+                       ),
+                       column(2,
+                              conditionalPanel(condition = "input.VS_interview_use_speaker_info==true",
+                                               bsButton(inputId = "VS_interview_show_speakers",label = "Show Speakers in chosen Collection",icon = icon("search"),style = "primary")
+                              )
+                       ),
+                       
+                     ),
                      #specific parameters
                      tags$hr(),
                      tags$h4("Word2Vec parameters"),
@@ -142,6 +162,39 @@ output$Analysis_Parameter_VS<-renderUI({
 
 
 
+# show available speakers inside collection
+observeEvent(input$VS_interview_show_speakers,{
+  load(paste("collections/collections/",input$collection_selected,".RData",sep=""))
+  dataset = info[[2]][1,1]
+  id_docs = info[[1]][,1]
+  id_docs = paste0(id_docs,collapse=" ")
+  id_docs<-stringr::str_replace_all(string = as.character(id_docs),pattern = " ",",")
+  
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+  sprecher<-RMariaDB::dbGetQuery(mydb, paste("select sprecher from interview_info where id_doc in (",id_docs,")",
+                                             " and trim(dataset)='",dataset,"';",sep = ""))
+  if(nrow(sprecher)==0){
+    shinyWidgets::sendSweetAlert(session = session,title = "No Speaker Data found",text = "Maybe you have not specified a collection containing interview type data?!",type = "warning")
+  }
+  else{
+    values$VS_interview_speaker_info <- sprecher
+    showModal(
+      modalDialog(title = HTML(paste0("Speaker Distribution inside Collection: <b>", input$collection_selected,"</b>")),
+                  DT::dataTableOutput(outputId = "VS_interview_speaker_info_dist")
+      )
+    )
+  }
+}
+)
+
+output$VS_interview_speaker_info_dist<-DT::renderDataTable({
+  data = values$VS_interview_speaker_info
+  data<-as.data.frame(table(data))
+  data <- data[order(data[,2],decreasing = T),]
+  datatable(data=data)
+})
+
 
 #' start vector space representation/ sentiment analysis script, if submit button is clicked
 #' depends on:
@@ -182,7 +235,9 @@ observeEvent(input$VS_Submit_Script,{
                    w2v_neg_samples=input$VS_neg_samples,
                    class_use_model=input$VS_use_model,
                    class_model=input$VS_model,
-                   class_dim_reduction=input$VS_train_dim_reduction
+                   class_dim_reduction=input$VS_train_dim_reduction,
+                   vs_interview_use_speaker=input$VS_interview_use_speaker_info,
+                   vs_interview_speaker_filter=input$VS_interview_speaker_info
   )
   #create process ID
   ID<-get_task_id_counter()+1

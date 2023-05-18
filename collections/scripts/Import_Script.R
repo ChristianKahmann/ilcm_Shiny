@@ -36,19 +36,19 @@ error<-try(expr = {
     data_interview <- parameters[[7]]
     metadata_interview <- metadata
   }
-
+  
   if(dim(meta_metadata)[2]==1){
     metadata<-metadata[,c("dataset","id_doc","title","body","date","token","language")]
   }
   else{
     metadata<-metadata[,c("dataset","id_doc","title","body","date","token","language",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],sep=""))]
   }
-
+  
   if(interview_mode==TRUE){
-    metadata$id_interview <- metadata_interview$id_interview
+    metadata$id_interview <- metadata_interview$interview_id
     metadata$is_interview <- metadata_interview$is_interview
   }
-
+  
   
   if(language%in%c("en","de","es","fr","it","nl","pt","el","xx")){
     avail_models <-  stringr::str_remove_all(string=stringr::str_split(
@@ -89,13 +89,25 @@ error<-try(expr = {
     b<-dbGetQuery(mydb,paste0("Select title from documents where id_doc=",a[1,2]," and dataset='",a[1,1],"' limit 1;"))
     if(dim(b)[1]==0){
       if(dim(meta_metadata)[2]==1){
-        query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.documents CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' 
+        if(interview_mode==TRUE){
+          query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.documents CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' 
+                    (dataset,id_doc,title,body,date,token,language",",id_interview,is_interview,entities) ;")
+        }
+        else{
+          query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.documents CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' 
                     (dataset,id_doc,title,body,date,token,language",",entities) ;")
+        }
         rs<- dbSendQuery(mydb, query)
       }
       else{
-        query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.documents CHARACTER SET utf8mb4  FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' 
+        if(interview_mode==TRUE){
+          query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.documents CHARACTER SET utf8mb4  FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' 
+                    (dataset,id_doc,title,body,date,token,language,",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],collapse=","),",id_interview,is_interview,entities) ;")
+        }
+        else{
+          query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/meta_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.documents CHARACTER SET utf8mb4  FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","' 
                     (dataset,id_doc,title,body,date,token,language,",paste(colnames(meta_metadata)[2:dim(meta_metadata)[2]],collapse=","),",entities) ;")
+        }
         rs<- dbSendQuery(mydb, query)
       }
       query<-paste0("LOAD DATA LOCAL INFILE '","data_import/processed_data/token_",metadata[1,"dataset"],"_",process_info[[1]],".csv","' INTO TABLE ilcm.token CHARACTER SET utf8mb4  FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '","\n","';")

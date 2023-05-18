@@ -195,7 +195,7 @@ output$Fac_mde1_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+    fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -217,7 +217,7 @@ output$Fac_mde1_rel<-renderUI({
   data<-matrix(data[rownames(values$Fac_mde1_abs),],ncol=2)
   #get relative counts by dividing search specific counts by counts for whole dataset
   data[,2]<-as.numeric((values$Fac_mde1_abs[,2]))/as.numeric(data[,2])
-   values$Fac_mde1_rel<-data
+  values$Fac_mde1_rel<-data
   height<-round(max((dim(data)[1]/30)*100,25),digits = 0)
   plot_output_list <- lapply(1:1, function(i) {
     plotname <- paste0("plotly_mde1_rel")
@@ -308,7 +308,7 @@ output$Fac_mde2_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+    fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -427,7 +427,7 @@ output$Fac_mde3_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+    fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -550,7 +550,7 @@ output$Fac_mde4_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+    fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -635,7 +635,7 @@ output$Fac_mde5_abs<-renderUI({
   }
   values$Fac_mde5_abs<-data
   height<-round(max((dim(data)[1]/30)*100,25),digits = 0)
-    plot_output_list <- lapply(1:1, function(i) {
+  plot_output_list <- lapply(1:1, function(i) {
     plotname <- paste0("plotly_mde5_abs")
     plot_output_object <- plotlyOutput(plotname)
     plot_output_object <- renderPlotly({
@@ -673,7 +673,7 @@ output$Fac_mde5_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+    fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -796,7 +796,7 @@ output$Fac_mde6_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+    fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -918,7 +918,7 @@ output$Fac_mde7_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+    fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -1041,7 +1041,7 @@ output$Fac_mde8_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+    fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -1164,7 +1164,7 @@ output$Fac_mde9_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+    fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -1226,7 +1226,7 @@ output$Fac_Entities_abs<-renderUI({
   )
   #get data from solr facet to collect words
   data<-matrix(unlist(facet_meta(q = values$q,base = values$url,fq=values$fq,facet.field = "entities_txt_en_noStemming",facet.limit = 250)[[2]]),ncol=2)
-    #delete numbers, stopwords and one-char words
+  #delete numbers, stopwords and one-char words
   toDelete<-which(str_detect(string = data[,1],pattern = "[0-9]+"))
   toDelete<-union(toDelete,which(data[,1]%in%tm::stopwords("en")))
   toDelete<-union(toDelete,which(nchar(data[,1])<2))
@@ -1286,7 +1286,7 @@ output$Fac_Entities_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+    fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -1333,7 +1333,7 @@ output$Fac_Token<-renderPlotly({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+    fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])

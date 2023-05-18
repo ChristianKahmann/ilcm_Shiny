@@ -51,7 +51,33 @@ error<-try(expr = {
   parameters<-prepare_input_parameters(parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
-  
+  #######################################
+  # Interview data filter via speaker?!
+  meta_body_replacemets<-NULL
+  if(parameters$tm_interview_use_speaker==TRUE){
+    log_to_file(message = "<b>Apply Speaker Restriction</b>",file = logfile)
+    if(length(parameters$tm_interview_speaker_filter)>0){
+      dataset = info[[2]][1,1]
+      id_docs = info[[1]][,1]
+      id_docs = paste0(id_docs,collapse=" ")
+      id_docs<-stringr::str_replace_all(string = as.character(id_docs),pattern = " ",",")
+      
+      mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+      rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+      data_interview<-RMariaDB::dbGetQuery(mydb, paste("select * from interview_info where id_doc in (",id_docs,")",
+                                                       " and trim(dataset)='",dataset,"';",sep = ""))
+      speaker_ids <- which(grepl(x = data_interview$sprecher,pattern = stringr::regex(paste0("(",parameters$tm_interview_speaker_filter,")",collapse="|"))))
+      good_rows <- paste0(data_interview$id_interview[speaker_ids],"_",data_interview$id_interview_row[speaker_ids])
+      
+      db_data$token <- db_data$token[which(paste0(db_data$token$id_interview,"_",db_data$token$id_interview_row)%in%good_rows),]
+      meta_body_replacemets <- unlist(lapply(unique(db_data$token$id),FUN = function(x){
+        paste0(db_data$token$word[which(db_data$token$id==x)],collapse=" ")
+      }))
+    }
+    else{
+      log_to_file(message = "&emsp;<b> No Filter was specified. Using whole texts instead</b>",logfile)
+    }
+  }
   
   
   
@@ -63,20 +89,73 @@ error<-try(expr = {
   colnames(documents_original)<-c("doc_ids","documents_original")
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
-  
   #get metadata
   log_to_file(message = "<b>Step 6/13: Getting metadata for detailed metadata analysis from database</b>",file = logfile)
   meta_data<-get_meta_data_for_detailed_topic_analysis(host = host,port = db_port,ids = info[[3]],datasets = unique(info[[2]]),token = db_data$token)
   meta<-meta_data$meta
   meta_names<-meta_data$meta_names
+  if(!is.null(meta_body_replacemets)){
+    meta <- meta[which(meta$id_doc%in%unique(db_data$token$id)),]
+    meta$body<-meta_body_replacemets
+  }
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
   
+  #######################################
+  # make chunks of x rows
+  if(parameters$tm_interview_use_chunking==T){
+    log_to_file(message = paste0("&emsp;<b> Chunking of Interviews with a size of: ", parameters$tm_interview_use_chunking_size, "</b>"),logfile)
+    #! TODO check what happens if not applied on interviews
+    chunk_size = parameters$tm_interview_use_chunking_size
+    dataset = info[[2]][1,1]
+    id_docs = info[[1]][,1]
+    id_docs = paste0(id_docs,collapse=" ")
+    id_docs<-stringr::str_replace_all(string = as.character(id_docs),pattern = " ",",")
+    
+    mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+    rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+    data_interview<-RMariaDB::dbGetQuery(mydb, paste("select * from interview_info where id_doc in (",id_docs,")",
+                                                     " and trim(dataset)='",dataset,"';",sep = ""))
+    meta <- meta
+    meta_splits <- NULL
+    
+    token <- db_data$token
+    
+    token_interviews <- lapply(unique(token$id_interview),FUN = function(x){
+      return(token[which(token$id_interview==x),])
+    })
+    for(j in 1:length(token_interviews)){
+      print(j)
+      token_j <- token_interviews[[j]]
+      avail_rows <- unique(token_j$id_interview_row)
+      split <- split(avail_rows, ceiling(seq_along(avail_rows)/chunk_size))
+      count=0
+      int_id <- token_interviews[[j]]$id[1]
+      for(i in 1:length(split)){
+        count=count+1
+        meta_base <- meta[which(meta$id_doc==int_id),,drop=F]
+        token_j$id[which(token_j$id_interview_row%in%split[[i]])] <- paste0(int_id,"_",count)
+        text <- paste(token_j$word[which(token_j$id_interview_row%in%split[[i]])], collapse = " ")
+        meta_base$id_doc<-paste0(int_id,"_",count)
+        meta_base$title<-paste0(meta_base$title,"_",count)
+        meta_base$body <- text
+        meta_base$token <- length(which(token_j$id_interview_row%in%split[[i]]))
+        meta_base$entities <- paste(token_j$word[intersect(which(token_j$entity!=""),which(token_j$id_interview_row%in%split[[i]]))], collapse=", ")
+        meta_splits <- rbind(meta_splits, meta_base)
+      }
+      token_interviews[[j]]<-token_j
+      log_to_file(message = paste0("&emsp;<b> Finished Chunking ", j, " of ", length(token_interviews), " Interviews</b>"),logfile)
+    }
+    token<- data.table::rbindlist(token_interviews)
+    db_data$token <- token
+    meta <- meta_splits
+  }
+  
+  #########################################
   
   #preparing token object
   log_to_file(message = "<b>Step 7/13: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
-  
   
   
   

@@ -286,6 +286,35 @@ output$Analysis_Parameter_TM<-renderUI({
                        )
                      )  
     ),
+    # Interview specific Parameters
+    tags$hr(),
+    tags$h4("Interview-specific Parameters"),
+    fluidRow(
+      column(1,
+             checkboxInput(inputId = "TM_interview_use_speaker_info",label="Restrict via speaker?",value=F),
+      ),
+      column(2,
+             conditionalPanel(condition = "input.TM_interview_use_speaker_info==true",
+                              selectizeInput(inputId="TM_interview_speaker_info", label= "Speaker Filter:",choices = c("INT_*","IP_*"),multiple=T,options=list(create=T))
+             )
+      ),
+      column(2,
+             conditionalPanel(condition = "input.TM_interview_use_speaker_info==true",
+                              bsButton(inputId = "TM_interview_show_speakers",label = "Show Speakers in chosen Collection",icon = icon("search"),style = "primary")
+             )
+      )
+    ),
+    tags$br(),
+    fluidRow(
+      column(1,
+             checkboxInput(inputId = "TM_interview_use_chunking",label="Apply Chunking?",value=F),
+      ),
+      column(2,
+             conditionalPanel(condition = "input.TM_interview_use_chunking==true",
+                              numericInput(inputId="TM_interview_use_chunking_size", label= "Chunk Size:",value = 25,min = 1,max = 500,step = 5)
+             )
+      )
+    ),
     #Topic Model specific parameters
     tags$hr(),
     tags$h4("Topic Model parameters"),
@@ -549,12 +578,12 @@ output$Analysis_Parameter_TM<-renderUI({
                      fluidRow(
                        column(2,
                               checkboxInput(inputId = "TM_chunk_documents",label ="Split Documents in smaller chunks?",value=F)
-                              ),
+                       ),
                        column(2,
                               conditionalPanel(condition = 'input.TM_chunk_documents==true',
                                                numericInput(inputId="TM_chunk_documents_n",label = "Maximum number of words per chunk:",value=2500,step=500,min=2)
-                                               )
                               )
+                       )
                        
                      )
     ),
@@ -564,6 +593,40 @@ output$Analysis_Parameter_TM<-renderUI({
     bsButton(inputId = "TM_Submit_Script",label = "Submit Request",icon = icon("play-circle"),type = "primary")
   )
 })
+
+# show available speakers inside collection
+observeEvent(input$TM_interview_show_speakers,{
+  load(paste("collections/collections/",input$collection_selected,".RData",sep=""))
+  dataset = info[[2]][1,1]
+  id_docs = info[[1]][,1]
+  id_docs = paste0(id_docs,collapse=" ")
+  id_docs<-stringr::str_replace_all(string = as.character(id_docs),pattern = " ",",")
+  
+  mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=isolate(values$host),port=isolate(values$db_port))
+  rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+  sprecher<-RMariaDB::dbGetQuery(mydb, paste("select sprecher from interview_info where id_doc in (",id_docs,")",
+                                             " and trim(dataset)='",dataset,"';",sep = ""))
+  if(nrow(sprecher)==0){
+    shinyWidgets::sendSweetAlert(session = session,title = "No Speaker Data found",text = "Maybe you have not specified a collection containing interview type data?!",type = "warning")
+  }
+  else{
+    values$TM_interview_speaker_info <- sprecher
+    showModal(
+      modalDialog(title = HTML(paste0("Speaker Distribution inside Collection: <b>", input$collection_selected,"</b>")),
+                  DT::dataTableOutput(outputId = "TM_interview_speaker_info_dist")
+      )
+    )
+  }
+}
+)
+
+output$TM_interview_speaker_info_dist<-DT::renderDataTable({
+  data = values$TM_interview_speaker_info
+  data<-as.data.frame(table(data))
+  data <- data[order(data[,2],decreasing = T),]
+  datatable(data=data)
+})
+
 
 
 #' show whitelists stored in collections/whitelists
@@ -775,7 +838,11 @@ observeEvent(input$TM_Submit_Script,{
                      tm_use_precalculated_topic_model=input$TM_use_precalculated_topic_model,
                      tm_precalculated_topic_model=input$TM_precalculated_topic_model,
                      tm_chunk_documents=input$TM_chunk_documents,
-                     tm_chunk_documents_n=input$TM_chunk_documents_n
+                     tm_chunk_documents_n=input$TM_chunk_documents_n,
+                     tm_interview_use_speaker=input$TM_interview_use_speaker_info,
+                     tm_interview_speaker_filter=input$TM_interview_speaker_info,
+                     tm_interview_use_chunking=input$TM_interview_use_chunking,
+                     tm_interview_use_chunking_size=input$TM_interview_use_chunking_size
     )
     
     if(input$TM_method == "stm"){
@@ -970,7 +1037,11 @@ observeEvent(input$TM_pruning_continue,ignoreInit = T,{
                    tm_use_precalculated_topic_model=input$TM_use_precalculated_topic_model,
                    tm_precalculated_topic_model=input$TM_precalculated_topic_model,
                    tm_chunk_documents=input$TM_chunk_documents,
-                   tm_chunk_documents_n=input$TM_chunk_documents_n
+                   tm_chunk_documents_n=input$TM_chunk_documents_n,
+                   tm_interview_use_speaker=input$TM_interview_use_speaker_info,
+                   tm_interview_speaker_filter=input$TM_interview_speaker_info,
+                   tm_interview_use_chunking=input$TM_interview_use_chunking,
+                   tm_interview_use_chunking_size=input$TM_interview_use_chunking_size
   )
   
   if(input$TM_method == "stm"){

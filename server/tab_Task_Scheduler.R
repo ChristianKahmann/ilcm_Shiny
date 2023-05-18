@@ -216,7 +216,9 @@ observeEvent(input$parameter_preset_save,{
       CA_cooc_type=input$CA_cooc_type,
       CA_min_Cooc_Freq=input$CA_min_Cooc_Freq,
       CA_POS_TYPES=input$CA_POS_TYPES,
-      CA_ENTITY_TYPES=input$CA_ENTITY_TYPES
+      CA_ENTITY_TYPES=input$CA_ENTITY_TYPES,
+      CA_interview_use_speaker_info=input$CA_interview_use_speaker_info,
+      CA_interview_speaker_info=input$CA_interview_speaker_info
     )
   }
   if(input$analysis_selected=="Classification"){
@@ -266,7 +268,9 @@ observeEvent(input$parameter_preset_save,{
       CL_Category=input$CL_Category,
       CL_dict=input$CL_dict,
       CL_whitelist=input$CL_whitelist,
-      CL_blacklist=input$CL_blacklist
+      CL_blacklist=input$CL_blacklist,
+      CL_interview_use_speaker_info=input$CL_interview_use_speaker_info,
+      CL_interview_speaker_info=input$CL_interview_speaker_info
     )
   }
   if(input$analysis_selected=="Dictionary_Extraction"){
@@ -314,7 +318,9 @@ observeEvent(input$parameter_preset_save,{
       DE_Context_Filter=input$DE_Context_Filter,
       DE_reg_exp=input$DE_reg_exp,
       DE_context_unit=input$DE_context_unit,
-      DE_dict=input$DE_dict
+      DE_dict=input$DE_dict,
+      DE_interview_use_speaker_info=input$DE_interview_use_speaker_info,
+      DE_interview_speaker_info=input$DE_interview_speaker_info
     )
   } 
   if(input$analysis_selected=="Frequency_Extraction"){
@@ -355,7 +361,9 @@ observeEvent(input$parameter_preset_save,{
       FE_min_docfreq_q=input$FE_min_docfreq_q,
       FE_max_docfreq_q=input$FE_max_docfreq_q,
       FE_POS_TYPES=input$FE_POS_TYPES,
-      FE_ENTITY_TYPES=input$FE_ENTITY_TYPES
+      FE_ENTITY_TYPES=input$FE_ENTITY_TYPES,
+      FE_interview_use_speaker_info=input$FE_interview_use_speaker_info,
+      FE_interview_speaker_info=input$FE_interview_speaker_info
     )
   }  
   if(input$analysis_selected=="Dynamic_Topic_Model"){
@@ -405,7 +413,9 @@ observeEvent(input$parameter_preset_save,{
       DTM_ByDate_Type=input$DTM_ByDate_Type,
       DTM_ByDate_n=input$DTM_ByDate_n,
       DTM_chunk_documents_n=input$DTM_chunk_documents_n,
-      DTM_chunk_documents=input$DTM_chunk_documents
+      DTM_chunk_documents=input$DTM_chunk_documents,
+      DTM_interview_use_speaker_info=input$DTM_interview_use_speaker_info,
+      DTM_interview_speaker_info=input$DTM_interview_speaker_info
     )
   }  
   if(input$analysis_selected=="Volatility_Analysis"){
@@ -453,7 +463,9 @@ observeEvent(input$parameter_preset_save,{
       VA_history=input$VA_history,
       VA_method=input$VA_method,
       VA_cooc_type=input$VA_cooc_type,
-      VA_weightfactor=input$VA_weightfactor
+      VA_weightfactor=input$VA_weightfactor,
+      VA_interview_use_speaker_info=input$VA_interview_use_speaker_info,
+      VA_interview_speaker_info=input$VA_interview_speaker_info
     )
   }  
   if(input$analysis_selected=="Keyword_Extraction"){
@@ -466,7 +478,9 @@ observeEvent(input$parameter_preset_save,{
       KE_no_ref_ngram_max=input$KE_no_ref_ngram_max,
       KE_seperator=input$KE_seperator,
       KE_filter=input$KE_filter,
-      KE_phrase=input$KE_phrase
+      KE_phrase=input$KE_phrase,
+      KE_interview_use_speaker_info=input$KE_interview_use_speaker_info,
+      KE_interview_speaker_info=input$KE_interview_speaker_info
     )
   }
   if(input$analysis_selected=="Sentiment_Analysis"){
@@ -476,7 +490,9 @@ observeEvent(input$parameter_preset_save,{
       SA_ngram=input$SA_ngram,
       SA_remove_custom=input$SA_remove_custom,
       SA_sentiment_dictionary=input$SA_sentiment_dictionary,
-      SA_avg=input$SA_avg
+      SA_avg=input$SA_avg,
+      SA_interview_use_speaker_info=input$SA_interview_use_speaker_info,
+      SA_interview_speaker_info=input$SA_interview_speaker_info
     )
   }
   if(input$analysis_selected=="Document_Deduplication"){
@@ -503,7 +519,9 @@ observeEvent(input$parameter_preset_save,{
       VS_window=input$VS_window,
       VS_iter=input$VS_iter,
       VS_neg_samples=input$VS_neg_samples,
-      VS_train_dim_reduction=input$VS_train_dim_reduction
+      VS_train_dim_reduction=input$VS_train_dim_reduction,
+      VS_interview_use_speaker_info=input$VS_interview_use_speaker_info,
+      VS_interview_speaker_info=input$VS_interview_speaker_info
     )
   }
   if(input$analysis_selected=="Topic_Model"){
@@ -561,7 +579,11 @@ observeEvent(input$parameter_preset_save,{
       stm_sigma_prior=input$stm_sigma_prior,
       stm_kappa_prior=input$stm_kappa_prior,
       TM_chunk_documents_n=input$TM_chunk_documents_n,
-      TM_chunk_documents=input$TM_chunk_documents
+      TM_chunk_documents=input$TM_chunk_documents,
+      TM_interview_use_speaker_info=input$TM_interview_use_speaker_info,
+      TM_interview_speaker_info=input$TM_interview_speaker_info,
+      TM_interview_use_chunking=input$TM_interview_use_chunking,
+      TM_interview_use_chunking_size=input$TM_interview_use_chunking_size
     )
   }
   # show modal view where user can specify the name of the preset

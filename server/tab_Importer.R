@@ -3385,6 +3385,7 @@ output$Import_Wortschatz_Dataset_Information<-renderUI({
 ########################################################################
 
 output$UI_Import_OHD<-renderUI({
+  values$ohd_use_multi <- NULL
   return(tagList(tags$div(style="height:79vh; overflow-y:auto;",
                           fluidRow(style="margin-left:0px;margin-right:0px",
                                    uiOutput(outputId = "Import_ohd_avail_files")
@@ -3552,7 +3553,7 @@ observeEvent(input$Import_ohd_meta_show_details,{
   values$import_ohd_data_meta_show <- readr::read_delim(file = paste0("data_import/ohd_meta_files/",input$Import_ohd_meta_file),
                                                         delim = "\t", na = character() )
   showModal(
-    modalDialog(title = "Metadata Details",size = "l",
+    modalDialog(title = "Metadata Details",size = "l",easyClose = T,
                 tags$div(style="overflow-x: auto;",
                          DT::dataTableOutput(outputId = "Import_ohd_meta_details_table")
                 )
@@ -3622,13 +3623,16 @@ observeEvent(input$Import_ohd_new_meta,ignoreInit = T,{
 #'   values$header_ohd: extracted csv header
 #'   values$data_ohd: all csv data
 observeEvent(input$Import_load_ohd,{
-  if(is.null(input$Import_ohd_files)){
+  validate(
+    need(!is.null(values$ohd_use_multi),"No input selected")
+  )
+  if(isTRUE(values$ohd_use_multi)){
     withBusyIndicatorServer("Import_load_ohd", {
       files = list.files(paste0("data_import/ohd/",input$Import_ohd_files_multiple),full.names = T)
       data=NULL
       for(i in 1:length(files)){
         data_i <- readr::read_delim(file = files[i],
-                                    delim = "\t", na = character() )
+                                    delim = "\t", na = character(), quote = "\\\"", escape_double = FALSE )
         file_names <- rep(list.files(paste0("data_import/ohd/",input$Import_ohd_files_multiple),full.names = F)[i],nrow(data_i))
         data_i <- cbind(file_names,data_i)
         data <- rbind(data,data_i)
@@ -3645,11 +3649,12 @@ observeEvent(input$Import_load_ohd,{
     withBusyIndicatorServer("Import_load_ohd", {
       if(grepl(pattern = ".csv$",x = input$Import_ohd_files)){
         data_i <- readr::read_delim(file = paste0("data_import/ohd/",input$Import_ohd_files),
-                                    delim = "\t", na = character() )
+                                    delim = "\t", na = character(), quote = "\\\"", escape_double = FALSE )
         file_names <- rep(input$Import_ohd_files,nrow(data_i))
         data_i <- cbind(file_names,data_i)
         values$data_ohd<-data_i
       }
+      print("data updated single")
       if(grepl(pattern = ".json$",x = input$Import_ohd_files)){
         # TODO
       }
@@ -3772,6 +3777,7 @@ observeEvent(input$Import_start_ohd_mapping,{
                                mde9 = "",
                                is_interview = 1)
       data_clean[,9:(8+length(input$Import_ohd_meta_columns))] <- data_documents[,6:(ncol(data_documents)-1)]
+      values$ohd_meta_names <-colnames(data_documents[,6:(ncol(data_documents)-1)])
       #colnames(data_clean)[9:(8+length(input$Import_ohd_meta_columns))]<-colnames(data_documents[,6:(ncol(data_documents)-1)])
       data_meta_meta <- data.frame(dataset=input$Import_ohd_corpus_name)
       a = lapply(1:length(input$Import_ohd_meta_columns),function(x){
@@ -3814,7 +3820,7 @@ observeEvent(input$Import_start_ohd_mapping,{
     data_clean <- data_documents[,1:3]
     data_clean <- data.frame(data_clean, title = paste0("Interview: ",substr(data_documents$file_names,1,7)),
                              body = data_documents$Transkript,
-                             date = as.cahracter(Sys.Date()),
+                             date = as.character(Sys.Date()),
                              token = unlist(lapply(X = data_documents$Transkript,FUN = function(x){
                                length(stringr::str_split(string = x,pattern = " ",simplify = T))}
                              )),
@@ -3869,6 +3875,10 @@ output$Import_ohd_data_documents_table <- DT::renderDataTable({
     )
   )
   data = values$import_ohd_documents_after_mapping[1:min(5,nrow(values$import_ohd_documents_after_mapping)),]
+  ####      values$ohd_meta_names
+  if(!is.null(values$ohd_meta_names)){
+    colnames(data)[9:((9+length(values$ohd_meta_names)-1))] <-values$ohd_meta_names
+  }
   data$body<-paste0(substr(data$body,1,50),"...")
   datatable(data)
 })
@@ -3885,13 +3895,16 @@ observe({
 
 observeEvent(input$Import_ohd_files_multiple,{
   if(length(input$Import_ohd_files_multiple)>0){
+    values$ohd_use_multi = T
     updatePrettyRadioButtons(session = session,inputId = "Import_ohd_files",selected = "",
                              choices = stringr::str_replace_all(string = list.files("data_import/ohd/",pattern = ".csv|.json"),pattern = ".txt",replacement = ""),
                              prettyOptions = list(fill=F,animation="pulse",shape="round")) 
   }
 })
+
 observeEvent(input$Import_ohd_files,{
   if(length(input$Import_ohd_files)>0){
+    values$ohd_use_multi = F
     updatePrettyRadioButtons(session = session,inputId = "Import_ohd_files_multiple",selected = "",
                              choices = setdiff(list.dirs("data_import/ohd/",full.names = F),""),
                              prettyOptions = list(fill=F,animation="pulse",shape="round")) 

@@ -62,6 +62,36 @@ error<-try(expr = {
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
+  #######################################
+  # Interview data filter via speaker?!
+  meta_body_replacemets<-NULL
+  if(parameters$dtm_interview_use_speaker==TRUE){
+    log_to_file(message = "<b>Apply Speaker Restriction</b>",file = logfile)
+    if(length(parameters$dtm_interview_speaker_filter)>0){
+      dataset = info[[2]][1,1]
+      id_docs = info[[1]][,1]
+      id_docs = paste0(id_docs,collapse=" ")
+      id_docs<-stringr::str_replace_all(string = as.character(id_docs),pattern = " ",",")
+      
+      mydb <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user='root', password='ilcm', dbname='ilcm', host=host,port=db_port)
+      rs <- RMariaDB::dbSendStatement(mydb, 'set character set "utf8"')
+      data_interview<-RMariaDB::dbGetQuery(mydb, paste("select * from interview_info where id_doc in (",id_docs,")",
+                                                       " and trim(dataset)='",dataset,"';",sep = ""))
+      speaker_ids <- which(grepl(x = data_interview$sprecher,pattern = stringr::regex(paste0("(",parameters$dtm_interview_speaker_filter,")",collapse="|"))))
+      good_rows <- paste0(data_interview$id_interview[speaker_ids],"_",data_interview$id_interview_row[speaker_ids])
+      
+      db_data$token <- db_data$token[which(paste0(db_data$token$id_interview,"_",db_data$token$id_interview_row)%in%good_rows),]
+      meta_body_replacemets <- unlist(lapply(unique(db_data$token$id),FUN = function(x){
+        paste0(db_data$token$word[which(db_data$token$id==x)],collapse=" ")
+      }))
+    }
+    else{
+      log_to_file(message = "&emsp;<b> No Filter was specified. Using whole texts instead</b>",logfile)
+    }
+  }
+  
+  
+  #######################################
   
   
   
@@ -79,6 +109,9 @@ error<-try(expr = {
   meta_data<-get_meta_data_for_detailed_topic_analysis(host = host,port = db_port,ids = info[[3]],datasets = unique(info[[2]]),token = db_data$token)
   meta<-meta_data$meta
   meta_names<-meta_data$meta_names
+  if(!is.null(meta_body_replacemets)){
+    meta$body<-meta_body_replacemets
+  }
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished ",file = logfile)
   
   

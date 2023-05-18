@@ -25,7 +25,7 @@ error<-try(expr = {
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing input parameters",file = logfile)
   
   
-  
+
   #distinguish between creating a new model from data and using an existing model and jsut visulize it
   if(parameters$class_use_model==FALSE){
     log_to_file(message = "<b> Creating w2v model from collection data</b>",file = logfile)

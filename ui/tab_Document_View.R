@@ -19,7 +19,8 @@ tabPanel("Document View",type="tabs",
                                       uiOutput("DV_Entity")
                              )
                  ),
-                 checkboxInput(inputId = "Doc_View_paragraph",label = "show paragraphs?",value = T)
+                 checkboxInput(inputId = "Doc_View_paragraph",label = "show paragraphs?",value = T),
+                 checkboxInput(inputId = "Doc_View_interview_style",label = "use interview style?",value = F),
              )
              ,
              box(width=10,

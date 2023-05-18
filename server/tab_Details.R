@@ -325,6 +325,8 @@ output$details_parameter<-renderUI({
       #load data needed for selection on input words
       load(paste0(values$Details_Data_CO,"/data_Coocs.RData"))
       load(paste0(values$Details_Data_CO,"/dtm.RData"))
+      load(paste0(values$Details_Data_CO,"/meta_CO.RData"))
+      values$co_meta <- meta
       values$coocs_dtm<-dtm
       values$coocs_terms<-terms
       values$coocs_token<-token
@@ -950,6 +952,7 @@ observe({
   title_data<-values$tm_meta[,c("title","id_doc")]
   title_data<-title_data[which(title_data[,"id_doc"]%in%rownames(values$tm_theta)),]
   choices<-title_data$id_doc
+
   names(choices)<-paste0(title_data$title," (",title_data$id_doc,")")
   classic_choices<-choices
   if(!is.null(input$Det_TM_validation_document_selection)){
@@ -1780,8 +1783,9 @@ output$details_visu<-renderUI({
       validate(
         need(!is.null(values$Det_Senti_meta),message=F)
       )
+      
       title_data<-values$Det_Senti_meta[,c("title","id_doc","dataset","scores")]
-      choices<-paste(title_data$dataset,title_data$id_doc,sep="_")
+      choices<-title_data$id_doc
       names(choices)<-paste0(title_data$title," (",round(title_data$scores,digits = 2),")")
       updateSelectizeInput(session = session,inputId = "Det_SA_validation_document",choices = choices,server = T)
       return(
