@@ -3,7 +3,7 @@ url<-'http://0.0.0.0:8983/solr/iLCM/select/'
 update_solr_url<-'0.0.0.0'
 update_solr_port<-'8983'
 host<-'0.0.0.0'
-version<-"0.999"
+version<-"1.01"
 db_port='3306'
 max_upload_file_size=500
 random_seed=1236
