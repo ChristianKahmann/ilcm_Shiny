@@ -195,7 +195,7 @@ output$Fac_mde1_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+  fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -308,7 +308,7 @@ output$Fac_mde2_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+  fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -427,7 +427,7 @@ output$Fac_mde3_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+  fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -550,7 +550,7 @@ output$Fac_mde4_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+  fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -673,7 +673,7 @@ output$Fac_mde5_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+  fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -796,7 +796,7 @@ output$Fac_mde6_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+  fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -918,7 +918,7 @@ output$Fac_mde7_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+  fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -1041,7 +1041,7 @@ output$Fac_mde8_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+  fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -1164,7 +1164,7 @@ output$Fac_mde9_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+  fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -1286,7 +1286,7 @@ output$Fac_Entities_rel<-renderUI({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+  fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
@@ -1333,7 +1333,7 @@ output$Fac_Token<-renderPlotly({
     fq<-"dataset_s:(*:*)"
   }
   if(length(isolate(input$dataset))==1){
-    fq<-paste("dataset_s:",isolate(input$dataset),sep="")
+  fq<-paste('dataset_s:\"',isolate(input$dataset),'\"',sep="")
   }
   if(length(isolate(input$dataset))>1){
     fq<-paste0("dataset_s:(",isolate(input$dataset)[1])
