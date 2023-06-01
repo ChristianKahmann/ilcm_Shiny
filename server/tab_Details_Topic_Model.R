@@ -4327,7 +4327,11 @@ output$Det_TM_validation_Document<-renderUI({
     )
     data<-round(data,digits = 2)
     colnames(data)<-colnames(values$tm_rel_counts)
-    data<-data[as.numeric(chosen_topic),intersect(unique(features),colnames(data))]
+    colnames<-intersect(unique(features),colnames(data))
+    data<-data[as.numeric(chosen_topic),colnames]
+    if(length(data)==1){
+      names(data)=colnames
+    }
     data<-data.frame(features=names(data),weight=data)
     min=0
     max=1
