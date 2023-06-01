@@ -76,7 +76,9 @@ error<-try(expr = {
                   date_format = date_format,
                   slow_mode=slow_mode,
                   interview_mode=interview_mode,
-                  data_interview=data_interview)
+                  data_interview=data_interview,
+                  num_cores_ohd = num_cores_ohd
+  )
   # write meta metadata csv
   write.csv(x = parameters[[5]],file=paste0("data_import/processed_data/metameta_",metadata[1,"dataset"],"_",process_info[[1]],".csv"),row.names = F)
   log_to_file(message = "finished writing results metadata to database",logfile)

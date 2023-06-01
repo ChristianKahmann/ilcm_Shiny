@@ -10,7 +10,7 @@
 #' @return 
 #' @export
 #' @example 
-preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,slow_mode=F,interview_mode=F,data_interview=NULL){
+preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,slow_mode=F,interview_mode=F,data_interview=NULL,num_cores_ohd=4){
   if(interview_mode==F){
     metadata$body<-stringr::str_replace_all(string = metadata$body,pattern = '"',"'")
     metadata$body<-stringr::str_replace_all(string = metadata$body,pattern = '\\\\0'," ")
@@ -186,7 +186,7 @@ preprocess_data<-function(text,metadata,process_id,offset,logfile,date_format,sl
       data_interview_grouped[[count]] <- data_interview[which(data_interview$interview_id==interview),]
       data_interview_grouped[[count]]$Transkript<-texts[which(data_interview$interview_id==interview)]
     }
-    token_list<-parallel::mclapply(mc.cleanup = T, mc.cores = min(c(10,length(data_interview_grouped),( parallel::detectCores()-1))),data_interview_grouped,FUN = function(x){
+    token_list<-parallel::mclapply(mc.cleanup = T, mc.cores = min(c(num_cores_ohd,length(data_interview_grouped),( parallel::detectCores()-1))),data_interview_grouped,FUN = function(x){
       data=x
       token_grouped=NULL
       for(i in 1:nrow(data)){

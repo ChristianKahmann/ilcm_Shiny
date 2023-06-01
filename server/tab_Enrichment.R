@@ -216,7 +216,7 @@ observeEvent(input$enrichment_new_transcript,{
           gc()
           print(ids[i])
           data_indiv <- data[which(data$doc_id==ids[i]),]
-          token_mc <- parallel::mclapply(mc.cleanup = T, mc.cores = min(c(10, nrow(data_indiv),( parallel::detectCores()-1))),1:nrow(data_indiv),FUN = function(x){
+          token_mc <- parallel::mclapply(mc.cleanup = T, mc.cores = min(c(num_cores_ohd, nrow(data_indiv),( parallel::detectCores()-1))),1:nrow(data_indiv),FUN = function(x){
             row<-iconv(data_indiv$transkript[x], "UTF-8", "UTF-8",sub='')
             toks<-spacyr::spacy_parse(row,pos = T,tag = F,lemma = T,entity = T,dependency = F,additional_attributes = "idx")
             toks$doc_id = rep(data_indiv$doc_id[x],nrow(toks))
@@ -286,7 +286,7 @@ observeEvent(input$enrichment_start_enrichment,{
             tokens <- quanteda::tokenize_word(x = data_interview$transkript)
             new_dtm <- Matrix(c(0),nrow = length(tokens),ncol = ncol(dtm))
             present <- parallel::mclapply(X = 1:nrow(data_interview),
-                                          mc.cores = min(c(10,nrow(data_interview),( parallel::detectCores()-1))),
+                                          mc.cores = min(c(num_cores_ohd,nrow(data_interview),( parallel::detectCores()-1))),
                                           mc.cleanup = T,
                                           FUN = function(x){
                                             token = tolower(tokens[[x]]) 
@@ -309,7 +309,7 @@ observeEvent(input$enrichment_start_enrichment,{
               res <- matrix(c(0),nrow = length(tokens),ncol = ncol(theta))
               splits <- split(1:nrow(new_dtm), ceiling(seq_along(1:nrow(new_dtm))/chunksize))
               res_splits <- parallel::mclapply(X = 1:length(splits),
-                                               mc.cores = min(c(10,length(splits),( parallel::detectCores()-1))),
+                                               mc.cores = min(c(num_cores_ohd,length(splits),( parallel::detectCores()-1))),
                                                mc.cleanup = T,
                                                FUN = function(x){
                                                  idx <- as.numeric(splits[[x]])
@@ -351,7 +351,7 @@ observeEvent(input$enrichment_start_enrichment,{
               res[as.numeric(single_idx),] <- t$infer_topics(dtm = new_dtm[as.numeric(single_idx),,drop=F])
               
               res_multi <- parallel::mclapply(X = 1:length(multi_idx),
-                                              mc.cores = min(c(10,nrow(data_interview),( parallel::detectCores()-1))),
+                                              mc.cores = min(c(num_cores_ohd,nrow(data_interview),( parallel::detectCores()-1))),
                                               mc.cleanup = T,
                                               FUN = function(x){
                                                 idx <- as.numeric(multi_idx[[x]])

@@ -201,6 +201,14 @@ observeEvent(input$openOptionsModal, {
                                             numericInput(inputId = "options_random_seed",label = "Random Seed",value = values$random_seed,min = 1,max = 9999,step = 1)
                                      )
                             ),
+                            fluidRow(style="margin-left:0px;margin-right:0px",
+                                     column(3,
+                                            tags$span(icon("question"),tags$b("Number of Cores to Use for OHD Tasks"))
+                                     ),
+                                     column(4,
+                                            numericInput(inputId = "options_num_cores_ohd",label = "Number of Cores for OHD Tasks",value = num_cores_ohd,min = 1,max = (parallel::detectCores()-1),step = 1)
+                                     )
+                            )
                             
   )
   ui_logged_out<-modalDialog(title = "Warning",
@@ -390,6 +398,17 @@ observeEvent(ignoreInit = T,input$options_random_seed,{
   values$random_seed<-input$options_random_seed
 })
 
+
+#' change num cores ohd
+#' depends on:
+#'   input$options_random_seed: random seed options
+#'    values$random_seed: chosen random seed
+observeEvent(ignoreInit = T,input$options_num_cores_ohd,{
+  config<-readLines("config_file.R")
+  config<-stringr::str_replace_all(string = config,pattern = "^num_cores_ohd=.{1,3}$",replacement = paste0("num_cores_ohd=",input$options_num_cores_ohd))
+  writeLines(config,con="config_file.R")
+  source("config_file.R")
+})
 
 
 #' change database connection in values object and config_file.R

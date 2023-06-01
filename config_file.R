@@ -51,3 +51,5 @@ if(hide_login==TRUE){
 # specify where gensim library can be found to be used in dynamic topic modelling
 reticulate_python_path<-"/home/rstudio/miniconda3/bin/python"
 
+#number of cores to use for parallel processing for ohd tasks
+num_cores_ohd=15

@@ -3889,7 +3889,7 @@ output$Import_ohd_data_interview_table<-DT::renderDataTable({
   }
   DT::datatable(data = data, width = "100%",rownames = F,
                 selection = "none",escape=F,class = 'cell-border stripe hover',
-                options = list(scrollX=T, scrollY="62vh"))
+                options = list(scrollX=T, scrollY="42vh"))
 })
 
 
@@ -3899,7 +3899,7 @@ output$Import_ohd_data_documents_table <- DT::renderDataTable({
       !is.null(values$import_ohd_documents_after_mapping),message=F
     )
   )
-  data = values$import_ohd_documents_after_mapping[1:min(5,nrow(values$import_ohd_documents_after_mapping)),]
+  data = values$import_ohd_documents_after_mapping[1:min(10,nrow(values$import_ohd_documents_after_mapping)),]
   ####      values$ohd_meta_names
   if(!is.null(values$ohd_meta_names)){
     colnames(data)[9:((9+length(values$ohd_meta_names)-1))] <-values$ohd_meta_names
@@ -3907,7 +3907,7 @@ output$Import_ohd_data_documents_table <- DT::renderDataTable({
   data$body<-paste0(substr(data$body,1,50),"...")
   DT::datatable(data = data, width = "100%",rownames = F,
                 selection = "none",escape=F,class = 'cell-border stripe hover',
-                options = list(scrollX=T, scrollY="62vh"))
+                options = list(scrollX=T, scrollY="42vh"))
 })
 
 #ensure not more than 9 metadata fields are selected
