@@ -23,6 +23,8 @@ output$sidebarpanel_UI<-renderUI({
                            shinyscreenshot::screenshotButton(),
                            # link to manual
                            tags$a("Instructions iLCM",id="manual_link",target="_blank", href="http://ilcm.informatik.uni-leipzig.de/download/starting_guide.pdf"),
+                           # # link to ohd website
+                           # tags$a("Oral History Digital",id="ohd_link",target="_blank", href="https://www.oral-history.digital/"),
                            # link to nlp group Leipzig website
                            tags$a("Universität Leipzig",id="ul_link",target="_blank", href="http://asv.informatik.uni-leipzig.de/")
   )

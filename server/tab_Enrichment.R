@@ -366,6 +366,8 @@ observeEvent(input$enrichment_start_enrichment,{
             topic_values <- rbind(topic_values, topic_values_interview)
             incProgress(session = session,amount = 1,message = paste0("Finished Topic Enrichment for ",j," of ",length(interview_ids)," Interviews"))
           }
+          # re order topics
+          topic_values <- topic_values[,as.numeric(colnames(theta),decreasing = F)]
           colnames(topic_values) <- values$topic_enrichment_topic_model_topic_labels
           values$enrichment_result <- topic_values
         })
