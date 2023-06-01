@@ -90,6 +90,7 @@ output$Det_Class_date_distribution<-renderPlotly({
     data[[i]]<-table
   }
   values$Class_timeseries_data<-do.call(cbind,data)
+  values$Class_order_classes <- names(dates)
   p<-plot_ly(x=(data[[1]][,1]),y=as.numeric(data[[1]][,2]),type = "scatter",mode="lines+markers",name=names(dates)[1])
   if(length(data)>1){
     for(k in 2:length(data)){
@@ -110,7 +111,8 @@ output$Det_Class_date_distribution<-renderPlotly({
 output$Det_Class_pie<-plotly::renderPlotly({
   load(paste0(values$Details_Data_CL,"/result.RData"))
   counts<-as.data.frame(table(predictions))
-  
+  # same order of classes as timeline plot
+  counts <- counts[match(values$Class_order_classes,counts$predictions),]
   p <- plot_ly(counts, labels = ~predictions, values = ~Freq, textposition = 'inside',sort=F,
                textinfo = 'label+percent') %>%
     plotly::add_pie(hole = 0.6) %>%
@@ -265,6 +267,9 @@ output$Det_CL_validation<-renderUI({
     )
   )
   identifier<-stringr::str_split(string = input$Det_CL_validation_document,pattern = "_",simplify = T)
+  validate(
+    need(ncol(identifier)>1,message="No texts found matching that class with set threshold.")
+  )
   dataset<-identifier[1]
   doc_id<-identifier[2]
   sentence_id<-NULL
