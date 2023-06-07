@@ -1,4 +1,9 @@
-
+output$enrichment_collection_UI <- renderUI({
+  values$num_collections
+  selectInput(inputId="enrichment_collection",label = "Choose Collection",
+              choices=stringr::str_remove_all(string = list.files("collections/collections/"),pattern = ".RData"),
+              multiple=F)
+})
 
 output$enrichment_configuration_UI<-renderUI({
   validate(
