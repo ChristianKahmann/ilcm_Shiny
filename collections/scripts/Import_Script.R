@@ -251,7 +251,7 @@ error<-try(expr = {
         , text = character(0)
         , document_annotation = character(0)
       )
-      
+      browser()
       # 1. codebook importieren, da annotations sich darauf beziehen
       xml_document<-xml2::as_xml_document(xml_document)
       codebook <- xml_find_first(xml_document, "//d1:CodeBook")
@@ -358,10 +358,7 @@ error<-try(expr = {
             annotations <- rbind(annotations, anno)
           }
           
-        } else {
-          
-        }
-        
+        } 
       }
       # limit text field to max 10000 chars
       annotations[which(nchar(annotations$text)>10000),"text"]<-paste0(substr(annotations[which(nchar(annotations$text)>10000),"text"],0,9997),"...")

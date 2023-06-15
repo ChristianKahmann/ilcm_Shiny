@@ -364,7 +364,7 @@ observeEvent(ignoreNULL = T,input$options_delete_dataset_action_confirm,{
 #' depends on:
 #'   input$options_max_size_import: maximum size of import options
 observeEvent(ignoreInit = T,input$options_max_size_import,{
-  print(input$options_max_size_import)
+  max_upload_file_size <<- input$options_max_size_import
   config<-readLines("config_file.R")
   config<-stringr::str_replace_all(string = config,pattern = "^max_upload_file_size=.{1,20}$",replacement = paste0("max_upload_file_size=",input$options_max_size_import))
   writeLines(config,con="config_file.R")
@@ -424,7 +424,7 @@ output$options_database_connected<-renderUI({
     return(tagList(tags$i(
       class = "fa fa-check-square", 
       style = "color: rgb(0,166,90)"
-    ),tags$b("Connections works!")))
+    ),tags$b("Connection works!")))
   }
   else{
     return(tagList(tags$i(
@@ -482,7 +482,7 @@ output$options_solr_connected<-renderUI({
     return(tagList(tags$i(
       class = "fa fa-check-square", 
       style = "color: rgb(0,166,90)"
-    ),tags$b("Connections works!")))
+    ),tags$b("Connection works!")))
   }
   else{
     return(tagList(tags$i(

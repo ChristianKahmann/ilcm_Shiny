@@ -19,13 +19,18 @@ output$Running_Tasks<-renderUI({
     need(!is.null(values$infobox),message="click on a box"),
     need(length(list.files(paste("collections/logs/",isolate(values$infobox),sep=""),full.names = T))>0,"no logs")
   )
-  print("reload")  
   #get logfiles
   files<-list.files(paste("collections/logs/",isolate(values$infobox),sep=""),full.names = T)
   if(length(files)>=1){
     for(i in 1:length(files)){
       #read logfile metadata
-      data_tasks<-rbind(data_tasks,str_split(string=readChar(files[i],file.info(files[i])$size),pattern="\\n",simplify = TRUE)[1,1:4])
+      data_tasks<- tryCatch(expr = {
+        data_tasks<-rbind(data_tasks,str_split(string=readChar(files[i],file.info(files[i])$size),pattern="\\n",simplify = TRUE)[1,1:4])
+      },
+      error=function(cond){
+        data_tasks <- rbind(data_tasks,c("unknown","unknwon","unknown","unknown"))
+        return(data_tasks)
+      })
     }
   }
   #order tasks decreasing by 'time started'
@@ -190,7 +195,7 @@ observeEvent(input$delete_button_logs, {
 #'   values$my_tasks_finished_file_length: length of finished files
 #'   values$my_tasks_running_file_length: length of running files
 observe({
-  autoInvalidate_slow()
+  autoInvalidate_medium()
   values$my_tasks_failed_file_length<-length(list.files("collections/logs/failed",full.names = T))
   values$my_tasks_finished_file_length<-length(list.files("collections/logs/finished",full.names = T))
   values$my_tasks_running_file_length<-length(list.files("collections/logs/running",full.names = T))

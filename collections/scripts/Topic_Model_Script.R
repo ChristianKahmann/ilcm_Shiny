@@ -78,8 +78,6 @@ error<-try(expr = {
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   
   
-  
-  
   #split documents
   if(parameters$tm_chunk_documents==TRUE){
     log_to_file(message = paste0("&emsp;Splitting documents..."),file = logfile)
