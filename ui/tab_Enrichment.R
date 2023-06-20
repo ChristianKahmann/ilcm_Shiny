@@ -8,9 +8,7 @@ tagList(column(width=12,style = 'height: 92vh; overflow-y: auto; overflow-x:auto
                       ),
                       conditionalPanel(condition='input.enrichment_upload_new_csv==false',
                                        column(3,
-                                              selectInput(inputId="enrichment_collection",label = "Choose Collection",
-                                                          choices=stringr::str_remove_all(string = list.files("collections/collections/"),pattern = ".RData"),
-                                                          multiple=F)
+                                              uiOutput(outputId = "enrichment_collection_UI")
                                        ),
                                        column(3,
                                               withBusyIndicatorUI(
