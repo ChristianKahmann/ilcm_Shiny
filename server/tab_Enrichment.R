@@ -276,6 +276,14 @@ observeEvent(input$enrichment_start_enrichment,{
         t <- values$topic_enrichment_topic_model_t 
         theta <-values$topic_enrichment_topic_model_theta 
         #spacyr::spacy_initialize(model = "de_core_news_sm")
+        # check if ohd already present
+        enrichment_reupload_model_id <- NULL
+        enrichment_reupload_topic_ids <- NULL
+        try({
+          load(paste0("collections/results/topic-model/",input$enrichment_topic,"/OHD_IDS.RData"))
+        })
+        values$enrichment_reupload_model_id <- enrichment_reupload_model_id  
+        values$enrichment_reupload_topic_ids <- enrichment_reupload_topic_ids
         
         vocab <-colnames(dtm)
         interview_ids <- unique(data$id_interview)
@@ -427,8 +435,8 @@ output$enrichment_output_table<-DT::renderDataTable({
     need(!is.null(values$enrichment_result),message = "Enrichment not finished yet.")
   )
   withProgress(session = session, message = "Preparing Results Table...",{expr = 
-
-  interview_data <- values$enrichment_data
+    
+    interview_data <- values$enrichment_data
   topic_annotations <- values$enrichment_result
   n = input$enrichment_output_table_n
   chosen_topics <- lapply(X = 1:nrow(topic_annotations),  FUN = function(x){
@@ -438,10 +446,10 @@ output$enrichment_output_table<-DT::renderDataTable({
     }else{
       topics <-as.numeric(which(x>input$enrichment_output_table_threshold))
       if(length(topics)>0){
-      topic_probability <- x[topics]
-      o <- order(topic_probability,decreasing = T)[1:min(input$enrichment_output_table_n,length(topics))]
-      topics <- topics[o]
-      return(topics)
+        topic_probability <- x[topics]
+        o <- order(topic_probability,decreasing = T)[1:min(input$enrichment_output_table_n,length(topics))]
+        topics <- topics[o]
+        return(topics)
       }
       else{
         return(NA)
@@ -450,22 +458,44 @@ output$enrichment_output_table<-DT::renderDataTable({
   })
   topic_labels <-rep(c(""),length(chosen_topics))
   topic_ids <- rep(c(""),length(chosen_topics))
-  topic_model_id <- stringr::str_extract(string = input$enrichment_topic,pattern = "^[0-9]{1,5}(?=_)")
+  if(is.null(values$enrichment_reupload_model_id)){
+    topic_model_id <- stringr::str_extract(string = input$enrichment_topic,pattern = "^[0-9]{1,5}(?=_)")
+  }
+  else{
+    topic_model_id <- values$enrichment_reupload_model_id
+  }
   for(i in 1:length(chosen_topics)){
     topic_probability <- topic_annotations[i,chosen_topics[[i]]]
     if(any(!is.na(topic_probability))){
-    #o <- order(topic_probability,decreasing = T)[1:input$enrichment_output_table_n]
-    topic_label = paste0(values$topic_enrichment_topic_model_topic_labels[chosen_topics[[i]]],collapse = ", ")
-    topic_labels[i] <-topic_label
-    topic_id <- paste0(topic_model_id,"_",chosen_topics[[i]],"(",round(topic_probability,digits = 2),")",collapse=", ")
-    topic_ids[i] <- topic_id
+      #o <- order(topic_probability,decreasing = T)[1:input$enrichment_output_table_n]
+      topic_label = paste0(values$topic_enrichment_topic_model_topic_labels[chosen_topics[[i]]],collapse = ", ")
+      topic_labels[i] <-topic_label
+      #topic_id <- paste0(topic_model_id,"_",chosen_topics[[i]],"(",round(topic_probability,digits = 2),")",collapse="#")
+      if(!is.null(values$enrichment_reupload_topic_ids)){
+        topic_id <- paste0(topic_model_id,"_",values$enrichment_reupload_topic_ids[chosen_topics[[i]]],"(",round(topic_probability,digits = 2),")",collapse="#")
+      }
+      else{
+        topic_id <- paste0(topic_model_id,"_",chosen_topics[[i]],"(",round(topic_probability,digits = 2),")",collapse="#")
+      }
+      topic_ids[i] <- topic_id
     }
   }
   topic_ids[which(is.na(chosen_topics))]<-""
   topic_labels[which(is.na(chosen_topics))]<-""
   
-  interview_data$zwischenueberschrift<-topic_labels
-  interview_data$registerverknüpfungen<-topic_ids
+  
+  # JUST USE FIRST ELEMENT OF CHUNK
+  input$enrichment_chunksize
+  rows <- 1:nrow(interview_data)
+  interview_ids <- unique(interview_data$id_interview)
+  first_chunk_rows <- NULL
+  for(i in 1:length(interview_ids)){
+    idx <- which(interview_data$id_interview==interview_ids[i])
+    interview_rows <- rows[idx]
+    first_chunk_rows <- c(first_chunk_rows,interview_rows[seq(1,length(interview_rows),input$enrichment_chunksize)])
+  }
+  interview_data$hauptueberschrift[first_chunk_rows]<-topic_labels[first_chunk_rows]
+  interview_data$registerverknüpfungen[first_chunk_rows]<-topic_ids[first_chunk_rows]
   # add ner data
   if(input$enrichment_include_ner_tags==TRUE){
     ner <- values$enrichment_ner[c("token","entity_type","id_interview","id_interview_row")]
@@ -487,9 +517,10 @@ output$enrichment_output_table<-DT::renderDataTable({
     interview_data$ner_per <- persons_merged$token
     interview_data$ner_org <- orgs_merged$token
   }
+  interview_data[which(interview_data=="NA",arr.ind = T)]<-""
   values$enrichment_result_interview<-interview_data
   })
-  DT::datatable(data = interview_data, width = "100%",
+  DT::datatable(data = interview_data, width = "100%",rownames = F,
                 selection = "none",escape=F,class = 'cell-border stripe hover',
                 options = list(scrollX=T, scrollY="42vh"))
 })
@@ -648,15 +679,65 @@ output$enrichment_download_UI<-renderUI({
              column(2,
                     downloadButton(outputId = "enrichment_export_topic",label = "Topic Model ") 
              ),
-             column(2,
-                    textInput(inputId="enrichment_topic_name","Specify a name for the chosen Topic Model",placeholder=paste0("iLCM ID of chosen Topic Model: ",stringr::str_extract(string = input$enrichment_topic,pattern = "^[0-9]{1,5}(?=_)")))
-                    ),
+             # column(2,
+             #        textInput(inputId="enrichment_topic_name","Specify a name for the chosen Topic Model",placeholder=paste0("iLCM ID of chosen Topic Model: ",stringr::str_extract(string = input$enrichment_topic,pattern = "^[0-9]{1,5}(?=_)")))
+             # ),
              column(2,
                     numericInput(inputId = "enrichment_topic_words_n","Number of Top Words per Topic Description",value=10,min=1,max=ncol(values$topic_enrichment_topic_model_phi),step=5)
-                    )
+             ),
+             column(2,
+                    shinyBS::bsButton(inputId = "enrichment_reupload_topic_registry",label = "Re-Upload Topic-Registry to extract Ids",icon = icon("upload"),style = "default")
+             )
              
     )
   ))
+})
+
+# open Modal View for Topic Registry Reupload
+observeEvent(input$enrichment_reupload_topic_registry,{
+  showModal(
+    modalDialog(title = "Re-Upload Topic Registry",size = "l",
+                fileInput(inputId = "enrichment_reupload_topic_registry_file",label = "Specify File",multiple = F,accept = c(".tsv",".csv")),
+                DT::dataTableOutput(outputId = "enrichment_reupload_topic_registry_file_table"),
+                shinyBS::bsButton(inputId = "enrichment_reupload_topic_registry_start",label = "Extract Model and Topic Ids and Apply them to Topic Enrichment Table",icon = icon("play"),style = "primary")
+    )
+  )
+})
+
+# load new uploaded csv data
+observeEvent(input$enrichment_reupload_topic_registry_file,{
+  withBusyIndicatorServer("enrichment_reupload_topic_registry_file", {
+    topic_reupload <- readr::read_delim(file = input$enrichment_reupload_topic_registry_file$datapath,
+                                        delim = "\t", na = character(), quote = "\\\"", escape_double = FALSE )
+    values$topic_reupload <- topic_reupload
+  })
+})
+
+observeEvent(input$enrichment_reupload_topic_registry_start,{
+  if(is.null(values$topic_reupload)){
+    shinyalert::shinyalert(title = "No data found",text = "No Data was found to extract Model ID and the Topic Ids from. Please upload a Topic Registry before.",type = "warning")
+  }
+  else{
+    removeModal()
+    values$enrichment_reupload_model_id <- values$topic_reupload$parent_id[1]
+    values$enrichment_reupload_topic_ids <- values$topic_reupload$id
+    enrichment_reupload_model_id <- values$enrichment_reupload_model_id
+    enrichment_reupload_topic_ids <- values$enrichment_reupload_topic_ids
+    save(enrichment_reupload_model_id, enrichment_reupload_topic_ids, file =  paste0("collections/results/topic-model/",input$enrichment_topic,"/OHD_IDS.RData"))
+  }
+})
+
+
+# show table of reupload topic registry
+output$enrichment_reupload_topic_registry_file_table<-DT::renderDataTable({
+  validate(
+    need(!is.null(values$topic_reupload),message =F)
+  )
+  data <- values$topic_reupload
+  DT::datatable(data = data, width = "100%",rownames = F,
+                selection = "none",escape=F,class = 'cell-border stripe hover',
+                options = list(scrollX=T, scrollY="42vh"))
+  
 })
 
 
@@ -701,7 +782,7 @@ output$enrichment_export_zip <- downloadHandler(
   },contentType = "application/zip"
 )
 
-#TODO
+
 output$enrichment_export_topic <- downloadHandler(
   filename = function(){
     if(input$enrichment_upload_new_csv){
@@ -714,23 +795,34 @@ output$enrichment_export_topic <- downloadHandler(
   },
   content = function(file){
     phi<-values$topic_enrichment_topic_model_phi
-    top_words <- apply(X = phi,1,FUN = function(x){
-      scores <-round(x[order(x,decreasing = T)][1:input$enrichment_topic_words_n],digits = 3)
-      names <- colnames(phi)[order(x,decreasing = T)][1:input$enrichment_topic_words_n]
-      paste0(names," (",scores,")",collapse=", ")
-    })
-    data <- data.frame(id=1:nrow(phi),description=top_words)
-    if(input$enrichment_topic_name==""){
-      model_name <- stringr::str_extract(string = input$enrichment_topic,pattern = "^[0-9]{1,5}(?=_)")
-    }
-    else{
-      model_name <- input$enrichment_topic_name
-    }
-    # create registry template format
     topic_labels <- values$topic_enrichment_topic_model_topic_labels
-    data$id <- paste0(model_name,"_",data$id)
-    data$parent_name <- "Topics"
-    data$parent_id = 82
+    description <- unlist(lapply(X = 1:nrow(phi),FUN = function(x){
+      #scores <-round(x[order(x,decreasing = T)][1:input$enrichment_topic_words_n],digits = 3)
+      names <- colnames(phi)[order(phi[x,],decreasing = T)][1:input$enrichment_topic_words_n]
+      custom_label = F
+      if(topic_labels[x]!=paste0("Topic: ",x)){
+        custom_label = T
+      }
+      if(custom_label==T){
+        description = paste0("Dieser Registereintrag (Topic Label ",topic_labels[x],") wurde manuell vergeben für Textpassagen mit folgenden häufigen Wörtern: ",paste0(names,collapse=", "))
+      }
+      else{
+        description = paste0("Dieser Registereintrag (Topic Label ",topic_labels[x],") wurde automatisch vergeben für Textpassagen mit folgenden häufigen Wörtern: ",paste0(names,collapse=", "))
+      }
+      return(description)
+    }))
+    data <- data.frame(id=1:nrow(phi),description=description)
+    #    if(input$enrichment_topic_name==""){
+    model_name <- stringr::str_extract(string = input$enrichment_topic,pattern = "^[0-9]{1,5}(?=_)")
+    # }
+    # else{
+    #   model_name <- input$enrichment_topic_name
+    # }
+    # create registry template format
+    #data$id <- paste0(model_name,"_",data$id)
+    data$id <- ""
+    data$parent_name <- "Topic Modeling"
+    data$parent_id = ""
     data$name <- topic_labels
     data$latitude = ""
     data$longitude = ""
