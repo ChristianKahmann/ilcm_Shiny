@@ -496,9 +496,8 @@ output$enrichment_output_table<-DT::renderDataTable({
   topic_weights[which(is.na(chosen_topics))]<-""
   topic_labels[which(is.na(chosen_topics))]<-""
   
-  
+  #browser()
   # JUST USE FIRST ELEMENT OF CHUNK
-  input$enrichment_chunksize
   rows <- 1:nrow(interview_data)
   interview_ids <- unique(interview_data$id_interview)
   first_chunk_rows <- NULL
@@ -509,7 +508,8 @@ output$enrichment_output_table<-DT::renderDataTable({
   }
   interview_data$hauptueberschrift[first_chunk_rows]<-topic_labels[first_chunk_rows]
   interview_data$registerverknüpfungen[first_chunk_rows]<-topic_ids[first_chunk_rows]
-  interview_data$topic_weight <- topic_weights
+  interview_data$topic_weight <-rep("",nrow(interview_data))
+  interview_data$topic_weight[first_chunk_rows] <- topic_weights[first_chunk_rows]
   #sort topic weights right after registerverknüpfungen
   try({
     register_idx <- which(colnames(interview_data)=="registerverknüpfungen")
