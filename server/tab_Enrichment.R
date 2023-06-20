@@ -463,12 +463,14 @@ output$enrichment_output_table<-DT::renderDataTable({
   })
   topic_labels <-rep(c(""),length(chosen_topics))
   topic_ids <- rep(c(""),length(chosen_topics))
+  topic_weights <- rep(c(""),length(chosen_topics))
   if(is.null(values$enrichment_reupload_model_id)){
     topic_model_id <- stringr::str_extract(string = input$enrichment_topic,pattern = "^[0-9]{1,5}(?=_)")
   }
   else{
     topic_model_id <- values$enrichment_reupload_model_id
   }
+  
   for(i in 1:length(chosen_topics)){
     topic_probability <- topic_annotations[i,chosen_topics[[i]]]
     if(any(!is.na(topic_probability))){
@@ -477,15 +479,21 @@ output$enrichment_output_table<-DT::renderDataTable({
       topic_labels[i] <-topic_label
       #topic_id <- paste0(topic_model_id,"_",chosen_topics[[i]],"(",round(topic_probability,digits = 2),")",collapse="#")
       if(!is.null(values$enrichment_reupload_topic_ids)){
-        topic_id <- paste0(topic_model_id,"_",values$enrichment_reupload_topic_ids[chosen_topics[[i]]],"(",round(topic_probability,digits = 2),")",collapse="#")
+        #topic_id <- paste0(topic_model_id,"_",values$enrichment_reupload_topic_ids[chosen_topics[[i]]],"(",round(topic_probability,digits = 2),")",collapse="#")
+        topic_id <- paste0(values$enrichment_reupload_topic_ids[chosen_topics[[i]]],collapse="#")
+        topic_weight <- paste0(round(topic_probability,digits = 2),collapse="#")
       }
       else{
-        topic_id <- paste0(topic_model_id,"_",chosen_topics[[i]],"(",round(topic_probability,digits = 2),")",collapse="#")
+        #topic_id <- paste0(topic_model_id,"_",chosen_topics[[i]],"(",round(topic_probability,digits = 2),")",collapse="#")
+        topic_id <- paste0(chosen_topics[[i]],collapse="#")
+        topic_weight <- paste0(round(topic_probability,digits = 2),collapse="#")
       }
       topic_ids[i] <- topic_id
+      topic_weights[i] <- topic_weight
     }
   }
   topic_ids[which(is.na(chosen_topics))]<-""
+  topic_weights[which(is.na(chosen_topics))]<-""
   topic_labels[which(is.na(chosen_topics))]<-""
   
   
@@ -501,6 +509,13 @@ output$enrichment_output_table<-DT::renderDataTable({
   }
   interview_data$hauptueberschrift[first_chunk_rows]<-topic_labels[first_chunk_rows]
   interview_data$registerverknüpfungen[first_chunk_rows]<-topic_ids[first_chunk_rows]
+  interview_data$topic_weight <- topic_weights
+  #sort topic weights right after registerverknüpfungen
+  try({
+    register_idx <- which(colnames(interview_data)=="registerverknüpfungen")
+    topic_weight_idx <- which(colnames(interview_data)=="topic_weight")
+    interview_data <- interview_data[,c(1:register_idx,topic_weight_idx,setdiff((register_idx+1):ncol(interview_data),topic_weight_idx))]
+  })
   # add ner data
   if(input$enrichment_include_ner_tags==TRUE){
     ner <- values$enrichment_ner[c("token","entity_type","id_interview","id_interview_row")]

@@ -3,7 +3,7 @@ url<-'http://0.0.0.0:8983/solr/iLCM/select/'
 update_solr_url<-'0.0.0.0'
 update_solr_port<-'8983'
 host<-'0.0.0.0'
-version<-"1.03"
+version<-"1.04"
 db_port='3306'
 max_upload_file_size=500
 random_seed=1236
@@ -52,4 +52,4 @@ if(hide_login==TRUE){
 reticulate_python_path<-"/home/rstudio/miniconda3/bin/python"
 
 #number of cores to use for parallel processing for ohd tasks
-num_cores_ohd=4
+num_cores_ohd=12
