@@ -52,4 +52,4 @@ if(hide_login==TRUE){
 reticulate_python_path<-"/home/rstudio/miniconda3/bin/python"
 
 #number of cores to use for parallel processing for ohd tasks
-num_cores_ohd=12
+num_cores_ohd=4
