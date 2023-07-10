@@ -169,6 +169,11 @@ output$enrichment_data_import_table<-DT::renderDataTable({
   )
   data <- values$enrichment_data
   data<-data[1:min(5,nrow(data)),]
+  # remove NAs
+  try({
+    NA_ids <- which(data=="NA",arr.ind = T)
+    data[NA_ids]<-""
+  })
   DT::datatable(data = data, width = "100%",
                 selection = "none",escape=F,class = 'cell-border stripe hover',
                 options = list(scrollX=T, scrollY="42vh"))
@@ -181,7 +186,9 @@ observeEvent(input$enrichment_new_transcript,{
     if(grepl(x = input$enrichment_new_transcript$name,pattern = ".csv$",ignore.case = T)){
       data_interview <- readr::read_delim(file = input$enrichment_new_transcript$datapath,
                                           delim = "\t", na = character(), quote = "\\\"", escape_double = FALSE )
-      id_interview <- rep(substr(input$enrichment_new_transcript$name,1,7),nrow(data_interview))
+      # id is weverything until first underscore
+      #id_interview <- rep(substr(input$enrichment_new_transcript$name,1,7),nrow(data_interview))
+      id_interview <- rep(stringr::str_split(string = input$enrichment_new_transcript$name,pattern = "_",simplify = T)[1],nrow(data_interview))
       data_interview <- cbind(id_interview,data_interview)
     }
     if(grepl(x = input$enrichment_new_transcript$name,pattern = ".zip$",ignore.case = T)){
@@ -195,7 +202,8 @@ observeEvent(input$enrichment_new_transcript,{
       for(i in 1:length(files)){
         data_single_interview <- readr::read_delim(file = files[i],
                                                    delim = "\t", na = character(), quote = "\\\"", escape_double = FALSE )
-        id_interview <- rep(substr(file_names[i],1,7),nrow(data_single_interview))
+        #id_interview <- rep(substr(file_names[i],1,7),nrow(data_single_interview))
+        id_interview <- rep(stringr::str_split(string = file_names[i],pattern = "_",simplify = T)[1],nrow(data_single_interview))
         data_single_interview<-cbind(id_interview,data_single_interview)
         data_interview<-rbind(data_interview,data_single_interview)
       }
@@ -441,7 +449,7 @@ output$enrichment_output_table<-DT::renderDataTable({
   )
   withProgress(session = session, message = "Preparing Results Table...",{expr = 
     
-    interview_data <- values$enrichment_data
+  interview_data <- values$enrichment_data
   topic_annotations <- values$enrichment_result
   n = input$enrichment_output_table_n
   chosen_topics <- lapply(X = 1:nrow(topic_annotations),  FUN = function(x){
@@ -496,7 +504,6 @@ output$enrichment_output_table<-DT::renderDataTable({
   topic_weights[which(is.na(chosen_topics))]<-""
   topic_labels[which(is.na(chosen_topics))]<-""
   
-  #browser()
   # JUST USE FIRST ELEMENT OF CHUNK
   rows <- 1:nrow(interview_data)
   interview_ids <- unique(interview_data$id_interview)
@@ -536,8 +543,13 @@ output$enrichment_output_table<-DT::renderDataTable({
     interview_data$ner_loc <- locations_merged$token
     interview_data$ner_per <- persons_merged$token
     interview_data$ner_org <- orgs_merged$token
+    #replace NAs
+    interview_data$ner_loc[which(is.na(interview_data$ner_loc))] <- ""
+    interview_data$ner_per[which(is.na(interview_data$ner_per))] <- ""
+    interview_data$ner_org[which(is.na(interview_data$ner_org))] <- ""
   }
   interview_data[which(interview_data=="NA",arr.ind = T)]<-""
+  interview_data[which(is.na(interview_data),arr.ind = T)]<-""
   values$enrichment_result_interview<-interview_data
   })
   DT::datatable(data = interview_data, width = "100%",rownames = F,
@@ -778,11 +790,11 @@ output$enrichment_export_zip <- downloadHandler(
     data<-values$enrichment_result_interview
     try({
       if(input$enrichment_include_ner_tags){
-        colnames(data)<-c("Interview_Id", "Band","Timecode","Sprecher","Transkript","Übersetzung","Hauptüberschrift","Zwischenüberschrift","Hauptüberschrift (Übersetzung)","Zwischenüberschrift (Übersetzung)","Registerverknüpfungen", "Anmerkungen", "Anmerkungen (Übersetzung)","NER LOC","NER PER","NER ORG")
+        colnames(data)<-c("Interview_Id", "Band","Timecode","Sprecher","Transkript","Übersetzung","Hauptüberschrift","Zwischenüberschrift","Hauptüberschrift (Übersetzung)","Zwischenüberschrift (Übersetzung)","Registerverknüpfungen","Topic_Weight", "Anmerkungen", "Anmerkungen (Übersetzung)","NER LOC","NER PER","NER ORG")
         
       }
       else{
-        colnames(data)<-c("Interview_Id", "Band","Timecode","Sprecher","Transkript","Übersetzung","Hauptüberschrift","Zwischenüberschrift","Hauptüberschrift (Übersetzung)","Zwischenüberschrift (Übersetzung)","Registerverknüpfungen", "Anmerkungen", "Anmerkungen (Übersetzung)")
+        colnames(data)<-c("Interview_Id", "Band","Timecode","Sprecher","Transkript","Übersetzung","Hauptüberschrift","Zwischenüberschrift","Hauptüberschrift (Übersetzung)","Zwischenüberschrift (Übersetzung)","Registerverknüpfungen","Topic_Weight", "Anmerkungen", "Anmerkungen (Übersetzung)")
       }
     })
     try({

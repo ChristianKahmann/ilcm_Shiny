@@ -3398,6 +3398,16 @@ output$UI_Import_OHD<-renderUI({
                                           fileInput(inputId = "Import_ohd_new_meta",label = "Upload new OHD Metadata",multiple = F,accept = "csv")
                                    )
                           ),
+                          fluidRow(style="margin-left:0px;margin-right:0px",
+                                   column(4,
+                                          conditionalPanel(condition='input.Import_ohd_files!= null | input.Import_ohd_files_multiple!= null',
+                                                           uiOutput("Import_ohd_delete_file_UI")
+                                          )
+                                   ),
+                                   column(4,offset = 3,
+                                          uiOutput("Import_ohd_delete_meta_UI")
+                                   )
+                          ),
                           tags$hr(),
                           conditionalPanel(condition='input.Import_ohd_files!= null | input.Import_ohd_files_multiple!= null',
                                            withBusyIndicatorUI(
@@ -3419,6 +3429,14 @@ output$UI_Import_OHD<-renderUI({
                                                                                              uiOutput(outputId = "Import_ohd_meta_columns_UI")
                                                                             )
                                                                      ),
+                                                            ),
+                                                            fluidRow(style="margin-left:0px;margin-right:0px",
+                                                                     column(2,
+                                                                            selectInput(inputId = "Import_language_ohd_mapping",label = "Choose Language",multiple=F,choices = stringr::str_remove_all(string = stringr::str_split(
+                                                                              stringr::str_replace_all(string = system(command = "python -m spacy info",intern = T)[8],pattern = "Pipelines[ ]+",replacement = "")
+                                                                              ,pattern = ", ",simplify = T),pattern = " "),
+                                                                              selected="de_core_news_sm(3.2.0)")
+                                                                     )       
                                                             ),
                                                             fluidRow(style="margin-left:0px;margin-right:0px",
                                                                      shinyBS::bsButton(inputId = "Import_start_ohd_mapping",label = "Apply Standard OHD Mapping",icon = icon("play"),style="info")
@@ -3447,6 +3465,54 @@ output$UI_Import_OHD<-renderUI({
   )
 })
 
+output$Import_ohd_delete_file_UI<-renderUI({
+  bsButton(inputId = "Import_ohd_delete_file",label = "Delete chosen OHD File/Files",icon = icon("trash"),style = "danger",size = "extra-small")
+})
+
+
+output$Import_ohd_delete_meta_UI<-renderUI({
+  validate(
+    need(input$Import_ohd_meta_file!="",message="Please specify a Meta File")
+  )
+  
+  bsButton(inputId = "Import_ohd_delete_meta",label = "Delete chosen OHD Meta-File",icon = icon("trash"),style = "danger",size = "extra-small")
+})
+
+
+observeEvent(input$Import_ohd_delete_meta,{
+  confirmSweetAlert(session = session,inputId = "Import_ohd_delete_meta_confirm",title = "Delete OHD Meta-File",text = HTML(paste0("Do you really want to delete <b>",input$Import_ohd_meta_file,"</b> ?")),type = "warning",html = T)
+})
+
+observeEvent(input$Import_ohd_delete_meta_confirm,{
+  if(isTRUE(input$Import_ohd_delete_meta_confirm)){
+    file.remove(paste0("data_import/ohd_meta_files/",input$Import_ohd_meta_file))
+    values$invalidate_ohd_files <- runif(1,0,1)
+  }
+})
+
+# Delete present OHD data
+observeEvent(input$Import_ohd_delete_file,{
+  if(isTRUE(values$ohd_use_multi)){
+    confirmSweetAlert(session = session,inputId = "Import_ohd_delete_file_confirm",title = "Delete OHD Data",text = HTML(paste0("Do you really want to delete <b>",input$Import_ohd_files_multiple,"</b> ?")),type = "warning",html = T)
+  }
+  else{
+    confirmSweetAlert(session = session,inputId = "Import_ohd_delete_file_confirm",title = "Delete OHD Data",text = HTML(paste0("Do you really want to delete <b>",input$Import_ohd_files,"</b> ?")),type = "warning",html = T)
+  }
+})
+
+
+observeEvent(input$Import_ohd_delete_file_confirm,{
+  if(isTRUE(input$Import_ohd_delete_file_confirm)){
+    if(isTRUE(values$ohd_use_multi)){
+      unlink(x = paste0("data_import/ohd/",input$Import_ohd_files_multiple),recursive = T)
+    }
+    else{
+      file.remove(paste0("data_import/ohd/",input$Import_ohd_files))
+    }
+    values$invalidate_ohd_files <- runif(1,0,1)
+  }
+})
+
 
 output$Import_ohd_start_import_UI<-renderUI({
   validate(
@@ -3460,7 +3526,6 @@ observeEvent(input$Import_ohd_start_import,{
   data_documents <- values$import_ohd_documents_after_mapping
   data_interviews <- values$import_ohd_interview_after_mapping
   meta_metadata <- values$import_ohd_meta_meta_after_mapping
-  # do something
   if(data_documents$dataset[1]==""){
     shinyWidgets::sendSweetAlert(session=session,title = "No Dataset Abbreviation",text = "Please use an existing Dataset you want to add these interviews to or specify a new one.",type = "warning")
   }
@@ -3470,7 +3535,8 @@ observeEvent(input$Import_ohd_start_import,{
     }
     else{
       slow_mode<-F
-      parameters<-list(data=data_documents,db=TRUE,lang="de","%Y-%m-%d",meta_metadata,slow_mode=slow_mode,data_interviews,is_interview=T)
+      lang <- stringr::str_extract_all(string = input$Import_language_ohd_mapping,pattern = "^[a-z]{2,3}(?=_)",simplify = T)
+      parameters<-list(data=data_documents,db=TRUE,lang=lang,"%Y-%m-%d",meta_metadata,slow_mode=slow_mode,data_interviews,is_interview=T)
       #create process ID
       ID<-get_task_id_counter()+1
       set_task_id_counter(ID)
@@ -3750,7 +3816,9 @@ observeEvent(input$Import_start_ohd_mapping,{
     else{
       meta <- readr::read_delim(file = paste0("data_import/ohd_meta_files/",input$Import_ohd_meta_file),
                                 delim = "\t", na = character() )
-      interview_id <- substr(data_documents$file_names,1,7)
+      #interview_id <- substr(data_documents$file_names,1,7)
+      interview_id <- stringr::str_split(string = data_documents$file_names,pattern = "_",simplify = T)[,1]
+      
       data_documents<-cbind(interview_id,data_documents)
       #merge
       data_documents <- merge(x = data_documents,y = meta,by.x = "interview_id",by.y = "Interview-ID",all.x=T)
@@ -3777,13 +3845,13 @@ observeEvent(input$Import_start_ohd_mapping,{
       # create standard data format #
       ###############################
       data_clean <- data_documents[,1:3]
-      data_clean <- data.frame(data_clean, title = paste0("Interview: ",substr(data_documents$file_names,1,7)),
+      data_clean <- data.frame(data_clean, title = paste0("Interview: ",stringr::str_split(string=data_documents$file_names,simplify = T,pattern = "_")[,1]),
                                body = data_documents$Transkript,
                                date = as.character(Sys.Date()),
                                token = unlist(lapply(X = data_documents$Transkript,FUN = function(x){
                                  length(stringr::str_split(string = x,pattern = " ",simplify = T))}
                                )),
-                               language = "de_core_news_sm(3.2.0)",
+                               language = input$Import_language_ohd_mapping,
                                mde1 = "",
                                mde2 = "",
                                mde3 = "",
@@ -3806,7 +3874,7 @@ observeEvent(input$Import_start_ohd_mapping,{
       data_meta_meta <- data.frame(data_meta_meta, t(data.frame(unlist(a))))
       rownames(data_meta_meta) <- NULL
       values$import_ohd_meta_meta_after_mapping <- data_meta_meta
-      data_clean$language <- "de_core_news_sm(3.2.0)"
+      data_clean$language <- input$Import_language_ohd_mapping
       values$import_ohd_documents_after_mapping <- data_clean
     }
   }
@@ -3822,7 +3890,8 @@ observeEvent(input$Import_start_ohd_mapping,{
       offset=0
     }
     # interview id
-    interview_id <- substr(data_documents$file_names,1,7)
+    #interview_id <- substr(data_documents$file_names,1,7)
+    interview_id <- stringr::str_split(string = data_documents$file_names,pattern = "_",simplify = T)[,1]
     data_documents<-cbind(interview_id,data_documents)
     # id doc
     id_doc<-(offset+1):(offset+dim(data_documents)[1])
@@ -3836,13 +3905,13 @@ observeEvent(input$Import_start_ohd_mapping,{
     # create standard data format #
     ###############################
     data_clean <- data_documents[,1:3]
-    data_clean <- data.frame(data_clean, title = paste0("Interview: ",substr(data_documents$file_names,1,7)),
+    data_clean <- data.frame(data_clean, title = paste0("Interview: ",stringr::str_split(string=data_documents$file_names,simplify = T,pattern = "_")[,1]),
                              body = data_documents$Transkript,
                              date = as.character(Sys.Date()),
                              token = unlist(lapply(X = data_documents$Transkript,FUN = function(x){
                                length(stringr::str_split(string = x,pattern = " ",simplify = T))}
                              )),
-                             language = "de_core_news_sm(3.2.0)",
+                             language = input$Import_language_ohd_mapping,
                              mde1 = "",
                              mde2 = "",
                              mde3 = "",
@@ -3853,13 +3922,14 @@ observeEvent(input$Import_start_ohd_mapping,{
                              mde8 = "",
                              mde9 = "",
                              is_interview = 1)
-    data_clean$language <- "de_core_news_sm(3.2.0)"
+    data_clean$language <- input$Import_language_ohd_mapping
     values$import_ohd_documents_after_mapping <- data_clean
     data_meta_meta <- data.frame(dataset=input$Import_ohd_corpus_name)
     values$import_ohd_meta_meta_after_mapping <- data_meta_meta
   }
   # add interview ids and counter for row per interview
-  interview_id <- substr(data_interview$file_names,1,7)
+  #interview_id <- substr(data_interview$file_names,1,7)
+  interview_id <- stringr::str_split(string = data_interview$file_names,pattern = "_",simplify = T)[,1]
   data_interview <- cbind(interview_id, data_interview)
   interview_row_id <- NULL
   for(i in 1:length(unique(data_interview$interview_id))){
