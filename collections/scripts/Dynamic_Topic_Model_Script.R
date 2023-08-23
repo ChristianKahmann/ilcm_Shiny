@@ -91,6 +91,16 @@ error<-try(expr = {
   #preparing token object
   log_to_file(message = "<b>Step 7/13: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
+  
+  
+  # if documents were deleted by reducing to certain ners or pos tags ensure meta and documents ahs the same dimensions
+  docs_avail <- unique(db_data$token$doc_id)
+  if(length(docs_avail)!=nrow(meta)){
+    meta <- meta[which(meta$id_doc%in%docs_avail),]
+    documents_original_avail <- which(documents_original$doc_ids%in%docs_avail)
+    documents_original<- documents_original[documents_original_avail,]
+  }
+  
   #split documents
   if(parameters$dtm_chunk_documents==TRUE){
     log_to_file(message = paste0("&emsp;Splitting documents..."),file = logfile)

@@ -77,6 +77,13 @@ error<-try(expr = {
   log_to_file(message = "<b>Step 7/13: Preparing token object</b>",file = logfile)
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   
+  # if documents were deleted by reducing to certain ners or pos tags ensure meta and documents ahs the same dimensions
+  docs_avail <- unique(db_data$token$doc_id)
+  if(length(docs_avail)!=nrow(meta)){
+    meta <- meta[which(meta$id_doc%in%docs_avail),]
+    documents_original_avail <- which(documents_original$doc_ids%in%docs_avail)
+    documents_original<- documents_original[documents_original_avail,]
+  }
   
   #split documents
   if(parameters$tm_chunk_documents==TRUE){
@@ -141,9 +148,7 @@ error<-try(expr = {
   log_to_file(message = "<b>Step 8/13: Calculating DTM</b>",file = logfile)
   dtm<-calculate_dtm(token = db_data$token,parameters = parameters,lang = db_data$language)
   log_to_file(message = paste("  <b style='color:green'> ✔ </b>  Finished pre-processing with",dim(dtm)[1], "documents and ",dim(dtm)[2], "features"),file = logfile)
-  
-  #save.image(paste0("data_TM_Pruning_",Sys.Date(),".RData"))
-  
+
   
   log_to_file(message = "<b>Step 9/13: Clean vocabulary from non asci2 characters</b>",file = logfile)
   #just keep alpha

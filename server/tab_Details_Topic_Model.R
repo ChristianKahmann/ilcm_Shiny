@@ -1732,21 +1732,23 @@ output$Det_TM_Meta_Correlations_table_simple<-DT::renderDataTable({
     )
   )
   meta<-meta[,5:ncol(meta),drop=F]
-  results<-matrix(c(0),ncol(theta),ncol(meta))
-  for(topic_i in 1:ncol(theta)){
-    print(topic_i)
-    for(meta_i in 1:ncol(meta)){
-      df<- cbind(theta[,topic_i],meta[,meta_i])
-      df<-data.frame(df)
-      class(df$X1)<-"numeric"
-      if(all(varhandle::check.numeric(v = df$X2,exceptions = "NA"))){
-        class(df$X2)<-"numeric" 
+  results<-matrix(c(0),ncol(theta),ncol(meta))#
+  withProgress(message = "Calculating Correlation between Topics and Metadata...", value = 0, {
+    for(topic_i in 1:ncol(theta)){
+      for(meta_i in 1:ncol(meta)){
+        df<- cbind(theta[,topic_i],meta[,meta_i])
+        df<-data.frame(df)
+        class(df$X1)<-"numeric"
+        if(all(varhandle::check.numeric(v = df$X2,exceptions = "NA"))){
+          class(df$X2)<-"numeric" 
+        }
+        try({
+          results[topic_i,meta_i]<-mixed_assoc(df = df)[1,"assoc"]
+        },silent = T)
       }
-      try({
-        results[topic_i,meta_i]<-mixed_assoc(df = df)[1,"assoc"]
-      },silent = T)
+      incProgress(1/ncol(theta), detail = paste("Finished Calculation for Topic", topic_i))
     }
-  }
+  })
   colnames(results)<-colnames(meta)
   if(input$Det_TM_use_custom_labels==TRUE){
     rownames(results)<-values$Det_TM_topic_labels

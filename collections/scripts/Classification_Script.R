@@ -165,7 +165,7 @@ error<-try(expr = {
   db_data$token<-prepare_token_object(token = db_data$token,parameters=parameters)
   log_to_file(message = "  <b style='color:green'> ✔ </b>  Finished preparing token object",file = logfile)
   
-  
+
   
   #getting original documents
   log_to_file(message = "<b>Step 9/13: Getting original documents/sentences</b>",file = logfile)
