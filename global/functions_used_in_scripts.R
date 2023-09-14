@@ -585,7 +585,7 @@ calculate_diachronic_cooccurrences<-function(dtm,parameters,meta){
   #calculate cooc-slices
   diachron_Coocs<-list()
   if(parameters$va_timeintervall=="week"){
-    db_data$meta[,2]<<-strftime(as.character(as.matrix(db_data$meta[,2])),format="%Y-%V")
+    db_data$meta[,2]<<-strftime(as.character(as.matrix(db_data$meta[,2])),format="%G-%V")
   }
   if(parameters$va_timeintervall=="month"){
     db_data$meta[,2]<<-(substr(as.matrix(db_data$meta[,2]),1,7))
@@ -868,7 +868,7 @@ calculate_diachron_frequencies<-function(dtm,meta){
   vocab<-colnames(dtm)
   #transform dates
   dates_day<-meta[,2]
-  dates_week<-strftime(as.character(meta[,"date"]),format = "%Y-%V")
+  dates_week<-strftime(as.character(meta[,"date"]),format = "%G-%V")
   dates_month<-substr(meta[,2],1,7)
   dates_year<-substr(meta[,2],1,4)
   #get unique dates
@@ -1310,7 +1310,7 @@ calculate_dtm_for_dictionary_extraction<-function(parameters,lang,token){
 calculate_dictioanry_frequencies<-function(meta,dtm,dict_terms,conceptnames,dicts_available,bin_dtm){
   #transform dates
   dates_day<-meta[,2]
-  dates_week<-strftime(as.character(meta[,"date"]),format = "%Y-%V")
+  dates_week<-strftime(as.character(meta[,"date"]),format = "%G-%V")
   dates_month<-substr(meta[,2],1,7)
   dates_year<-substr(meta[,2],1,4)
   #get unique dates
