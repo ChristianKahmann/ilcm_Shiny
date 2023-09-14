@@ -97,7 +97,7 @@ output$DE_plot<-renderPlotly({
     rownames(freq_matrix)<-paste0(rownames(freq_matrix),"-01-01")
   }
   if(input$Det_DE_Time=="Week"){
-    rownames(freq_matrix)<-as.character(as.Date(rownames(freq_matrix),format="%Y-%V"))
+    rownames(freq_matrix)<-as.character(as.Date(rownames(freq_matrix),format="%G-%V"))
   }
   missing_dates<-as.character(seq.Date(from = min(as.Date(rownames(freq_matrix))),to = max(as.Date(rownames(freq_matrix))),by = tolower(input$Det_DE_Time)))
   if(input$Det_DE_Time=="Month"){
@@ -107,7 +107,7 @@ output$DE_plot<-renderPlotly({
     missing_dates<-unique(substr(missing_dates,1,4))
   }
   if(input$Det_DE_Time=="Week"){
-    missing_dates<-unique(strftime(as.character(missing_dates),format = "%Y-%V"))
+    missing_dates<-unique(strftime(as.character(missing_dates),format = "%G-%V"))
   }
   missing_dates<-setdiff(missing_dates,orig_dates)
   freq_matrix<-rbind(freq_matrix,Matrix(c(0),length(missing_dates),dim(freq_matrix)[2]))
