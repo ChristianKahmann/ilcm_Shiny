@@ -18,7 +18,7 @@ output$Det_Senti_date<-renderPlotly({
     dates<-substring(as.character(meta[,"date"]),1,4)
   }
   if(input$Det_SA_Time=="Week"){
-    dates<-strftime(as.character(meta[,"date"]),format = "%Y-%V")
+    dates<-strftime(as.character(meta[,"date"]),format = "%G-%V")
   }
   if(input$Det_SA_Time=="Day"){
     dates<-substring(as.character(meta[,"date"]),1,10)

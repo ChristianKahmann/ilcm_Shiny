@@ -5742,7 +5742,7 @@ output$TM_topic_proportions_UI<-renderUI({
     dates<-substr(dates,0,7)
   }
   if(input$Det_TM_proportions_ByDate_Type=="Week"){
-    dates<-strftime(as.character(dates),format="%Y-%V")
+    dates<-strftime(as.character(dates),format="%G-%V")
   }
   if(input$Det_TM_proportions_ByDate_Type=="Day"){
     dates<-substr(dates,0,11)

@@ -237,7 +237,7 @@ error<-try(expr = {
     dates<-substr(dates,0,7)
   }
   if(parameters$dtm_Date_Type=="Week"){
-    dates<-strftime(as.character(dates),format="%Y-%V")
+    dates<-strftime(as.character(dates),format="%G-%V")
   }
   if(parameters$dtm_Date_Type=="Day"){
     dates<-substr(dates,0,11)
